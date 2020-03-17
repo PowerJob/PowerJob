@@ -5,14 +5,13 @@ import com.github.kfcfans.oms.worker.pojo.request.ServerScheduleJobReq;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 处理来自服务器的请求
- * 请求链：server -> taskTracker -> worker
+ * worker的master节点，处理来自server的jobInstance请求和来自worker的task请求
  *
  * @author tjq
  * @since 2020/3/17
  */
 @Slf4j
-public class ServerRequestActor extends AbstractActor {
+public class JobTrackerActor extends AbstractActor {
 
     @Override
     public Receive createReceive() {

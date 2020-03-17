@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.worker.common;
 
-import java.util.Set;
+import lombok.Data;
 
 /**
  * Worker 配置文件
@@ -8,6 +8,7 @@ import java.util.Set;
  * @author tjq
  * @since 2020/3/16
  */
+@Data
 public class OhMyConfig {
     /**
      * 应用名称
@@ -17,4 +18,8 @@ public class OhMyConfig {
      * 调度服务器地址，ip:port （多值使用 , 分隔）
      */
     private String serverAddress;
+    /**
+     * 通讯端口
+     */
+    private int listeningPort;
 }

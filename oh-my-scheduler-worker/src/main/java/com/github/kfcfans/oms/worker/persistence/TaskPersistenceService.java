@@ -15,6 +15,11 @@ import java.util.List;
  */
 public class TaskPersistenceService {
 
+    public static TaskPersistenceService INSTANCE = new TaskPersistenceService();
+
+    private TaskPersistenceService() {
+    }
+
     private TaskDAO taskDAO = new TaskDAOImpl();
     private static final int MAX_BATCH_SIZE = 50;
 
@@ -49,5 +54,17 @@ public class TaskPersistenceService {
         query.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
         query.setLimit(100);
         return taskDAO.simpleQuery(query);
+    }
+
+    /**
+     * 更新 Task 的状态
+     */
+    public boolean updateTaskStatus(String instanceId, String taskId, TaskStatus status) {
+        SimpleTaskQuery condition = new SimpleTaskQuery();
+        condition.setInstanceId(instanceId);
+        condition.setTaskId(taskId);
+        TaskDO updateEntity = new TaskDO();
+        updateEntity.setStatus(status.getValue());
+        return taskDAO.simpleUpdate(condition, updateEntity);
     }
 }

@@ -31,4 +31,6 @@ public interface TaskDAO {
 
     List<TaskDO> simpleQuery(SimpleTaskQuery query);
 
+    boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField);
+
 }

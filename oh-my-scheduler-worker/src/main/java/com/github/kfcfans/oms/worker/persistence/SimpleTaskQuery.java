@@ -12,7 +12,6 @@ import org.springframework.util.StringUtils;
 @Data
 public class SimpleTaskQuery {
 
-    private static final String PREFIX_SQL = "select * from task_info where ";
     private static final String LINK = " and ";
 
     private String taskId;
@@ -22,10 +21,13 @@ public class SimpleTaskQuery {
     private String address;
     private Integer status;
 
+    // 自定义的查询条件（where 后面的语句），如 crated_time > 10086 and status = 3
+    private String conditionSQL;
+
     private Integer limit;
 
-    public String getQuerySQL() {
-        StringBuilder sb = new StringBuilder(PREFIX_SQL);
+    public String getConditionSQL() {
+        StringBuilder sb = new StringBuilder();
         if (!StringUtils.isEmpty(taskId)) {
             sb.append("task_id = '").append(taskId).append("'").append(LINK);
         }
@@ -43,6 +45,10 @@ public class SimpleTaskQuery {
         }
         if (status != null) {
             sb.append("status = ").append(status).append(LINK);
+        }
+
+        if (!StringUtils.isEmpty(conditionSQL)) {
+            sb.append(conditionSQL).append(LINK);
         }
 
         String substring = sb.substring(0, sb.length() - LINK.length());

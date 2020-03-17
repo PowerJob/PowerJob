@@ -22,7 +22,10 @@ public class JobInstanceInfo {
     // 任务执行时间限制，单位毫秒
     private long timeLimit;
     // 可用处理器地址，可能多值，逗号分隔
-    private String workerAddress;
+    private String allWorkerAddress;
+
+    private String jobParams;
+    private String instanceParams;
 
     /* *********************** Map/MapReduce 任务专用 *********************** */
 

@@ -1,11 +1,14 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
+import lombok.Data;
+
 /**
  * 服务端调度任务请求（一次任务处理的入口）
  *
  * @author tjq
  * @since 2020/3/17
  */
+@Data
 public class ServerScheduleJobReq {
 
     // 调度的服务器地址，默认通讯目标
@@ -25,6 +28,9 @@ public class ServerScheduleJobReq {
     private long timeLimit;
     // 可用处理器地址，可能多值，逗号分隔
     private String workerAddress;
+
+    private String jobParams;
+    private String instanceParams;
 
     /* *********************** Map/MapReduce 任务专用 *********************** */
 
