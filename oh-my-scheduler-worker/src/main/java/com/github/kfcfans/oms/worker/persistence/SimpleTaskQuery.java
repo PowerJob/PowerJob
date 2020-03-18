@@ -22,11 +22,16 @@ public class SimpleTaskQuery {
     private Integer status;
 
     // 自定义的查询条件（where 后面的语句），如 crated_time > 10086 and status = 3
-    private String conditionSQL;
+    private String queryCondition;
+    // 自定义的查询条件，如 GROUP BY status
+    private String otherCondition;
+
+    // 查询内容，默认为 *
+    private String queryContent = " * ";
 
     private Integer limit;
 
-    public String getConditionSQL() {
+    public String getQueryCondition() {
         StringBuilder sb = new StringBuilder();
         if (!StringUtils.isEmpty(taskId)) {
             sb.append("task_id = '").append(taskId).append("'").append(LINK);
@@ -47,8 +52,8 @@ public class SimpleTaskQuery {
             sb.append("status = ").append(status).append(LINK);
         }
 
-        if (!StringUtils.isEmpty(conditionSQL)) {
-            sb.append(conditionSQL).append(LINK);
+        if (!StringUtils.isEmpty(queryCondition)) {
+            sb.append(queryCondition).append(LINK);
         }
 
         String substring = sb.substring(0, sb.length() - LINK.length());

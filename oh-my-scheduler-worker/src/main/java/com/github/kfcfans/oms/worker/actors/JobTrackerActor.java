@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.worker.actors;
 
 import akka.actor.AbstractActor;
-import com.github.kfcfans.oms.worker.pojo.request.ServerScheduleJobReq;
+import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import lombok.extern.slf4j.Slf4j;
 
 /**

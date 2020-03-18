@@ -16,11 +16,11 @@
     <properties>
         <spring.version>5.2.4.RELEASE</spring.version>
         <akka.version>2.6.4</akka.version>
-        <slf4j.version>1.7.30</slf4j.version>
         <oms.common.version>1.0.0-SNAPSHOT</oms.common.version>
         <h2.db.version>1.4.200</h2.db.version>
         <hikaricp.version>3.4.2</hikaricp.version>
         <guava.version>28.2-jre</guava.version>
+        <fastjson.version>1.2.58</fastjson.version>
     </properties>
 
     <dependencies>
@@ -38,13 +38,6 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-remote_2.13</artifactId>
             <version>${akka.version}</version>
-        </dependency>
-
-        <!-- slf4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.30</version>
         </dependency>
 
         <!-- oms-common -->
@@ -73,6 +66,14 @@
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
         </dependency>
+
+        <!-- fastJSON -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+
 
         <!-- 开发阶段输出日志 -->
         <dependency>

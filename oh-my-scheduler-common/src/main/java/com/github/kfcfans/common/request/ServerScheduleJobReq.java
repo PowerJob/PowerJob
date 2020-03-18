@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.worker.pojo.request;
+package com.github.kfcfans.common.request;
 
 import lombok.Data;
 

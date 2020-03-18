@@ -2,12 +2,13 @@ package com.github.kfcfans.oms.worker.persistence;
 
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 任务持久化实现层，表名：task_info
@@ -22,7 +23,7 @@ public class TaskDAOImpl implements TaskDAO {
     public boolean initTable() {
 
         String delTableSQL = "drop table if exists task_info";
-        String createTableSQL = "create table task_info (task_id varchar(20), instance_id varchar(20), job_id varchar(20), task_name varchar(20), task_content blob, address varchar(20), status int(11), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), unique key pkey (instance_id, task_id))";
+        String createTableSQL = "create table task_info (task_id varchar(20), instance_id varchar(20), job_id varchar(20), task_name varchar(20), task_content blob, address varchar(20), status int(11), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), unique KEY pkey (instance_id, task_id))";
 
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);
@@ -99,7 +100,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public List<TaskDO> simpleQuery(SimpleTaskQuery query) {
         ResultSet rs = null;
-        String sql = "select * from task_info where " + query.getConditionSQL();
+        String sql = "select * from task_info where " + query.getQueryCondition();
         List<TaskDO> result = Lists.newLinkedList();
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             rs = ps.executeQuery();
@@ -120,9 +121,42 @@ public class TaskDAOImpl implements TaskDAO {
     }
 
     @Override
+    public List<Map<String, Object>> simpleQueryPlus(SimpleTaskQuery query) {
+        ResultSet rs = null;
+        String sqlFormat = "select %s from task_info where %s";
+        String sql = String.format(sqlFormat, query.getQueryContent(), query.getQueryCondition());
+        List<Map<String, Object>> result = Lists.newLinkedList();
+        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            rs = ps.executeQuery();
+            // 原数据，包含了列名
+            ResultSetMetaData  metaData = rs.getMetaData();
+            while (rs.next()) {
+                Map<String, Object> row = Maps.newHashMap();
+                result.add(row);
+
+                for (int i = 0; i < metaData.getColumnCount(); i++) {
+                    String colName = metaData.getColumnName(i + 1);
+                    Object colValue = rs.getObject(colName);
+                    row.put(colName, colValue);
+                }
+            }
+        }catch (Exception e) {
+            log.error("[TaskDAO] simpleQuery failed(sql = {}).", sql, e);
+        }finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                }catch (Exception ignore) {
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField) {
         String sqlFormat = "update task_info set %s where %s";
-        String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getConditionSQL());
+        String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getQueryCondition());
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
             return stat.execute();
         }catch (Exception e) {
@@ -192,6 +226,13 @@ public class TaskDAOImpl implements TaskDAO {
 
         final List<TaskDO> res2 = taskDAO.simpleQuery(query);
         System.out.println(res2);
+
+        SimpleTaskQuery query3 = new SimpleTaskQuery();
+        query.setInstanceId("22");
+        query.setQueryContent("status, count(*) as num");
+        query.setOtherCondition("GROUP BY status");
+        List<Map<String, Object>> dbRES = taskDAO.simpleQueryPlus(query);
+        System.out.println(dbRES);
 
         Thread.sleep(100000);
     }

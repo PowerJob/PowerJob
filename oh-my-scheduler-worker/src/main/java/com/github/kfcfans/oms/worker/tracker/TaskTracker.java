@@ -3,6 +3,8 @@ package com.github.kfcfans.oms.worker.tracker;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import com.github.kfcfans.common.ExecuteType;
+import com.github.kfcfans.common.JobInstanceStatus;
+import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.constants.AkkaConstant;
 import com.github.kfcfans.oms.worker.common.constants.CommonSJ;
@@ -21,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -43,14 +46,7 @@ public abstract class TaskTracker {
     protected TaskPersistenceService taskPersistenceService;
     protected ScheduledExecutorService scheduledPool;
 
-    // 统计
     protected AtomicBoolean finished = new AtomicBoolean(false);
-    protected AtomicLong needDispatchTaskNum = new AtomicLong(0);
-    protected AtomicLong dispatchedTaskNum = new AtomicLong(0);
-    protected AtomicLong waitingToRunTaskNum = new AtomicLong(0);
-    protected AtomicLong runningTaskNum = new AtomicLong(0);
-    protected AtomicLong successTaskNum = new AtomicLong(0);
-    protected AtomicLong failedTaskNum = new AtomicLong(0);
 
     public TaskTracker(JobInstanceInfo jobInstanceInfo, ActorRef taskTrackerActorRef) {
 
@@ -62,6 +58,15 @@ public abstract class TaskTracker {
         this.scheduledPool = Executors.newScheduledThreadPool(2, factory);
 
         allWorkerAddress = CommonSJ.commaSplitter.splitToList(jobInstanceInfo.getAllWorkerAddress());
+
+        // 持久化根任务
+        persistenceRootTask();
+
+        // 定时任务1：任务派发
+        scheduledPool.scheduleWithFixedDelay(new DispatcherRunnable(), 0, 5, TimeUnit.SECONDS);
+
+        // 定时任务2：状态检查
+        scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 10, 10, TimeUnit.SECONDS);
     }
 
 
@@ -70,16 +75,17 @@ public abstract class TaskTracker {
      */
     public abstract void dispatch();
 
-    public void updateTaskStatus(WorkerReportTaskStatusReq statusReportRequest) {
-        TaskStatus taskStatus = TaskStatus.of(statusReportRequest.getStatus());
-        // 持久化
+    public void updateTaskStatus(WorkerReportTaskStatusReq req) {
+        TaskStatus taskStatus = TaskStatus.of(req.getStatus());
 
-        // 更新统计数据
-        switch (taskStatus) {
-            case RECEIVE_SUCCESS:
-                waitingToRunTaskNum.incrementAndGet();break;
-            case PROCESSING:
-
+        // 持久化，失败则重试一次（本地数据库操作几乎可以认为可靠...吧...）
+        boolean updateResult = taskPersistenceService.updateTaskStatus(req.getInstanceId(), req.getTaskId(), taskStatus);
+        if (!updateResult) {
+            try {
+                Thread.sleep(100);
+                taskPersistenceService.updateTaskStatus(req.getInstanceId(), req.getTaskId(), taskStatus);
+            }catch (Exception ignore) {
+            }
         }
     }
 
@@ -90,7 +96,7 @@ public abstract class TaskTracker {
     /**
      * 持久化根任务，只有完成持久化才能视为任务开始running（先持久化，再报告server）
      */
-    private void persistenceTask() {
+    private void persistenceRootTask() {
 
         ExecuteType executeType = ExecuteType.valueOf(jobInstanceInfo.getExecuteType());
         boolean persistenceResult;
@@ -109,7 +115,6 @@ public abstract class TaskTracker {
             rootTask.setCreatedTime(System.currentTimeMillis());
 
             persistenceResult = taskPersistenceService.save(rootTask);
-            needDispatchTaskNum.incrementAndGet();
         }else {
             List<TaskDO> taskList = Lists.newLinkedList();
             List<String> addrList = CommonSJ.commaSplitter.splitToList(jobInstanceInfo.getAllWorkerAddress());
@@ -128,7 +133,6 @@ public abstract class TaskTracker {
                 taskList.add(task);
             }
             persistenceResult = taskPersistenceService.batchSave(taskList);
-            needDispatchTaskNum.addAndGet(taskList.size());
         }
 
         if (!persistenceResult) {
@@ -136,12 +140,6 @@ public abstract class TaskTracker {
         }
     }
 
-    /**
-     * 启动任务分发器
-     */
-    private void initDispatcher() {
-
-    }
 
     public void destroy() {
         scheduledPool.shutdown();
@@ -171,12 +169,7 @@ public abstract class TaskTracker {
                     targetActor.tell(req, taskTrackerActorRef);
 
                     // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
-                    taskPersistenceService.updateTaskStatus(task.getInstanceId(), task.getTaskId(), TaskStatus.DISPATCH_SUCCESS);
-
-                    // 更新统计数据
-                    needDispatchTaskNum.decrementAndGet();
-                    dispatchedTaskNum.incrementAndGet();
-
+                    taskPersistenceService.updateTaskStatus(task.getInstanceId(), task.getTaskId(), TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK);
                 }catch (Exception e) {
                     // 调度失败，不修改数据库，下次重新随机派发给 remote actor
                     log.warn("[TaskTracker] dispatch task({}) failed.", task);
@@ -192,6 +185,38 @@ public abstract class TaskTracker {
 
         @Override
         public void run() {
+
+            // 1. 查询统计信息
+            Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(jobInstanceInfo.getInstanceId());
+
+            long waitingDispatchNum = status2Num.get(TaskStatus.WAITING_DISPATCH);
+            long workerUnreceivedNum = status2Num.get(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK);
+            long receivedNum = status2Num.get(TaskStatus.RECEIVE_SUCCESS);
+            long succeedNum = status2Num.get(TaskStatus.WORKER_PROCESS_SUCCESS);
+            long failedNum = status2Num.get(TaskStatus.WORKER_PROCESS_FAILED);
+
+            long finishedNum = succeedNum + failedNum;
+            long unfinishedNum = waitingDispatchNum + workerUnreceivedNum + receivedNum;
+
+            log.debug("[TaskTracker] status check result({})", status2Num);
+
+            TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
+
+            // 2. 如果未完成任务数为0，上报服务器
+            if (unfinishedNum == 0) {
+                finished.set(true);
+
+                if (failedNum == 0) {
+                    req.setInstanceStatus(JobInstanceStatus.SUCCEED.getValue());
+                }else {
+                    req.setInstanceStatus(JobInstanceStatus.FAILED.getValue());
+                }
+
+                // 特殊处理MapReduce任务(执行reduce)
+                // 特殊处理广播任务任务（执行postProcess）
+            }else {
+
+            }
 
         }
     }

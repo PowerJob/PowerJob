@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.worker.persistence;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 任务持久化接口
@@ -30,6 +31,8 @@ public interface TaskDAO {
     TaskDO selectByKey(String instanceId, String taskId);
 
     List<TaskDO> simpleQuery(SimpleTaskQuery query);
+
+    List<Map<String, Object>> simpleQueryPlus(SimpleTaskQuery query);
 
     boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField);
 

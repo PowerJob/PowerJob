@@ -3,9 +3,11 @@ package com.github.kfcfans.oms.worker.persistence;
 
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 任务持久化服务
@@ -66,5 +68,25 @@ public class TaskPersistenceService {
         TaskDO updateEntity = new TaskDO();
         updateEntity.setStatus(status.getValue());
         return taskDAO.simpleUpdate(condition, updateEntity);
+    }
+
+    /**
+     * 获取 TaskTracker 管理的子 task 状态统计信息
+     * TaskStatus -> num
+     */
+    public Map<TaskStatus, Long> getTaskStatusStatistics(String instanceId) {
+        SimpleTaskQuery query = new SimpleTaskQuery();
+        query.setInstanceId(instanceId);
+        query.setQueryContent("status, count(*) as num");
+        query.setOtherCondition("GROUP BY status");
+        List<Map<String, Object>> dbRES = taskDAO.simpleQueryPlus(query);
+
+        Map<TaskStatus, Long> result = Maps.newHashMap();
+        dbRES.forEach(row -> {
+            int status = Integer.parseInt(String.valueOf(row.get("status")));
+            long num = Long.parseLong(String.valueOf(row.get("num")));
+            result.put(TaskStatus.of(status), num);
+        });
+        return result;
     }
 }
