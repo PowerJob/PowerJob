@@ -18,24 +18,27 @@ public class TaskTrackerStartTaskReq {
 
     private String jobId;
     private String instanceId;
+    // 任务执行类型，单机、广播、MR
+    private String executeType;
     // 处理器类型（JavaBean、Jar、脚本等）
     private String processorType;
     // 处理器信息
     private String processorInfo;
     // 并发计算线程数
     private int threadConcurrency;
-    // JobTracker 地址
-    private String jobTrackerAddress;
+    // TaskTracker 地址
+    private String taskTrackerAddress;
 
     private String jobParams;
     private String instanceParams;
 
+    private String taskId;
     private String taskName;
-    private byte[] taskContent;
+    private byte[] subTaskContent;
     // 子任务允许的重试次数
-    private int taskRetryNum;
+    private int maxRetryTimes;
     // 子任务当前重试次数
-    private int currentRetryNum;
+    private int currentRetryTimes;
 
     public TaskTrackerStartTaskReq(JobInstanceInfo instanceInfo, TaskDO task) {
         jobId = instanceInfo.getJobId();
@@ -43,15 +46,16 @@ public class TaskTrackerStartTaskReq {
         processorType = instanceInfo.getProcessorType();
         processorInfo = instanceInfo.getProcessorInfo();
         threadConcurrency = instanceInfo.getThreadConcurrency();
-        jobTrackerAddress = NetUtils.getLocalHost();
+        executeType = instanceInfo.getExecuteType();
+        taskTrackerAddress = NetUtils.getLocalHost();
 
         jobParams = instanceInfo.getJobParams();
         instanceParams = instanceInfo.getInstanceParams();
 
         taskName = task.getTaskName();
-        taskContent = task.getTaskContent();
+        subTaskContent = task.getTaskContent();
 
-        taskRetryNum = instanceInfo.getTaskRetryNum();
-        currentRetryNum = task.getFailedCnt();
+        maxRetryTimes = instanceInfo.getTaskRetryNum();
+        currentRetryTimes = task.getFailedCnt();
     }
 }

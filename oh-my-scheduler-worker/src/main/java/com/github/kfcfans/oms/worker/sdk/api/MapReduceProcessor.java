@@ -5,6 +5,7 @@ import akka.pattern.Patterns;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.AkkaConstant;
+import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.pojo.request.WorkerMapTaskRequest;
 import com.github.kfcfans.oms.worker.pojo.response.MapTaskResponse;
@@ -69,6 +70,11 @@ public abstract class MapReduceProcessor implements BasicProcessor {
         }else {
             return new ProcessResult(false, "MAP_FAILED");
         }
+    }
+
+    public boolean isRootTask() {
+        TaskContext taskContext = ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.get();
+        return TaskConstant.ROOT_TASK_ID.equals(taskContext.getTaskId());
     }
 
     public abstract ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result);

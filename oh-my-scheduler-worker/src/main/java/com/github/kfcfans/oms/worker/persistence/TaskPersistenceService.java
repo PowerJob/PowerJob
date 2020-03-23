@@ -26,7 +26,15 @@ public class TaskPersistenceService {
     private static final int MAX_BATCH_SIZE = 50;
 
     public boolean save(TaskDO task) {
-        return taskDAO.save(task);
+        boolean success = taskDAO.save(task);
+        if (!success) {
+            try {
+                Thread.sleep(100);
+                success = taskDAO.save(task);
+            }catch (Exception ignore) {
+            }
+        }
+        return success;
     }
 
     public boolean batchSave(List<TaskDO> tasks) {

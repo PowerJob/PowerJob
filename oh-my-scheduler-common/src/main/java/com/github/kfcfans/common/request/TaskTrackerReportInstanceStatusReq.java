@@ -20,7 +20,6 @@ public class TaskTrackerReportInstanceStatusReq {
 
     /* ********* 统计信息 ********* */
     private long totalTaskNum;
-    private long runningTaskNum;
     private long succeedTaskNum;
     private long failedTaskNum;
 }

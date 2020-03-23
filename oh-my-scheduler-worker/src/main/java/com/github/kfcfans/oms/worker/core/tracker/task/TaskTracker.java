@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.worker.tracker;
+package com.github.kfcfans.oms.worker.core.tracker.task;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
@@ -16,7 +16,7 @@ import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.model.JobInstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
-import com.github.kfcfans.oms.worker.pojo.request.WorkerReportTaskStatusReq;
+import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 负责管理 JobInstance 的运行，主要包括任务的派发（MR可能存在大量的任务）和状态的更新
@@ -75,7 +74,7 @@ public abstract class TaskTracker {
      */
     public abstract void dispatch();
 
-    public void updateTaskStatus(WorkerReportTaskStatusReq req) {
+    public void updateTaskStatus(ProcessorReportTaskStatusReq req) {
         TaskStatus taskStatus = TaskStatus.of(req.getStatus());
 
         // 持久化，失败则重试一次（本地数据库操作几乎可以认为可靠...吧...）
@@ -98,44 +97,18 @@ public abstract class TaskTracker {
      */
     private void persistenceRootTask() {
 
-        ExecuteType executeType = ExecuteType.valueOf(jobInstanceInfo.getExecuteType());
-        boolean persistenceResult;
+        TaskDO rootTask = new TaskDO();
+        rootTask.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
+        rootTask.setJobId(jobInstanceInfo.getJobId());
+        rootTask.setInstanceId(jobInstanceInfo.getInstanceId());
+        rootTask.setTaskId(TaskConstant.ROOT_TASK_ID);
+        rootTask.setFailedCnt(0);
+        rootTask.setAddress(NetUtils.getLocalHost());
+        rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
+        rootTask.setCreatedTime(System.currentTimeMillis());
+        rootTask.setCreatedTime(System.currentTimeMillis());
 
-        // 单机、MR模型下，根任务模型本机直接执行（JobTracker一般为负载最小的机器，且MR的根任务通常伴随着 map 操作，本机执行可以有效减少网络I/O开销）
-        if (executeType != ExecuteType.BROADCAST) {
-            TaskDO rootTask = new TaskDO();
-            rootTask.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
-            rootTask.setJobId(jobInstanceInfo.getJobId());
-            rootTask.setInstanceId(jobInstanceInfo.getInstanceId());
-            rootTask.setTaskId(TaskConstant.ROOT_TASK_ID);
-            rootTask.setFailedCnt(0);
-            rootTask.setAddress(NetUtils.getLocalHost());
-            rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
-            rootTask.setCreatedTime(System.currentTimeMillis());
-            rootTask.setCreatedTime(System.currentTimeMillis());
-
-            persistenceResult = taskPersistenceService.save(rootTask);
-        }else {
-            List<TaskDO> taskList = Lists.newLinkedList();
-            List<String> addrList = CommonSJ.commaSplitter.splitToList(jobInstanceInfo.getAllWorkerAddress());
-            for (int i = 0; i < addrList.size(); i++) {
-                TaskDO task = new TaskDO();
-                task.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
-                task.setJobId(jobInstanceInfo.getJobId());
-                task.setInstanceId(jobInstanceInfo.getInstanceId());
-                task.setTaskId(String.valueOf(i));
-                task.setAddress(addrList.get(i));
-                task.setFailedCnt(0);
-                task.setTaskName(TaskConstant.ROOT_TASK_NAME);
-                task.setCreatedTime(System.currentTimeMillis());
-                task.setCreatedTime(System.currentTimeMillis());
-
-                taskList.add(task);
-            }
-            persistenceResult = taskPersistenceService.batchSave(taskList);
-        }
-
-        if (!persistenceResult) {
+        if (!taskPersistenceService.save(rootTask)) {
             throw new RuntimeException("create root task failed.");
         }
     }
@@ -201,6 +174,9 @@ public abstract class TaskTracker {
             log.debug("[TaskTracker] status check result({})", status2Num);
 
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
+            req.setTotalTaskNum(finishedNum + unfinishedNum);
+            req.setSucceedTaskNum(succeedNum);
+            req.setFailedTaskNum(failedNum);
 
             // 2. 如果未完成任务数为0，上报服务器
             if (unfinishedNum == 0) {
@@ -214,6 +190,8 @@ public abstract class TaskTracker {
 
                 // 特殊处理MapReduce任务(执行reduce)
                 // 特殊处理广播任务任务（执行postProcess）
+
+                // 通知 ProcessorTracker 释放资源（PT释放资源前）
             }else {
 
             }

@@ -9,7 +9,7 @@ import lombok.Data;
  * @since 2020/3/17
  */
 @Data
-public class WorkerReportTaskStatusReq {
+public class ProcessorReportTaskStatusReq {
 
     private String jobId;
     private String instanceId;

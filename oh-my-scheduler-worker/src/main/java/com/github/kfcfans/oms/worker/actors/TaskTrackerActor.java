@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2020/3/17
  */
 @Slf4j
-public class JobTrackerActor extends AbstractActor {
+public class TaskTrackerActor extends AbstractActor {
 
     @Override
     public Receive createReceive() {

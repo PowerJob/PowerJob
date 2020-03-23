@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.worker.sdk;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 任务上下文
@@ -12,7 +14,8 @@ import lombok.Data;
  * @author tjq
  * @since 2020/3/18
  */
-@Data
+@Getter
+@Setter
 public class TaskContext {
 
     private String jobId;
@@ -29,4 +32,15 @@ public class TaskContext {
     private Object subTask;
 
     private String taskTrackerAddress;
+
+
+    public String getDescription() {
+        return "jobId='" + jobId + '\'' +
+                ", instanceId='" + instanceId + '\'' +
+                ", taskId='" + taskId + '\'' +
+                ", taskName='" + taskName + '\'' +
+                ", jobParams='" + jobParams + '\'' +
+                ", instanceParams='" + instanceParams + '\'' +
+                ", taskTrackerAddress='" + taskTrackerAddress;
+    }
 }
