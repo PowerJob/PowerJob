@@ -28,6 +28,8 @@ public class TaskTrackerStartTaskReq {
     private int threadConcurrency;
     // TaskTracker 地址
     private String taskTrackerAddress;
+    // 任务超时时间
+    private long jobTimeLimitMS;
 
     private String jobParams;
     private String instanceParams;
@@ -48,6 +50,7 @@ public class TaskTrackerStartTaskReq {
         threadConcurrency = instanceInfo.getThreadConcurrency();
         executeType = instanceInfo.getExecuteType();
         taskTrackerAddress = NetUtils.getLocalHost();
+        jobTimeLimitMS = instanceInfo.getTimeLimit();
 
         jobParams = instanceInfo.getJobParams();
         instanceParams = instanceInfo.getInstanceParams();

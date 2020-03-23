@@ -14,6 +14,8 @@ public class AkkaConstant {
     public static final String ACTOR_SYSTEM_NAME = "oms";
 
     public static final String Task_TRACKER_ACTOR_NAME = "task_tracker";
-    public static final String WORKER_ACTOR_NAME = "worker";
+    public static final String PROCESSOR_TRACKER_ACTOR_NAME = "processor_tracker";
+
+    public static final String AKKA_CONFIG_NAME = "oms-akka-application.conf";
 
 }

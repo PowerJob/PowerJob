@@ -21,5 +21,6 @@ public class OhMyConfig {
     /**
      * 通讯端口
      */
-    private int listeningPort;
+    private String listeningIP;
+    private Integer listeningPort;
 }

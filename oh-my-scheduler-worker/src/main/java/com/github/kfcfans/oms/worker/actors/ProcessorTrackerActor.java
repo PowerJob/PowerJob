@@ -27,8 +27,13 @@ public class ProcessorTrackerActor extends AbstractActor {
      * 处理来自TaskTracker的task执行请求
      */
     private void onReceiveTaskTrackerStartTaskReq(TaskTrackerStartTaskReq req) {
+        String jobId = req.getJobId();
         String instanceId = req.getInstanceId();
-        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> new ProcessorTracker(req.getThreadConcurrency()));
-        processorTracker.submitTask(req, getSender());
+        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> {
+            ProcessorTracker pt = new ProcessorTracker(req);
+            log.info("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) success.", jobId, instanceId);
+            return pt;
+        });
+        processorTracker.submitTask(req);
     }
 }

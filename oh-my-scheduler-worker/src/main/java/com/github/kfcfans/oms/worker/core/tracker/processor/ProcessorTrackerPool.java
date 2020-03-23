@@ -16,6 +16,9 @@ public class ProcessorTrackerPool {
 
     private static final Map<String, ProcessorTracker> instanceId2ProcessorTracker = Maps.newConcurrentMap();
 
+    /**
+     * 获取 ProcessorTracker，如果不存在则创建
+     */
     public static ProcessorTracker getProcessorTracker(String instanceId, Function<String, ProcessorTracker> creator) {
         return instanceId2ProcessorTracker.computeIfAbsent(instanceId, creator);
     }

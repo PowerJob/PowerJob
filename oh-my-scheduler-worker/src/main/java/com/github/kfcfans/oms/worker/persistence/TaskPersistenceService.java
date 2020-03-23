@@ -17,6 +17,7 @@ import java.util.Map;
  */
 public class TaskPersistenceService {
 
+    private static volatile boolean initialized = false;
     public static TaskPersistenceService INSTANCE = new TaskPersistenceService();
 
     private TaskPersistenceService() {
@@ -24,6 +25,13 @@ public class TaskPersistenceService {
 
     private TaskDAO taskDAO = new TaskDAOImpl();
     private static final int MAX_BATCH_SIZE = 50;
+
+    public void init() throws Exception {
+        if (initialized) {
+            return;
+        }
+        taskDAO.initTable();
+    }
 
     public boolean save(TaskDO task) {
         boolean success = taskDAO.save(task);
@@ -96,5 +104,22 @@ public class TaskPersistenceService {
             result.put(TaskStatus.of(status), num);
         });
         return result;
+    }
+
+    /**
+     * 获取需要被执行的任务
+     */
+    public List<TaskDO> getNeedRunTask(String instanceId, int limit) {
+
+        SimpleTaskQuery query = new SimpleTaskQuery();
+        query.setInstanceId(instanceId);
+        query.setStatus(TaskStatus.RECEIVE_SUCCESS.getValue());
+        query.setLimit(limit);
+
+        return taskDAO.simpleQuery(query);
+    }
+
+    public int batchDelete(String instanceId, List<String> taskIds) {
+        return taskDAO.batchDelete(instanceId, taskIds);
     }
 }

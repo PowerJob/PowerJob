@@ -15,7 +15,7 @@ public interface TaskDAO {
     /**
      * 初始化任务表
      */
-    boolean initTable();
+    void initTable() throws Exception;
 
     /**
      * 插入任务数据
@@ -27,6 +27,8 @@ public interface TaskDAO {
      * 更新任务数据，必须有主键 instanceId + taskId
      */
     boolean update(TaskDO task);
+
+    int batchDelete(String instanceId, List<String> taskIds);
 
     TaskDO selectByKey(String instanceId, String taskId);
 

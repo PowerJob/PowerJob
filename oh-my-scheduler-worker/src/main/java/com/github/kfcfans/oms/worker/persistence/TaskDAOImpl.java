@@ -4,6 +4,7 @@ import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.*;
 import java.util.Collection;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class TaskDAOImpl implements TaskDAO {
 
     @Override
-    public boolean initTable() {
+    public void initTable() throws Exception {
 
         String delTableSQL = "drop table if exists task_info";
         String createTableSQL = "create table task_info (task_id varchar(20), instance_id varchar(20), job_id varchar(20), task_name varchar(20), task_content blob, address varchar(20), status int(11), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), unique KEY pkey (instance_id, task_id))";
@@ -28,11 +29,7 @@ public class TaskDAOImpl implements TaskDAO {
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);
             stat.execute(createTableSQL);
-        }catch (Exception e) {
-            log.error("[TaskDAO] initTable failed.", e);
-            return false;
         }
-        return true;
     }
 
     @Override
@@ -71,6 +68,20 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean update(TaskDO task) {
         return false;
+    }
+
+    @Override
+    public int batchDelete(String instanceId, List<String> taskIds) {
+        String deleteSQL = "delete from task_info where instance_id = %s and task_id in %s";
+        String sql = String.format(deleteSQL, instanceId, getInStringCondition(taskIds));
+        try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
+
+            return stat.executeUpdate(sql);
+
+        }catch (Exception e) {
+            log.error("[TaskDAO] batchDelete failed(instanceId = {}, taskIds = {}).", instanceId, taskIds, e);
+        }
+        return 0;
     }
 
     @Override
@@ -195,7 +206,19 @@ public class TaskDAOImpl implements TaskDAO {
         ps.setLong(11, task.getLastModifiedTime());
     }
 
+    private static String getInStringCondition(Collection<String> collection) {
+        if (CollectionUtils.isEmpty(collection)) {
+            return "()";
+        }
+        StringBuilder sb = new StringBuilder(" ( ");
+        collection.forEach(str -> sb.append("'").append(str).append("',"));
+        return sb.replace(sb.length() -1, sb.length(), " ) ").toString();
+    }
+
     public static void main(String[] args) throws Exception {
+
+        System.out.println(getInStringCondition(Lists.newArrayList("2.1")));
+
         TaskDAOImpl taskDAO = new TaskDAOImpl();
         taskDAO.initTable();
 
@@ -233,6 +256,9 @@ public class TaskDAOImpl implements TaskDAO {
         query.setOtherCondition("GROUP BY status");
         List<Map<String, Object>> dbRES = taskDAO.simpleQueryPlus(query);
         System.out.println(dbRES);
+
+        System.out.println("=========== start to delete ===========");
+        System.out.println(taskDAO.batchDelete("22", Lists.newArrayList("2.1")));;
 
         Thread.sleep(100000);
     }

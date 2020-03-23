@@ -2,7 +2,6 @@ package com.github.kfcfans.oms.worker.core.tracker.task;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
-import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.JobInstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.oms.worker.OhMyWorker;
@@ -17,7 +16,6 @@ import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.model.JobInstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
@@ -36,6 +34,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public abstract class TaskTracker {
 
+    protected long startTime;
+    protected long jobTimeLimitMS;
+
+
     // 任务实例信息
     protected JobInstanceInfo jobInstanceInfo;
     protected ActorRef taskTrackerActorRef;
@@ -48,6 +50,9 @@ public abstract class TaskTracker {
     protected AtomicBoolean finished = new AtomicBoolean(false);
 
     public TaskTracker(JobInstanceInfo jobInstanceInfo, ActorRef taskTrackerActorRef) {
+
+        this.startTime = System.currentTimeMillis();
+        this.jobTimeLimitMS = jobInstanceInfo.getTimeLimit();
 
         this.jobInstanceInfo = jobInstanceInfo;
         this.taskTrackerActorRef = taskTrackerActorRef;
@@ -93,6 +98,13 @@ public abstract class TaskTracker {
     }
 
     /**
+     * 任务是否超时
+     */
+    public boolean isTimeout() {
+        return System.currentTimeMillis() - startTime > jobTimeLimitMS;
+    }
+
+    /**
      * 持久化根任务，只有完成持久化才能视为任务开始running（先持久化，再报告server）
      */
     private void persistenceRootTask() {
@@ -135,7 +147,7 @@ public abstract class TaskTracker {
                     if (StringUtils.isEmpty(targetIP)) {
                         targetIP = allWorkerAddress.get(ThreadLocalRandom.current().nextInt(allWorkerAddress.size()));
                     }
-                    String targetPath = AkkaUtils.getAkkaRemotePath(targetIP, AkkaConstant.WORKER_ACTOR_NAME);
+                    String targetPath = AkkaUtils.getAkkaRemotePath(targetIP, AkkaConstant.PROCESSOR_TRACKER_ACTOR_NAME);
                     ActorSelection targetActor = OhMyWorker.actorSystem.actorSelection(targetPath);
 
                     // 发送请求（Akka的tell是至少投递一次，经实验表明无法投递消息也不会报错...印度啊...）

@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.core.executor;
 
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
@@ -31,7 +32,7 @@ import org.springframework.beans.BeanUtils;
 @AllArgsConstructor
 public class ProcessorRunnable implements Runnable {
 
-    private final ActorRef taskTrackerActor;
+    private final ActorSelection taskTrackerActor;
 
     @Getter
     private final TaskTrackerStartTaskReq request;
@@ -85,6 +86,7 @@ public class ProcessorRunnable implements Runnable {
         TaskContext taskContext = new TaskContext();
         BeanUtils.copyProperties(request, taskContext);
         taskContext.setSubTask(JSONObject.parse(request.getSubTaskContent()));
+
         ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
 
         // 5. 正式提交运行
