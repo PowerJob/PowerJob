@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.github.kfcfans.oms.worker.actors.ProcessorTrackerActor;
@@ -13,6 +14,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,8 +34,11 @@ import java.util.Map;
 @Slf4j
 public class OhMyWorker implements ApplicationContextAware, InitializingBean {
 
+    @Getter
     private static OhMyConfig config;
     public static ActorSystem actorSystem;
+
+    public static ActorRef processorTracker;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -54,17 +60,17 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
             // 初始化 ActorSystem
             Map<String, Object> overrideConfig = Maps.newHashMap();
             String localIP = StringUtils.isEmpty(config.getListeningIP()) ? NetUtils.getLocalHost() : config.getListeningIP();
+            int port = config.getListeningPort() == null ? AkkaConstant.DEFAULT_PORT : config.getListeningPort();
             overrideConfig.put("akka.remote.artery.canonical.hostname", localIP);
-            if (config.getListeningPort() != null) {
-                overrideConfig.put("akka.remote.artery.canonical.port", config.getListeningPort());
-            }
-            log.info("[OhMyWorker] akka-remote listening address config: {}", overrideConfig);
+            overrideConfig.put("akka.remote.artery.canonical.port", port);
+            log.info("[OhMyWorker] akka-remote listening address: {}:{}", localIP, port);
+
             Config akkaBasicConfig = ConfigFactory.load(AkkaConstant.AKKA_CONFIG_NAME);
             Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
             actorSystem = ActorSystem.create(AkkaConstant.ACTOR_SYSTEM_NAME, akkaFinalConfig);
-            actorSystem.actorOf(Props.create(TaskTrackerActor.class));
-            actorSystem.actorOf(Props.create(ProcessorTrackerActor.class));
+            actorSystem.actorOf(Props.create(TaskTrackerActor.class), AkkaConstant.Task_TRACKER_ACTOR_NAME);
+            processorTracker = actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), AkkaConstant.PROCESSOR_TRACKER_ACTOR_NAME);
             log.info("[OhMyWorker] akka ActorSystem({}) initialized successfully.", actorSystem);
 
             // 初始化存储
@@ -76,26 +82,9 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
         }catch (Exception e) {
             log.error("[OhMyWorker] initialize OhMyWorker failed, using {}.", stopwatch, e);
         }
-
     }
 
-    public static OhMyConfig getConfig() {
-        return config;
-    }
-    public void setConfig(OhMyConfig cfg) {
-        config = cfg;
-    }
-
-    public static void main(String[] args) {
-
-        System.out.println(org.h2.util.NetUtils.getLocalAddress());
-
-        OhMyConfig config = new OhMyConfig();
-        config.setAppName("oms");
-        OhMyWorker ohMyWorker = new OhMyWorker();
-        ohMyWorker.setConfig(config);
-        ohMyWorker.init();
-
-
+    public void setConfig(OhMyConfig config) {
+        OhMyWorker.config = config;
     }
 }

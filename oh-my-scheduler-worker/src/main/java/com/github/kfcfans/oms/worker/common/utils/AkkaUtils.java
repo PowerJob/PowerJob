@@ -14,10 +14,12 @@ public class AkkaUtils {
     /**
      * akka://<actor system>@<hostname>:<port>/<actor path>
      */
-    private static final String AKKA_REMOTE_NODE_PATH = "akka://%s@%s:%d/%s";
+    private static final String AKKA_REMOTE_NODE_PATH = "akka://%s@%s:%d/user/%s";
 
     public static String getAkkaRemotePath(String ip, String actorName) {
-        return String.format(AKKA_REMOTE_NODE_PATH, AkkaConstant.ACTOR_SYSTEM_NAME, ip, OhMyWorker.getConfig().getListeningPort(), actorName);
+        Integer configPort = OhMyWorker.getConfig().getListeningPort();
+        int port = configPort == null ? AkkaConstant.DEFAULT_PORT : configPort;
+        return String.format(AKKA_REMOTE_NODE_PATH, AkkaConstant.ACTOR_SYSTEM_NAME, ip, port, actorName);
     }
 
 }

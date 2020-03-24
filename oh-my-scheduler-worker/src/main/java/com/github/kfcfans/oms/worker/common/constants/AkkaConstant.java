@@ -9,6 +9,11 @@ package com.github.kfcfans.oms.worker.common.constants;
 public class AkkaConstant {
 
     /**
+     * 默认端口
+     */
+    public static final int DEFAULT_PORT = 25520;
+
+    /**
      * 顶层Actor（actorSystem名称）
      */
     public static final String ACTOR_SYSTEM_NAME = "oms";

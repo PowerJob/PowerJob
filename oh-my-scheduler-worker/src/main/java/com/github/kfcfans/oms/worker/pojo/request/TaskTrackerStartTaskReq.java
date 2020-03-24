@@ -4,7 +4,11 @@ import com.github.kfcfans.oms.worker.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.model.JobInstanceInfo;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
 
 /**
  * JobTracker 派发 task 进行执行
@@ -12,9 +16,9 @@ import lombok.NoArgsConstructor;
  * @author tjq
  * @since 2020/3/17
  */
-@Data
-@NoArgsConstructor
-public class TaskTrackerStartTaskReq {
+@Getter
+@Setter
+public class TaskTrackerStartTaskReq implements Serializable {
 
     private String jobId;
     private String instanceId;
@@ -41,6 +45,9 @@ public class TaskTrackerStartTaskReq {
     private int maxRetryTimes;
     // 子任务当前重试次数
     private int currentRetryTimes;
+
+    public TaskTrackerStartTaskReq() {
+    }
 
     public TaskTrackerStartTaskReq(JobInstanceInfo instanceInfo, TaskDO task) {
         jobId = instanceInfo.getJobId();
