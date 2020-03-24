@@ -21,6 +21,7 @@
         <hikaricp.version>3.4.2</hikaricp.version>
         <guava.version>28.2-jre</guava.version>
         <fastjson.version>1.2.58</fastjson.version>
+        <junit.version>5.6.1</junit.version>
     </properties>
 
     <dependencies>
@@ -74,6 +75,14 @@
             <version>${fastjson.version}</version>
         </dependency>
 
+        <!-- Junit 测试 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
 
         <!-- 开发阶段输出日志 -->
         <dependency>
@@ -81,6 +90,8 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
         </dependency>
+
+
 
 
 

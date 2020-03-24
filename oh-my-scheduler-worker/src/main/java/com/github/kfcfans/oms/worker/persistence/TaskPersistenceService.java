@@ -122,4 +122,10 @@ public class TaskPersistenceService {
     public int batchDelete(String instanceId, List<String> taskIds) {
         return taskDAO.batchDelete(instanceId, taskIds);
     }
+
+    public List<TaskDO> listAll() {
+        SimpleTaskQuery query = new SimpleTaskQuery();
+        query.setQueryCondition("1 = 1");
+        return taskDAO.simpleQuery(query);
+    }
 }
