@@ -17,9 +17,12 @@ import com.github.kfcfans.oms.worker.pojo.model.JobInstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -37,11 +40,11 @@ public abstract class TaskTracker {
     protected long startTime;
     protected long jobTimeLimitMS;
 
-
     // 任务实例信息
     protected JobInstanceInfo jobInstanceInfo;
     protected ActorRef taskTrackerActorRef;
 
+    @Getter
     protected List<String> allWorkerAddress;
 
     protected TaskPersistenceService taskPersistenceService;
@@ -58,7 +61,7 @@ public abstract class TaskTracker {
         this.taskTrackerActorRef = taskTrackerActorRef;
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
 
-        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("TaskTrackerTimingPool-%s").build();
+        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("oms-TaskTrackerTimingPool-%d").build();
         this.scheduledPool = Executors.newScheduledThreadPool(2, factory);
 
         allWorkerAddress = CommonSJ.commaSplitter.splitToList(jobInstanceInfo.getAllWorkerAddress());
@@ -75,22 +78,47 @@ public abstract class TaskTracker {
 
 
     /**
-     * 分发任务
+     * 更新任务状态
      */
-    public abstract void dispatch();
-
-    public void updateTaskStatus(ProcessorReportTaskStatusReq req) {
-        TaskStatus taskStatus = TaskStatus.of(req.getStatus());
+    public void updateTaskStatus(String instanceId, String taskId, int status,@Nullable String result) {
+        TaskStatus taskStatus = TaskStatus.of(status);
 
         // 持久化，失败则重试一次（本地数据库操作几乎可以认为可靠...吧...）
-        boolean updateResult = taskPersistenceService.updateTaskStatus(req.getInstanceId(), req.getTaskId(), taskStatus);
+        boolean updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, taskStatus, result);
         if (!updateResult) {
             try {
                 Thread.sleep(100);
-                taskPersistenceService.updateTaskStatus(req.getInstanceId(), req.getTaskId(), taskStatus);
+                taskPersistenceService.updateTaskStatus(instanceId, taskId, taskStatus, result);
             }catch (Exception ignore) {
             }
         }
+        if (!updateResult) {
+            log.warn("[TaskTracker] update task status failed, this task(instanceId={}&taskId={}) may be processed repeatedly!", instanceId, taskId);
+        }
+    }
+
+    /**
+     * 新增任务，上层保证 batchSize
+     * @param newTaskList 新增的子任务列表
+     */
+    public boolean addTask(List<TaskDO> newTaskList) {
+
+        if (CollectionUtils.isEmpty(newTaskList)) {
+            return true;
+        }
+
+        // 基础处理（多循环一次虽然有些浪费，但分布式执行中，这点耗时绝不是主要占比，忽略不计！）
+        newTaskList.forEach(task -> {
+            task.setJobId(jobInstanceInfo.getJobId());
+            task.setInstanceId(jobInstanceInfo.getInstanceId());
+            task.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
+            task.setFailedCnt(0);
+            task.setLastModifiedTime(System.currentTimeMillis());
+            task.setCreatedTime(System.currentTimeMillis());
+        });
+
+        log.debug("[TaskTracker] JobInstance(id={}) add tasks: {}", jobInstanceInfo.getInstanceId(), newTaskList);
+        return taskPersistenceService.batchSave(newTaskList);
     }
 
     public boolean finished() {
@@ -154,7 +182,7 @@ public abstract class TaskTracker {
                     targetActor.tell(req, taskTrackerActorRef);
 
                     // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
-                    taskPersistenceService.updateTaskStatus(task.getInstanceId(), task.getTaskId(), TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK);
+                    taskPersistenceService.updateTaskStatus(task.getInstanceId(), task.getTaskId(), TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, null);
                 }catch (Exception e) {
                     // 调度失败，不修改数据库，下次重新随机派发给 remote actor
                     log.warn("[TaskTracker] dispatch task({}) failed.", task);

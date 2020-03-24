@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
  */
 public class ProcessorTrackerTest {
 
+    private static ActorSelection remoteProcessorTracker;
+
     @BeforeAll
     public static void startWorker() throws Exception {
         OhMyConfig ohMyConfig = new OhMyConfig();
@@ -31,6 +33,10 @@ public class ProcessorTrackerTest {
         OhMyWorker worker = new OhMyWorker();
         worker.setConfig(ohMyConfig);
         worker.init();
+
+        ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));
+        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(NetUtils.getLocalHost(), AkkaConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+        remoteProcessorTracker = testAS.actorSelection(akkaRemotePath);
     }
 
     @AfterAll
@@ -39,13 +45,21 @@ public class ProcessorTrackerTest {
     }
 
     @Test
-    public void testProcessor() throws Exception {
+    public void testBasicProcessor() throws Exception {
 
+        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("com.github.kfcfans.oms.processors.TestBasicProcessor");
+        remoteProcessorTracker.tell(req, null);
+        Thread.sleep(30000);
+    }
 
-        ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));
-        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(NetUtils.getLocalHost(), AkkaConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-        ActorSelection remoteActor = testAS.actorSelection(akkaRemotePath);
+    @Test
+    public void testMapReduceProcessor() throws Exception {
+        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("com.github.kfcfans.oms.processors.TestMapReduceProcessor");
+        remoteProcessorTracker.tell(req, null);
+        Thread.sleep(30000);
+    }
 
+    private static TaskTrackerStartTaskReq genTaskTrackerStartTaskReq(String processor) {
         TaskTrackerStartTaskReq req = new TaskTrackerStartTaskReq();
         req.setJobId("1");
         req.setInstanceId("10086");
@@ -56,15 +70,11 @@ public class ProcessorTrackerTest {
 
         req.setExecuteType(ExecuteType.STANDALONE.name());
         req.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
-        req.setProcessorInfo("com.github.kfcfans.oms.processors.TestBasicProcessor");
+        req.setProcessorInfo(processor);
         req.setThreadConcurrency(5);
-        req.setTaskTrackerAddress("192.168.1.2");
+        req.setTaskTrackerAddress(NetUtils.getLocalHost());
         req.setJobTimeLimitMS(123132);
 
-        remoteActor.tell(req, null);
-
-        Thread.sleep(120000);
-
+        return req;
     }
-
 }

@@ -2,7 +2,6 @@ package com.github.kfcfans.oms.worker.pojo.request;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -19,25 +18,24 @@ import java.util.List;
  */
 @Getter
 @NoArgsConstructor
-public class WorkerMapTaskRequest {
+public class ProcessorMapTaskRequest {
 
     private String instanceId;
-    private String jobId;
 
     private String taskName;
     private List<SubTask> subTasks;
 
+    @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class SubTask {
+    public static class SubTask {
         private String taskId;
         private byte[] taskContent;
     }
 
-    public WorkerMapTaskRequest(TaskContext taskContext, List<?> subTaskList, String taskName) {
+    public ProcessorMapTaskRequest(TaskContext taskContext, List<?> subTaskList, String taskName) {
 
         this.instanceId = taskContext.getInstanceId();
-        this.jobId = taskContext.getJobId();
         this.taskName = taskName;
         this.subTasks = Lists.newLinkedList();
 

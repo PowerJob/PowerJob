@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * 持久 Processor 对象
+ * 持有 Processor 对象
  * instanceId -> Processor
  *
  * @author tjq

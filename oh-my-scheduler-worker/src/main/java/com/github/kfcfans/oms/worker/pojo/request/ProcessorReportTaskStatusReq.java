@@ -11,7 +11,6 @@ import lombok.Data;
 @Data
 public class ProcessorReportTaskStatusReq {
 
-    private String jobId;
     private String instanceId;
     private String taskId;
 

@@ -2,7 +2,6 @@ package com.github.kfcfans.oms.worker.persistence;
 
 
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.springframework.util.CollectionUtils;
 
@@ -49,17 +48,7 @@ public class TaskPersistenceService {
         if (CollectionUtils.isEmpty(tasks)) {
             return true;
         }
-        if (tasks.size() <= MAX_BATCH_SIZE) {
-            return taskDAO.batchSave(tasks);
-        }
-        List<List<TaskDO>> partition = Lists.partition(tasks, MAX_BATCH_SIZE);
-        for (List<TaskDO> p : partition) {
-            boolean b = taskDAO.batchSave(p);
-            if (!b) {
-                return false;
-            }
-        }
-        return true;
+        return taskDAO.batchSave(tasks);
     }
 
 
@@ -77,12 +66,13 @@ public class TaskPersistenceService {
     /**
      * 更新 Task 的状态
      */
-    public boolean updateTaskStatus(String instanceId, String taskId, TaskStatus status) {
+    public boolean updateTaskStatus(String instanceId, String taskId, TaskStatus status, String result) {
         SimpleTaskQuery condition = new SimpleTaskQuery();
         condition.setInstanceId(instanceId);
         condition.setTaskId(taskId);
         TaskDO updateEntity = new TaskDO();
         updateEntity.setStatus(status.getValue());
+        updateEntity.setResult(result);
         return taskDAO.simpleUpdate(condition, updateEntity);
     }
 

@@ -77,6 +77,9 @@ public class ProcessorRunnable implements Runnable {
                     }
 
                     taskTrackerActor.tell(spReq, null);
+
+                    // 广播执行的第一个 task 只执行 preProcess 部分
+                    return;
                 }
             }
 

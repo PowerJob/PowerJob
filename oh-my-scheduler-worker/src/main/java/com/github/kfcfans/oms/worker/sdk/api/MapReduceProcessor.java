@@ -7,7 +7,7 @@ import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.AkkaConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
-import com.github.kfcfans.oms.worker.pojo.request.WorkerMapTaskRequest;
+import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.oms.worker.pojo.response.MapTaskResponse;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
 import com.github.kfcfans.oms.worker.sdk.ProcessResult;
@@ -51,7 +51,7 @@ public abstract class MapReduceProcessor implements BasicProcessor {
         TaskContext taskContext = ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.get();
 
         // 1. 构造请求
-        WorkerMapTaskRequest req = new WorkerMapTaskRequest(taskContext, taskList, taskName);
+        ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(taskContext, taskList, taskName);
 
         // 2. 可靠发送请求（任务不允许丢失，需要使用 ask 方法，失败抛异常）
         boolean requestSucceed = false;
