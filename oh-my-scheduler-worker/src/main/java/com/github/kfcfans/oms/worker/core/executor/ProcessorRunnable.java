@@ -40,73 +40,81 @@ public class ProcessorRunnable implements Runnable {
     @Override
     public void run() {
 
-        // 0. 创建回复
-        ProcessorReportTaskStatusReq reportStatus = new ProcessorReportTaskStatusReq();
-        BeanUtils.copyProperties(request, reportStatus);
+        log.debug("[ProcessorRunnable] start to run task(instanceId={}&taskId={}&taskName={})", request.getInstanceId(), request.getTaskId(), request.getTaskName());
 
-        // 1. 获取 Processor
-        BasicProcessor processor = getProcessor();
-        if (processor == null) {
-            reportStatus.setStatus(TaskStatus.PROCESS_FAILED.getValue());
-            reportStatus.setResult("NO_PROCESSOR");
-            taskTrackerActor.tell(reportStatus, null);
-            return;
-        }
-
-        // 2. 根任务特殊处理
-        ExecuteType executeType = ExecuteType.valueOf(request.getExecuteType());
-        if (TaskConstant.ROOT_TASK_ID.equals(request.getTaskId())) {
-
-            // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
-            if (executeType == ExecuteType.BROADCAST) {
-
-                BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
-                BroadcastTaskPreExecuteFinishedReq spReq = new BroadcastTaskPreExecuteFinishedReq();
-                BeanUtils.copyProperties(request, reportStatus);
-                try {
-                    ProcessResult processResult = broadcastProcessor.preProcess();
-                    spReq.setSuccess(processResult.isSuccess());
-                    spReq.setMsg(processResult.getMsg());
-                }catch (Exception e) {
-                    log.warn("[ProcessorRunnable] broadcast task(jobId={}) preProcess failed.", request.getJobId(), e);
-                    spReq.setSuccess(false);
-                    spReq.setMsg(e.toString());
-                }
-
-                taskTrackerActor.tell(spReq, null);
-            }
-        }
-
-        // 3. 通知 TaskTracker 任务开始运行
-        reportStatus.setStatus(TaskStatus.PROCESSING.getValue());
-        taskTrackerActor.tell(reportStatus, null);
-
-        // 4. 完成提交前准备工作
-        ProcessResult processResult;
-        TaskContext taskContext = new TaskContext();
-        BeanUtils.copyProperties(request, taskContext);
-        taskContext.setSubTask(JSONObject.parse(request.getSubTaskContent()));
-
-        ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
-
-        // 5. 正式提交运行
-        ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
-        BeanUtils.copyProperties(request, reportReq);
         try {
-            processResult = processor.process(taskContext);
-            reportReq.setResult(processResult.getMsg());
-            if (processResult.isSuccess()) {
-                reportReq.setStatus(TaskStatus.PROCESS_SUCCESS.getValue());
-            }else {
+            // 0. 创建回复
+            ProcessorReportTaskStatusReq reportStatus = new ProcessorReportTaskStatusReq();
+            BeanUtils.copyProperties(request, reportStatus);
+
+            // 1. 获取 Processor
+            BasicProcessor processor = getProcessor();
+            if (processor == null) {
+                reportStatus.setStatus(TaskStatus.PROCESS_FAILED.getValue());
+                reportStatus.setResult("NO_PROCESSOR");
+                taskTrackerActor.tell(reportStatus, null);
+                return;
+            }
+
+            // 2. 根任务特殊处理
+            ExecuteType executeType = ExecuteType.valueOf(request.getExecuteType());
+            if (TaskConstant.ROOT_TASK_ID.equals(request.getTaskId())) {
+
+                // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
+                if (executeType == ExecuteType.BROADCAST) {
+
+                    BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
+                    BroadcastTaskPreExecuteFinishedReq spReq = new BroadcastTaskPreExecuteFinishedReq();
+                    BeanUtils.copyProperties(request, reportStatus);
+                    try {
+                        ProcessResult processResult = broadcastProcessor.preProcess();
+                        spReq.setSuccess(processResult.isSuccess());
+                        spReq.setMsg(processResult.getMsg());
+                    }catch (Exception e) {
+                        log.warn("[ProcessorRunnable] broadcast task(jobId={}) preProcess failed.", request.getJobId(), e);
+                        spReq.setSuccess(false);
+                        spReq.setMsg(e.toString());
+                    }
+
+                    taskTrackerActor.tell(spReq, null);
+                }
+            }
+
+            // 3. 通知 TaskTracker 任务开始运行
+            reportStatus.setStatus(TaskStatus.PROCESSING.getValue());
+            taskTrackerActor.tell(reportStatus, null);
+
+            // 4. 完成提交前准备工作
+            ProcessResult processResult;
+            TaskContext taskContext = new TaskContext();
+            BeanUtils.copyProperties(request, taskContext);
+            if (request.getSubTaskContent() != null && request.getSubTaskContent().length > 0) {
+                taskContext.setSubTask(JSONObject.parse(request.getSubTaskContent()));
+            }
+
+            ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
+
+            // 5. 正式提交运行
+            ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
+            BeanUtils.copyProperties(request, reportReq);
+            try {
+                processResult = processor.process(taskContext);
+                reportReq.setResult(processResult.getMsg());
+                if (processResult.isSuccess()) {
+                    reportReq.setStatus(TaskStatus.PROCESS_SUCCESS.getValue());
+                }else {
+                    reportReq.setStatus(TaskStatus.PROCESS_FAILED.getValue());
+                }
+            }catch (Exception e) {
+                log.warn("[ProcessorRunnable] task({}) process failed.", taskContext.getDescription(), e);
+
+                reportReq.setResult(e.toString());
                 reportReq.setStatus(TaskStatus.PROCESS_FAILED.getValue());
             }
+            taskTrackerActor.tell(reportReq, null);
         }catch (Exception e) {
-            log.warn("[ProcessorRunnable] task({}) process failed.", taskContext.getDescription(), e);
-
-            reportReq.setResult(e.toString());
-            reportReq.setStatus(TaskStatus.PROCESS_FAILED.getValue());
+            log.error("[ProcessorRunnable] execute failed, please fix this bug!", e);
         }
-        taskTrackerActor.tell(reportReq, null);
     }
 
     private BasicProcessor getProcessor() {

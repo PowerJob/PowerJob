@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.worker.persistence;
 
-import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;

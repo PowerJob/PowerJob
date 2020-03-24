@@ -5,7 +5,7 @@
     <!-- ConsoleAppender：把日志输出到控制台 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>222222%d [%t] %-5level %logger{36}.%M\(%file:%line\) - %msg%n</pattern>
+            <pattern>%red(%d{yyyy-MM-dd HH:mm:ss}) %highlight(%-5level) %green([%thread]) - %cyan(%msg%n)</pattern>
             <!-- 控制台也要使用UTF-8，不要使用GBK，否则会中文乱码 -->
             <charset>UTF-8</charset>
         </encoder>
@@ -15,7 +15,7 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <logger name="com.github.kfcfans.oms" level="INFO" additivity="false">
+    <logger name="com.github.kfcfans.oms" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
