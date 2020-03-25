@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.worker.core.tracker.task;
 import com.google.common.collect.Maps;
 
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 持有 Processor 对象
@@ -23,6 +24,10 @@ public class TaskTrackerPool {
 
     public static void remove(String instanceId) {
         instanceId2TaskTracker.remove(instanceId);
+    }
+
+    public static void atomicCreateTaskTracker(String instanceId, Function<String, TaskTracker> creator) {
+        instanceId2TaskTracker.computeIfAbsent(instanceId, creator);
     }
 
 }

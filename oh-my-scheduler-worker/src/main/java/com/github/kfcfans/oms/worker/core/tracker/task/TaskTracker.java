@@ -1,16 +1,13 @@
 package com.github.kfcfans.oms.worker.core.tracker.task;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import ch.qos.logback.core.util.SystemInfo;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.JobInstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.common.AkkaConstant;
-import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.worker.common.constants.CommonSJ;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
@@ -24,6 +21,7 @@ import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStopInstanceReq;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -42,14 +40,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 2020/3/17
  */
 @Slf4j
-public abstract class TaskTracker {
+@ToString
+public class TaskTracker {
 
     protected long startTime;
     protected long jobTimeLimitMS;
 
     // 任务实例信息
     protected JobInstanceInfo jobInstanceInfo;
-    protected ActorRef taskTrackerActorRef;
 
     @Getter
     protected List<String> allWorkerAddress;
@@ -59,13 +57,14 @@ public abstract class TaskTracker {
 
     protected AtomicBoolean finished = new AtomicBoolean(false);
 
-    public TaskTracker(JobInstanceInfo jobInstanceInfo, ActorRef taskTrackerActorRef) {
+    public TaskTracker(JobInstanceInfo jobInstanceInfo) {
+
+        log.info("[TaskTracker] start to create TaskTracker for instance({}).", jobInstanceInfo);
 
         this.startTime = System.currentTimeMillis();
         this.jobTimeLimitMS = jobInstanceInfo.getTimeLimit();
 
         this.jobInstanceInfo = jobInstanceInfo;
-        this.taskTrackerActorRef = taskTrackerActorRef;
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
 
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("oms-TaskTrackerTimingPool-%d").build();
@@ -81,6 +80,7 @@ public abstract class TaskTracker {
 
         // 定时任务2：状态检查
         scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 10, 10, TimeUnit.SECONDS);
+
     }
 
 
@@ -165,11 +165,12 @@ public abstract class TaskTracker {
         rootTask.setAddress(NetUtils.getLocalHost());
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
         rootTask.setCreatedTime(System.currentTimeMillis());
-        rootTask.setCreatedTime(System.currentTimeMillis());
+        rootTask.setLastModifiedTime(System.currentTimeMillis());
 
         if (!taskPersistenceService.save(rootTask)) {
             throw new RuntimeException("create root task failed.");
         }
+        log.info("[TaskTracker] create root task successfully for instance(instanceId={}).", jobInstanceInfo.getInstanceId());
     }
 
 
@@ -199,10 +200,12 @@ public abstract class TaskTracker {
                     ActorSelection targetActor = OhMyWorker.actorSystem.actorSelection(targetPath);
 
                     // 发送请求（Akka的tell是至少投递一次，经实验表明无法投递消息也不会报错...印度啊...）
-                    targetActor.tell(req, taskTrackerActorRef);
+                    targetActor.tell(req, null);
 
                     // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
                     taskPersistenceService.updateTaskStatus(task.getInstanceId(), task.getTaskId(), TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, null);
+
+                    log.debug("[TaskTracker] dispatch task({instanceId={},taskId={},taskName={}} successfully.)", task.getInstanceId(), task.getTaskId(), task.getTaskName());
                 }catch (Exception e) {
                     // 调度失败，不修改数据库，下次重新随机派发给 remote actor
                     log.warn("[TaskTracker] dispatch task({}) failed.", task);
@@ -218,24 +221,25 @@ public abstract class TaskTracker {
 
         private static final long TIME_OUT_MS = 5000;
 
-        @Override
-        public void run() {
+
+        private void innerRun() {
 
             final String instanceId = jobInstanceInfo.getInstanceId();
 
             // 1. 查询统计信息
             Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(instanceId);
 
-            long waitingDispatchNum = status2Num.get(TaskStatus.WAITING_DISPATCH);
-            long workerUnreceivedNum = status2Num.get(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK);
-            long receivedNum = status2Num.get(TaskStatus.RECEIVE_SUCCESS);
-            long succeedNum = status2Num.get(TaskStatus.WORKER_PROCESS_SUCCESS);
-            long failedNum = status2Num.get(TaskStatus.WORKER_PROCESS_FAILED);
+            long waitingDispatchNum = status2Num.getOrDefault(TaskStatus.WAITING_DISPATCH, 0L);
+            long workerUnreceivedNum = status2Num.getOrDefault(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 0L);
+            long receivedNum = status2Num.getOrDefault(TaskStatus.WORKER_RECEIVED, 0L);
+            long runningNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESSING, 0L);
+            long succeedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_SUCCESS, 0L);
+            long failedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_FAILED, 0L);
 
             long finishedNum = succeedNum + failedNum;
-            long unfinishedNum = waitingDispatchNum + workerUnreceivedNum + receivedNum;
+            long unfinishedNum = waitingDispatchNum + workerUnreceivedNum + receivedNum + runningNum;
 
-            log.debug("[TaskTracker] status check result({})", status2Num);
+            log.debug("[TaskTracker] status check result: {}", status2Num);
 
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
             req.setJobId(jobInstanceInfo.getJobId());
@@ -348,5 +352,13 @@ public abstract class TaskTracker {
 
         }
 
+        @Override
+        public void run() {
+            try {
+                innerRun();
+            }catch (Exception e) {
+                log.warn("[TaskTracker] status checker execute failed, please fix the bug (@tjq)!", e);
+            }
+        }
     }
 }

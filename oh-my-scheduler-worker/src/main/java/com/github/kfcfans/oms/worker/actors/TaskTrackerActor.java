@@ -7,12 +7,14 @@ import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
+import com.github.kfcfans.oms.worker.pojo.model.JobInstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.common.response.AskResponse;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 
@@ -45,7 +47,11 @@ public class TaskTrackerActor extends AbstractActor {
         if (taskTracker == null) {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
         } else {
-            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), req.getStatus(), req.getResult(), false);
+
+            // 状态转化
+            TaskStatus status = TaskStatus.convertStatus(TaskStatus.of(req.getStatus()));
+
+            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), status.getValue(), req.getResult(), false);
         }
     }
 
@@ -120,7 +126,21 @@ public class TaskTrackerActor extends AbstractActor {
      * 服务器任务调度处理器
      */
     private void onReceiveServerScheduleJobReq(ServerScheduleJobReq req) {
-        // 接受到任务，创建 TaskTracker
-    }
+        String instanceId = req.getInstanceId();
+        TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(instanceId);
 
+        if (taskTracker != null) {
+            log.warn("[TaskTrackerActor] TaskTracker({}) for instance(id={}) already exists.", taskTracker, instanceId);
+            return;
+        }
+
+        // 原子创建，防止多实例的存在
+        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> {
+
+            JobInstanceInfo jobInstanceInfo = new JobInstanceInfo();
+            BeanUtils.copyProperties(req, jobInstanceInfo);
+
+            return new TaskTracker(jobInstanceInfo);
+        });
+    }
 }

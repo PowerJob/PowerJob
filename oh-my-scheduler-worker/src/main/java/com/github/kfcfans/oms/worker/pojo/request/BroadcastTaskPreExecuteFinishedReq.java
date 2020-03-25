@@ -2,6 +2,8 @@ package com.github.kfcfans.oms.worker.pojo.request;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 广播任务 preExecute 结束信息
  *
@@ -9,7 +11,7 @@ import lombok.Data;
  * @since 2020/3/23
  */
 @Data
-public class BroadcastTaskPreExecuteFinishedReq {
+public class BroadcastTaskPreExecuteFinishedReq implements Serializable {
 
     private String instanceId;
     private String taskId;

@@ -23,11 +23,6 @@ public interface TaskDAO {
     boolean save(TaskDO task);
     boolean batchSave(Collection<TaskDO> tasks);
 
-    /**
-     * 更新任务数据，必须有主键 instanceId + taskId
-     */
-    boolean update(TaskDO task);
-
     int batchDelete(String instanceId, List<String> taskIds);
 
     List<TaskDO> simpleQuery(SimpleTaskQuery query);

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Getter
 @NoArgsConstructor
-public class ProcessorMapTaskRequest {
+public class ProcessorMapTaskRequest implements Serializable {
 
     private String instanceId;
 

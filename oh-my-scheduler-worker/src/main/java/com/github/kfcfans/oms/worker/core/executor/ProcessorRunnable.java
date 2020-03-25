@@ -58,7 +58,7 @@ public class ProcessorRunnable implements Runnable {
             }
             ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
 
-            reportStatus(TaskStatus.WORKER_PROCESSING, null);
+            reportStatus(TaskStatus.PROCESSING, null);
 
             // 1. 获取 Processor
             BasicProcessor processor = getProcessor();
@@ -123,7 +123,7 @@ public class ProcessorRunnable implements Runnable {
                     log.warn("[ProcessorRunnable] execute last task(instanceId={},taskId={}) failed.", instanceId, taskId, e);
                 }
 
-                TaskStatus status = lastResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED;
+                TaskStatus status = lastResult.isSuccess() ? TaskStatus.PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED;
                 reportStatus(status, lastResult.getMsg());
 
                 log.info("[ProcessorRunnable] instance(instanceId={},taskId={})' last task execute successfully, using time: {}", instanceId, taskId, stopwatch);
@@ -139,7 +139,7 @@ public class ProcessorRunnable implements Runnable {
                 log.warn("[ProcessorRunnable] task({}) process failed.", taskContext.getDescription(), e);
                 processResult = new ProcessResult(false, e.toString());
             }
-            reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED, processResult.getMsg());
+            reportStatus(processResult.isSuccess() ? TaskStatus.PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED, processResult.getMsg());
 
         }catch (Exception e) {
             log.error("[ProcessorRunnable] execute failed, please fix this bug!", e);

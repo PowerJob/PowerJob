@@ -97,8 +97,9 @@ public class TaskPersistenceService {
 
         Map<TaskStatus, Long> result = Maps.newHashMap();
         dbRES.forEach(row -> {
-            int status = Integer.parseInt(String.valueOf(row.get("status")));
-            long num = Long.parseLong(String.valueOf(row.get("num")));
+            // H2 数据库都是大写...
+            int status = Integer.parseInt(String.valueOf(row.get("STATUS")));
+            long num = Long.parseLong(String.valueOf(row.get("NUM")));
             result.put(TaskStatus.of(status), num);
         });
         return result;

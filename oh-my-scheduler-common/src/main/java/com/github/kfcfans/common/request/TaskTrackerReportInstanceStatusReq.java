@@ -2,6 +2,8 @@ package com.github.kfcfans.common.request;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * TaskTracker 将状态上报给服务器
  *
@@ -9,7 +11,7 @@ import lombok.Data;
  * @since 2020/3/17
  */
 @Data
-public class TaskTrackerReportInstanceStatusReq {
+public class TaskTrackerReportInstanceStatusReq implements Serializable {
 
     private String jobId;
     private String instanceId;

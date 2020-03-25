@@ -2,6 +2,8 @@ package com.github.kfcfans.common.request;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 服务端调度任务请求（一次任务处理的入口）
  *
@@ -9,7 +11,7 @@ import lombok.Data;
  * @since 2020/3/17
  */
 @Data
-public class ServerScheduleJobReq {
+public class ServerScheduleJobReq implements Serializable {
 
     // 调度的服务器地址，默认通讯目标
     private String serverAddress;
@@ -27,7 +29,7 @@ public class ServerScheduleJobReq {
     // 任务执行时间限制，单位毫秒
     private long timeLimit;
     // 可用处理器地址，可能多值，逗号分隔
-    private String workerAddress;
+    private String allWorkerAddress;
 
     private String jobParams;
     private String instanceParams;

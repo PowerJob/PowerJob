@@ -36,7 +36,7 @@ public class TaskDAOImpl implements TaskDAO {
         String insertSQL = "insert into task_info(task_id, instance_id, job_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time) values (?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
             fillInsertPreparedStatement(task, ps);
-            return ps.execute();
+            return ps.executeUpdate() == 1;
         }catch (Exception e) {
             log.error("[TaskDAO] insert failed.", e);
         }
@@ -63,11 +63,6 @@ public class TaskDAOImpl implements TaskDAO {
         return false;
     }
 
-
-    @Override
-    public boolean update(TaskDO task) {
-        return false;
-    }
 
     @Override
     public int batchDelete(String instanceId, List<String> taskIds) {
@@ -144,7 +139,8 @@ public class TaskDAOImpl implements TaskDAO {
         String sqlFormat = "update task_info set %s where %s";
         String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getQueryCondition());
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
-            return stat.execute();
+            stat.executeUpdate();
+            return true;
         }catch (Exception e) {
             log.error("[TaskDAO] simpleUpdate failed(sql = {}).", updateField, e);
             return false;
