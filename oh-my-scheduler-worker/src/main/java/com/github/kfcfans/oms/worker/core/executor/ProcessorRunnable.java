@@ -1,12 +1,12 @@
 package com.github.kfcfans.oms.worker.core.executor;
 
 import akka.actor.ActorSelection;
-import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
+import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
@@ -54,7 +54,7 @@ public class ProcessorRunnable implements Runnable {
             TaskContext taskContext = new TaskContext();
             BeanUtils.copyProperties(request, taskContext);
             if (request.getSubTaskContent() != null && request.getSubTaskContent().length > 0) {
-                taskContext.setSubTask(JSONObject.parse(request.getSubTaskContent()));
+                taskContext.setSubTask(SerializerUtils.deSerialized(request.getSubTaskContent()));
             }
             ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
 
@@ -104,6 +104,8 @@ public class ProcessorRunnable implements Runnable {
 
                 ProcessResult lastResult;
                 Map<String, String> taskId2ResultMap = TaskPersistenceService.INSTANCE.getTaskId2ResultMap(instanceId);
+                // 去除本任务
+                taskId2ResultMap.remove(TaskConstant.LAST_TASK_ID);
 
                 try {
                     switch (executeType) {

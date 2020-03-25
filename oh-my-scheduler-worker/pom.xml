@@ -20,8 +20,8 @@
         <h2.db.version>1.4.200</h2.db.version>
         <hikaricp.version>3.4.2</hikaricp.version>
         <guava.version>28.2-jre</guava.version>
-        <fastjson.version>1.2.58</fastjson.version>
         <junit.version>5.6.1</junit.version>
+        <fst.version>2.56</fst.version>
     </properties>
 
     <dependencies>
@@ -68,11 +68,11 @@
             <version>${guava.version}</version>
         </dependency>
 
-        <!-- fastJSON -->
+        <!-- FST 超超超高性能序列化框架 -->
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>${fastjson.version}</version>
+            <groupId>de.ruedigermoeller</groupId>
+            <artifactId>fst</artifactId>
+            <version>${fst.version}</version>
         </dependency>
 
         <!-- Junit 测试 -->

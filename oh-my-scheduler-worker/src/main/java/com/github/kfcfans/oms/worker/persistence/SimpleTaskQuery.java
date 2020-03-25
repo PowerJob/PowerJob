@@ -57,6 +57,11 @@ public class SimpleTaskQuery {
         }
 
         String substring = sb.substring(0, sb.length() - LINK.length());
+
+        if (!StringUtils.isEmpty(otherCondition)) {
+            substring += otherCondition;
+        }
+
         if (limit != null) {
             substring = substring + " limit " + limit;
         }

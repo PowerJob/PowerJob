@@ -76,6 +76,8 @@ public class TaskTrackerActor extends AbstractActor {
                 subTask.setTaskName(req.getTaskName());
                 subTask.setTaskId(originSubTask.getTaskId());
                 subTask.setTaskContent(originSubTask.getTaskContent());
+
+                subTaskList.add(subTask);
             });
 
             success = taskTracker.addTask(subTaskList);

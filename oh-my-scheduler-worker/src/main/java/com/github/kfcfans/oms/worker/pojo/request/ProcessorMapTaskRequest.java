@@ -1,7 +1,6 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -44,7 +43,7 @@ public class ProcessorMapTaskRequest implements Serializable {
             // 不同执行线程之间，前缀（taskId）不同，该ID可以保证分布式唯一
             String subTaskId = taskContext.getTaskId() + "." + i;
             // 写入类名，方便反序列化
-            byte[] content = JSON.toJSONBytes(subTaskList.get(i), SerializerFeature.WriteClassName);
+            byte[] content = SerializerUtils.serialize(subTaskList.get(i));
             subTasks.add(new SubTask(subTaskId, content));
         }
 

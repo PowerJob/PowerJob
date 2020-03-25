@@ -48,6 +48,7 @@ public class TaskTrackerStartTaskReq implements Serializable {
 
 
     public TaskTrackerStartTaskReq(JobInstanceInfo instanceInfo, TaskDO task) {
+
         jobId = instanceInfo.getJobId();
         instanceId = instanceInfo.getInstanceId();
         processorType = instanceInfo.getProcessorType();
@@ -60,6 +61,7 @@ public class TaskTrackerStartTaskReq implements Serializable {
         jobParams = instanceInfo.getJobParams();
         instanceParams = instanceInfo.getInstanceParams();
 
+        taskId = task.getTaskId();
         taskName = task.getTaskName();
         subTaskContent = task.getTaskContent();
 

@@ -41,23 +41,46 @@ public class TaskTrackerTest {
     @Test
     public void testStandaloneJob() throws Exception {
 
+        remoteTaskTracker.tell(genServerScheduleJobReq(ExecuteType.STANDALONE), null);
+        Thread.sleep(500000);
+    }
+
+    @Test
+    public void testMapReduceJob() throws Exception {
+        remoteTaskTracker.tell(genServerScheduleJobReq(ExecuteType.MAP_REDUCE), null);
+        Thread.sleep(500000);
+    }
+
+    private static ServerScheduleJobReq genServerScheduleJobReq(ExecuteType executeType) {
         ServerScheduleJobReq req = new ServerScheduleJobReq();
 
         req.setJobId("1");
         req.setInstanceId("10086");
         req.setAllWorkerAddress(NetUtils.getLocalHost());
-        req.setExecuteType(ExecuteType.STANDALONE.name());
+
         req.setJobParams("this is job Params");
         req.setInstanceParams("this is instance Params");
         req.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
-        req.setProcessorInfo("com.github.kfcfans.oms.processors.TestBasicProcessor");
         req.setTaskRetryNum(3);
         req.setThreadConcurrency(5);
         req.setTimeLimit(500000);
 
-        remoteTaskTracker.tell(req, null);
+        switch (executeType) {
+            case STANDALONE:
+                req.setExecuteType(ExecuteType.STANDALONE.name());
+                req.setProcessorInfo("com.github.kfcfans.oms.processors.TestBasicProcessor");
+                break;
+            case MAP_REDUCE:
+                req.setExecuteType(ExecuteType.MAP_REDUCE.name());
+                req.setProcessorInfo("com.github.kfcfans.oms.processors.TestMapReduceProcessor");
+                break;
+            case BROADCAST:
+                req.setExecuteType(ExecuteType.BROADCAST.name());
+                req.setProcessorInfo("com.github.kfcfans.oms.processors.TestBroadcastProcessor");
+                break;
+        }
 
-        Thread.sleep(500000);
+        return req;
     }
 
 
