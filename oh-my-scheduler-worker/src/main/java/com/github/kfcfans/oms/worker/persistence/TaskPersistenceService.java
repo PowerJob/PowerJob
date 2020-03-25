@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.persistence;
 
 
+import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.google.common.collect.Maps;
 import org.springframework.util.CollectionUtils;
@@ -51,29 +52,36 @@ public class TaskPersistenceService {
         return taskDAO.batchSave(tasks);
     }
 
-
     /**
-     * 获取 TaskTracker 准备派发给 Worker 执行的 task
+     * 获取 MapReduce 或 Broadcast 的最后一个任务
      */
-    public List<TaskDO> getNeedDispatchTask(String instanceId) {
+    public TaskDO getLastTask(String instanceId) {
         SimpleTaskQuery query = new SimpleTaskQuery();
         query.setInstanceId(instanceId);
-        query.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
-        query.setLimit(100);
+        query.setTaskName(TaskConstant.LAST_TASK_NAME);
+        List<TaskDO> taskDOS = taskDAO.simpleQuery(query);
+        if (CollectionUtils.isEmpty(taskDOS)) {
+            return null;
+        }
+        return taskDOS.get(0);
+    }
+
+    public List<TaskDO> getAllTask(String instanceId) {
+        SimpleTaskQuery query = new SimpleTaskQuery();
+        query.setInstanceId(instanceId);
         return taskDAO.simpleQuery(query);
     }
 
     /**
-     * 更新 Task 的状态
+     * 获取指定状态的Task
      */
-    public boolean updateTaskStatus(String instanceId, String taskId, TaskStatus status, String result) {
-        SimpleTaskQuery condition = new SimpleTaskQuery();
-        condition.setInstanceId(instanceId);
-        condition.setTaskId(taskId);
-        TaskDO updateEntity = new TaskDO();
-        updateEntity.setStatus(status.getValue());
-        updateEntity.setResult(result);
-        return taskDAO.simpleUpdate(condition, updateEntity);
+    public List<TaskDO> getTaskByStatus(String instanceId, TaskStatus status, int limit) {
+        SimpleTaskQuery query = new SimpleTaskQuery();
+        query.setInstanceId(instanceId);
+        query.setStatus(status.getValue());
+        query.setLimit(limit);
+
+        return taskDAO.simpleQuery(query);
     }
 
     /**
@@ -97,17 +105,39 @@ public class TaskPersistenceService {
     }
 
     /**
-     * 获取需要被执行的任务
+     * 查询 taskId -> taskResult，reduce阶段或postProcess 阶段使用
      */
-    public List<TaskDO> getNeedRunTask(String instanceId, int limit) {
+    public Map<String, String> getTaskId2ResultMap(String instanceId) {
+        return taskDAO.queryTaskId2TaskResult(instanceId);
+    }
 
+    /**
+     * 根据主键查找任务
+     */
+    public TaskDO selectTaskByKey(String instanceId, String taskId) {
         SimpleTaskQuery query = new SimpleTaskQuery();
         query.setInstanceId(instanceId);
-        query.setStatus(TaskStatus.RECEIVE_SUCCESS.getValue());
-        query.setLimit(limit);
-
-        return taskDAO.simpleQuery(query);
+        query.setTaskId(taskId);
+        List<TaskDO> results = taskDAO.simpleQuery(query);
+        if (CollectionUtils.isEmpty(results)) {
+            return null;
+        }
+        return results.get(0);
     }
+
+    /**
+     * 更新 Task 的状态
+     */
+    public boolean updateTaskStatus(String instanceId, String taskId, TaskStatus status, String result) {
+        SimpleTaskQuery condition = new SimpleTaskQuery();
+        condition.setInstanceId(instanceId);
+        condition.setTaskId(taskId);
+        TaskDO updateEntity = new TaskDO();
+        updateEntity.setStatus(status.getValue());
+        updateEntity.setResult(result);
+        return taskDAO.simpleUpdate(condition, updateEntity);
+    }
+
 
     public int batchDelete(String instanceId, List<String> taskIds) {
         return taskDAO.batchDelete(instanceId, taskIds);

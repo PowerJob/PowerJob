@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.worker.common.constants;
+package com.github.kfcfans.common;
 
 /**
  * akka actor 名称
@@ -22,5 +22,11 @@ public class AkkaConstant {
     public static final String PROCESSOR_TRACKER_ACTOR_NAME = "processor_tracker";
 
     public static final String AKKA_CONFIG_NAME = "oms-akka-application.conf";
+
+
+
+    /* ************************ SERVER ************************ */
+    public static final String SERVER_ACTOR_SYSTEM_NAME = "oms-server";
+    public static final String SERVER_ACTOR_NAME = "server_actor";
 
 }

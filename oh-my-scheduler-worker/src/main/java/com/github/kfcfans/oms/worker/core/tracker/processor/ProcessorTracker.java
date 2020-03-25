@@ -2,7 +2,7 @@ package com.github.kfcfans.oms.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.oms.worker.common.constants.AkkaConstant;
+import com.github.kfcfans.common.AkkaConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
@@ -157,7 +157,7 @@ public class ProcessorTracker {
             }
 
             TaskPersistenceService taskPersistenceService = TaskPersistenceService.INSTANCE;
-            List<TaskDO> taskDOList = taskPersistenceService.getNeedRunTask(instanceId, MAX_QUEUE_SIZE / 2);
+            List<TaskDO> taskDOList =taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.RECEIVE_SUCCESS, MAX_QUEUE_SIZE / 2);
 
             if (CollectionUtils.isEmpty(taskDOList)) {
                 return;

@@ -1,6 +1,9 @@
 package com.github.kfcfans.oms.worker.sdk.api;
 
 import com.github.kfcfans.oms.worker.sdk.ProcessResult;
+import com.github.kfcfans.oms.worker.sdk.TaskContext;
+
+import java.util.Map;
 
 /**
  * 广播执行处理器，适用于广播执行
@@ -14,9 +17,9 @@ public interface BroadcastProcessor extends BasicProcessor {
     /**
      * 在所有节点广播执行前执行，只会在一台机器执行一次
      */
-    ProcessResult preProcess() throws Exception;
+    ProcessResult preProcess(TaskContext taskContext) throws Exception;
     /**
      * 在所有节点广播执行完成后执行，只会在一台机器执行一次
      */
-    ProcessResult postProcess() throws Exception;
+    ProcessResult postProcess(TaskContext taskContext, Map<String, String> taskId2Result) throws Exception;
 }

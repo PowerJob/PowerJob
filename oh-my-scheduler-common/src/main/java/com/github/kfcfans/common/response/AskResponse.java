@@ -1,11 +1,11 @@
-package com.github.kfcfans.oms.worker.pojo.response;
+package com.github.kfcfans.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * WorkerMapTaskRequest 的响应
+ * Pattens.ask 的响应
  *
  * @author tjq
  * @since 2020/3/18
@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MapTaskResponse {
+public class AskResponse {
     private boolean success;
 }

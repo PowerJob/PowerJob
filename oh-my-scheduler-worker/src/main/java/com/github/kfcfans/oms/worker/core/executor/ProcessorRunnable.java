@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.worker.core.executor;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.common.ExecuteType;
@@ -10,6 +9,7 @@ import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
+import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
@@ -17,10 +17,14 @@ import com.github.kfcfans.oms.worker.sdk.ProcessResult;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
 import com.github.kfcfans.oms.worker.sdk.api.BasicProcessor;
 import com.github.kfcfans.oms.worker.sdk.api.BroadcastProcessor;
+import com.github.kfcfans.oms.worker.sdk.api.MapReduceProcessor;
+import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+
+import java.util.Map;
 
 /**
  * Processor 执行器
@@ -40,38 +44,47 @@ public class ProcessorRunnable implements Runnable {
     @Override
     public void run() {
 
-        log.debug("[ProcessorRunnable] start to run task(instanceId={}&taskId={}&taskName={})", request.getInstanceId(), request.getTaskId(), request.getTaskName());
+        String taskId = request.getTaskId();
+        String instanceId = request.getInstanceId();
+
+        log.debug("[ProcessorRunnable] start to run task(instanceId={}&taskId={}&taskName={})", instanceId, taskId, request.getTaskName());
 
         try {
-            // 0. 创建回复
-            ProcessorReportTaskStatusReq reportStatus = new ProcessorReportTaskStatusReq();
-            BeanUtils.copyProperties(request, reportStatus);
+            // 0. 完成执行上下文准备 & 上报执行信息
+            TaskContext taskContext = new TaskContext();
+            BeanUtils.copyProperties(request, taskContext);
+            if (request.getSubTaskContent() != null && request.getSubTaskContent().length > 0) {
+                taskContext.setSubTask(JSONObject.parse(request.getSubTaskContent()));
+            }
+            ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
+
+            reportStatus(TaskStatus.WORKER_PROCESSING, null);
 
             // 1. 获取 Processor
             BasicProcessor processor = getProcessor();
             if (processor == null) {
-                reportStatus.setStatus(TaskStatus.PROCESS_FAILED.getValue());
-                reportStatus.setResult("NO_PROCESSOR");
-                taskTrackerActor.tell(reportStatus, null);
+                reportStatus(TaskStatus.PROCESS_FAILED, "NO_PROCESSOR");
                 return;
             }
 
             // 2. 根任务特殊处理
             ExecuteType executeType = ExecuteType.valueOf(request.getExecuteType());
-            if (TaskConstant.ROOT_TASK_ID.equals(request.getTaskId())) {
+            if (TaskConstant.ROOT_TASK_ID.equals(taskId)) {
 
                 // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
                 if (executeType == ExecuteType.BROADCAST) {
 
                     BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
                     BroadcastTaskPreExecuteFinishedReq spReq = new BroadcastTaskPreExecuteFinishedReq();
-                    BeanUtils.copyProperties(request, reportStatus);
+                    spReq.setTaskId(taskId);
+                    spReq.setInstanceId(instanceId);
+
                     try {
-                        ProcessResult processResult = broadcastProcessor.preProcess();
+                        ProcessResult processResult = broadcastProcessor.preProcess(taskContext);
                         spReq.setSuccess(processResult.isSuccess());
                         spReq.setMsg(processResult.getMsg());
                     }catch (Exception e) {
-                        log.warn("[ProcessorRunnable] broadcast task(jobId={}) preProcess failed.", request.getJobId(), e);
+                        log.warn("[ProcessorRunnable] broadcast task(instanceId={}) preProcess failed.", instanceId, e);
                         spReq.setSuccess(false);
                         spReq.setMsg(e.toString());
                     }
@@ -83,38 +96,51 @@ public class ProcessorRunnable implements Runnable {
                 }
             }
 
-            // 3. 通知 TaskTracker 任务开始运行
-            reportStatus.setStatus(TaskStatus.PROCESSING.getValue());
-            taskTrackerActor.tell(reportStatus, null);
+            // 3. 最终任务特殊处理（一定和 TaskTracker 处于相同的机器）
+            if (TaskConstant.LAST_TASK_ID.equals(taskId)) {
 
-            // 4. 完成提交前准备工作
-            ProcessResult processResult;
-            TaskContext taskContext = new TaskContext();
-            BeanUtils.copyProperties(request, taskContext);
-            if (request.getSubTaskContent() != null && request.getSubTaskContent().length > 0) {
-                taskContext.setSubTask(JSONObject.parse(request.getSubTaskContent()));
+                Stopwatch stopwatch = Stopwatch.createStarted();
+                log.info("[ProcessorRunnable] instance(instanceId={})' last task(taskId={}) start to process.", instanceId, taskId);
+
+                ProcessResult lastResult;
+                Map<String, String> taskId2ResultMap = TaskPersistenceService.INSTANCE.getTaskId2ResultMap(instanceId);
+
+                try {
+                    switch (executeType) {
+                        case BROADCAST:
+                            BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
+                            lastResult = broadcastProcessor.postProcess(taskContext, taskId2ResultMap);
+                            break;
+                        case MAP_REDUCE:
+                            MapReduceProcessor mapReduceProcessor = (MapReduceProcessor) processor;
+                            lastResult = mapReduceProcessor.reduce(taskContext, taskId2ResultMap);
+                            break;
+                        default:
+                            lastResult = new ProcessResult(false, "IMPOSSIBLE OR BUG");
+                    }
+                }catch (Exception e) {
+                    lastResult = new ProcessResult(false, e.toString());
+                    log.warn("[ProcessorRunnable] execute last task(instanceId={},taskId={}) failed.", instanceId, taskId, e);
+                }
+
+                TaskStatus status = lastResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED;
+                reportStatus(status, lastResult.getMsg());
+
+                log.info("[ProcessorRunnable] instance(instanceId={},taskId={})' last task execute successfully, using time: {}", instanceId, taskId, stopwatch);
+                return;
             }
 
-            ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
 
-            // 5. 正式提交运行
-            ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
-            BeanUtils.copyProperties(request, reportReq);
+            // 4. 正式提交运行
+            ProcessResult processResult;
             try {
                 processResult = processor.process(taskContext);
-                reportReq.setResult(processResult.getMsg());
-                if (processResult.isSuccess()) {
-                    reportReq.setStatus(TaskStatus.PROCESS_SUCCESS.getValue());
-                }else {
-                    reportReq.setStatus(TaskStatus.PROCESS_FAILED.getValue());
-                }
             }catch (Exception e) {
                 log.warn("[ProcessorRunnable] task({}) process failed.", taskContext.getDescription(), e);
-
-                reportReq.setResult(e.toString());
-                reportReq.setStatus(TaskStatus.PROCESS_FAILED.getValue());
+                processResult = new ProcessResult(false, e.toString());
             }
-            taskTrackerActor.tell(reportReq, null);
+            reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED, processResult.getMsg());
+
         }catch (Exception e) {
             log.error("[ProcessorRunnable] execute failed, please fix this bug!", e);
         }
@@ -143,5 +169,19 @@ public class ProcessorRunnable implements Runnable {
         }
 
         return processor;
+    }
+
+    /**
+     * 上报状态给 TaskTracker
+     */
+    private void reportStatus(TaskStatus status, String result) {
+        ProcessorReportTaskStatusReq req = new ProcessorReportTaskStatusReq();
+
+        req.setInstanceId(request.getInstanceId());
+        req.setTaskId(request.getTaskId());
+        req.setStatus(status.getValue());
+        req.setResult(result);
+
+        taskTrackerActor.tell(req, null);
     }
 }

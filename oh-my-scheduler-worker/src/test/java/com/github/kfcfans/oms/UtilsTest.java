@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms;
 
 import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.oms.worker.common.utils.SystemInfoUtils;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,7 +13,12 @@ import org.junit.jupiter.api.Test;
 public class UtilsTest {
 
     @Test
-    public void testNetUtils() throws Exception {
+    public void testNetUtils() {
         System.out.println("本机IP：" + NetUtils.getLocalHost());
+    }
+
+    @Test
+    public void testSystemInfoUtils() {
+        System.out.println(SystemInfoUtils.getSystemMetrics());
     }
 }

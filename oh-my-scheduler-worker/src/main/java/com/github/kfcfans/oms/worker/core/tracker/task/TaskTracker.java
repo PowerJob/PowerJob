@@ -2,10 +2,15 @@ package com.github.kfcfans.oms.worker.core.tracker.task;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
+import akka.pattern.Patterns;
+import ch.qos.logback.core.util.SystemInfo;
+import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.JobInstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
+import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.oms.worker.common.constants.AkkaConstant;
+import com.github.kfcfans.common.AkkaConstant;
+import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.worker.common.constants.CommonSJ;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
@@ -15,7 +20,8 @@ import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.model.JobInstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
-import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
+import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStopInstanceReq;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -79,11 +86,23 @@ public abstract class TaskTracker {
 
     /**
      * 更新任务状态
+     * 任务状态机只允许数字递增
      */
-    public void updateTaskStatus(String instanceId, String taskId, int status,@Nullable String result) {
+    public void updateTaskStatus(String instanceId, String taskId, int status, @Nullable String result, boolean force) {
+
+        // 1. 读取当前Task状态，防止过期消息重置任务状态
+        if (!force) {
+            TaskDO originTask = taskPersistenceService.selectTaskByKey(instanceId, taskId);
+            if (originTask.getStatus() > status) {
+                log.warn("[TaskTracker] task(instanceId={},taskId={},dbStatus={},requestStatus={}) status conflict, this request will be drop.",
+                        instanceId, taskId, originTask.getStatus(), status);
+                return;
+            }
+        }
+
         TaskStatus taskStatus = TaskStatus.of(status);
 
-        // 持久化，失败则重试一次（本地数据库操作几乎可以认为可靠...吧...）
+        // 2. 更新数据库状态
         boolean updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, taskStatus, result);
         if (!updateResult) {
             try {
@@ -165,7 +184,8 @@ public abstract class TaskTracker {
 
         @Override
         public void run() {
-            taskPersistenceService.getNeedDispatchTask(jobInstanceInfo.getInstanceId()).forEach(task -> {
+
+            taskPersistenceService.getTaskByStatus(jobInstanceInfo.getInstanceId(), TaskStatus.WAITING_DISPATCH, 100).forEach(task -> {
                 try {
                     // 构造 worker 执行请求
                     TaskTrackerStartTaskReq req = new TaskTrackerStartTaskReq(jobInstanceInfo, task);
@@ -196,11 +216,15 @@ public abstract class TaskTracker {
      */
     private class StatusCheckRunnable implements Runnable {
 
+        private static final long TIME_OUT_MS = 5000;
+
         @Override
         public void run() {
 
+            final String instanceId = jobInstanceInfo.getInstanceId();
+
             // 1. 查询统计信息
-            Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(jobInstanceInfo.getInstanceId());
+            Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(instanceId);
 
             long waitingDispatchNum = status2Num.get(TaskStatus.WAITING_DISPATCH);
             long workerUnreceivedNum = status2Num.get(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK);
@@ -214,28 +238,115 @@ public abstract class TaskTracker {
             log.debug("[TaskTracker] status check result({})", status2Num);
 
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
+            req.setJobId(jobInstanceInfo.getJobId());
+            req.setInstanceId(instanceId);
             req.setTotalTaskNum(finishedNum + unfinishedNum);
             req.setSucceedTaskNum(succeedNum);
             req.setFailedTaskNum(failedNum);
 
-            // 2. 如果未完成任务数为0，上报服务器
+            // 2. 如果未完成任务数为0，判断是否真正结束，并获取真正结束任务的执行结果
+            TaskDO resultTask = null;
             if (unfinishedNum == 0) {
-                finished.set(true);
 
-                if (failedNum == 0) {
-                    req.setInstanceStatus(JobInstanceStatus.SUCCEED.getValue());
-                }else {
-                    req.setInstanceStatus(JobInstanceStatus.FAILED.getValue());
+                boolean finishedBoolean = true;
+                ExecuteType executeType = ExecuteType.valueOf(jobInstanceInfo.getExecuteType());
+
+                if (executeType == ExecuteType.STANDALONE) {
+
+                    List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId);
+                    if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
+                        log.warn("[TaskTracker] there must have some bug in TaskTracker.");
+                    }else {
+                        resultTask = allTask.get(0);
+                    }
+
+                } else {
+                    resultTask = taskPersistenceService.getLastTask(instanceId);
+
+                    // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask
+                    if (resultTask == null) {
+
+                        finishedBoolean = false;
+
+                        TaskDO newLastTask = new TaskDO();
+                        newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
+                        newLastTask.setTaskId(TaskConstant.LAST_TASK_ID);
+                        newLastTask.setAddress(NetUtils.getLocalHost());
+                        addTask(Lists.newArrayList(newLastTask));
+                    }else {
+                        TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
+                        finishedBoolean = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED;
+                    }
                 }
-
-                // 特殊处理MapReduce任务(执行reduce)
-                // 特殊处理广播任务任务（执行postProcess）
-
-                // 通知 ProcessorTracker 释放资源（PT释放资源前）
-            }else {
-
+                finished.set(finishedBoolean);
             }
 
+            String serverPath = AkkaUtils.getAkkaServerNodePath(AkkaConstant.SERVER_ACTOR_NAME);
+            ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
+
+            // 3. 执行成功，报告服务器
+            if (finished.get() && resultTask != null) {
+
+                boolean success = resultTask.getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
+                req.setResult(resultTask.getResult());
+                req.setInstanceStatus(success ? JobInstanceStatus.SUCCEED.getValue() : JobInstanceStatus.FAILED.getValue());
+
+                CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(TIME_OUT_MS));
+
+                boolean serverAccepted = false;
+                try {
+                    AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(TIME_OUT_MS, TimeUnit.MILLISECONDS);
+                    serverAccepted = askResponse.isSuccess();
+                }catch (Exception e) {
+                    log.warn("[TaskTracker] report finished instance(id={}&result={}) failed.", instanceId, resultTask.getResult());
+                }
+
+                // 服务器未接受上报，则等待下次重新上报
+                if (!serverAccepted) {
+                    return;
+                }
+
+                // 服务器已经更新状态，任务已经执行完毕，开始释放所有资源
+                log.info("[TaskTracker] instance(jobId={}&instanceId={}) process finished,result = {}, start to release resource...",
+                        jobInstanceInfo.getJobId(), instanceId, resultTask.getResult());
+                TaskTrackerStopInstanceReq stopRequest = new TaskTrackerStopInstanceReq();
+                stopRequest.setInstanceId(instanceId);
+                allWorkerAddress.forEach(ptIP -> {
+                    String ptPath = AkkaUtils.getAkkaRemotePath(ptIP, AkkaConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+                    ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptPath);
+                    // 不可靠通知，ProcessorTracker 也可以靠自己的定时任务/问询等方式关闭
+                    ptActor.tell(stopRequest, null);
+                });
+
+                // 销毁TaskTracker
+                TaskTrackerPool.remove(instanceId);
+                destroy();
+
+                return;
+            }
+
+            // 4. 未完成，上报状态
+            req.setInstanceStatus(JobInstanceStatus.RUNNING.getValue());
+            serverActor.tell(req, null);
+
+            // 5.1 超时检查 -> 派发未接受的任务
+            long currentMS = System.currentTimeMillis();
+            if (workerUnreceivedNum != 0) {
+                taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 100).forEach(uncheckTask -> {
+
+                    long elapsedTime = currentMS - uncheckTask.getLastModifiedTime();
+                    if (elapsedTime > TIME_OUT_MS) {
+                        updateTaskStatus(instanceId, uncheckTask.getTaskId(), TaskStatus.WAITING_DISPATCH.getValue(), null, true);
+                        log.warn("[TaskTracker] task(instanceId={},taskId={}) try to dispatch again due to unreceived the response from processor tracker.",
+                                instanceId, uncheckTask.getTaskId());
+                    }
+
+                });
+            }
+
+            // 5.2 超时检查 -> 等待执行/执行中的任务（要不要采取 Worker不挂不行动准则，Worker挂了再重新派发任务）
+
         }
+
     }
 }

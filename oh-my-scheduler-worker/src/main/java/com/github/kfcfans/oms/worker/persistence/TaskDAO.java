@@ -30,12 +30,15 @@ public interface TaskDAO {
 
     int batchDelete(String instanceId, List<String> taskIds);
 
-    TaskDO selectByKey(String instanceId, String taskId);
-
     List<TaskDO> simpleQuery(SimpleTaskQuery query);
 
     List<Map<String, Object>> simpleQueryPlus(SimpleTaskQuery query);
 
     boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField);
+
+    /**
+     * 查询 taskId -> taskResult (为了性能特殊定制，主要是内存占用，如果使用 simpleQueryPlus，内存中需要同时存在3份数据 ？是同时存在3份数据吗)
+     */
+    Map<String, String> queryTaskId2TaskResult(String instanceId);
 
 }

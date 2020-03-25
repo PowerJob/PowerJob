@@ -10,7 +10,7 @@ import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
-import com.github.kfcfans.oms.worker.pojo.response.MapTaskResponse;
+import com.github.kfcfans.common.response.AskResponse;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +45,7 @@ public class TaskTrackerActor extends AbstractActor {
         if (taskTracker == null) {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
         } else {
-            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), req.getStatus(), req.getResult());
+            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), req.getStatus(), req.getResult(), false);
         }
     }
 
@@ -77,7 +77,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] process map task(instanceId={}) failed.", req.getInstanceId(), e);
         }
 
-        MapTaskResponse response = new MapTaskResponse(success);
+        AskResponse response = new AskResponse(success);
         getSender().tell(response, getSelf());
     }
 
@@ -92,30 +92,28 @@ public class TaskTrackerActor extends AbstractActor {
             return;
         }
 
-        log.info("[TaskTrackerActor] Instance(id={}) pre process finished.", req.getInstanceId());
+        log.info("[TaskTrackerActor] instance(id={}) pre process finished.", req.getInstanceId());
 
-        // 1. 更新根任务状态（广播任务的根任务为 preProcess 任务）
+        // 1. 生成集群子任务
         boolean success = req.isSuccess();
-        int status = success ? TaskStatus.WORKER_PROCESS_SUCCESS.getValue() : TaskStatus.WORKER_PROCESS_FAILED.getValue();
-        taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), status, req.getMsg());
+        if (success) {
+            List<String> allWorkerAddress = taskTracker.getAllWorkerAddress();
+            List<TaskDO> subTaskList = Lists.newLinkedList();
+            for (int i = 0; i < allWorkerAddress.size(); i++) {
+                TaskDO subTask = new TaskDO();
+                subTask.setTaskName(TaskConstant.BROADCAST_TASK_NAME);
+                subTask.setTaskId(TaskConstant.ROOT_TASK_ID + "." + i);
 
-        // 2. 前置任务执行失败，则广播任务失败
-        if (!req.isSuccess()) {
+                subTaskList.add(subTask);
+            }
+            taskTracker.addTask(subTaskList);
+        }else {
             log.info("[TaskTrackerActor] BroadcastTask(instanceId={}) failed because of preProcess failed.", req.getInstanceId());
-            return;
         }
 
-        // 3. 前置任务执行成功，准备所有集群广播执行（产生其他集群的子任务）
-        List<String> allWorkerAddress = taskTracker.getAllWorkerAddress();
-        List<TaskDO> subTaskList = Lists.newLinkedList();
-        for (int i = 0; i < allWorkerAddress.size(); i++) {
-            TaskDO subTask = new TaskDO();
-            subTask.setTaskName(TaskConstant.BROADCAST_TASK_NAME);
-            subTask.setTaskId(TaskConstant.ROOT_TASK_ID + "." + i);
-
-            subTaskList.add(subTask);
-        }
-        taskTracker.addTask(subTaskList);
+        // 2. 更新根任务状态（广播任务的根任务为 preProcess 任务）
+        int status = success ? TaskStatus.WORKER_PROCESS_SUCCESS.getValue() : TaskStatus.WORKER_PROCESS_FAILED.getValue();
+        taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), status, req.getMsg(), false);
     }
 
     /**

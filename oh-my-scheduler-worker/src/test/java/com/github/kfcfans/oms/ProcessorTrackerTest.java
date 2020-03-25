@@ -6,7 +6,7 @@ import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
-import com.github.kfcfans.oms.worker.common.constants.AkkaConstant;
+import com.github.kfcfans.common.AkkaConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;

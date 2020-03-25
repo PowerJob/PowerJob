@@ -17,7 +17,7 @@ import java.sql.SQLException;
  */
 public class ConnectionFactory {
 
-    private static DataSource dataSource;
+    private static volatile DataSource dataSource;
 
     public static Connection getConnection() throws SQLException {
         return getDataSource().getConnection();

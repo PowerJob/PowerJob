@@ -21,4 +21,8 @@ public class TaskTrackerPool {
         return instanceId2TaskTracker.get(instanceId);
     }
 
+    public static void remove(String instanceId) {
+        instanceId2TaskTracker.remove(instanceId);
+    }
+
 }

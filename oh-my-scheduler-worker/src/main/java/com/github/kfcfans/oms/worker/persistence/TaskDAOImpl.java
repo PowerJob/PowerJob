@@ -84,30 +84,6 @@ public class TaskDAOImpl implements TaskDAO {
     }
 
     @Override
-    public TaskDO selectByKey(String instanceId, String taskId) {
-        String selectSQL = "select * from task_info where instance_id = ? and task_id = ?";
-        ResultSet rs = null;
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(selectSQL)) {
-            ps.setString(1, instanceId);
-            ps.setString(2, taskId);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                return convert(rs);
-            }
-        }catch (Exception e) {
-            log.error("[TaskDAO] selectByKey failed(instanceId = {}, taskId = {}).", instanceId, taskId, e);
-        }finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                }catch (Exception ignore) {
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
     public List<TaskDO> simpleQuery(SimpleTaskQuery query) {
         ResultSet rs = null;
         String sql = "select * from task_info where " + query.getQueryCondition();
@@ -173,6 +149,30 @@ public class TaskDAOImpl implements TaskDAO {
             log.error("[TaskDAO] simpleUpdate failed(sql = {}).", updateField, e);
             return false;
         }
+    }
+
+    @Override
+    public Map<String, String> queryTaskId2TaskResult(String instanceId) {
+        ResultSet rs = null;
+        Map<String, String> taskId2Result = Maps.newLinkedHashMapWithExpectedSize(4096);
+        String sql = "select task_id, result from task_info where instance_id = ?";
+        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, instanceId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                taskId2Result.put(rs.getString("task_id"), rs.getString("result"));
+            }
+        }catch (Exception e) {
+            log.error("[TaskDAO] queryTaskId2TaskResult failed(sql = {}).", sql, e);
+        }finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                }catch (Exception ignore) {
+                }
+            }
+        }
+        return taskId2Result;
     }
 
     private static TaskDO convert(ResultSet rs) throws SQLException {

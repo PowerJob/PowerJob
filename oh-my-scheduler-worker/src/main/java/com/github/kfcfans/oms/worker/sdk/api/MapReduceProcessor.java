@@ -4,11 +4,11 @@ import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
-import com.github.kfcfans.oms.worker.common.constants.AkkaConstant;
+import com.github.kfcfans.common.AkkaConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
-import com.github.kfcfans.oms.worker.pojo.response.MapTaskResponse;
+import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
 import com.github.kfcfans.oms.worker.sdk.ProcessResult;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +59,7 @@ public abstract class MapReduceProcessor implements BasicProcessor {
             String akkaRemotePath = AkkaUtils.getAkkaRemotePath(taskContext.getTaskTrackerAddress(), AkkaConstant.Task_TRACKER_ACTOR_NAME);
             ActorSelection actorSelection = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
             CompletionStage<Object> requestCS = Patterns.ask(actorSelection, req, Duration.ofMillis(REQUEST_TIMEOUT_MS));
-            MapTaskResponse respObj = (MapTaskResponse) requestCS.toCompletableFuture().get(REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            AskResponse respObj = (AskResponse) requestCS.toCompletableFuture().get(REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             requestSucceed = respObj.isSuccess();
         }catch (Exception e) {
             log.warn("[MapReduceProcessor] map failed.", e);
