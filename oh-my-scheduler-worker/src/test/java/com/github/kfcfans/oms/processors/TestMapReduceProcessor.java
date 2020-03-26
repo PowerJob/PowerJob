@@ -37,7 +37,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
         if (isRootTask()) {
             System.out.println("start to map");
             List<TestSubTask> subTasks = Lists.newLinkedList();
-            for (int j = 0; j < 2; j++) {
+            for (int j = 0; j < 1; j++) {
                 for (int i = 0; i < 100; i++) {
                     int x = j * 100 + i;
                     subTasks.add(new TestSubTask("name" + x, x));
@@ -49,9 +49,13 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
             return new ProcessResult(true, "MAP_SUCCESS");
         }else {
             System.out.println("start to process");
-            Thread.sleep(1000);
+//            Thread.sleep(1000);
             System.out.println(context.getSubTask());
-            return new ProcessResult(true, "PROCESS_SUCCESS");
+            if (context.getCurrentRetryTimes() == 0) {
+                return new ProcessResult(false, "FIRST_FAILED");
+            }else {
+                return new ProcessResult(true, "PROCESS_SUCCESS");
+            }
         }
 
     }
