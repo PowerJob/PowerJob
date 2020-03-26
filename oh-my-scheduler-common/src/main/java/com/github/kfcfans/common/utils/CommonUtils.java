@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
 
+
 /**
  * 公共工具类
  *
@@ -21,7 +22,7 @@ public class CommonUtils {
      * @return 函数成功执行后的返回值
      * @throws Exception 执行失败，调用方自行处理
      */
-    public static <T> T executeWithRetry(Supplier<T> executor, int retryTimes, long intervalMS) throws Exception {
+    public static <T> T executeWithRetry(SupplierPlus<T> executor, int retryTimes, long intervalMS) throws Exception {
         if (retryTimes <= 1 || intervalMS <= 0) {
             return executor.get();
         }
@@ -34,5 +35,30 @@ public class CommonUtils {
             }
         }
         return executor.get();
+    }
+
+    /**
+     * 重试执行，仅适用于根据返回值决定是否执行成功的方法
+     * @param booleanExecutor 需要执行的方法，其返回值决定了执行是否成功
+     * @param retryTimes 重试次数
+     * @param intervalMS 失败后下一次执行的间隔时间
+     * @return 最终执行结果
+     */
+    public static boolean executeWithRetryV2(Supplier<Boolean> booleanExecutor, int retryTimes, long intervalMS) {
+
+        if (retryTimes <= 1 || intervalMS <= 0) {
+            return booleanExecutor.get();
+        }
+
+        for (int i = 0; i < retryTimes; i++) {
+            try {
+                if (booleanExecutor.get()) {
+                    return true;
+                }
+                Thread.sleep(intervalMS);
+            }catch (Exception ignore) {
+            }
+        }
+        return booleanExecutor.get();
     }
 }

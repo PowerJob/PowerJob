@@ -2,7 +2,6 @@ package com.github.kfcfans.oms.worker.persistence;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.*;
@@ -16,7 +15,6 @@ import java.util.Map;
  * @author tjq
  * @since 2020/3/17
  */
-@Slf4j
 public class TaskDAOImpl implements TaskDAO {
 
     @Override
@@ -32,19 +30,16 @@ public class TaskDAOImpl implements TaskDAO {
     }
 
     @Override
-    public boolean save(TaskDO task) {
+    public boolean save(TaskDO task) throws SQLException {
         String insertSQL = "insert into task_info(task_id, instance_id, job_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time) values (?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
             fillInsertPreparedStatement(task, ps);
             return ps.executeUpdate() == 1;
-        }catch (Exception e) {
-            log.error("[TaskDAO] insert failed.", e);
         }
-        return false;
     }
 
     @Override
-    public boolean batchSave(Collection<TaskDO> tasks) {
+    public boolean batchSave(Collection<TaskDO> tasks) throws SQLException {
         String insertSQL = "insert into task_info(task_id, instance_id, job_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time) values (?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
 
@@ -57,29 +52,22 @@ public class TaskDAOImpl implements TaskDAO {
             ps.executeBatch();
             return true;
 
-        }catch (Exception e) {
-            log.error("[TaskDAO] insert failed.", e);
         }
-        return false;
     }
 
 
     @Override
-    public int batchDelete(String instanceId, List<String> taskIds) {
+    public boolean batchDelete(String instanceId, List<String> taskIds) throws SQLException {
         String deleteSQL = "delete from task_info where instance_id = '%s' and task_id in %s";
         String sql = String.format(deleteSQL, instanceId, getInStringCondition(taskIds));
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
-
-            return stat.executeUpdate(sql);
-
-        }catch (Exception e) {
-            log.error("[TaskDAO] batchDelete failed(instanceId = {}, taskIds = {}).", instanceId, taskIds, e);
+            stat.executeUpdate(sql);
+            return true;
         }
-        return 0;
     }
 
     @Override
-    public List<TaskDO> simpleQuery(SimpleTaskQuery query) {
+    public List<TaskDO> simpleQuery(SimpleTaskQuery query) throws SQLException {
         ResultSet rs = null;
         String sql = "select * from task_info where " + query.getQueryCondition();
         List<TaskDO> result = Lists.newLinkedList();
@@ -88,9 +76,7 @@ public class TaskDAOImpl implements TaskDAO {
             while (rs.next()) {
                 result.add(convert(rs));
             }
-        }catch (Exception e) {
-            log.error("[TaskDAO] simpleQuery failed(sql = {}).", sql, e);
-        }finally {
+        } finally {
             if (rs != null) {
                 try {
                     rs.close();
@@ -102,7 +88,7 @@ public class TaskDAOImpl implements TaskDAO {
     }
 
     @Override
-    public List<Map<String, Object>> simpleQueryPlus(SimpleTaskQuery query) {
+    public List<Map<String, Object>> simpleQueryPlus(SimpleTaskQuery query) throws SQLException {
         ResultSet rs = null;
         String sqlFormat = "select %s from task_info where %s";
         String sql = String.format(sqlFormat, query.getQueryContent(), query.getQueryCondition());
@@ -121,9 +107,7 @@ public class TaskDAOImpl implements TaskDAO {
                     row.put(colName, colValue);
                 }
             }
-        }catch (Exception e) {
-            log.error("[TaskDAO] simpleQuery failed(sql = {}).", sql, e);
-        }finally {
+        } finally {
             if (rs != null) {
                 try {
                     rs.close();
@@ -135,20 +119,17 @@ public class TaskDAOImpl implements TaskDAO {
     }
 
     @Override
-    public boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField) {
+    public boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField) throws SQLException {
         String sqlFormat = "update task_info set %s where %s";
         String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getQueryCondition());
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
             stat.executeUpdate();
             return true;
-        }catch (Exception e) {
-            log.error("[TaskDAO] simpleUpdate failed(sql = {}).", updateField, e);
-            return false;
         }
     }
 
     @Override
-    public Map<String, String> queryTaskId2TaskResult(String instanceId) {
+    public Map<String, String> queryTaskId2TaskResult(String instanceId) throws SQLException {
         ResultSet rs = null;
         Map<String, String> taskId2Result = Maps.newLinkedHashMapWithExpectedSize(4096);
         String sql = "select task_id, result from task_info where instance_id = ?";
@@ -158,8 +139,6 @@ public class TaskDAOImpl implements TaskDAO {
             while (rs.next()) {
                 taskId2Result.put(rs.getString("task_id"), rs.getString("result"));
             }
-        }catch (Exception e) {
-            log.error("[TaskDAO] queryTaskId2TaskResult failed(sql = {}).", sql, e);
         }finally {
             if (rs != null) {
                 try {

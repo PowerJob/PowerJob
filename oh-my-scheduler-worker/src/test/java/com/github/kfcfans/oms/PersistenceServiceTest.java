@@ -61,7 +61,7 @@ public class PersistenceServiceTest {
     public void testBatchDelete() {
 
         System.out.println("=============== testBatchDelete ===============");
-        int delete = taskPersistenceService.batchDelete("100860", Lists.newArrayList("0", "1"));
+        boolean delete = taskPersistenceService.batchDelete("100860", Lists.newArrayList("0", "1"));
         System.out.println("delete result:" + delete);
     }
 

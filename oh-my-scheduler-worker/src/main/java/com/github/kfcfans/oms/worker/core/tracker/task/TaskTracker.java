@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -88,36 +89,50 @@ public class TaskTracker {
      * 更新任务状态
      * 任务状态机只允许数字递增
      */
-    public void updateTaskStatus(String instanceId, String taskId, int status, @Nullable String result, boolean force) {
+    public void updateTaskStatus(String instanceId, String taskId, int newStatus, @Nullable String result, boolean force) {
 
-        // 1. 读取当前Task状态，防止过期消息重置任务状态
-        if (!force) {
+        boolean updateResult;
+        TaskStatus nTaskStatus = TaskStatus.of(newStatus);
+        // 1. 强制模式，直接执行持久化操作（该模式状态只允许变更为非完成状态）
+        if (force) {
+            updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, nTaskStatus, result);
+        }else {
 
-            TaskStatus originTaskStatus = taskPersistenceService.getTaskStatus(instanceId, taskId);
+            // 2. 读取当前 Task 状态，防止逆状态机变更的出现
+            Optional<TaskStatus> dbTaskStatusOpt = taskPersistenceService.getTaskStatus(instanceId, taskId);
 
-            if (originTaskStatus == null) {
-                log.warn("[TaskTracker] database may overload...");
+            if (!dbTaskStatusOpt.isPresent()) {
+                log.warn("[TaskTracker] get task status failed when try to update new task status, current params is instanceId={},taskId={},newStatus={}.",
+                        instanceId, taskId, newStatus);
+            }
+
+            // 数据库没查到，也允许写入（这个还需要日后仔细考虑）
+            if (dbTaskStatusOpt.orElse(TaskStatus.WAITING_DISPATCH).getValue() > newStatus) {
+                // 必存在，但不怎么写，Java会警告...
+                TaskStatus dbTaskStatus = dbTaskStatusOpt.orElse(TaskStatus.WAITING_DISPATCH);
+                log.warn("[TaskTracker] task(instanceId={},taskId={},dbStatus={},requestStatus={}) status conflict, taskTracker won't update the status.",
+                        instanceId, taskId, dbTaskStatus, nTaskStatus);
                 return;
             }
 
-            if (originTaskStatus.getValue() > status) {
-                log.warn("[TaskTracker] task(instanceId={},taskId={},dbStatus={},requestStatus={}) status conflict, this request will be drop.",
-                        instanceId, taskId, originTaskStatus, status);
-                return;
+            // 3. 失败重试处理
+            if (nTaskStatus == TaskStatus.WORKER_PROCESS_FAILED) {
+
+                // 数据库查询失败的话，就只重试一次
+                int failedCnt = taskPersistenceService.getTaskFailedCnt(instanceId, taskId).orElse(jobInstanceInfo.getTaskRetryNum() - 1);
+                if (failedCnt < jobInstanceInfo.getTaskRetryNum()) {
+                    boolean retryTask = taskPersistenceService.updateRetryTask(instanceId, taskId, failedCnt + 1);
+                    if (retryTask) {
+                        log.info("[TaskTracker] task(instanceId={},taskId={}) will have a retry.", instanceId, taskId);
+                        return;
+                    }
+                }
             }
+
+            // 4. 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）
+            updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, nTaskStatus, result);
         }
 
-        TaskStatus taskStatus = TaskStatus.of(status);
-
-        // 2. 更新数据库状态
-        boolean updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, taskStatus, result);
-        if (!updateResult) {
-            try {
-                Thread.sleep(100);
-                taskPersistenceService.updateTaskStatus(instanceId, taskId, taskStatus, result);
-            }catch (Exception ignore) {
-            }
-        }
         if (!updateResult) {
             log.warn("[TaskTracker] update task status failed, this task(instanceId={}&taskId={}) may be processed repeatedly!", instanceId, taskId);
         }
@@ -272,11 +287,17 @@ public class TaskTracker {
                     }
 
                 } else {
-                    resultTask = taskPersistenceService.getLastTask(instanceId);
+                    Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId);
 
-                    // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask
-                    if (resultTask == null) {
+                    if (lastTaskOptional.isPresent()) {
 
+                        // 存在则根据 reduce 任务来判断状态
+                        resultTask = lastTaskOptional.get();
+                        TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
+                        finishedBoolean = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED;
+                    }else {
+
+                        // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask
                         finishedBoolean = false;
 
                         TaskDO newLastTask = new TaskDO();
@@ -284,10 +305,8 @@ public class TaskTracker {
                         newLastTask.setTaskId(TaskConstant.LAST_TASK_ID);
                         newLastTask.setAddress(NetUtils.getLocalHost());
                         addTask(Lists.newArrayList(newLastTask));
-                    }else {
-                        TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
-                        finishedBoolean = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED;
                     }
+
                 }
                 finished.set(finishedBoolean);
             }

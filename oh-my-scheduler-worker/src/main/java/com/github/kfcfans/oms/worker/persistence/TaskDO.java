@@ -40,7 +40,9 @@ public class TaskDO {
 
     public String getUpdateSQL() {
         StringBuilder sb = new StringBuilder();
-        if (!StringUtils.isEmpty(address)) {
+
+        // address 有置空需求，仅判断 NULL
+        if (address != null) {
             sb.append(" address = '").append(address).append("',");
         }
         if (status != null) {
