@@ -92,10 +92,17 @@ public class TaskTracker {
 
         // 1. 读取当前Task状态，防止过期消息重置任务状态
         if (!force) {
-            TaskDO originTask = taskPersistenceService.selectTaskByKey(instanceId, taskId);
-            if (originTask.getStatus() > status) {
+
+            TaskStatus originTaskStatus = taskPersistenceService.getTaskStatus(instanceId, taskId);
+
+            if (originTaskStatus == null) {
+                log.warn("[TaskTracker] database may overload...");
+                return;
+            }
+
+            if (originTaskStatus.getValue() > status) {
                 log.warn("[TaskTracker] task(instanceId={},taskId={},dbStatus={},requestStatus={}) status conflict, this request will be drop.",
-                        instanceId, taskId, originTask.getStatus(), status);
+                        instanceId, taskId, originTaskStatus, status);
                 return;
             }
         }

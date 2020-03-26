@@ -36,7 +36,7 @@ public class ConnectionFactory {
                 // 池中最小空闲连接数量
                 config.setMinimumIdle(2);
                 // 池中最大连接数量
-                config.setMaximumPoolSize(16);
+                config.setMaximumPoolSize(32);
                 dataSource = new HikariDataSource(config);
             }
         }

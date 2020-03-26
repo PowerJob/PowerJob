@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Processor 执行器
@@ -57,6 +58,7 @@ public class ProcessorRunnable implements Runnable {
                 taskContext.setSubTask(SerializerUtils.deSerialized(request.getSubTaskContent()));
             }
             ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
+            ThreadLocalStore.TASK_ID_THREAD_LOCAL.set(new AtomicLong(0));
 
             reportStatus(TaskStatus.PROCESSING, null);
 

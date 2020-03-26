@@ -11,7 +11,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.zaxxer.hikari" level="ERROR">
+    <logger name="com.zaxxer.hikari" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
 

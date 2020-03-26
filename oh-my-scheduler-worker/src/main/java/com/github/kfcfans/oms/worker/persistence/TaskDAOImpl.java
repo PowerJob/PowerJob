@@ -66,7 +66,7 @@ public class TaskDAOImpl implements TaskDAO {
 
     @Override
     public int batchDelete(String instanceId, List<String> taskIds) {
-        String deleteSQL = "delete from task_info where instance_id = %s and task_id in %s";
+        String deleteSQL = "delete from task_info where instance_id = '%s' and task_id in %s";
         String sql = String.format(deleteSQL, instanceId, getInStringCondition(taskIds));
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
 

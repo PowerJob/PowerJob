@@ -96,12 +96,14 @@ public class ProcessorTracker {
             newTask.setFailedCnt(newTaskReq.getCurrentRetryTimes());
             newTask.setCreatedTime(System.currentTimeMillis());
             newTask.setLastModifiedTime(System.currentTimeMillis());
+            // 特殊处理 instanceId，防止冲突
+            newTask.setInstanceId(getSPInstanceId(instanceId));
 
             boolean save = TaskPersistenceService.INSTANCE.save(newTask);
             if (save) {
-                log.debug("[RejectedProcessorHandler] persistent task({}) succeed.", newTask);
+                log.debug("[ProcessorTracker] persistent task({}) succeed.", newTask);
             }else {
-                log.warn("[RejectedProcessorHandler] persistent task({}) failed.", newTask);
+                log.warn("[ProcessorTracker] persistent task({}) failed.", newTask);
             }
             return;
         }
@@ -157,7 +159,9 @@ public class ProcessorTracker {
             }
 
             TaskPersistenceService taskPersistenceService = TaskPersistenceService.INSTANCE;
-            List<TaskDO> taskDOList =taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.RECEIVE_SUCCESS, MAX_QUEUE_SIZE / 2);
+
+            // 查询时也用特殊处理的 instanceId 查即可
+            List<TaskDO> taskDOList =taskPersistenceService.getTaskByStatus(getSPInstanceId(instanceId), TaskStatus.RECEIVE_SUCCESS, MAX_QUEUE_SIZE / 2);
 
             if (CollectionUtils.isEmpty(taskDOList)) {
                 return;
@@ -169,12 +173,15 @@ public class ProcessorTracker {
 
             // 提交到线程池执行
             taskDOList.forEach(task -> {
+
+                // 还原 instanceId
+                task.setInstanceId(instanceId);
                 runTask(task);
                 deletedIds.add(task.getTaskId());
             });
 
-            // 删除任务
-            taskPersistenceService.batchDelete(instanceId, deletedIds);
+            // 删除任务（需要使用特殊instanceId）
+            taskPersistenceService.batchDelete(getSPInstanceId(instanceId), deletedIds);
         }
 
         private void runTask(TaskDO task) {
@@ -194,5 +201,9 @@ public class ProcessorTracker {
             ProcessorRunnable processorRunnable = new ProcessorRunnable(taskTrackerActorRef, req);
             threadPool.submit(processorRunnable);
         }
+    }
+
+    private static String getSPInstanceId(String instanceId) {
+        return "L" + instanceId;
     }
 }

@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
+import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
 import com.google.common.collect.Lists;
@@ -39,13 +40,11 @@ public class ProcessorMapTaskRequest implements Serializable {
         this.taskName = taskName;
         this.subTasks = Lists.newLinkedList();
 
-        for (int i = 0; i < subTaskList.size(); i++) {
-            // 不同执行线程之间，前缀（taskId）不同，该ID可以保证分布式唯一
-            String subTaskId = taskContext.getTaskId() + "." + i;
+        subTaskList.forEach(subTask -> {
+            // 同一个 Task 内部可能多次 Map，因此还是要确保线程级别的唯一
+            String subTaskId = taskContext.getTaskId() + "." + ThreadLocalStore.TASK_ID_THREAD_LOCAL.get().getAndIncrement();
             // 写入类名，方便反序列化
-            byte[] content = SerializerUtils.serialize(subTaskList.get(i));
-            subTasks.add(new SubTask(subTaskId, content));
-        }
-
+            subTasks.add(new SubTask(subTaskId, SerializerUtils.serialize(subTask)));
+        });
     }
 }

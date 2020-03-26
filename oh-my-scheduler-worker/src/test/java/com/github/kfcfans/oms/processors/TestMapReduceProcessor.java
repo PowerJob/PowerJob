@@ -37,14 +37,19 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
         if (isRootTask()) {
             System.out.println("start to map");
             List<TestSubTask> subTasks = Lists.newLinkedList();
-            for (int i = 0; i < 100; i++) {
-                subTasks.add(new TestSubTask("name" + i, i));
+            for (int j = 0; j < 2; j++) {
+                for (int i = 0; i < 100; i++) {
+                    int x = j * 100 + i;
+                    subTasks.add(new TestSubTask("name" + x, x));
+                }
+                ProcessResult mapResult = map(subTasks, "MAP_TEST_TASK");
+                System.out.println("map result = " + mapResult);
+                subTasks.clear();
             }
-            ProcessResult mapResult = map(subTasks, "MAP_TEST_TASK");
-            System.out.println("map result = " + mapResult);
             return new ProcessResult(true, "MAP_SUCCESS");
         }else {
             System.out.println("start to process");
+            Thread.sleep(1000);
             System.out.println(context.getSubTask());
             return new ProcessResult(true, "PROCESS_SUCCESS");
         }
@@ -54,7 +59,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
     @ToString
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class TestSubTask implements Serializable {
+    private static class TestSubTask {
         private String name;
         private int age;
     }

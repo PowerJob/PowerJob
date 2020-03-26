@@ -63,7 +63,6 @@ public class TaskDO {
                 ", jobId='" + jobId + '\'' +
                 ", instanceId='" + instanceId + '\'' +
                 ", taskName='" + taskName + '\'' +
-                ", taskContent=" + (taskContent == null ? "" : new String(taskContent)) +
                 ", address='" + address + '\'' +
                 ", status=" + status +
                 ", result='" + result + '\'' +

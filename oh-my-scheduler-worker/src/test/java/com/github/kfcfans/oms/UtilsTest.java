@@ -21,4 +21,9 @@ public class UtilsTest {
     public void testSystemInfoUtils() {
         System.out.println(SystemInfoUtils.getSystemMetrics());
     }
+
+    @Test
+    public void testSerializeUtils() {
+
+    }
 }

@@ -113,17 +113,22 @@ public class TaskPersistenceService {
     }
 
     /**
-     * 根据主键查找任务
+     * 查询任务状态（只查询 status，节约 I/O 资源）
      */
-    public TaskDO selectTaskByKey(String instanceId, String taskId) {
+    public TaskStatus getTaskStatus(String instanceId, String taskId) {
+
         SimpleTaskQuery query = new SimpleTaskQuery();
         query.setInstanceId(instanceId);
         query.setTaskId(taskId);
-        List<TaskDO> results = taskDAO.simpleQuery(query);
-        if (CollectionUtils.isEmpty(results)) {
+        query.setQueryContent(" STATUS ");
+
+        List<Map<String, Object>> rows = taskDAO.simpleQueryPlus(query);
+
+        if (CollectionUtils.isEmpty(rows)) {
             return null;
         }
-        return results.get(0);
+
+        return TaskStatus.of((int) rows.get(0).get("STATUS"));
     }
 
     /**

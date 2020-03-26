@@ -43,4 +43,9 @@ public class TaskContext {
                 ", instanceParams='" + instanceParams + '\'' +
                 ", taskTrackerAddress='" + taskTrackerAddress;
     }
+
+    @Override
+    public String toString() {
+        return getDescription();
+    }
 }
