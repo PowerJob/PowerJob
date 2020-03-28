@@ -42,7 +42,7 @@ public class ProcessorMapTaskRequest implements Serializable {
 
         subTaskList.forEach(subTask -> {
             // 同一个 Task 内部可能多次 Map，因此还是要确保线程级别的唯一
-            String subTaskId = parentTask.getTaskId() + "." + ThreadLocalStore.TASK_ID_THREAD_LOCAL.get().getAndIncrement();
+            String subTaskId = parentTask.getTaskId() + "." + ThreadLocalStore.getTaskIDAddr().getAndIncrement();
             // 写入类名，方便反序列化
             subTasks.add(new SubTask(subTaskId, SerializerUtils.serialize(subTask)));
         });

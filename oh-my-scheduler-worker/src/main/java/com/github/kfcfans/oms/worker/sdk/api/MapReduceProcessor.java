@@ -49,7 +49,7 @@ public abstract class MapReduceProcessor implements BasicProcessor {
             log.warn("[MapReduceProcessor] map task size is too large, network maybe overload... please try to split the tasks.");
         }
 
-        TaskDO task = ThreadLocalStore.TASK_THREAD_LOCAL.get();
+        TaskDO task = ThreadLocalStore.getTask();
 
         // 1. 构造请求
         ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(task, taskList, taskName);
@@ -74,7 +74,7 @@ public abstract class MapReduceProcessor implements BasicProcessor {
     }
 
     public boolean isRootTask() {
-        TaskDO task = ThreadLocalStore.TASK_THREAD_LOCAL.get();
+        TaskDO task = ThreadLocalStore.getTask();
         return TaskConstant.ROOT_TASK_ID.equals(task.getTaskId());
     }
 
