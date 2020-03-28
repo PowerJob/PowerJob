@@ -63,7 +63,8 @@ public class TaskTrackerTest {
         req.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
         req.setTaskRetryNum(3);
         req.setThreadConcurrency(20);
-        req.setTimeLimit(500000);
+        req.setInstanceTimeoutMS(500000);
+        req.setTaskTimeoutMS(500000);
 
         switch (executeType) {
             case STANDALONE:

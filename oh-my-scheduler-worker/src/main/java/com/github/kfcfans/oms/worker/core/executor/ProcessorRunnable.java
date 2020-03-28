@@ -9,9 +9,10 @@ import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
+import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
+import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
-import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.oms.worker.sdk.ProcessResult;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
@@ -20,7 +21,6 @@ import com.github.kfcfans.oms.worker.sdk.api.BroadcastProcessor;
 import com.github.kfcfans.oms.worker.sdk.api.MapReduceProcessor;
 import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
@@ -37,40 +37,44 @@ import java.util.concurrent.atomic.AtomicLong;
 @AllArgsConstructor
 public class ProcessorRunnable implements Runnable {
 
-    private final ActorSelection taskTrackerActor;
 
-    @Getter
-    private final TaskTrackerStartTaskReq request;
+    private InstanceInfo instanceInfo;
+    private final ActorSelection taskTrackerActor;
+    private final TaskDO task;
 
     @Override
     public void run() {
 
-        String taskId = request.getTaskId();
-        String instanceId = request.getInstanceId();
+        String taskId = task.getTaskId();
+        String instanceId = task.getInstanceId();
 
-        log.debug("[ProcessorRunnable] start to run task(instanceId={}&taskId={}&taskName={})", instanceId, taskId, request.getTaskName());
+        log.debug("[ProcessorRunnable-{}] start to run task(taskId={}&taskName={})", instanceId, taskId, task.getTaskName());
 
         try {
             // 0. 完成执行上下文准备 & 上报执行信息
             TaskContext taskContext = new TaskContext();
-            BeanUtils.copyProperties(request, taskContext);
-            if (request.getSubTaskContent() != null && request.getSubTaskContent().length > 0) {
-                taskContext.setSubTask(SerializerUtils.deSerialized(request.getSubTaskContent()));
+            BeanUtils.copyProperties(task, taskContext);
+            taskContext.setMaxRetryTimes(instanceInfo.getTaskRetryNum());
+            taskContext.setCurrentRetryTimes(task.getFailedCnt());
+            taskContext.setJobParams(instanceInfo.getJobParams());
+            taskContext.setInstanceParams(instanceInfo.getInstanceParams());
+            if (task.getTaskContent() != null && task.getTaskContent().length > 0) {
+                taskContext.setSubTask(SerializerUtils.deSerialized(task.getTaskContent()));
             }
-            ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.set(taskContext);
+            ThreadLocalStore.TASK_THREAD_LOCAL.set(task);
             ThreadLocalStore.TASK_ID_THREAD_LOCAL.set(new AtomicLong(0));
 
-            reportStatus(TaskStatus.PROCESSING, null);
+            reportStatus(TaskStatus.WORKER_PROCESSING, null);
 
             // 1. 获取 Processor
             BasicProcessor processor = getProcessor();
             if (processor == null) {
-                reportStatus(TaskStatus.PROCESS_FAILED, "NO_PROCESSOR");
+                reportStatus(TaskStatus.WORKER_PROCESS_FAILED, "NO_PROCESSOR");
                 return;
             }
 
             // 2. 根任务特殊处理
-            ExecuteType executeType = ExecuteType.valueOf(request.getExecuteType());
+            ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
             if (TaskConstant.ROOT_TASK_ID.equals(taskId)) {
 
                 // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
@@ -86,7 +90,7 @@ public class ProcessorRunnable implements Runnable {
                         spReq.setSuccess(processResult.isSuccess());
                         spReq.setMsg(processResult.getMsg());
                     }catch (Exception e) {
-                        log.warn("[ProcessorRunnable] broadcast task(instanceId={}) preProcess failed.", instanceId, e);
+                        log.warn("[ProcessorRunnable-{}] broadcast task preProcess failed.", instanceId, e);
                         spReq.setSuccess(false);
                         spReq.setMsg(e.toString());
                     }
@@ -102,7 +106,7 @@ public class ProcessorRunnable implements Runnable {
             if (TaskConstant.LAST_TASK_ID.equals(taskId)) {
 
                 Stopwatch stopwatch = Stopwatch.createStarted();
-                log.info("[ProcessorRunnable] instance(instanceId={})' last task(taskId={}) start to process.", instanceId, taskId);
+                log.debug("[ProcessorRunnable-{}] the last task(taskId={}) start to process.", instanceId, taskId);
 
                 ProcessResult lastResult;
                 Map<String, String> taskId2ResultMap = TaskPersistenceService.INSTANCE.getTaskId2ResultMap(instanceId);
@@ -124,13 +128,13 @@ public class ProcessorRunnable implements Runnable {
                     }
                 }catch (Exception e) {
                     lastResult = new ProcessResult(false, e.toString());
-                    log.warn("[ProcessorRunnable] execute last task(instanceId={},taskId={}) failed.", instanceId, taskId, e);
+                    log.warn("[ProcessorRunnable-{}] execute last task(taskId={}) failed.", instanceId, taskId, e);
                 }
 
-                TaskStatus status = lastResult.isSuccess() ? TaskStatus.PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED;
+                TaskStatus status = lastResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED;
                 reportStatus(status, lastResult.getMsg());
 
-                log.info("[ProcessorRunnable] instance(instanceId={},taskId={})' last task execute successfully, using time: {}", instanceId, taskId, stopwatch);
+                log.info("[ProcessorRunnable-{}] the last task execute successfully, using time: {}", instanceId, stopwatch);
                 return;
             }
 
@@ -140,21 +144,20 @@ public class ProcessorRunnable implements Runnable {
             try {
                 processResult = processor.process(taskContext);
             }catch (Exception e) {
-                log.warn("[ProcessorRunnable] task({}) process failed.", taskContext.getDescription(), e);
+                log.warn("[ProcessorRunnable-{}] task({}) process failed.", instanceId, taskContext.getDescription(), e);
                 processResult = new ProcessResult(false, e.toString());
             }
-            reportStatus(processResult.isSuccess() ? TaskStatus.PROCESS_SUCCESS : TaskStatus.PROCESS_FAILED, processResult.getMsg());
+            reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, processResult.getMsg());
 
         }catch (Exception e) {
-            log.error("[ProcessorRunnable] execute failed, please fix this bug!", e);
+            log.error("[ProcessorRunnable-{}] execute failed, please fix this bug!", instanceId, e);
         }
     }
 
     private BasicProcessor getProcessor() {
         BasicProcessor processor = null;
-        ProcessorType processorType = ProcessorType.valueOf(request.getProcessorType());
-
-        String processorInfo = request.getProcessorInfo();
+        ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
+        String processorInfo = instanceInfo.getProcessorInfo();
 
         switch (processorType) {
             case EMBEDDED_JAVA:
@@ -163,7 +166,7 @@ public class ProcessorRunnable implements Runnable {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
                     }catch (Exception e) {
-                        log.warn("[ProcessorRunnable] no spring bean of processor(className={}).", processorInfo);
+                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}).", instanceInfo, processorInfo);
                     }
                 }
                 // 反射加载
@@ -181,8 +184,8 @@ public class ProcessorRunnable implements Runnable {
     private void reportStatus(TaskStatus status, String result) {
         ProcessorReportTaskStatusReq req = new ProcessorReportTaskStatusReq();
 
-        req.setInstanceId(request.getInstanceId());
-        req.setTaskId(request.getTaskId());
+        req.setInstanceId(task.getInstanceId());
+        req.setTaskId(task.getTaskId());
         req.setStatus(status.getValue());
         req.setResult(result);
 

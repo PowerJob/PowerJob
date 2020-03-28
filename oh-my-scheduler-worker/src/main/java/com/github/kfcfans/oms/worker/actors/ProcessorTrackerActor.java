@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.worker.actors;
 import akka.actor.AbstractActor;
 import com.github.kfcfans.oms.worker.core.tracker.processor.ProcessorTracker;
 import com.github.kfcfans.oms.worker.core.tracker.processor.ProcessorTrackerPool;
+import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,13 +28,21 @@ public class ProcessorTrackerActor extends AbstractActor {
      * 处理来自TaskTracker的task执行请求
      */
     private void onReceiveTaskTrackerStartTaskReq(TaskTrackerStartTaskReq req) {
-        String jobId = req.getJobId();
-        String instanceId = req.getInstanceId();
+        String jobId = req.getInstanceInfo().getJobId();
+        String instanceId = req.getInstanceInfo().getInstanceId();
         ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> {
             ProcessorTracker pt = new ProcessorTracker(req);
             log.info("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) success.", jobId, instanceId);
             return pt;
         });
-        processorTracker.submitTask(req);
+
+        TaskDO task = new TaskDO();
+
+        task.setTaskId(req.getTaskId());
+        task.setTaskName(req.getTaskName());
+        task.setTaskContent(req.getTaskContent());
+        task.setFailedCnt(req.getTaskCurrentRetryNums());
+
+        processorTracker.submitTask(task);
     }
 }

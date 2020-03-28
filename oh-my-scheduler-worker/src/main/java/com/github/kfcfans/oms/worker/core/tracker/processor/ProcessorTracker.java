@@ -7,16 +7,14 @@ import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
-import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
+import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
+import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -30,23 +28,15 @@ public class ProcessorTracker {
 
     // 记录创建时间
     private long startTime;
-    private long jobTimeLimitMS;
-
-    // 记录该 Job 相关信息
+    // 任务实例信息
+    private InstanceInfo instanceInfo;
+    // 冗余 instanceId，方便日志
     private String instanceId;
-    private String executeType;
-    private String processorType;
-    private String processorInfo;
-    private int threadConcurrency;
-    private String jobParams;
-    private String instanceParams;
-    private int maxRetryTimes;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
 
     private ThreadPoolExecutor threadPool;
-    private static final int MAX_QUEUE_SIZE = 20;
 
     /**
      * 创建 ProcessorTracker（其实就是创建了个执行用的线程池 T_T）
@@ -55,17 +45,9 @@ public class ProcessorTracker {
 
         // 赋值
         this.startTime = System.currentTimeMillis();
-        this.jobTimeLimitMS = request.getJobTimeLimitMS();
-        this.instanceId = request.getInstanceId();
-        this.executeType = request.getExecuteType();
-        this.processorType = request.getProcessorType();
-        this.processorInfo = request.getProcessorInfo();
-        this.threadConcurrency = request.getThreadConcurrency();
-        this.jobParams = request.getJobParams();
-        this.instanceParams = request.getInstanceParams();
-        this.maxRetryTimes = request.getMaxRetryTimes();
+        this.instanceInfo = request.getInstanceInfo();
+        this.instanceId = request.getInstanceInfo().getInstanceId();
         this.taskTrackerAddress = request.getTaskTrackerAddress();
-
         String akkaRemotePath = AkkaUtils.getAkkaRemotePath(taskTrackerAddress, AkkaConstant.Task_TRACKER_ACTOR_NAME);
         this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
@@ -75,49 +57,43 @@ public class ProcessorTracker {
     }
 
     /**
-     * 提交任务
+     * 提交任务到线程池执行
+     * 1.0版本：TaskTracker有任务就dispatch，导致 ProcessorTracker 本地可能堆积过多的任务，造成内存压力。为此 ProcessorTracker 在线程
+     *         池队列堆积到一定程度时，会将数据持久化到DB，然后通过异步线程定时从数据库中取回任务，重新提交执行。
+     *         联动：数据库的SPID设计、TaskStatus段落设计等，全部取消...
+     *         last commitId: 341953aceceafec0fbe7c3d9a3e26451656b945e
+     * 2.0版本：ProcessorTracker定时向TaskTracker发送心跳消息，心跳消息中包含了当前线程池队列任务个数，TaskTracker根据ProcessorTracker
+     *         的状态判断能否继续派发任务。因此，ProcessorTracker本地不会堆积过多任务，故删除 持久化机制 ╥﹏╥...！
+     * @param newTask 需要提交到线程池执行的任务
      */
-    public void submitTask(TaskTrackerStartTaskReq newTaskReq) {
+    public void submitTask(TaskDO newTask) {
 
-        // 1. 回复接受成功
+        // 1. 设置值并提交执行
+        newTask.setJobId(instanceInfo.getJobId());
+        newTask.setInstanceId(instanceInfo.getInstanceId());
+        newTask.setAddress(taskTrackerAddress);
+
+        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask);
+        threadPool.submit(processorRunnable);
+
+        // 2. 回复接收成功
         ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
-        BeanUtils.copyProperties(newTaskReq, reportReq);
-        reportReq.setStatus(TaskStatus.RECEIVE_SUCCESS.getValue());
+        reportReq.setInstanceId(instanceId);
+        reportReq.setTaskId(newTask.getTaskId());
+        reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
+
+        reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
         taskTrackerActorRef.tell(reportReq, null);
 
-        // 2.1 内存控制，持久化
-        if (threadPool.getQueue().size() > MAX_QUEUE_SIZE) {
-
-            TaskDO newTask = new TaskDO();
-            BeanUtils.copyProperties(newTaskReq, newTask);
-            newTask.setTaskContent(newTaskReq.getSubTaskContent());
-            newTask.setAddress(newTaskReq.getTaskTrackerAddress());
-            newTask.setStatus(TaskStatus.RECEIVE_SUCCESS.getValue());
-            newTask.setFailedCnt(newTaskReq.getCurrentRetryTimes());
-            newTask.setCreatedTime(System.currentTimeMillis());
-            newTask.setLastModifiedTime(System.currentTimeMillis());
-            // 特殊处理 instanceId，防止冲突
-            newTask.setInstanceId(getSPInstanceId(instanceId));
-
-            boolean save = TaskPersistenceService.INSTANCE.save(newTask);
-            if (save) {
-                log.debug("[ProcessorTracker] persistent task({}) succeed.", newTask);
-            }else {
-                log.warn("[ProcessorTracker] persistent task({}) failed.", newTask);
-            }
-            return;
-        }
-
-        // 2.2 提交执行
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(taskTrackerActorRef, newTaskReq);
-        threadPool.submit(processorRunnable);
+        log.debug("[ProcessorTracker-{}] submit task(taskId={}, taskName={}) success, current queue size: {}.",
+                instanceId, newTask.getTaskId(), newTask.getTaskName(), threadPool.getQueue().size());
     }
 
     /**
      * 任务是否超时
      */
     public boolean isTimeout() {
-        return System.currentTimeMillis() - startTime > jobTimeLimitMS;
+        return System.currentTimeMillis() - startTime > instanceInfo.getInstanceTimeoutMS();
     }
 
 
@@ -129,7 +105,7 @@ public class ProcessorTracker {
         BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
         // 自定义线程池中线程名称
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-processor-pool-%d").build();
-        threadPool = new ThreadPoolExecutor(threadConcurrency, threadConcurrency, 60L, TimeUnit.SECONDS, queue, threadFactory);
+        threadPool = new ThreadPoolExecutor(instanceInfo.getTaskRetryNum(), instanceInfo.getTaskRetryNum(), 60L, TimeUnit.SECONDS, queue, threadFactory);
         // 当没有任务执行时，允许销毁核心线程（即线程池最终存活线程个数可能为0）
         threadPool.allowCoreThreadTimeOut(true);
     }
@@ -141,69 +117,25 @@ public class ProcessorTracker {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-processor-timing-pool-%d").build();
         ScheduledExecutorService timingPool = Executors.newSingleThreadScheduledExecutor(threadFactory);
 
-        timingPool.scheduleWithFixedDelay(new PoolStatusCheckRunnable(), 60, 10, TimeUnit.SECONDS);
+        timingPool.scheduleAtFixedRate(new TimingStatusReportRunnable(), 0, 15, TimeUnit.SECONDS);
     }
 
 
     /**
-     * 定期检查线程池运行状态（内存中的任务数量不足，则即使从数据库中获取并提交执行）
+     * 定时向 TaskTracker 汇报（携带任务执行信息的心跳）
      */
-    private class PoolStatusCheckRunnable implements Runnable {
+    private class TimingStatusReportRunnable implements Runnable {
 
         @Override
         public void run() {
 
-            int queueSize = threadPool.getQueue().size();
-            if (queueSize >= MAX_QUEUE_SIZE / 2) {
-                return;
-            }
+            // 1. 查询数据库中等待执行的任务数量
+            long waitingNum = threadPool.getQueue().size();
 
-            TaskPersistenceService taskPersistenceService = TaskPersistenceService.INSTANCE;
-
-            // 查询时也用特殊处理的 instanceId 查即可
-            List<TaskDO> taskDOList =taskPersistenceService.getTaskByStatus(getSPInstanceId(instanceId), TaskStatus.RECEIVE_SUCCESS, MAX_QUEUE_SIZE / 2);
-
-            if (CollectionUtils.isEmpty(taskDOList)) {
-                return;
-            }
-
-            List<String> deletedIds = Lists.newLinkedList();
-
-            log.debug("[ProcessorTracker] timing add task to thread pool.");
-
-            // 提交到线程池执行
-            taskDOList.forEach(task -> {
-
-                // 还原 instanceId
-                task.setInstanceId(instanceId);
-                runTask(task);
-                deletedIds.add(task.getTaskId());
-            });
-
-            // 删除任务（需要使用特殊instanceId）
-            taskPersistenceService.batchDelete(getSPInstanceId(instanceId), deletedIds);
-        }
-
-        private void runTask(TaskDO task) {
-            TaskTrackerStartTaskReq req = new TaskTrackerStartTaskReq();
-            BeanUtils.copyProperties(task, req);
-
-            req.setExecuteType(executeType);
-            req.setProcessorType(processorType);
-            req.setProcessorInfo(processorInfo);
-            req.setTaskTrackerAddress(taskTrackerAddress);
-            req.setJobParams(jobParams);
-            req.setInstanceParams(instanceParams);
-            req.setSubTaskContent(task.getTaskContent());
-            req.setMaxRetryTimes(maxRetryTimes);
-            req.setCurrentRetryTimes(task.getFailedCnt());
-
-            ProcessorRunnable processorRunnable = new ProcessorRunnable(taskTrackerActorRef, req);
-            threadPool.submit(processorRunnable);
+            // 2. 发送请求
+            ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceInfo.getInstanceId(), waitingNum);
+            taskTrackerActorRef.tell(req, null);
         }
     }
 
-    private static String getSPInstanceId(String instanceId) {
-        return "L" + instanceId;
-    }
 }

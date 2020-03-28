@@ -9,6 +9,7 @@ import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.common.AkkaConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.typesafe.config.ConfigFactory;
 import org.junit.jupiter.api.AfterAll;
@@ -60,20 +61,30 @@ public class ProcessorTrackerTest {
     }
 
     private static TaskTrackerStartTaskReq genTaskTrackerStartTaskReq(String processor) {
+
+        InstanceInfo instanceInfo = new InstanceInfo();
+
+        instanceInfo.setJobId("1");
+        instanceInfo.setInstanceId("10086");
+
+        instanceInfo.setExecuteType(ExecuteType.STANDALONE.name());
+        instanceInfo.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
+        instanceInfo.setProcessorInfo(processor);
+
+        instanceInfo.setInstanceTimeoutMS(500000);
+        instanceInfo.setTaskTimeoutMS(5000000);
+
+        instanceInfo.setThreadConcurrency(5);
+        instanceInfo.setTaskRetryNum(3);
+
         TaskTrackerStartTaskReq req = new TaskTrackerStartTaskReq();
-        req.setJobId("1");
-        req.setInstanceId("10086");
+
+        req.setTaskTrackerAddress(NetUtils.getLocalHost());
+        req.setInstanceInfo(instanceInfo);
+
         req.setTaskId("0");
         req.setTaskName("ROOT_TASK");
-        req.setMaxRetryTimes(3);
-        req.setCurrentRetryTimes(0);
-
-        req.setExecuteType(ExecuteType.STANDALONE.name());
-        req.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
-        req.setProcessorInfo(processor);
-        req.setThreadConcurrency(5);
-        req.setTaskTrackerAddress(NetUtils.getLocalHost());
-        req.setJobTimeLimitMS(123132);
+        req.setTaskCurrentRetryNums(0);
 
         return req;
     }

@@ -150,6 +150,25 @@ public class TaskPersistenceService {
     }
 
     /**
+     * 获取等待执行的任务数量 （ProcessorTracker侧）
+     * @param spInstanceId 特殊处理的 instanceId
+     * @return 数量
+     */
+    public Optional<Long> getWaitingToRunTaskNum(String spInstanceId) {
+        try {
+            return execute(() -> {
+                SimpleTaskQuery query = new SimpleTaskQuery();
+                query.setQueryContent("count(*) as num");
+                Long num = Long.parseLong(taskDAO.simpleQueryPlus(query).get(0).get("NUM").toString());
+                return Optional.of(num);
+            });
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] getWaitingToRunTaskNum for instance(id={}) failed.", spInstanceId, e);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * 查询 taskId -> taskResult，reduce阶段或postProcess 阶段使用
      */
     public Map<String, String> getTaskId2ResultMap(String instanceId) {
@@ -162,7 +181,7 @@ public class TaskPersistenceService {
     }
 
     /**
-     * 查询任务状态（只查询 status，节约 I/O 资源）
+     * 查询任务状态（只查询 status，节约 I/O 资源 -> 测试表明，效果惊人...磁盘I/O果然是重要瓶颈...）
      */
     public Optional<TaskStatus> getTaskStatus(String instanceId, String taskId) {
 
@@ -212,6 +231,29 @@ public class TaskPersistenceService {
         }catch (Exception e) {
             log.error("[TaskPersistenceService] updateTaskStatus failed, instanceId={},taskId={},status={},result={}.",
                     instanceId, taskId, status, result, e);
+        }
+        return false;
+    }
+
+    /**
+     * 批量更新 Task 状态
+     */
+    public boolean batchUpdateTaskStatus(String instanceId, List<String> taskIds, TaskStatus status, String result) {
+        try {
+            return execute(() -> {
+
+                SimpleTaskQuery query = new SimpleTaskQuery();
+                query.setInstanceId(instanceId);
+                query.setQueryCondition(String.format(" task_id in %s ", CommonUtils.getInStringCondition(taskIds)));
+
+                TaskDO updateEntity = new TaskDO();
+                updateEntity.setStatus(status.getValue());
+                updateEntity.setResult(result);
+                return taskDAO.simpleUpdate(query, updateEntity);
+            });
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] updateTaskStatus failed, instanceId={},taskIds={},status={},result={}.",
+                    instanceId, taskIds, status, result, e);
         }
         return false;
     }

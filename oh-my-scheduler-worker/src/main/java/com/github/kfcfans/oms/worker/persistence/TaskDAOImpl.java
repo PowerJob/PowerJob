@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.persistence;
 
+import com.github.kfcfans.common.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.springframework.util.CollectionUtils;
@@ -59,7 +60,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean batchDelete(String instanceId, List<String> taskIds) throws SQLException {
         String deleteSQL = "delete from task_info where instance_id = '%s' and task_id in %s";
-        String sql = String.format(deleteSQL, instanceId, getInStringCondition(taskIds));
+        String sql = String.format(deleteSQL, instanceId, CommonUtils.getInStringCondition(taskIds));
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.executeUpdate(sql);
             return true;
@@ -180,12 +181,5 @@ public class TaskDAOImpl implements TaskDAO {
         ps.setLong(11, task.getLastModifiedTime());
     }
 
-    private static String getInStringCondition(Collection<String> collection) {
-        if (CollectionUtils.isEmpty(collection)) {
-            return "()";
-        }
-        StringBuilder sb = new StringBuilder(" ( ");
-        collection.forEach(str -> sb.append("'").append(str).append("',"));
-        return sb.replace(sb.length() -1, sb.length(), " ) ").toString();
-    }
+
 }

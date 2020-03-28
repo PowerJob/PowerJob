@@ -7,6 +7,7 @@ import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.common.AkkaConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
+import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
@@ -48,15 +49,15 @@ public abstract class MapReduceProcessor implements BasicProcessor {
             log.warn("[MapReduceProcessor] map task size is too large, network maybe overload... please try to split the tasks.");
         }
 
-        TaskContext taskContext = ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.get();
+        TaskDO task = ThreadLocalStore.TASK_THREAD_LOCAL.get();
 
         // 1. 构造请求
-        ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(taskContext, taskList, taskName);
+        ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(task, taskList, taskName);
 
         // 2. 可靠发送请求（任务不允许丢失，需要使用 ask 方法，失败抛异常）
         boolean requestSucceed = false;
         try {
-            String akkaRemotePath = AkkaUtils.getAkkaRemotePath(taskContext.getTaskTrackerAddress(), AkkaConstant.Task_TRACKER_ACTOR_NAME);
+            String akkaRemotePath = AkkaUtils.getAkkaRemotePath(task.getAddress(), AkkaConstant.Task_TRACKER_ACTOR_NAME);
             ActorSelection actorSelection = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
             CompletionStage<Object> requestCS = Patterns.ask(actorSelection, req, Duration.ofMillis(REQUEST_TIMEOUT_MS));
             AskResponse respObj = (AskResponse) requestCS.toCompletableFuture().get(REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -73,8 +74,8 @@ public abstract class MapReduceProcessor implements BasicProcessor {
     }
 
     public boolean isRootTask() {
-        TaskContext taskContext = ThreadLocalStore.TASK_CONTEXT_THREAD_LOCAL.get();
-        return TaskConstant.ROOT_TASK_ID.equals(taskContext.getTaskId());
+        TaskDO task = ThreadLocalStore.TASK_THREAD_LOCAL.get();
+        return TaskConstant.ROOT_TASK_ID.equals(task.getTaskId());
     }
 
     public abstract ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result);

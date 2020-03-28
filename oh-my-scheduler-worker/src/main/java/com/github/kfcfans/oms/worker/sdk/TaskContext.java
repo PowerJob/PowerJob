@@ -31,7 +31,6 @@ public class TaskContext {
 
     private Object subTask;
 
-    private String taskTrackerAddress;
 
 
     public String getDescription() {
@@ -40,8 +39,7 @@ public class TaskContext {
                 ", taskId='" + taskId + '\'' +
                 ", taskName='" + taskName + '\'' +
                 ", jobParams='" + jobParams + '\'' +
-                ", instanceParams='" + instanceParams + '\'' +
-                ", taskTrackerAddress='" + taskTrackerAddress;
+                ", instanceParams='" + instanceParams;
     }
 
     @Override

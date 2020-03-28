@@ -7,11 +7,12 @@ import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
-import com.github.kfcfans.oms.worker.pojo.model.JobInstanceInfo;
+import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -33,6 +34,7 @@ public class TaskTrackerActor extends AbstractActor {
                 .match(ProcessorReportTaskStatusReq.class, this::onReceiveProcessorReportTaskStatusReq)
                 .match(ServerScheduleJobReq.class, this::onReceiveServerScheduleJobReq)
                 .match(ProcessorMapTaskRequest.class, this::onReceiveProcessorMapTaskRequest)
+                .match(ProcessorTrackerStatusReportReq.class, this::onReceiveProcessorTrackerStatusReportReq)
                 .matchAny(obj -> log.warn("[ServerRequestActor] receive unknown request: {}.", obj))
                 .build();
     }
@@ -48,10 +50,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
         } else {
 
-            // 状态转化
-            TaskStatus status = TaskStatus.convertStatus(TaskStatus.of(req.getStatus()));
-
-            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), status.getValue(), req.getResult(), false);
+            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), req.getStatus(), req.getResult(), false);
         }
     }
 
@@ -102,6 +101,7 @@ public class TaskTrackerActor extends AbstractActor {
 
         log.info("[TaskTrackerActor] instance(id={}) pre process finished.", req.getInstanceId());
 
+        // TODO：考虑放到 BroadcastTaskTracker 中去
         // 1. 生成集群子任务
         boolean success = req.isSuccess();
         if (success) {
@@ -137,12 +137,18 @@ public class TaskTrackerActor extends AbstractActor {
         }
 
         // 原子创建，防止多实例的存在
-        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> {
+        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> new TaskTracker(req));
+    }
 
-            JobInstanceInfo jobInstanceInfo = new JobInstanceInfo();
-            BeanUtils.copyProperties(req, jobInstanceInfo);
-
-            return new TaskTracker(jobInstanceInfo);
-        });
+    /**
+     * ProcessorTracker 心跳处理器
+     */
+    private void onReceiveProcessorTrackerStatusReportReq(ProcessorTrackerStatusReportReq req) {
+        TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
+        if (taskTracker == null) {
+            log.warn("[TaskTrackerActor] receive ProcessorTrackerStatusReportReq({}) but system can't find TaskTracker.", req);
+            return;
+        }
+        taskTracker.receiveProcessorTrackerHeartbeat(req);
     }
 }

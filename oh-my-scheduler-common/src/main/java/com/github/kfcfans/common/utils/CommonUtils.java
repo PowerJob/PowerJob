@@ -2,6 +2,7 @@ package com.github.kfcfans.common.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.function.Supplier;
 
 
@@ -60,5 +61,18 @@ public class CommonUtils {
             }
         }
         return booleanExecutor.get();
+    }
+
+    /**
+     * 生成数据库查询语句 in 后的条件
+     * ["a", "b", "c"] -> ('a','b','c')
+     */
+    public static String getInStringCondition(Collection<String> collection) {
+        if (collection == null || collection.isEmpty()) {
+            return "()";
+        }
+        StringBuilder sb = new StringBuilder(" ( ");
+        collection.forEach(str -> sb.append("'").append(str).append("',"));
+        return sb.replace(sb.length() -1, sb.length(), " ) ").toString();
     }
 }

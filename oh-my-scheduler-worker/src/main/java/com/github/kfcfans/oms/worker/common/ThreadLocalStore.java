@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.worker.common;
 
-import com.github.kfcfans.oms.worker.sdk.TaskContext;
+import com.github.kfcfans.oms.worker.persistence.TaskDO;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ThreadLocalStore {
 
-    public static final ThreadLocal<TaskContext> TASK_CONTEXT_THREAD_LOCAL = new ThreadLocal<>();
+    public static final ThreadLocal<TaskDO> TASK_THREAD_LOCAL = new ThreadLocal<>();
 
     public static final ThreadLocal<AtomicLong> TASK_ID_THREAD_LOCAL = new ThreadLocal<>();
 

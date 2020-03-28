@@ -32,7 +32,7 @@ public class PersistenceServiceTest {
             task.setInstanceId("10086" + ThreadLocalRandom.current().nextInt(2));
             task.setTaskId(i + "");
             task.setFailedCnt(0);
-            task.setStatus(TaskStatus.RECEIVE_SUCCESS.getValue());
+            task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
