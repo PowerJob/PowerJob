@@ -2,7 +2,7 @@ package com.github.kfcfans.oms.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.common.AkkaConstant;
+import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
@@ -13,7 +13,6 @@ import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportRe
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 
 import java.util.concurrent.*;
 
@@ -38,6 +37,8 @@ public class ProcessorTracker {
 
     private ThreadPoolExecutor threadPool;
 
+    private static final int THREAD_POOL_QUEUE_MAX_SIZE = 100;
+
     /**
      * 创建 ProcessorTracker（其实就是创建了个执行用的线程池 T_T）
      */
@@ -48,7 +49,7 @@ public class ProcessorTracker {
         this.instanceInfo = request.getInstanceInfo();
         this.instanceId = request.getInstanceInfo().getInstanceId();
         this.taskTrackerAddress = request.getTaskTrackerAddress();
-        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(taskTrackerAddress, AkkaConstant.Task_TRACKER_ACTOR_NAME);
+        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
         // 初始化
@@ -68,25 +69,36 @@ public class ProcessorTracker {
      */
     public void submitTask(TaskDO newTask) {
 
+        boolean success = false;
         // 1. 设置值并提交执行
         newTask.setJobId(instanceInfo.getJobId());
         newTask.setInstanceId(instanceInfo.getInstanceId());
         newTask.setAddress(taskTrackerAddress);
 
         ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask);
-        threadPool.submit(processorRunnable);
+        try {
+            threadPool.submit(processorRunnable);
+            success = true;
+        }catch (RejectedExecutionException ignore) {
+            log.warn("[ProcessorTracker-{}] submit task(taskId={},taskName={}) to ThreadPool failed due to ThreadPool has too much task waiting to process, this task will dispatch to other ProcessorTracker.",
+                    instanceId, newTask.getTaskId(), newTask.getTaskName());
+        }catch (Exception e) {
+            log.error("[ProcessorTracker-{}] submit task(taskId={},taskName={}) to ThreadPool failed.", instanceId, newTask.getTaskId(), newTask.getTaskName(), e);
+        }
 
         // 2. 回复接收成功
-        ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
-        reportReq.setInstanceId(instanceId);
-        reportReq.setTaskId(newTask.getTaskId());
-        reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
+        if (success) {
+            ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
+            reportReq.setInstanceId(instanceId);
+            reportReq.setTaskId(newTask.getTaskId());
+            reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
 
-        reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
-        taskTrackerActorRef.tell(reportReq, null);
+            reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
+            taskTrackerActorRef.tell(reportReq, null);
 
-        log.debug("[ProcessorTracker-{}] submit task(taskId={}, taskName={}) success, current queue size: {}.",
-                instanceId, newTask.getTaskId(), newTask.getTaskName(), threadPool.getQueue().size());
+            log.debug("[ProcessorTracker-{}] submit task(taskId={}, taskName={}) success, current queue size: {}.",
+                    instanceId, newTask.getTaskId(), newTask.getTaskName(), threadPool.getQueue().size());
+        }
     }
 
     /**
@@ -101,11 +113,17 @@ public class ProcessorTracker {
      * 初始化线程池
      */
     private void initProcessorPool() {
+
+        int poolSize = instanceInfo.getThreadConcurrency();
         // 待执行队列，为了防止对内存造成较大压力，内存队列不能太大
-        BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(THREAD_POOL_QUEUE_MAX_SIZE);
         // 自定义线程池中线程名称
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-processor-pool-%d").build();
-        threadPool = new ThreadPoolExecutor(instanceInfo.getTaskRetryNum(), instanceInfo.getTaskRetryNum(), 60L, TimeUnit.SECONDS, queue, threadFactory);
+        // 拒绝策略：直接抛出异常
+        RejectedExecutionHandler rejectionHandler = new ThreadPoolExecutor.AbortPolicy();
+
+        threadPool = new ThreadPoolExecutor(poolSize, poolSize, 60L, TimeUnit.SECONDS, queue, threadFactory, rejectionHandler);
+
         // 当没有任务执行时，允许销毁核心线程（即线程池最终存活线程个数可能为0）
         threadPool.allowCoreThreadTimeOut(true);
     }
@@ -117,7 +135,7 @@ public class ProcessorTracker {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-processor-timing-pool-%d").build();
         ScheduledExecutorService timingPool = Executors.newSingleThreadScheduledExecutor(threadFactory);
 
-        timingPool.scheduleAtFixedRate(new TimingStatusReportRunnable(), 0, 15, TimeUnit.SECONDS);
+        timingPool.scheduleAtFixedRate(new TimingStatusReportRunnable(), 0, 10, TimeUnit.SECONDS);
     }
 
 

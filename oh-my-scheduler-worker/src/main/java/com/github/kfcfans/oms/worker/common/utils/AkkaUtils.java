@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.worker.common.utils;
 
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.common.AkkaConstant;
+import com.github.kfcfans.common.RemoteConstant;
 
 /**
  * AKKA 工具类
@@ -20,12 +20,12 @@ public class AkkaUtils {
 
     public static String getAkkaRemotePath(String ip, String actorName) {
         Integer configPort = OhMyWorker.getConfig().getListeningPort();
-        int port = configPort == null ? AkkaConstant.DEFAULT_PORT : configPort;
-        return String.format(AKKA_REMOTE_NODE_PATH, AkkaConstant.ACTOR_SYSTEM_NAME, ip, port, actorName);
+        int port = configPort == null ? RemoteConstant.DEFAULT_CLIENT_PORT : configPort;
+        return String.format(AKKA_REMOTE_NODE_PATH, RemoteConstant.ACTOR_SYSTEM_NAME, ip, port, actorName);
     }
 
     public static String getAkkaServerNodePath(String actorName) {
-        return String.format(AKKA_SERVER_NODE_PATH, AkkaConstant.SERVER_ACTOR_SYSTEM_NAME, OhMyWorker.getCurrentServer(), actorName);
+        return String.format(AKKA_SERVER_NODE_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, OhMyWorker.getCurrentServer(), actorName);
     }
 
 }

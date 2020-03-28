@@ -6,7 +6,7 @@ import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
-import com.github.kfcfans.common.AkkaConstant;
+import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
@@ -36,7 +36,7 @@ public class ProcessorTrackerTest {
         worker.init();
 
         ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));
-        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(NetUtils.getLocalHost(), AkkaConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(NetUtils.getLocalHost(), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
         remoteProcessorTracker = testAS.actorSelection(akkaRemotePath);
     }
 

@@ -2,7 +2,7 @@ package com.github.kfcfans.oms;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import com.github.kfcfans.common.AkkaConstant;
+import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
@@ -34,7 +34,7 @@ public class TaskTrackerTest {
         worker.init();
 
         ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));
-        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(NetUtils.getLocalHost(), AkkaConstant.Task_TRACKER_ACTOR_NAME);
+        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(NetUtils.getLocalHost(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
         remoteTaskTracker = testAS.actorSelection(akkaRemotePath);
     }
 

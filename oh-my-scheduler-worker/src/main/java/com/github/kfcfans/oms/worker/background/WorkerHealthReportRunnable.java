@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.worker.background;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.common.AkkaConstant;
+import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.model.SystemMetrics;
 import com.github.kfcfans.common.request.WorkerHealthReportReq;
 import com.github.kfcfans.oms.worker.OhMyWorker;
@@ -30,7 +30,7 @@ public class WorkerHealthReportRunnable implements Runnable {
         reportReq.setTotalAddress(OhMyWorker.getWorkerAddress());
 
         // 发送请求
-        String serverPath = AkkaUtils.getAkkaServerNodePath(AkkaConstant.SERVER_ACTOR_NAME);
+        String serverPath = AkkaUtils.getAkkaServerNodePath(RemoteConstant.SERVER_ACTOR_NAME);
         ActorSelection actorSelection = OhMyWorker.actorSystem.actorSelection(serverPath);
         actorSelection.tell(reportReq, null);
     }

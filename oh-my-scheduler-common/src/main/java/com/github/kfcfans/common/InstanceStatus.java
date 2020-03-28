@@ -11,10 +11,10 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum JobInstanceStatus {
-    RUNNING(1, "运行中"),
-    SUCCEED(2, "运行成功"),
-    FAILED(3, "运行失败");
+public enum InstanceStatus {
+    RUNNING(3, "运行中"),
+    SUCCEED(4, "运行成功"),
+    FAILED(5, "运行失败");
 
     private int value;
     private String des;

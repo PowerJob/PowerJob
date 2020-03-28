@@ -1,21 +1,20 @@
 package com.github.kfcfans.common;
 
 /**
- * akka actor 名称
+ * RemoteConstant
  *
  * @author tjq
  * @since 2020/3/17
  */
-public class AkkaConstant {
+public class RemoteConstant {
 
-    /**
-     * 默认端口
-     */
-    public static final int DEFAULT_PORT = 25520;
 
     /**
      * 顶层Actor（actorSystem名称）
      */
+    /* ************************ AKKA CLIENT ************************ */
+    public static final int DEFAULT_CLIENT_PORT = 25520;
+
     public static final String ACTOR_SYSTEM_NAME = "oms";
 
     public static final String Task_TRACKER_ACTOR_NAME = "task_tracker";
@@ -25,8 +24,11 @@ public class AkkaConstant {
 
 
 
-    /* ************************ SERVER ************************ */
+    /* ************************ AKKA SERVER ************************ */
     public static final String SERVER_ACTOR_SYSTEM_NAME = "oms-server";
     public static final String SERVER_ACTOR_NAME = "server_actor";
 
+
+    /* ************************ OTHERS ************************ */
+    public static final String EMPTY_ADDRESS = "N/A";
 }

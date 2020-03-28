@@ -6,7 +6,7 @@ import com.github.kfcfans.oms.worker.actors.ProcessorTrackerActor;
 import com.github.kfcfans.oms.worker.actors.TaskTrackerActor;
 import com.github.kfcfans.oms.worker.background.WorkerHealthReportRunnable;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
-import com.github.kfcfans.common.AkkaConstant;
+import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
@@ -68,18 +68,18 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
             // 初始化 ActorSystem
             Map<String, Object> overrideConfig = Maps.newHashMap();
             String localIP = StringUtils.isEmpty(config.getListeningIP()) ? NetUtils.getLocalHost() : config.getListeningIP();
-            int port = config.getListeningPort() == null ? AkkaConstant.DEFAULT_PORT : config.getListeningPort();
+            int port = config.getListeningPort() == null ? RemoteConstant.DEFAULT_CLIENT_PORT : config.getListeningPort();
             overrideConfig.put("akka.remote.artery.canonical.hostname", localIP);
             overrideConfig.put("akka.remote.artery.canonical.port", port);
             workerAddress = localIP + ":" + port;
             log.info("[OhMyWorker] akka-remote listening address: {}", workerAddress);
 
-            Config akkaBasicConfig = ConfigFactory.load(AkkaConstant.AKKA_CONFIG_NAME);
+            Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.AKKA_CONFIG_NAME);
             Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
-            actorSystem = ActorSystem.create(AkkaConstant.ACTOR_SYSTEM_NAME, akkaFinalConfig);
-            actorSystem.actorOf(Props.create(TaskTrackerActor.class), AkkaConstant.Task_TRACKER_ACTOR_NAME);
-            actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), AkkaConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+            actorSystem = ActorSystem.create(RemoteConstant.ACTOR_SYSTEM_NAME, akkaFinalConfig);
+            actorSystem.actorOf(Props.create(TaskTrackerActor.class), RemoteConstant.Task_TRACKER_ACTOR_NAME);
+            actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
             log.info("[OhMyWorker] akka ActorSystem({}) initialized successfully.", actorSystem);
 
             // 初始化存储

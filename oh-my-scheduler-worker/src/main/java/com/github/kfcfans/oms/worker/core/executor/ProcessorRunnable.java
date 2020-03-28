@@ -21,6 +21,7 @@ import com.github.kfcfans.oms.worker.sdk.api.BroadcastProcessor;
 import com.github.kfcfans.oms.worker.sdk.api.MapReduceProcessor;
 import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
@@ -40,6 +41,7 @@ public class ProcessorRunnable implements Runnable {
 
     private InstanceInfo instanceInfo;
     private final ActorSelection taskTrackerActor;
+    @Getter
     private final TaskDO task;
 
     @Override

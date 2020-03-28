@@ -7,7 +7,6 @@ import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
-import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
@@ -15,7 +14,6 @@ import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 
@@ -50,7 +48,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
         } else {
 
-            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), req.getStatus(), req.getResult(), false);
+            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), req.getStatus(), req.getResult());
         }
     }
 
@@ -121,7 +119,7 @@ public class TaskTrackerActor extends AbstractActor {
 
         // 2. 更新根任务状态（广播任务的根任务为 preProcess 任务）
         int status = success ? TaskStatus.WORKER_PROCESS_SUCCESS.getValue() : TaskStatus.WORKER_PROCESS_FAILED.getValue();
-        taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), status, req.getMsg(), false);
+        taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), status, req.getMsg());
     }
 
     /**

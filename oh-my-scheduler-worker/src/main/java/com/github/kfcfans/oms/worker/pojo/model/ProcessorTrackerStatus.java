@@ -25,14 +25,24 @@ public class ProcessorTrackerStatus {
     private long remainTaskNum;
     // 是否被派发过任务
     private boolean dispatched;
+    // 是否接收到过来自 ProcessorTracker 的心跳
+    private boolean connected;
 
-    public void init(String ip) {
-        this.ip = ip;
+    /**
+     * 初始化 ProcessorTracker，此时并未持有实际的 ProcessorTracker 状态
+     */
+    public void init(String ptIP) {
+        this.ip = ptIP;
         this.lastActiveTime = System.currentTimeMillis();
         this.remainTaskNum = 0;
         this.dispatched = false;
+        this.connected = false;
     }
 
+    /**
+     * 接收到 ProcessorTracker 的心跳信息后，更新状态
+     * @param req ProcessorTracker的心跳信息
+     */
     public void update(ProcessorTrackerStatusReportReq req) {
 
         // 延迟到达的请求，直接忽略
@@ -44,6 +54,7 @@ public class ProcessorTrackerStatus {
         this.lastActiveTime = req.getTime();
         this.remainTaskNum = req.getRemainTaskNum();
         this.dispatched = true;
+        this.connected = true;
     }
 
     /**
@@ -54,6 +65,11 @@ public class ProcessorTrackerStatus {
         // 未曾派发过，默认可用
         if (!dispatched) {
             return true;
+        }
+
+        // 已派发但未收到响应，则不可用
+        if (!connected) {
+            return false;
         }
 
         // 长时间未收到心跳消息，则不可用

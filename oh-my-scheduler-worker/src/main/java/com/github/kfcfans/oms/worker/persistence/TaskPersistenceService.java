@@ -67,15 +67,28 @@ public class TaskPersistenceService {
     }
 
     /**
+     * 依靠主键更新 Task
+     */
+    public boolean updateTask(String instanceId, String taskId, TaskDO updateEntity) {
+        try {
+            SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
+            return execute(() -> taskDAO.simpleUpdate(query, updateEntity));
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] updateTask failed.", e);
+        }
+        return false;
+    }
+
+    /**
      * 获取 MapReduce 或 Broadcast 的最后一个任务
      */
     public Optional<TaskDO> getLastTask(String instanceId) {
 
         try {
+            SimpleTaskQuery query = new SimpleTaskQuery();
+            query.setInstanceId(instanceId);
+            query.setTaskName(TaskConstant.LAST_TASK_NAME);
             return execute(() -> {
-                SimpleTaskQuery query = new SimpleTaskQuery();
-                query.setInstanceId(instanceId);
-                query.setTaskName(TaskConstant.LAST_TASK_NAME);
                 List<TaskDO> taskDOS = taskDAO.simpleQuery(query);
                 if (CollectionUtils.isEmpty(taskDOS)) {
                     return Optional.empty();
@@ -91,9 +104,9 @@ public class TaskPersistenceService {
 
     public List<TaskDO> getAllTask(String instanceId) {
         try {
+            SimpleTaskQuery query = new SimpleTaskQuery();
+            query.setInstanceId(instanceId);
             return execute(() -> {
-                SimpleTaskQuery query = new SimpleTaskQuery();
-                query.setInstanceId(instanceId);
                 return taskDAO.simpleQuery(query);
             });
         }catch (Exception e) {
@@ -107,14 +120,11 @@ public class TaskPersistenceService {
      */
     public List<TaskDO> getTaskByStatus(String instanceId, TaskStatus status, int limit) {
         try {
-            return execute(() -> {
-                SimpleTaskQuery query = new SimpleTaskQuery();
-                query.setInstanceId(instanceId);
-                query.setStatus(status.getValue());
-                query.setLimit(limit);
-
-                return taskDAO.simpleQuery(query);
-            });
+            SimpleTaskQuery query = new SimpleTaskQuery();
+            query.setInstanceId(instanceId);
+            query.setStatus(status.getValue());
+            query.setLimit(limit);
+            return execute(() -> taskDAO.simpleQuery(query));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] getTaskByStatus failed, params is instanceId={},status={}.", instanceId, status, e);
         }
@@ -127,13 +137,14 @@ public class TaskPersistenceService {
      */
     public Map<TaskStatus, Long> getTaskStatusStatistics(String instanceId) {
         try {
-            return execute(() -> {
-                SimpleTaskQuery query = new SimpleTaskQuery();
-                query.setInstanceId(instanceId);
-                query.setQueryContent("status, count(*) as num");
-                query.setOtherCondition("GROUP BY status");
-                List<Map<String, Object>> dbRES = taskDAO.simpleQueryPlus(query);
 
+            SimpleTaskQuery query = new SimpleTaskQuery();
+            query.setInstanceId(instanceId);
+            query.setQueryContent("status, count(*) as num");
+            query.setOtherCondition("GROUP BY status");
+
+            return execute(() -> {
+                List<Map<String, Object>> dbRES = taskDAO.simpleQueryPlus(query);
                 Map<TaskStatus, Long> result = Maps.newHashMap();
                 dbRES.forEach(row -> {
                     // H2 数据库都是大写...
@@ -147,25 +158,6 @@ public class TaskPersistenceService {
             log.error("[TaskPersistenceService] getTaskStatusStatistics for instance(id={}) failed.", instanceId, e);
         }
         return Maps.newHashMap();
-    }
-
-    /**
-     * 获取等待执行的任务数量 （ProcessorTracker侧）
-     * @param spInstanceId 特殊处理的 instanceId
-     * @return 数量
-     */
-    public Optional<Long> getWaitingToRunTaskNum(String spInstanceId) {
-        try {
-            return execute(() -> {
-                SimpleTaskQuery query = new SimpleTaskQuery();
-                query.setQueryContent("count(*) as num");
-                Long num = Long.parseLong(taskDAO.simpleQueryPlus(query).get(0).get("NUM").toString());
-                return Optional.of(num);
-            });
-        }catch (Exception e) {
-            log.error("[TaskPersistenceService] getWaitingToRunTaskNum for instance(id={}) failed.", spInstanceId, e);
-        }
-        return Optional.empty();
     }
 
     /**
@@ -186,9 +178,9 @@ public class TaskPersistenceService {
     public Optional<TaskStatus> getTaskStatus(String instanceId, String taskId) {
 
         try {
+            SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
+            query.setQueryContent("STATUS");
             return execute(() -> {
-                SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
-                query.setQueryContent("STATUS");
                 List<Map<String, Object>> rows = taskDAO.simpleQueryPlus(query);
                 return Optional.of(TaskStatus.of((int) rows.get(0).get("STATUS")));
             });
@@ -204,9 +196,9 @@ public class TaskPersistenceService {
     public Optional<Integer> getTaskFailedCnt(String instanceId, String taskId) {
 
         try {
+            SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
+            query.setQueryContent("failed_cnt");
             return execute(() -> {
-                SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
-                query.setQueryContent("failed_cnt");
                 List<Map<String, Object>> rows = taskDAO.simpleQueryPlus(query);
                 // 查询成功不可能为空
                 return Optional.of((Integer) rows.get(0).get("FAILED_CNT"));
@@ -217,23 +209,6 @@ public class TaskPersistenceService {
         return Optional.empty();
     }
 
-    /**
-     * 更新 Task 的状态
-     */
-    public boolean updateTaskStatus(String instanceId, String taskId, TaskStatus status, String result) {
-        try {
-            return execute(() -> {
-                TaskDO updateEntity = new TaskDO();
-                updateEntity.setStatus(status.getValue());
-                updateEntity.setResult(result);
-                return taskDAO.simpleUpdate(genKeyQuery(instanceId, taskId), updateEntity);
-            });
-        }catch (Exception e) {
-            log.error("[TaskPersistenceService] updateTaskStatus failed, instanceId={},taskId={},status={},result={}.",
-                    instanceId, taskId, status, result, e);
-        }
-        return false;
-    }
 
     /**
      * 批量更新 Task 状态
@@ -254,23 +229,6 @@ public class TaskPersistenceService {
         }catch (Exception e) {
             log.error("[TaskPersistenceService] updateTaskStatus failed, instanceId={},taskIds={},status={},result={}.",
                     instanceId, taskIds, status, result, e);
-        }
-        return false;
-    }
-
-    public boolean updateRetryTask(String instanceId, String taskId, int failedCnt) {
-
-        try {
-            return execute(() -> {
-                TaskDO updateEntity = new TaskDO();
-                updateEntity.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
-                // 重新选取 worker 节点重试
-                updateEntity.setAddress("");
-                updateEntity.setFailedCnt(failedCnt);
-                return taskDAO.simpleUpdate(genKeyQuery(instanceId, taskId), updateEntity);
-            });
-        }catch (Exception e) {
-            log.error("[TaskPersistenceService] updateRetryTask failed, instanceId={},taskId={},failedCnt={}.", instanceId, taskId, failedCnt, e);
         }
         return false;
     }
