@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.worker.pojo.model;
+package com.github.kfcfans.oms.worker.core.ha;
 
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import lombok.Data;
@@ -93,4 +93,5 @@ public class ProcessorTrackerStatus {
     public boolean isTimeout() {
         return System.currentTimeMillis() - lastActiveTime > HEARTBEAT_TIMEOUT_MS;
     }
+
 }

@@ -24,7 +24,7 @@ public interface TaskDAO {
     boolean save(TaskDO task) throws SQLException;
     boolean batchSave(Collection<TaskDO> tasks) throws SQLException;
 
-    boolean batchDelete(String instanceId, List<String> taskIds) throws SQLException;
+    boolean simpleDelete(SimpleTaskQuery condition) throws SQLException;
 
     List<TaskDO> simpleQuery(SimpleTaskQuery query) throws SQLException;
 

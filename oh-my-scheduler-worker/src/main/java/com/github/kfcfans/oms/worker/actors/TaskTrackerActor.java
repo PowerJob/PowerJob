@@ -103,7 +103,7 @@ public class TaskTrackerActor extends AbstractActor {
         // 1. 生成集群子任务
         boolean success = req.isSuccess();
         if (success) {
-            List<String> allWorkerAddress = taskTracker.getAllWorkerAddress();
+            List<String> allWorkerAddress = taskTracker.getPtStatusHolder().getAllProcessorTrackers();
             List<TaskDO> subTaskList = Lists.newLinkedList();
             for (int i = 0; i < allWorkerAddress.size(); i++) {
                 TaskDO subTask = new TaskDO();

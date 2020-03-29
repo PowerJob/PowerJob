@@ -75,4 +75,11 @@ public class CommonUtils {
         collection.forEach(str -> sb.append("'").append(str).append("',"));
         return sb.replace(sb.length() -1, sb.length(), " ) ").toString();
     }
+
+    public static void executeIgnoreException(SupplierPlus<?> executor) {
+        try {
+            executor.get();
+        }catch (Exception ignore) {
+        }
+    }
 }

@@ -58,9 +58,9 @@ public class TaskDAOImpl implements TaskDAO {
 
 
     @Override
-    public boolean batchDelete(String instanceId, List<String> taskIds) throws SQLException {
-        String deleteSQL = "delete from task_info where instance_id = '%s' and task_id in %s";
-        String sql = String.format(deleteSQL, instanceId, CommonUtils.getInStringCondition(taskIds));
+    public boolean simpleDelete(SimpleTaskQuery condition) throws SQLException {
+        String deleteSQL = "delete from task_info where %s";
+        String sql = String.format(deleteSQL, condition.getQueryCondition());
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.executeUpdate(sql);
             return true;

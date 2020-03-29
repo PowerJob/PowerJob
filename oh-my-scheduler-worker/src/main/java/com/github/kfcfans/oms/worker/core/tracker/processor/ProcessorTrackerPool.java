@@ -22,4 +22,15 @@ public class ProcessorTrackerPool {
     public static ProcessorTracker getProcessorTracker(String instanceId, Function<String, ProcessorTracker> creator) {
         return instanceId2ProcessorTracker.computeIfAbsent(instanceId, creator);
     }
+
+    /**
+     * 获取 ProcessorTracker
+     */
+    public static ProcessorTracker getProcessorTracker(String instanceId) {
+        return instanceId2ProcessorTracker.get(instanceId);
+    }
+
+    public static void removeProcessorTracker(String instanceId) {
+        instanceId2ProcessorTracker.remove(instanceId);
+    }
 }

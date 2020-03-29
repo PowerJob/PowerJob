@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
@@ -13,7 +14,9 @@ import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportRe
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -36,6 +39,7 @@ public class ProcessorTracker {
     private ActorSelection taskTrackerActorRef;
 
     private ThreadPoolExecutor threadPool;
+    private ScheduledExecutorService timingPool;
 
     private static final int THREAD_POOL_QUEUE_MAX_SIZE = 100;
 
@@ -108,6 +112,30 @@ public class ProcessorTracker {
         return System.currentTimeMillis() - startTime > instanceInfo.getInstanceTimeoutMS();
     }
 
+    /**
+     * 释放资源
+     */
+    public void destroy() {
+
+        // 1. 关闭定时线程池
+        CommonUtils.executeIgnoreException(() -> timingPool.shutdownNow());
+
+        // 2. 关闭执行执行线程池
+        CommonUtils.executeIgnoreException(() -> {
+            List<Runnable> tasks = threadPool.shutdownNow();
+            if (!CollectionUtils.isEmpty(tasks)) {
+                log.warn("[ProcessorTracker-{}] shutdown threadPool now and stop {} tasks.", instanceId, tasks.size());
+            }
+            return null;
+        });
+
+        // 3. 去除顶层引用，送入GC世界
+        taskTrackerActorRef = null;
+        ProcessorTrackerPool.removeProcessorTracker(instanceId);
+
+        log.info("[ProcessorTracker-{}] mission complete, ProcessorTracker already destroyed!", instanceId);
+    }
+
 
     /**
      * 初始化线程池
@@ -133,7 +161,7 @@ public class ProcessorTracker {
      */
     private void initTimingJob() {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-processor-timing-pool-%d").build();
-        ScheduledExecutorService timingPool = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        timingPool = Executors.newSingleThreadScheduledExecutor(threadFactory);
 
         timingPool.scheduleAtFixedRate(new TimingStatusReportRunnable(), 0, 10, TimeUnit.SECONDS);
     }
@@ -147,11 +175,8 @@ public class ProcessorTracker {
         @Override
         public void run() {
 
-            // 1. 查询数据库中等待执行的任务数量
             long waitingNum = threadPool.getQueue().size();
-
-            // 2. 发送请求
-            ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceInfo.getInstanceId(), waitingNum);
+            ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceId, waitingNum);
             taskTrackerActorRef.tell(req, null);
         }
     }

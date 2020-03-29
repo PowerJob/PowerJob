@@ -54,7 +54,7 @@ public class TaskDO {
         if (failedCnt != null) {
             sb.append(" failed_cnt = ").append(failedCnt).append(",");
         }
-        sb.append(" last_modified_time = ").append(lastModifiedTime);
+        sb.append(" last_modified_time = ").append(lastModifiedTime == null ? System.currentTimeMillis() : lastModifiedTime);
         return sb.toString();
     }
 

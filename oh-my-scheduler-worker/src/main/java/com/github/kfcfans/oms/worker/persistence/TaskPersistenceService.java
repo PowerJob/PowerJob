@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.persistence;
 
 
+import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.common.utils.SupplierPlus;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
@@ -71,10 +72,37 @@ public class TaskPersistenceService {
      */
     public boolean updateTask(String instanceId, String taskId, TaskDO updateEntity) {
         try {
+            updateEntity.setLastModifiedTime(System.currentTimeMillis());
             SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
             return execute(() -> taskDAO.simpleUpdate(query, updateEntity));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] updateTask failed.", e);
+        }
+        return false;
+    }
+
+    /**
+     * 更新被派发到已经失联的 ProcessorTracker 的任务，重新执行
+     * update task_info
+     * set address = 'N/A', status = 0
+     * where address in () and status not in (5,6)
+     */
+    public boolean updateLostTasks(List<String> addressList) {
+
+        TaskDO updateEntity = new TaskDO();
+        updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
+        updateEntity.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
+        updateEntity.setLastModifiedTime(System.currentTimeMillis());
+
+        SimpleTaskQuery query = new SimpleTaskQuery();
+        String queryConditionFormat = "address in %s and status not in (%d, %d)";
+        String queryCondition = String.format(queryConditionFormat, CommonUtils.getInStringCondition(addressList), TaskStatus.WORKER_PROCESS_FAILED.getValue(), TaskStatus.WORKER_PROCESS_SUCCESS.getValue());
+        query.setQueryCondition(queryCondition);
+
+        try {
+            return execute(() -> taskDAO.simpleUpdate(query, updateEntity));
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] updateLostTasks failed.", e);
         }
         return false;
     }
@@ -234,11 +262,13 @@ public class TaskPersistenceService {
     }
 
 
-    public boolean batchDelete(String instanceId, List<String> taskIds) {
+    public boolean deleteAllTasks(String instanceId) {
         try {
-            return execute(() -> taskDAO.batchDelete(instanceId, taskIds));
+            SimpleTaskQuery condition = new SimpleTaskQuery();
+            condition.setInstanceId(instanceId);
+            return execute(() -> taskDAO.simpleDelete(condition));
         }catch (Exception e) {
-            log.error("[TaskPersistenceService] batchDelete failed, instanceId={},taskIds={}.", instanceId, taskIds, e);
+            log.error("[TaskPersistenceService] deleteAllTasks failed, instanceId={}.", instanceId, e);
         }
         return false;
     }

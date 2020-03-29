@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms;
 
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
+import com.github.kfcfans.oms.worker.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.google.common.collect.Lists;
@@ -24,7 +25,7 @@ public class PersistenceServiceTest {
         taskPersistenceService.init();
 
         List<TaskDO> taskList = Lists.newLinkedList();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 10; i++) {
             TaskDO task = new TaskDO();
             taskList.add(task);
 
@@ -34,6 +35,7 @@ public class PersistenceServiceTest {
             task.setFailedCnt(0);
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
+            task.setAddress(NetUtils.getLocalHost());
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
         }
@@ -58,12 +60,18 @@ public class PersistenceServiceTest {
 
 
     @Test
-    public void testBatchDelete() {
+    public void testDeleteAllTasks() {
 
         System.out.println("=============== testBatchDelete ===============");
-        boolean delete = taskPersistenceService.batchDelete("100860", Lists.newArrayList("0", "1"));
+        boolean delete = taskPersistenceService.deleteAllTasks("100860");
         System.out.println("delete result:" + delete);
     }
 
+    @Test
+    public void testUpdateLostTasks() throws Exception {
+        Thread.sleep(1000);
+        boolean success = taskPersistenceService.updateLostTasks(Lists.newArrayList(NetUtils.getLocalHost()));
+        System.out.println("updateLostTasks: " + success);
+    }
 
 }

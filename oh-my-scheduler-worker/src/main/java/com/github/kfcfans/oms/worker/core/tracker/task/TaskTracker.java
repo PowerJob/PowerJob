@@ -7,23 +7,22 @@ import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.oms.worker.common.constants.CommonSJ;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.oms.worker.core.ha.ProcessorTrackerStatusHolder;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
-import com.github.kfcfans.oms.worker.pojo.model.ProcessorTrackerStatus;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStopInstanceReq;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
 import lombok.ToString;
@@ -56,8 +55,7 @@ public class TaskTracker {
     private InstanceInfo instanceInfo;
 
     @Getter
-    private List<String> allWorkerAddress;
-    private Map<String, ProcessorTrackerStatus> pTAddress2Status;
+    private ProcessorTrackerStatusHolder ptStatusHolder;
 
     // 数据库持久化服务
     private TaskPersistenceService taskPersistenceService;
@@ -73,13 +71,7 @@ public class TaskTracker {
         // 1. 初始化成员变量
         this.instanceInfo = new InstanceInfo();
         BeanUtils.copyProperties(req, instanceInfo);
-        allWorkerAddress = CommonSJ.commaSplitter.splitToList(req.getAllWorkerAddress());
-        pTAddress2Status = Maps.newConcurrentMap();
-        allWorkerAddress.forEach(ip -> {
-            ProcessorTrackerStatus pts = new ProcessorTrackerStatus();
-            pts.init(ip);
-            pTAddress2Status.put(ip, pts);
-        });
+        this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
 
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("oms-TaskTrackerTimingPool-%d").build();
@@ -180,10 +172,8 @@ public class TaskTracker {
      * ProcessorTracker 上报健康状态
      */
     public void receiveProcessorTrackerHeartbeat(ProcessorTrackerStatusReportReq heartbeatReq) {
-
-        ProcessorTrackerStatus processorTrackerStatus = pTAddress2Status.get(heartbeatReq.getIp());
-        processorTrackerStatus.update(heartbeatReq);
-        log.debug("[TaskTracker-{}] receive heartbeat: {}", instanceInfo.getInstanceId(), processorTrackerStatus);
+        ptStatusHolder.updateStatus(heartbeatReq);
+        log.debug("[TaskTracker-{}] receive heartbeat: {}", instanceInfo.getInstanceId(), heartbeatReq);
     }
 
     public boolean finished() {
@@ -214,6 +204,7 @@ public class TaskTracker {
         rootTask.setLastModifiedTime(System.currentTimeMillis());
 
         if (!taskPersistenceService.save(rootTask)) {
+            log.error("[TaskTracker-{}] create root task failed.", instanceInfo.getInstanceId());
             throw new RuntimeException("create root task failed.");
         }
         log.info("[TaskTracker-{}] create root task successfully.", instanceInfo.getInstanceId());
@@ -221,7 +212,33 @@ public class TaskTracker {
 
 
     public void destroy() {
-        scheduledPool.shutdown();
+
+        // 0. 先关闭定时任务线程池，防止任务被派发出去
+        CommonUtils.executeIgnoreException(() -> scheduledPool.shutdownNow());
+
+        // 1. 通知 ProcessorTracker 释放资源
+        String instanceId = instanceInfo.getInstanceId();
+        TaskTrackerStopInstanceReq stopRequest = new TaskTrackerStopInstanceReq();
+        stopRequest.setInstanceId(instanceId);
+        ptStatusHolder.getAllProcessorTrackers().forEach(ptIP -> {
+            String ptPath = AkkaUtils.getAkkaRemotePath(ptIP, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+            ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptPath);
+            // 不可靠通知，ProcessorTracker 也可以靠自己的定时任务/问询等方式关闭
+            ptActor.tell(stopRequest, null);
+        });
+
+        // 2. 删除所有数据库数据
+        boolean dbSuccess = taskPersistenceService.deleteAllTasks(instanceId);
+        if (!dbSuccess) {
+            log.warn("[TaskTracker-{}] delete tasks from database failed.", instanceId);
+        }else {
+            log.debug("[TaskTracker-{}] delete all tasks from database successfully.", instanceId);
+        }
+
+        // 3. 移除顶层引用，送去 GC
+        TaskTrackerPool.remove(instanceId);
+
+        log.info("[TaskTracker-{}] TaskTracker has left the world.", instanceId);
     }
 
     /**
@@ -243,12 +260,7 @@ public class TaskTracker {
             String instanceId = instanceInfo.getInstanceId();
 
             // 1. 获取可以派发任务的 ProcessorTracker
-            List<String> availablePtIps = Lists.newLinkedList();
-            pTAddress2Status.forEach((ip, ptStatus) -> {
-                if (ptStatus.available()) {
-                    availablePtIps.add(ip);
-                }
-            });
+            List<String> availablePtIps = ptStatusHolder.getAvailableProcessorTrackers();
 
             // 2. 没有可用 ProcessorTracker，本次不派发
             if (availablePtIps.isEmpty()) {
@@ -282,7 +294,7 @@ public class TaskTracker {
                     ptActor.tell(startTaskReq, null);
 
                     // 更新 ProcessorTrackerStatus 状态
-                    pTAddress2Status.get(ptAddress).setDispatched(true);
+                    ptStatusHolder.getProcessorTrackerStatus(ptAddress).setDispatched(true);
                     // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
                     TaskDO updateEntity = new TaskDO();
                     updateEntity.setStatus(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue());
@@ -320,8 +332,8 @@ public class TaskTracker {
             long workerUnreceivedNum = status2Num.getOrDefault(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 0L);
             long receivedNum = status2Num.getOrDefault(TaskStatus.WORKER_RECEIVED, 0L);
             long runningNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESSING, 0L);
-            long succeedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_SUCCESS, 0L);
             long failedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_FAILED, 0L);
+            long succeedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_SUCCESS, 0L);
 
             long finishedNum = succeedNum + failedNum;
             long unfinishedNum = waitingDispatchNum + workerUnreceivedNum + receivedNum + runningNum;
@@ -362,7 +374,7 @@ public class TaskTracker {
                         finishedBoolean = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED;
                     }else {
 
-                        // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask
+                        // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
                         finishedBoolean = false;
 
                         TaskDO newLastTask = new TaskDO();
@@ -404,19 +416,8 @@ public class TaskTracker {
                 // 服务器已经更新状态，任务已经执行完毕，开始释放所有资源
                 log.info("[TaskTracker-{}] instance(jobId={}) process finished,result = {}, start to release resource...",
                         instanceId, instanceInfo.getJobId(), resultTask.getResult());
-                TaskTrackerStopInstanceReq stopRequest = new TaskTrackerStopInstanceReq();
-                stopRequest.setInstanceId(instanceId);
-                allWorkerAddress.forEach(ptIP -> {
-                    String ptPath = AkkaUtils.getAkkaRemotePath(ptIP, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-                    ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptPath);
-                    // 不可靠通知，ProcessorTracker 也可以靠自己的定时任务/问询等方式关闭
-                    ptActor.tell(stopRequest, null);
-                });
 
-                // 销毁TaskTracker
-                TaskTrackerPool.remove(instanceId);
                 destroy();
-
                 return;
             }
 
@@ -424,7 +425,7 @@ public class TaskTracker {
             req.setInstanceStatus(InstanceStatus.RUNNING.getValue());
             serverActor.tell(req, null);
 
-            // 5.1 超时检查 -> 重试派发后未确认的任务
+            // 5.1 定期检查 -> 重试派发后未确认的任务
             long currentMS = System.currentTimeMillis();
             if (workerUnreceivedNum != 0) {
                 taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 100).forEach(uncheckTask -> {
@@ -446,6 +447,13 @@ public class TaskTracker {
                     }
 
                 });
+            }
+
+            // 5.2 定期检查 -> 重新执行被派发到宕机ProcessorTracker上的任务
+            List<String> disconnectedPTs = ptStatusHolder.getAllDisconnectedProcessorTrackers();
+            if (!disconnectedPTs.isEmpty()) {
+                log.warn("[TaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}.", instanceId, disconnectedPTs);
+                taskPersistenceService.updateLostTasks(disconnectedPTs);
             }
 
             // 5.2 超时检查 -> 等待执行/执行中的任务（要不要采取 Worker不挂不行动准则，Worker挂了再重新派发任务）

@@ -5,6 +5,7 @@ import com.github.kfcfans.oms.worker.core.tracker.processor.ProcessorTracker;
 import com.github.kfcfans.oms.worker.core.tracker.processor.ProcessorTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
+import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStopInstanceReq;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -20,6 +21,7 @@ public class ProcessorTrackerActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(TaskTrackerStartTaskReq.class, this::onReceiveTaskTrackerStartTaskReq)
+                .match(TaskTrackerStopInstanceReq.class, this::onReceiveTaskTrackerStopInstanceReq)
                 .matchAny(obj -> log.warn("[ProcessorTrackerActor] receive unknown request: {}.", obj))
                 .build();
     }
@@ -44,5 +46,16 @@ public class ProcessorTrackerActor extends AbstractActor {
         task.setFailedCnt(req.getTaskCurrentRetryNums());
 
         processorTracker.submitTask(task);
+    }
+
+    private void onReceiveTaskTrackerStopInstanceReq(TaskTrackerStopInstanceReq req) {
+
+        String instanceId = req.getInstanceId();
+        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId);
+        if (processorTracker == null) {
+            log.warn("[ProcessorTrackerActor] ProcessorTracker for instance(instanceId={}) already destroyed.", instanceId);
+        }else {
+            processorTracker.destroy();
+        }
     }
 }
