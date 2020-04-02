@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.actors;
+package com.github.kfcfans.oms.server.core.actors;
 
 import akka.actor.AbstractActor;
 import com.github.kfcfans.common.request.WorkerHeartbeat;

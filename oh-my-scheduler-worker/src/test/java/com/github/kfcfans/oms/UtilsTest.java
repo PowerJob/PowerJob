@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms;
 
-import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.common.utils.SystemInfoUtils;
 import org.junit.jupiter.api.Test;
 

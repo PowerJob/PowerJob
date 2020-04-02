@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.config;
+package com.github.kfcfans.oms.server.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

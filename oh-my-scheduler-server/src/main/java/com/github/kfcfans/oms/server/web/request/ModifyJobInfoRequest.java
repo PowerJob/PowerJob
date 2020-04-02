@@ -37,6 +37,8 @@ public class ModifyJobInfoRequest {
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */
+    // 最大同时运行任务数
+    private Integer maxInstanceNum;
     // 并发度，同时执行的线程数量
     private Integer concurrency;
     // 任务整体超时时间

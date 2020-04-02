@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms;
 
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
-import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.google.common.collect.Lists;

@@ -31,7 +31,6 @@ public class CommonUtils {
             try {
                 return executor.get();
             }catch (Exception e) {
-                log.warn("[CommonUtils] executeWithRetry failed, system will retry after {}ms.", intervalMS, e);
                 Thread.sleep(intervalMS);
             }
         }

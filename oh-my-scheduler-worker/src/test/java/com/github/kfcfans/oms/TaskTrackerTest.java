@@ -9,7 +9,7 @@ import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
-import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.common.utils.NetUtils;
 import com.typesafe.config.ConfigFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

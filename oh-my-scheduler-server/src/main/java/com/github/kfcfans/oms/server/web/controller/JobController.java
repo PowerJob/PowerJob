@@ -4,7 +4,7 @@ import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.oms.server.common.constans.TimeExpressionType;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
-import com.github.kfcfans.oms.server.pojo.ResultDTO;
+import com.github.kfcfans.oms.server.web.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
 import org.springframework.beans.BeanUtils;

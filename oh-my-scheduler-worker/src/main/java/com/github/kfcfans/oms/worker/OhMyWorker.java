@@ -7,7 +7,7 @@ import com.github.kfcfans.oms.worker.actors.TaskTrackerActor;
 import com.github.kfcfans.oms.worker.background.WorkerHealthReportRunnable;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.google.common.base.Stopwatch;

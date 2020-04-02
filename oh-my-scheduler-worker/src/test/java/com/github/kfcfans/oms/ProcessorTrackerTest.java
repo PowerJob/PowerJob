@@ -8,7 +8,7 @@ import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
-import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.typesafe.config.ConfigFactory;

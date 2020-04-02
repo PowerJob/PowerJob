@@ -13,7 +13,7 @@ import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
-import com.github.kfcfans.oms.worker.common.utils.NetUtils;
+import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.core.ha.ProcessorTrackerStatusHolder;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;

@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.pojo;
+package com.github.kfcfans.oms.server.web;
 
 import lombok.Getter;
 import lombok.Setter;
