@@ -12,10 +12,12 @@ import java.io.Serializable;
  * @since 2020/3/25
  */
 @Data
-public class WorkerHealthReportReq implements Serializable {
+public class WorkerHeartbeat implements Serializable {
 
     // 本机地址 -> IP:port
-    private String totalAddress;
+    private String workerAddress;
+    // 当前 appName
+    private String appName;
 
     private SystemMetrics systemMetrics;
 }

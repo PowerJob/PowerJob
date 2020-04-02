@@ -38,6 +38,10 @@ public class CommonUtils {
         return executor.get();
     }
 
+    public static <T> T executeWithRetry0(SupplierPlus<T> executor) throws Exception {
+        return executeWithRetry(executor, 3, 100);
+    }
+
     /**
      * 重试执行，仅适用于根据返回值决定是否执行成功的方法
      * @param booleanExecutor 需要执行的方法，其返回值决定了执行是否成功

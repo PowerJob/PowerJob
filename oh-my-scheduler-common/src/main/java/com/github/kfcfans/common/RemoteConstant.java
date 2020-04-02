@@ -20,13 +20,13 @@ public class RemoteConstant {
     public static final String Task_TRACKER_ACTOR_NAME = "task_tracker";
     public static final String PROCESSOR_TRACKER_ACTOR_NAME = "processor_tracker";
 
-    public static final String AKKA_CONFIG_NAME = "oms-akka-application.conf";
-
+    public static final String WORKER_AKKA_CONFIG_NAME = "oms-worker.akka.conf";
 
 
     /* ************************ AKKA SERVER ************************ */
     public static final String SERVER_ACTOR_SYSTEM_NAME = "oms-server";
     public static final String SERVER_ACTOR_NAME = "server_actor";
+    public static final String SERVER_AKKA_CONFIG_NAME = "oms-worker.akka.conf";
 
 
     /* ************************ OTHERS ************************ */

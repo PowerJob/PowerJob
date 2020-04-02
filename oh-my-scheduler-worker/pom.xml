@@ -45,7 +45,7 @@
         <dependency>
             <groupId>com.github.kfcfans</groupId>
             <artifactId>oh-my-scheduler-common</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${oms.common.version}</version>
         </dependency>
 
         <!-- h2 database -->

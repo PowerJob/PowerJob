@@ -1,4 +1,7 @@
-package com.github.kfcfans.oms.server.model;
+package com.github.kfcfans.oms.server.persistence.model;
+
+import javax.persistence.*;
+import java.util.Date;
 
 /**
  * 任务运行日志表
@@ -6,7 +9,13 @@ package com.github.kfcfans.oms.server.model;
  * @author tjq
  * @since 2020/3/30
  */
-public class JobLogDO extends BaseDO {
+@Entity
+@Table(name = "job_log")
+public class JobLogDO {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     // 任务ID
     private Long jobId;
@@ -18,5 +27,8 @@ public class JobLogDO extends BaseDO {
     private String result;
     // 耗时
     private Long usedTime;
+
+    private Date gmtCreate;
+    private Date gmtModified;
 
 }

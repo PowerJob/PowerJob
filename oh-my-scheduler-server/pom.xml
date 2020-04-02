@@ -15,10 +15,51 @@
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
+        <akka.version>2.6.4</akka.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
+        <oms.common.version>1.0.0-SNAPSHOT</oms.common.version>
+        <hikaricp.version>3.4.2</hikaricp.version>
+        <mysql.version>8.0.19</mysql.version>
+        <commons.lang.version>3.10</commons.lang.version>
     </properties>
 
     <dependencies>
+
+        <!-- oms-common -->
+        <dependency>
+            <groupId>com.github.kfcfans</groupId>
+            <artifactId>oh-my-scheduler-common</artifactId>
+            <version>${oms.common.version}</version>
+        </dependency>
+
+        <!-- HikariCP -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+
+        <!-- akka remote -->
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-remote_2.13</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang.version}</version>
+        </dependency>
+
 
         <!-- SpringBoot -->
         <dependency>
@@ -26,10 +67,15 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${springboot.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>${springboot.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -45,6 +91,7 @@
             <artifactId>springfox-swagger-ui</artifactId>
             <version>${swagger.version}</version>
         </dependency>
+
 
     </dependencies>
 

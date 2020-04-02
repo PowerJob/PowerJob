@@ -74,7 +74,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
             workerAddress = localIP + ":" + port;
             log.info("[OhMyWorker] akka-remote listening address: {}", workerAddress);
 
-            Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.AKKA_CONFIG_NAME);
+            Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.WORKER_AKKA_CONFIG_NAME);
             Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
             actorSystem = ActorSystem.create(RemoteConstant.ACTOR_SYSTEM_NAME, akkaFinalConfig);
