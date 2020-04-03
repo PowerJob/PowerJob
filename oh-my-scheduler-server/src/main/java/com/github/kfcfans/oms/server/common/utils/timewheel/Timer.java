@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.common.utils.timewheel;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,5 +19,5 @@ public interface Timer {
     /**
      * 停止所有调度任务
      */
-    void stop();
+    Set<TimerTask> stop();
 }

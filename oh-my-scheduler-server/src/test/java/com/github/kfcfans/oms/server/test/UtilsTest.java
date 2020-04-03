@@ -21,7 +21,7 @@ public class UtilsTest {
     @Test
     public void testHashedWheelTimer() throws Exception {
 
-        HashedWheelTimer timer = new HashedWheelTimer(1, 1024);
+        HashedWheelTimer timer = new HashedWheelTimer(1, 1024, 32);
         List<TimerFuture> futures = Lists.newLinkedList();
 
         for (int i = 0; i < 1000; i++) {
@@ -31,20 +31,13 @@ public class UtilsTest {
             int delayMS = ThreadLocalRandom.current().nextInt(60000);
             long targetTime = delayMS + nowMS;
 
-            TimerTask timerTask = new TimerTask() {
-                @Override
-                public void onScheduled() {
-                    System.out.println("============= " + name + "============= ");
-                    System.out.println("expectTime:" + targetTime);;
-                    System.out.println("currentTime:" + System.currentTimeMillis());
-                    System.out.println("deviation:" + (System.currentTimeMillis() - targetTime));
-                    System.out.println("============= " + name + "============= ");
-                }
-
-                @Override
-                public void onCanceled() {
-                    System.out.println(name + "be canceled!");
-                }
+            TimerTask timerTask = () -> {
+                System.out.println("============= " + name + "============= ");
+                System.out.println("ThreadInfo:" + Thread.currentThread().getName());
+                System.out.println("expectTime:" + targetTime);;
+                System.out.println("currentTime:" + System.currentTimeMillis());
+                System.out.println("deviation:" + (System.currentTimeMillis() - targetTime));
+                System.out.println("============= " + name + "============= ");
             };
             futures.add(timer.schedule(timerTask, delayMS, TimeUnit.MILLISECONDS));
         }
@@ -58,6 +51,12 @@ public class UtilsTest {
             }
 
         });
+
+        Thread.sleep(1000);
+
+        // 关闭
+        System.out.println(timer.stop().size());
+        System.out.println("Finished！");
 
         Thread.sleep(277777777);
     }
