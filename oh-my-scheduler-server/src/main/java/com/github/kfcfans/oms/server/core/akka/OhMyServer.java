@@ -1,5 +1,7 @@
-package com.github.kfcfans.oms.server.core.actors;
+package com.github.kfcfans.oms.server.core.akka;
 
+import akka.actor.ActorPath;
+import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.github.kfcfans.common.RemoteConstant;
@@ -7,6 +9,7 @@ import com.github.kfcfans.common.utils.NetUtils;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -21,6 +24,7 @@ import java.util.Map;
 public class OhMyServer {
 
     public static ActorSystem actorSystem;
+    @Getter
     private static String actorSystemAddress;
 
     public void init() {
@@ -40,5 +44,15 @@ public class OhMyServer {
 
         actorSystem.actorOf(Props.create(ServerActor.class), RemoteConstant.SERVER_ACTOR_NAME);
 
+    }
+
+    /**
+     * 获取 ServerActor 的 ActorSelection
+     * @param address IP:port
+     * @return ActorSelection
+     */
+    public static ActorSelection getServerActor(String address) {
+        String path = String.format("akka://%s@%s/user/%s", RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, address, RemoteConstant.SERVER_ACTOR_NAME);
+        return actorSystem.actorSelection(path);
     }
 }

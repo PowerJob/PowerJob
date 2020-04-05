@@ -1,7 +1,7 @@
-package com.github.kfcfans.oms.server.service;
+package com.github.kfcfans.oms.server.service.lock;
 
 /**
- * 锁服务
+ * 锁服务，所有方法都不允许抛出任何异常！
  *
  * @author tjq
  * @since 2020/4/2

@@ -17,4 +17,5 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class AskResponse implements Serializable {
     private boolean success;
+    private Object extra;
 }

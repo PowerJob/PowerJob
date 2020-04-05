@@ -23,6 +23,8 @@ public class AppInfoDO {
     private String appName;
     private String description;
 
+    private String currentServer;
+
     private Date gmtCreate;
     private Date gmtModified;
 }

@@ -19,6 +19,6 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResultDTO<Void> exceptionHandler(Exception e) {
         log.error("[ControllerException] http request failed.", e);
-        return ResultDTO.failed(e);
+        return ResultDTO.failed(e.getMessage());
     }
 }

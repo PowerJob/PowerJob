@@ -10,4 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 2020/4/1
  */
 public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long> {
+
+    AppInfoDO findByAppName(String appName);
 }

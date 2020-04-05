@@ -23,14 +23,14 @@ public class OmsLockDO {
     private Long id;
 
     private String lockName;
-    private String owner;
+    private String ownerIP;
 
     private Date gmtCreate;
     private Date gmtModified;
 
-    public OmsLockDO(String lockName, String owner) {
+    public OmsLockDO(String lockName, String ownerIP) {
         this.lockName = lockName;
-        this.owner = owner;
+        this.ownerIP = ownerIP;
         this.gmtCreate = new Date();
         this.gmtModified = this.gmtCreate;
     }

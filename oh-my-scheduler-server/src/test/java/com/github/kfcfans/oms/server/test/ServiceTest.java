@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.test;
 
-import com.github.kfcfans.oms.server.service.LockService;
+import com.github.kfcfans.oms.server.service.lock.LockService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
