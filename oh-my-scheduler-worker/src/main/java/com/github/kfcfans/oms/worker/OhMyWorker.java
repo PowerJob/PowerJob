@@ -46,6 +46,8 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
     private static String workerAddress;
 
     public static ActorSystem actorSystem;
+    @Getter
+    private static Long appId;
     private static ScheduledExecutorService timingPool;
 
     @Override

@@ -4,12 +4,14 @@ import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.persistence.model.OmsLockDO;
 import com.github.kfcfans.oms.server.persistence.repository.OmsLockRepository;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -68,6 +70,30 @@ public class DatabaseLockService implements LockService {
             CommonUtils.executeWithRetry0(() -> omsLockRepository.deleteByLockName(name));
         }catch (Exception e) {
             log.error("[DatabaseLockService] unlock {} failed.", name, e);
+        }
+    }
+
+    @Override
+    public boolean batchLock(List<String> names) {
+        List<OmsLockDO> locks = Lists.newLinkedList();
+        names.forEach(name -> locks.add(new OmsLockDO(name, NetUtils.getLocalHost())));
+        try {
+            omsLockRepository.saveAll(locks);
+            omsLockRepository.flush();
+            return true;
+        }catch (DataIntegrityViolationException ignore) {
+        }catch (Exception e) {
+            log.warn("[DatabaseLockService] write locks to database failed, lockNames = {}.", names, e);
+        }
+        return false;
+    }
+
+    @Override
+    public void batchUnLock(List<String> names) {
+        try {
+            CommonUtils.executeWithRetry0(() -> omsLockRepository.deleteByLockNames(names));
+        }catch (Exception e) {
+            log.error("[DatabaseLockService] unlocks {} failed.", names, e);
         }
     }
 }

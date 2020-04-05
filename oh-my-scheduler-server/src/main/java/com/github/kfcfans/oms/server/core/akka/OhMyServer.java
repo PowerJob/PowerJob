@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.server.core.akka;
 
-import akka.actor.ActorPath;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -27,7 +26,7 @@ public class OhMyServer {
     @Getter
     private static String actorSystemAddress;
 
-    public void init() {
+    public static void init() {
 
         // 1. 启动 ActorSystem
         Map<String, Object> overrideConfig = Maps.newHashMap();

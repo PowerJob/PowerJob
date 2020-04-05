@@ -54,6 +54,12 @@ public class JobInfoDO {
     // 任务的每一个Task超时时间
     private Long taskTimeLimit;
 
+    // 1 正常运行，2 停止（不再调度）
+    private Integer status;
+    // 下一次调度时间
+    private Long nextTriggerTime;
+
+
     private Date gmtCreate;
     private Date gmtModified;
 

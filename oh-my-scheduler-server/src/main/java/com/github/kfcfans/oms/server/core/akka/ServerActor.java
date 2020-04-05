@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.server.core.akka;
 import akka.actor.AbstractActor;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
 import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,5 +36,6 @@ public class ServerActor extends AbstractActor {
     }
 
     private void onReceiveWorkerHeartbeat(WorkerHeartbeat heartbeat) {
+        WorkerManagerService.updateStatus(heartbeat);
     }
 }

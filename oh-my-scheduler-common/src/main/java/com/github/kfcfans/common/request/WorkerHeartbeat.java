@@ -18,6 +18,10 @@ public class WorkerHeartbeat implements Serializable {
     private String workerAddress;
     // 当前 appName
     private String appName;
+    // 当前 appId
+    private Long appId;
+    // 当前时间
+    private long heartbeatTime;
 
     private SystemMetrics systemMetrics;
 }

@@ -1,5 +1,7 @@
 package com.github.kfcfans.oms.server.service.lock;
 
+import java.util.List;
+
 /**
  * 锁服务，所有方法都不允许抛出任何异常！
  *
@@ -20,5 +22,8 @@ public interface LockService {
      * @param name 锁名称
      */
     void unlock(String name);
+
+    boolean batchLock(List<String> names);
+    void batchUnLock(List<String> names);
 
 }

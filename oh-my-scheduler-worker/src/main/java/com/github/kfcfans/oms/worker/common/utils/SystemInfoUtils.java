@@ -44,6 +44,8 @@ public class SystemInfoUtils {
         metrics.setDiskTotal(bytes2GB(total));
         metrics.setDiskUsage(metrics.getDiskUsed() / metrics.getDiskTotal());
 
+        // 在Worker完成分数计算，减小Server压力
+        metrics.calculateScore();
         return metrics;
     }
 

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
@@ -35,31 +36,31 @@ public class ServerSelectService {
 
     private static final int RETRY_TIMES = 10;
     private static final long PING_TIMEOUT_MS = 5000;
-    private static final long WAIT_LOCK_TIME = 1000;
-    private static final String SERVER_ELECT_LOCK = "server_elect_%s";
+    private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
     /**
      * 获取某个应用对应的Server
      * 缺点：如果server死而复生，可能造成worker集群脑裂，不过感觉影响不是很大 & 概率极低，就不管了
-     * @param appName 应用名称
+     * @param appId 应用ID
      * @return 当前可用的Server
      */
-    public String getServer(String appName) {
+    public String getServer(Long appId) {
 
         for (int i = 0; i < RETRY_TIMES; i++) {
 
             // 无锁获取当前数据库中的Server
-            AppInfoDO app = appInfoRepository.findByAppName(appName);
-            if (app == null) {
-                throw new RuntimeException(appName + " is not registered!");
+            Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(appId);
+            if (!appInfoOpt.isPresent()) {
+                throw new RuntimeException(appId + " is not registered!");
             }
-            String originServer = app.getCurrentServer();
+            String appName = appInfoOpt.get().getAppName();
+            String originServer = appInfoOpt.get().getCurrentServer();
             if (isActive(originServer)) {
                 return originServer;
             }
 
-            // 获取失败，重新进行Server选举，需要加锁
-            String lockName = String.format(SERVER_ELECT_LOCK, appName);
+            // 无可用Server，重新进行Server选举，需要加锁
+            String lockName = String.format(SERVER_ELECT_LOCK, appId);
             boolean lockStatus = lockService.lock(lockName);
             if (!lockStatus) {
                 try {
@@ -71,7 +72,10 @@ public class ServerSelectService {
             try {
 
                 // 可能上一台机器已经完成了Server选举，需要再次判断
-                AppInfoDO appInfo = appInfoRepository.findByAppName(appName);
+                AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> {
+                    log.error("[ServerSelectService] impossible, unless we just lost our database.");
+                    return null;
+                });
                 if (isActive(appInfo.getCurrentServer())) {
                     return appInfo.getCurrentServer();
                 }
@@ -88,7 +92,7 @@ public class ServerSelectService {
                 lockService.unlock(lockName);
             }
         }
-        throw new RuntimeException("server elect failed for app " + appName);
+        throw new RuntimeException("server elect failed for app " + appId);
     }
 
     private boolean isActive(String serverAddress) {

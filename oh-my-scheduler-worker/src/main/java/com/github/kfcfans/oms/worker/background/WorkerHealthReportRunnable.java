@@ -26,9 +26,12 @@ public class WorkerHealthReportRunnable implements Runnable {
         SystemMetrics systemMetrics = SystemInfoUtils.getSystemMetrics();
 
         WorkerHeartbeat heartbeat = new WorkerHeartbeat();
+
         heartbeat.setSystemMetrics(systemMetrics);
         heartbeat.setWorkerAddress(OhMyWorker.getWorkerAddress());
         heartbeat.setAppName(OhMyWorker.getConfig().getAppName());
+        heartbeat.setAppId(OhMyWorker.getAppId());
+        heartbeat.setHeartbeatTime(System.currentTimeMillis());
 
         // 发送请求
         String serverPath = AkkaUtils.getAkkaServerNodePath(RemoteConstant.SERVER_ACTOR_NAME);
