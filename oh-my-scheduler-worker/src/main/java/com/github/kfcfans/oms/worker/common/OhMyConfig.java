@@ -2,6 +2,8 @@ package com.github.kfcfans.oms.worker.common;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * Worker 配置文件
  *
@@ -15,9 +17,9 @@ public class OhMyConfig {
      */
     private String appName;
     /**
-     * 调度服务器地址，ip:port （多值使用 , 分隔）
+     * 调度服务器地址，ip:port
      */
-    private String serverAddress;
+    private List<String> serverAddress;
     /**
      * 通讯端口
      */

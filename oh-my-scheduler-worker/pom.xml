@@ -22,6 +22,8 @@
         <guava.version>28.2-jre</guava.version>
         <junit.version>5.6.1</junit.version>
         <kryo.version>5.0.0-RC5</kryo.version>
+        <fastjson.version>1.2.68</fastjson.version>
+        <okhttp.version>4.4.1</okhttp.version>
     </properties>
 
     <dependencies>
@@ -81,6 +83,20 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- OKHttp -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
+
+        <!-- fastJson -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
         </dependency>
 
 

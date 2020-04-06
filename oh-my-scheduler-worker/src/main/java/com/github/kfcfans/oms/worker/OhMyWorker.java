@@ -2,12 +2,17 @@ package com.github.kfcfans.oms.worker;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.common.response.ResultDTO;
+import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.actors.ProcessorTrackerActor;
 import com.github.kfcfans.oms.worker.actors.TaskTrackerActor;
+import com.github.kfcfans.oms.worker.background.ServerDiscoveryService;
 import com.github.kfcfans.oms.worker.background.WorkerHealthReportRunnable;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.worker.common.utils.HttpUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.google.common.base.Stopwatch;
@@ -24,6 +29,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -60,12 +66,15 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
         init();
     }
 
-    public void init() {
+    public void init() throws Exception {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyWorker] start to initialize OhMyWorker...");
 
         try {
+
+            // 校验 appName
+            appId = assertAppName();
 
             // 初始化 ActorSystem
             Map<String, Object> overrideConfig = Maps.newHashMap();
@@ -88,19 +97,56 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
             TaskPersistenceService.INSTANCE.init();
             log.info("[OhMyWorker] local storage initialized successfully.");
 
+            // 服务发现
+            currentServer = ServerDiscoveryService.discovery();
+            if (StringUtils.isEmpty(currentServer)) {
+                throw new RuntimeException("can't find any available server, this worker has been quarantined.");
+            }
+            log.info("[OhMyWorker] discovery server succeed, current server is {}.", currentServer);
+
             // 初始化定时任务
             ThreadFactory timingPoolFactory = new ThreadFactoryBuilder().setNameFormat("oms-worker-timing-pool-%d").build();
             timingPool = Executors.newScheduledThreadPool(2, timingPoolFactory);
-            timingPool.scheduleAtFixedRate(new WorkerHealthReportRunnable(), 0, 30, TimeUnit.SECONDS);
-
+            timingPool.scheduleAtFixedRate(new WorkerHealthReportRunnable(), 0, 15, TimeUnit.SECONDS);
+            timingPool.scheduleAtFixedRate(() -> currentServer = ServerDiscoveryService.discovery(), 10, 10, TimeUnit.SECONDS);
 
             log.info("[OhMyWorker] OhMyWorker initialized successfully, using time: {}, congratulations!", stopwatch);
         }catch (Exception e) {
             log.error("[OhMyWorker] initialize OhMyWorker failed, using {}.", stopwatch, e);
+            throw e;
         }
     }
 
     public void setConfig(OhMyConfig config) {
         OhMyWorker.config = config;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private Long assertAppName() {
+
+        String appName = config.getAppName();
+        Objects.requireNonNull(appName, "appName can't be empty!");
+
+        String url = "http://%s/server/assert?appName=%s";
+        for (String server : config.getServerAddress()) {
+            String realUrl = String.format(url, server, appName);
+            try {
+                String resultDTOStr = CommonUtils.executeWithRetry0(() -> HttpUtils.get(realUrl));
+                ResultDTO resultDTO = JSONObject.parseObject(resultDTOStr, ResultDTO.class);
+                if (resultDTO.isSuccess()) {
+                    Long appId = Long.valueOf(resultDTO.getData().toString());
+                    log.info("[OhMyWorker] assert appName({}) succeed, the appId for this application is {}.", appName, appId);
+                    return appId;
+                }else {
+                    log.error("[OhMyWorker] assert appName failed, this appName is invalid, please register the appName {} first.", appName);
+                    throw new IllegalArgumentException("appName invalid!");
+                }
+            }catch (IllegalArgumentException ie) {
+                throw ie;
+            }catch (Exception ignore) {
+            }
+        }
+        log.error("[OhMyWorker] no available server in {}.", config.getServerAddress());
+        throw new RuntimeException("no server available!");
     }
 }

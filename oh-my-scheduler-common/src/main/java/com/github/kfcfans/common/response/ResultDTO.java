@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.web;
+package com.github.kfcfans.common.response;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,9 +1,10 @@
 package com.github.kfcfans.oms.server.web.controller;
 
+import com.github.kfcfans.oms.server.core.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.service.ha.ServerSelectService;
-import com.github.kfcfans.oms.server.web.ResultDTO;
+import com.github.kfcfans.common.response.ResultDTO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +36,12 @@ public class ServerController {
     }
 
     @GetMapping("/acquire")
-    public ResultDTO<String> acquireServer(Long appId) {
+    public ResultDTO<String> acquireServer(Long appId, String currentServer) {
+
+        // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
+        if (OhMyServer.getActorSystemAddress().equals(currentServer)) {
+            return ResultDTO.success(currentServer);
+        }
         String server = serverSelectService.getServer(appId);
         return ResultDTO.success(server);
     }

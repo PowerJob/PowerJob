@@ -1,6 +1,5 @@
 package com.github.kfcfans.common.model;
 
-import com.sun.istack.internal.NotNull;
 import lombok.Data;
 
 import java.io.Serializable;

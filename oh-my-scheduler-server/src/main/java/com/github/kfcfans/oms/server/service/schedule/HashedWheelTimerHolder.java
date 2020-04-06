@@ -10,7 +10,7 @@ import com.github.kfcfans.oms.server.common.utils.timewheel.HashedWheelTimer;
  */
 public class HashedWheelTimerHolder {
 
-    public static final HashedWheelTimer TIMER = new HashedWheelTimer(1, 4096, 4);
+    public static final HashedWheelTimer TIMER = new HashedWheelTimer(1, 4096, Runtime.getRuntime().availableProcessors() * 4);
 
     private HashedWheelTimerHolder() {
     }

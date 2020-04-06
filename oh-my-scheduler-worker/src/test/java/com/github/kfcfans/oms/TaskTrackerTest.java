@@ -26,10 +26,11 @@ public class TaskTrackerTest {
     private static ActorSelection remoteTaskTracker;
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws Exception {
 
         OhMyConfig ohMyConfig = new OhMyConfig();
         ohMyConfig.setAppName("oms-test");
+        ohMyConfig.setServerAddress(Lists.newArrayList("127.0.0.1:7700"));
         OhMyWorker worker = new OhMyWorker();
         worker.setConfig(ohMyConfig);
         worker.init();

@@ -8,6 +8,7 @@ import com.github.kfcfans.oms.server.core.akka.Ping;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.service.lock.LockService;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.Date;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +37,7 @@ public class ServerSelectService {
     private AppInfoRepository appInfoRepository;
 
     private static final int RETRY_TIMES = 10;
-    private static final long PING_TIMEOUT_MS = 5000;
+    private static final long PING_TIMEOUT_MS = 1000;
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
     /**
@@ -46,6 +48,8 @@ public class ServerSelectService {
      */
     public String getServer(Long appId) {
 
+        Set<String> downServerCache = Sets.newHashSet();
+
         for (int i = 0; i < RETRY_TIMES; i++) {
 
             // 无锁获取当前数据库中的Server
@@ -55,7 +59,7 @@ public class ServerSelectService {
             }
             String appName = appInfoOpt.get().getAppName();
             String originServer = appInfoOpt.get().getCurrentServer();
-            if (isActive(originServer)) {
+            if (isActive(originServer, downServerCache)) {
                 return originServer;
             }
 
@@ -64,7 +68,7 @@ public class ServerSelectService {
             boolean lockStatus = lockService.lock(lockName);
             if (!lockStatus) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
                 }catch (Exception ignore) {
                 }
                 continue;
@@ -73,7 +77,7 @@ public class ServerSelectService {
 
                 // 可能上一台机器已经完成了Server选举，需要再次判断
                 AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new RuntimeException("impossible, unless we just lost our database."));
-                if (isActive(appInfo.getCurrentServer())) {
+                if (isActive(appInfo.getCurrentServer(), downServerCache)) {
                     return appInfo.getCurrentServer();
                 }
 
@@ -92,10 +96,21 @@ public class ServerSelectService {
         throw new RuntimeException("server elect failed for app " + appId);
     }
 
-    private boolean isActive(String serverAddress) {
+    /**
+     * 判断指定server是否存活
+     * @param serverAddress 需要检测的server地址
+     * @param downServerCache 缓存，防止多次发送PING（这个QPS其实还蛮爆表的...）
+     * @return true -> 存活 / false -> down机
+     */
+    private boolean isActive(String serverAddress, Set<String> downServerCache) {
+
+        if (downServerCache.contains(serverAddress)) {
+            return false;
+        }
         if (StringUtils.isEmpty(serverAddress)) {
             return false;
         }
+
         Ping ping = new Ping();
         ping.setCurrentTime(System.currentTimeMillis());
 
@@ -103,10 +118,12 @@ public class ServerSelectService {
         try {
             CompletionStage<Object> askCS = Patterns.ask(serverActor, ping, Duration.ofMillis(PING_TIMEOUT_MS));
             AskResponse response = (AskResponse) askCS.toCompletableFuture().get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            downServerCache.remove(serverAddress);
             return response.isSuccess();
         }catch (Exception e) {
             log.warn("[ServerSelectService] server({}) was down, try to elect a new server.", serverAddress);
         }
+        downServerCache.add(serverAddress);
         return false;
     }
 }

@@ -65,8 +65,8 @@ public class HashedWheelTimer implements Timer {
             taskProcessPool = null;
         }else {
             ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("HashedWheelTimer-Executor-%d").build();
-            BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(1024);
-            taskProcessPool = new ThreadPoolExecutor(processTaskNum, processTaskNum,
+            BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(16);
+            taskProcessPool = new ThreadPoolExecutor(2, processTaskNum,
                     60, TimeUnit.SECONDS,
                     queue, threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
         }
