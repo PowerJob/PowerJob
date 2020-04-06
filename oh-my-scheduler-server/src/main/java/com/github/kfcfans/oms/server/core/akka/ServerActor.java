@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.core.akka;
 
 import akka.actor.AbstractActor;
+import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
 import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
@@ -35,7 +36,19 @@ public class ServerActor extends AbstractActor {
         getSender().tell(askResponse, getSelf());
     }
 
+    /**
+     * 处理 Worker 的心跳请求
+     * @param heartbeat 心跳包
+     */
     private void onReceiveWorkerHeartbeat(WorkerHeartbeat heartbeat) {
         WorkerManagerService.updateStatus(heartbeat);
+    }
+
+    /**
+     * 处理 instance 状态
+     * @param req 任务实例的状态上报请求
+     */
+    private void onReceive(TaskTrackerReportInstanceStatusReq req) {
+
     }
 }

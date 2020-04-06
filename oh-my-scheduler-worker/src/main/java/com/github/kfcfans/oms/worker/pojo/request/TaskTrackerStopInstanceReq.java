@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Data
 public class TaskTrackerStopInstanceReq implements Serializable {
 
-    private String instanceId;
+    private Long instanceId;
     // 保留字段，暂时没用
     private String type;
 }

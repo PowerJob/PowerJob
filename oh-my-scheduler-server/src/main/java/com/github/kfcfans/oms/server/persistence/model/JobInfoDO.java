@@ -14,7 +14,7 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table(name = "job_info")
+@Table(name = "job_info", indexes = {@Index(columnList = "appId")})
 public class JobInfoDO {
 
 
@@ -29,6 +29,8 @@ public class JobInfoDO {
     private String jobDescription;
     // 任务所属的应用ID
     private Long appId;
+    // 任务自带的参数
+    private String jobParams;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
@@ -45,7 +47,7 @@ public class JobInfoDO {
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */
-    // 最大同时运行任务数
+    // 最大同时运行任务数，默认 1
     private Integer maxInstanceNum;
     // 并发度，同时执行某个任务的最大线程数量
     private Integer concurrency;
@@ -53,6 +55,10 @@ public class JobInfoDO {
     private Long instanceTimeLimit;
     // 任务的每一个Task超时时间
     private Long taskTimeLimit;
+
+    /* ************************** 重试配置 ************************** */
+    private Integer instanceRetryNum;
+    private Integer taskRetryNum;
 
     // 1 正常运行，2 停止（不再调度）
     private Integer status;

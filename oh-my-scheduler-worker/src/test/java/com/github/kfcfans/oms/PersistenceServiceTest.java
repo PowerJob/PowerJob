@@ -29,8 +29,8 @@ public class PersistenceServiceTest {
             TaskDO task = new TaskDO();
             taskList.add(task);
 
-            task.setJobId("1");
-            task.setInstanceId("10086" + ThreadLocalRandom.current().nextInt(2));
+            task.setJobId(1L);
+            task.setInstanceId(10086L + ThreadLocalRandom.current().nextInt(2));
             task.setTaskId(i + "");
             task.setFailedCnt(0);
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
@@ -63,7 +63,7 @@ public class PersistenceServiceTest {
     public void testDeleteAllTasks() {
 
         System.out.println("=============== testBatchDelete ===============");
-        boolean delete = taskPersistenceService.deleteAllTasks("100860");
+        boolean delete = taskPersistenceService.deleteAllTasks(100860L);
         System.out.println("delete result:" + delete);
     }
 

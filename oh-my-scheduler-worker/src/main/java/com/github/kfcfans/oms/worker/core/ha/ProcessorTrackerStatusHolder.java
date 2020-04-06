@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.worker.core.ha;
 
-import com.github.kfcfans.oms.worker.common.constants.CommonSJ;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -18,12 +17,10 @@ public class ProcessorTrackerStatusHolder {
 
     private final Map<String, ProcessorTrackerStatus> ip2Status;
 
-    public ProcessorTrackerStatusHolder(String allWorkerAddress) {
+    public ProcessorTrackerStatusHolder(List<String> allWorkerAddress) {
 
         ip2Status = Maps.newConcurrentMap();
-
-        List<String> addressList = CommonSJ.commaSplitter.splitToList(allWorkerAddress);
-        addressList.forEach(ip -> {
+        allWorkerAddress.forEach(ip -> {
             ProcessorTrackerStatus pts = new ProcessorTrackerStatus();
             pts.init(ip);
             ip2Status.put(ip, pts);

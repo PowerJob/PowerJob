@@ -126,7 +126,7 @@ public class TaskTrackerActor extends AbstractActor {
      * 服务器任务调度处理器
      */
     private void onReceiveServerScheduleJobReq(ServerScheduleJobReq req) {
-        String instanceId = req.getInstanceId();
+        Long instanceId = req.getInstanceId();
         TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(instanceId);
 
         if (taskTracker != null) {

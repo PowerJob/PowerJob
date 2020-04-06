@@ -14,7 +14,7 @@ import java.util.List;
 public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
 
 
-    List<JobInfoDO> findByAppIdInAndNextTriggerTimeLessThanEqual(List<Long> appIds, Long time);
+    List<JobInfoDO> findByAppIdInAndStatusAndTimeExpressionAndNextTriggerTimeLessThanEqual(List<Long> appIds, int status, int timeExpressionType, long time);
 
-    List<JobInfoDO> findByAppIdAndNextTriggerTimeLessThanEqual(Long appId, Long time);
+    List<JobInfoDO> findByAppIdInAndStatusAndTimeExpression(List<Long> appIds, int status, int timeExpressionType);
 }

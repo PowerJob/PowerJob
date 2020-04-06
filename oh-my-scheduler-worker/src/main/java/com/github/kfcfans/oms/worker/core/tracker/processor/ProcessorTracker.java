@@ -33,7 +33,7 @@ public class ProcessorTracker {
     // 任务实例信息
     private InstanceInfo instanceInfo;
     // 冗余 instanceId，方便日志
-    private String instanceId;
+    private Long instanceId;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;

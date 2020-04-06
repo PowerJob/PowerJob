@@ -13,8 +13,8 @@ import java.io.Serializable;
 @Data
 public class TaskTrackerReportInstanceStatusReq implements Serializable {
 
-    private String jobId;
-    private String instanceId;
+    private Long jobId;
+    private Long instanceId;
 
     private int instanceStatus;
 

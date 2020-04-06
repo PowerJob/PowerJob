@@ -21,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ProcessorMapTaskRequest implements Serializable {
 
-    private String instanceId;
+    private Long instanceId;
 
     private String taskName;
     private List<SubTask> subTasks;

@@ -72,10 +72,7 @@ public class ServerSelectService {
             try {
 
                 // 可能上一台机器已经完成了Server选举，需要再次判断
-                AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> {
-                    log.error("[ServerSelectService] impossible, unless we just lost our database.");
-                    return null;
-                });
+                AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new RuntimeException("impossible, unless we just lost our database."));
                 if (isActive(appInfo.getCurrentServer())) {
                     return appInfo.getCurrentServer();
                 }

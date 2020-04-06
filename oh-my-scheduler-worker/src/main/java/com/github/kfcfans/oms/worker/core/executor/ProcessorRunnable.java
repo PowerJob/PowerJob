@@ -44,7 +44,7 @@ public class ProcessorRunnable implements Runnable {
     public void innerRun() {
 
         String taskId = task.getTaskId();
-        String instanceId = task.getInstanceId();
+        Long instanceId = task.getInstanceId();
 
         log.debug("[ProcessorRunnable-{}] start to run task(taskId={}&taskName={})", instanceId, taskId, task.getTaskName());
 

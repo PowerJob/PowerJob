@@ -11,6 +11,8 @@ import lombok.Data;
 @Data
 public class ModifyJobInfoRequest {
 
+    // null -> 插入，否则为更新
+    private Long id;
     /* ************************** 任务基本信息 ************************** */
     // 任务名称
     private String jobName;
@@ -20,6 +22,8 @@ public class ModifyJobInfoRequest {
     private Long appId;
     // 任务分组名称（仅用于前端展示的分组）
     private String groupName;
+    // 任务自带的参数
+    private String jobParams;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
@@ -36,6 +40,7 @@ public class ModifyJobInfoRequest {
     // 执行器信息
     private String processorInfo;
 
+
     /* ************************** 运行时配置 ************************** */
     // 最大同时运行任务数
     private Integer maxInstanceNum;
@@ -45,4 +50,11 @@ public class ModifyJobInfoRequest {
     private Long instanceTimeLimit;
     // 任务的每一个Task超时时间
     private Long taskTimeLimit;
+
+    /* ************************** 重试配置 ************************** */
+    private Integer instanceRetryNum;
+    private Integer taskRetryNum;
+
+    // 1 正常运行，2 停止（不再调度）
+    private Integer status;
 }

@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Data
 public class ProcessorReportTaskStatusReq implements Serializable {
 
-    private String instanceId;
+    private Long instanceId;
     private String taskId;
 
     private int status;

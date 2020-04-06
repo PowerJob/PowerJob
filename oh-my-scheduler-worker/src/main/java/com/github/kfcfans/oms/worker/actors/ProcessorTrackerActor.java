@@ -30,8 +30,8 @@ public class ProcessorTrackerActor extends AbstractActor {
      * 处理来自TaskTracker的task执行请求
      */
     private void onReceiveTaskTrackerStartTaskReq(TaskTrackerStartTaskReq req) {
-        String jobId = req.getInstanceInfo().getJobId();
-        String instanceId = req.getInstanceInfo().getInstanceId();
+        Long jobId = req.getInstanceInfo().getJobId();
+        Long instanceId = req.getInstanceInfo().getInstanceId();
         ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> {
             ProcessorTracker pt = new ProcessorTracker(req);
             log.info("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) success.", jobId, instanceId);
@@ -50,7 +50,7 @@ public class ProcessorTrackerActor extends AbstractActor {
 
     private void onReceiveTaskTrackerStopInstanceReq(TaskTrackerStopInstanceReq req) {
 
-        String instanceId = req.getInstanceId();
+        Long instanceId = req.getInstanceId();
         ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId);
         if (processorTracker == null) {
             log.warn("[ProcessorTrackerActor] ProcessorTracker for instance(instanceId={}) already destroyed.", instanceId);

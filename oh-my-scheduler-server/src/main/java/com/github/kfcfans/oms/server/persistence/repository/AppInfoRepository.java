@@ -3,6 +3,8 @@ package com.github.kfcfans.oms.server.persistence.repository;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 /**
  * AppInfo 数据访问层
  *
@@ -12,4 +14,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long> {
 
     AppInfoDO findByAppName(String appName);
+
+    /**
+     * 根据 currentServer 查询 appId
+     * 其实只需要 id，处于性能考虑可以直接写SQL只返回ID
+     */
+    List<AppInfoDO> findAllByCurrentServer(String currentServer);
 }

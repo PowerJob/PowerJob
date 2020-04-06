@@ -70,7 +70,7 @@ public class TaskPersistenceService {
     /**
      * 依靠主键更新 Task
      */
-    public boolean updateTask(String instanceId, String taskId, TaskDO updateEntity) {
+    public boolean updateTask(Long instanceId, String taskId, TaskDO updateEntity) {
         try {
             updateEntity.setLastModifiedTime(System.currentTimeMillis());
             SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
@@ -110,7 +110,7 @@ public class TaskPersistenceService {
     /**
      * 获取 MapReduce 或 Broadcast 的最后一个任务
      */
-    public Optional<TaskDO> getLastTask(String instanceId) {
+    public Optional<TaskDO> getLastTask(Long instanceId) {
 
         try {
             SimpleTaskQuery query = new SimpleTaskQuery();
@@ -130,7 +130,7 @@ public class TaskPersistenceService {
         return Optional.empty();
     }
 
-    public List<TaskDO> getAllTask(String instanceId) {
+    public List<TaskDO> getAllTask(Long instanceId) {
         try {
             SimpleTaskQuery query = new SimpleTaskQuery();
             query.setInstanceId(instanceId);
@@ -146,7 +146,7 @@ public class TaskPersistenceService {
     /**
      * 获取指定状态的Task
      */
-    public List<TaskDO> getTaskByStatus(String instanceId, TaskStatus status, int limit) {
+    public List<TaskDO> getTaskByStatus(Long instanceId, TaskStatus status, int limit) {
         try {
             SimpleTaskQuery query = new SimpleTaskQuery();
             query.setInstanceId(instanceId);
@@ -163,7 +163,7 @@ public class TaskPersistenceService {
      * 获取 TaskTracker 管理的子 task 状态统计信息
      * TaskStatus -> num
      */
-    public Map<TaskStatus, Long> getTaskStatusStatistics(String instanceId) {
+    public Map<TaskStatus, Long> getTaskStatusStatistics(Long instanceId) {
         try {
 
             SimpleTaskQuery query = new SimpleTaskQuery();
@@ -191,7 +191,7 @@ public class TaskPersistenceService {
     /**
      * 查询 taskId -> taskResult，reduce阶段或postProcess 阶段使用
      */
-    public Map<String, String> getTaskId2ResultMap(String instanceId) {
+    public Map<String, String> getTaskId2ResultMap(Long instanceId) {
         try {
             return execute(() -> taskDAO.queryTaskId2TaskResult(instanceId));
         }catch (Exception e) {
@@ -203,7 +203,7 @@ public class TaskPersistenceService {
     /**
      * 查询任务状态（只查询 status，节约 I/O 资源 -> 测试表明，效果惊人...磁盘I/O果然是重要瓶颈...）
      */
-    public Optional<TaskStatus> getTaskStatus(String instanceId, String taskId) {
+    public Optional<TaskStatus> getTaskStatus(Long instanceId, String taskId) {
 
         try {
             SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
@@ -221,7 +221,7 @@ public class TaskPersistenceService {
     /**
      * 查询任务失败数量（只查询 failed_cnt，节约 I/O 资源）
      */
-    public Optional<Integer> getTaskFailedCnt(String instanceId, String taskId) {
+    public Optional<Integer> getTaskFailedCnt(Long instanceId, String taskId) {
 
         try {
             SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
@@ -241,7 +241,7 @@ public class TaskPersistenceService {
     /**
      * 批量更新 Task 状态
      */
-    public boolean batchUpdateTaskStatus(String instanceId, List<String> taskIds, TaskStatus status, String result) {
+    public boolean batchUpdateTaskStatus(Long instanceId, List<String> taskIds, TaskStatus status, String result) {
         try {
             return execute(() -> {
 
@@ -262,7 +262,7 @@ public class TaskPersistenceService {
     }
 
 
-    public boolean deleteAllTasks(String instanceId) {
+    public boolean deleteAllTasks(Long instanceId) {
         try {
             SimpleTaskQuery condition = new SimpleTaskQuery();
             condition.setInstanceId(instanceId);
@@ -286,7 +286,7 @@ public class TaskPersistenceService {
         return Collections.emptyList();
     }
 
-    private static SimpleTaskQuery genKeyQuery(String instanceId, String taskId) {
+    private static SimpleTaskQuery genKeyQuery(Long instanceId, String taskId) {
         SimpleTaskQuery condition = new SimpleTaskQuery();
         condition.setInstanceId(instanceId);
         condition.setTaskId(taskId);

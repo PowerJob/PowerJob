@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Data
 public class BroadcastTaskPreExecuteFinishedReq implements Serializable {
 
-    private String instanceId;
+    private Long instanceId;
     private String taskId;
 
     private boolean success;

@@ -32,6 +32,8 @@ public class SystemMetrics implements Serializable, Comparable<SystemMetrics> {
     // 缓存分数
     private int score;
 
+    public static final int MIN_SCORE = 1;
+
     @Override
     public int compareTo(SystemMetrics that) {
         return this.calculateScore() - that.calculateScore();
@@ -53,7 +55,7 @@ public class SystemMetrics implements Serializable, Comparable<SystemMetrics> {
 
         // 最低运行标准，1G磁盘 & 0.5G内存 & 一个可用的CPU核心
         if (availableDisk < 1 || availableMemory < 0.5 || availableCPUCores < 1) {
-            score = 1;
+            score = MIN_SCORE;
         } else {
             // 磁盘只需要满足最低标准即可
             score = (int) (availableMemory * 2 + availableCPUCores);

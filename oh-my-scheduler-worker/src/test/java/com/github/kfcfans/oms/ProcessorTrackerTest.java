@@ -64,8 +64,8 @@ public class ProcessorTrackerTest {
 
         InstanceInfo instanceInfo = new InstanceInfo();
 
-        instanceInfo.setJobId("1");
-        instanceInfo.setInstanceId("10086");
+        instanceInfo.setJobId(1L);
+        instanceInfo.setInstanceId(10086L);
 
         instanceInfo.setExecuteType(ExecuteType.STANDALONE.name());
         instanceInfo.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());

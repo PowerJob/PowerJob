@@ -16,8 +16,8 @@ public class InstanceInfo implements Serializable {
     /**
      * 基础信息
      */
-    private String jobId;
-    private String instanceId;
+    private Long jobId;
+    private Long instanceId;
 
     /**
      * 任务执行处理器信息

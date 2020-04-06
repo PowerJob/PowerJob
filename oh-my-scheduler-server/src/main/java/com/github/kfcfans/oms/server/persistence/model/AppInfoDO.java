@@ -23,6 +23,7 @@ public class AppInfoDO {
     private String appName;
     private String description;
 
+    // 当前负责该 appName 旗下任务调度的server地址，IP:Port
     private String currentServer;
 
     private Date gmtCreate;

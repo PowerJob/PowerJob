@@ -26,6 +26,8 @@ public class OhMyServer {
     @Getter
     private static String actorSystemAddress;
 
+    private static final String AKKA_PATH = "akka://%s@%s/user/%s";
+
     public static void init() {
 
         // 1. 启动 ActorSystem
@@ -51,7 +53,12 @@ public class OhMyServer {
      * @return ActorSelection
      */
     public static ActorSelection getServerActor(String address) {
-        String path = String.format("akka://%s@%s/user/%s", RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, address, RemoteConstant.SERVER_ACTOR_NAME);
+        String path = String.format(AKKA_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, address, RemoteConstant.SERVER_ACTOR_NAME);
+        return actorSystem.actorSelection(path);
+    }
+
+    public static ActorSelection getTaskTrackerActor(String address) {
+        String path = String.format(AKKA_PATH, RemoteConstant.ACTOR_SYSTEM_NAME, address, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         return actorSystem.actorSelection(path);
     }
 }

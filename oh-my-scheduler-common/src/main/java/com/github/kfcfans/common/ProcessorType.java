@@ -17,4 +17,13 @@ public enum ProcessorType {
 
     private int v;
     private String des;
+
+    public static ProcessorType of(int v) {
+        for (ProcessorType type : values()) {
+            if (type.v == v) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("unknown ProcessorType of " + v);
+    }
 }

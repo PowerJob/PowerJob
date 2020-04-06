@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProcessorTrackerStatusReportReq {
 
-    private String instanceId;
+    private Long instanceId;
 
     /**
      * 请求发起时间
@@ -31,7 +31,7 @@ public class ProcessorTrackerStatusReportReq {
      */
     private String ip;
 
-    public ProcessorTrackerStatusReportReq(String instanceId, long remainTaskNum) {
+    public ProcessorTrackerStatusReportReq(Long instanceId, long remainTaskNum) {
         this.instanceId = instanceId;
         this.remainTaskNum = remainTaskNum;
 

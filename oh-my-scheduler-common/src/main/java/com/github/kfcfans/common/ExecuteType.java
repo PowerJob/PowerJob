@@ -17,4 +17,13 @@ public enum ExecuteType {
     MAP_REDUCE(3);
 
     int v;
+
+    public static ExecuteType of(int v) {
+        for (ExecuteType type : values()) {
+            if (type.v == v) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("unknown ExecuteType of " + v);
+    }
 }

@@ -92,7 +92,7 @@ public class TaskTracker {
      * 更新任务状态
      * 任务状态机只允许数字递增
      */
-    public void updateTaskStatus(String instanceId, String taskId, int newStatus, @Nullable String result) {
+    public void updateTaskStatus(Long instanceId, String taskId, int newStatus, @Nullable String result) {
 
         boolean updateResult;
         TaskStatus nTaskStatus = TaskStatus.of(newStatus);
@@ -217,7 +217,7 @@ public class TaskTracker {
         CommonUtils.executeIgnoreException(() -> scheduledPool.shutdownNow());
 
         // 1. 通知 ProcessorTracker 释放资源
-        String instanceId = instanceInfo.getInstanceId();
+        Long instanceId = instanceInfo.getInstanceId();
         TaskTrackerStopInstanceReq stopRequest = new TaskTrackerStopInstanceReq();
         stopRequest.setInstanceId(instanceId);
         ptStatusHolder.getAllProcessorTrackers().forEach(ptIP -> {
@@ -257,7 +257,7 @@ public class TaskTracker {
             }
 
             Stopwatch stopwatch = Stopwatch.createStarted();
-            String instanceId = instanceInfo.getInstanceId();
+            Long instanceId = instanceInfo.getInstanceId();
 
             // 1. 获取可以派发任务的 ProcessorTracker
             List<String> availablePtIps = ptStatusHolder.getAvailableProcessorTrackers();
@@ -323,7 +323,7 @@ public class TaskTracker {
 
         private void innerRun() {
 
-            final String instanceId = instanceInfo.getInstanceId();
+            Long instanceId = instanceInfo.getInstanceId();
 
             // 1. 查询统计信息
             Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(instanceId);
@@ -396,7 +396,7 @@ public class TaskTracker {
 
                 boolean success = resultTask.getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
                 req.setResult(resultTask.getResult());
-                req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getValue() : InstanceStatus.FAILED.getValue());
+                req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
 
                 CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(TIME_OUT_MS));
 
@@ -422,7 +422,7 @@ public class TaskTracker {
             }
 
             // 4. 未完成，上报状态
-            req.setInstanceStatus(InstanceStatus.RUNNING.getValue());
+            req.setInstanceStatus(InstanceStatus.RUNNING.getV());
             serverActor.tell(req, null);
 
             // 5.1 定期检查 -> 重试派发后未确认的任务

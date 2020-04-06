@@ -4,10 +4,12 @@ import com.github.kfcfans.common.model.SystemMetrics;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 管理Worker集群状态
@@ -61,14 +63,40 @@ public class ClusterStatusHolder {
         entryList.sort((o1, o2) -> o2.getValue().calculateScore() - o1.getValue().calculateScore());
 
         for (Map.Entry<String, SystemMetrics> entry : address2Metrics.entrySet()) {
-            long lastActiveTime = address2ActiveTime.getOrDefault(entry.getKey(), -1L);
-            long timeout = System.currentTimeMillis() - lastActiveTime;
-            if (timeout < WORKER_TIMEOUT_MS) {
-                return entry.getKey();
+            String address = entry.getKey();
+            if (available(address)) {
+                return address;
             }
         }
 
         log.warn("[ClusterStatusHolder] no worker available for {}, worker status is {}.", appName, address2Metrics);
         return null;
+    }
+
+    /**
+     * 获取当前所有可用的 Worker
+     * @return List<Worker>
+     */
+    public List<String> getAllAvailableWorker() {
+        List<String> workers = Lists.newLinkedList();
+
+        address2Metrics.forEach((address, ignore) -> {
+            if (available(address)) {
+                workers.add(address);
+            }
+        });
+
+        return workers;
+    }
+
+    private boolean available(String address) {
+        SystemMetrics metrics = address2Metrics.get(address);
+        if (metrics.calculateScore() == SystemMetrics.MIN_SCORE) {
+            return false;
+        }
+
+        Long lastActiveTime = address2ActiveTime.getOrDefault(address, -1L);
+        long timeout = System.currentTimeMillis() - lastActiveTime;
+        return timeout < WORKER_TIMEOUT_MS;
     }
 }

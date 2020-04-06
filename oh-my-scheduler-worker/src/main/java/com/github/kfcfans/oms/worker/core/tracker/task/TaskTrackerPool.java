@@ -13,20 +13,20 @@ import java.util.function.Function;
  */
 public class TaskTrackerPool {
 
-    private static final Map<String, TaskTracker> instanceId2TaskTracker = Maps.newConcurrentMap();
+    private static final Map<Long, TaskTracker> instanceId2TaskTracker = Maps.newConcurrentMap();
 
     /**
      * 获取 ProcessorTracker，如果不存在则创建
      */
-    public static TaskTracker getTaskTrackerPool(String instanceId) {
+    public static TaskTracker getTaskTrackerPool(Long instanceId) {
         return instanceId2TaskTracker.get(instanceId);
     }
 
-    public static void remove(String instanceId) {
+    public static void remove(Long instanceId) {
         instanceId2TaskTracker.remove(instanceId);
     }
 
-    public static void atomicCreateTaskTracker(String instanceId, Function<String, TaskTracker> creator) {
+    public static void atomicCreateTaskTracker(Long instanceId, Function<Long, TaskTracker> creator) {
         instanceId2TaskTracker.computeIfAbsent(instanceId, creator);
     }
 

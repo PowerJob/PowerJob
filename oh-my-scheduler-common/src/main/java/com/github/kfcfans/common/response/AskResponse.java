@@ -18,4 +18,8 @@ import java.io.Serializable;
 public class AskResponse implements Serializable {
     private boolean success;
     private Object extra;
+
+    public AskResponse(boolean success) {
+        this.success = success;
+    }
 }

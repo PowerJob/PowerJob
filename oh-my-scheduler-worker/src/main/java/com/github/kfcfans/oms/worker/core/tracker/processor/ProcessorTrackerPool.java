@@ -14,23 +14,23 @@ import java.util.function.Function;
  */
 public class ProcessorTrackerPool {
 
-    private static final Map<String, ProcessorTracker> instanceId2ProcessorTracker = Maps.newConcurrentMap();
+    private static final Map<Long, ProcessorTracker> instanceId2ProcessorTracker = Maps.newConcurrentMap();
 
     /**
      * 获取 ProcessorTracker，如果不存在则创建
      */
-    public static ProcessorTracker getProcessorTracker(String instanceId, Function<String, ProcessorTracker> creator) {
+    public static ProcessorTracker getProcessorTracker(Long instanceId, Function<Long, ProcessorTracker> creator) {
         return instanceId2ProcessorTracker.computeIfAbsent(instanceId, creator);
     }
 
     /**
      * 获取 ProcessorTracker
      */
-    public static ProcessorTracker getProcessorTracker(String instanceId) {
+    public static ProcessorTracker getProcessorTracker(Long instanceId) {
         return instanceId2ProcessorTracker.get(instanceId);
     }
 
-    public static void removeProcessorTracker(String instanceId) {
+    public static void removeProcessorTracker(Long instanceId) {
         instanceId2ProcessorTracker.remove(instanceId);
     }
 }

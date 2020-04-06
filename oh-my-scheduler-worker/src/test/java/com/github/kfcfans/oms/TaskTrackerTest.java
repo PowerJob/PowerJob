@@ -10,6 +10,7 @@ import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.common.utils.NetUtils;
+import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,9 +55,9 @@ public class TaskTrackerTest {
     private static ServerScheduleJobReq genServerScheduleJobReq(ExecuteType executeType) {
         ServerScheduleJobReq req = new ServerScheduleJobReq();
 
-        req.setJobId("1");
-        req.setInstanceId("10086");
-        req.setAllWorkerAddress(NetUtils.getLocalHost());
+        req.setJobId(1L);
+        req.setInstanceId(10086L);
+        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost()));
 
         req.setJobParams("this is job Params");
         req.setInstanceParams("this is instance Params");
