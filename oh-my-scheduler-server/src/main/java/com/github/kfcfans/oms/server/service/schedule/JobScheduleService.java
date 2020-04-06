@@ -74,7 +74,7 @@ public class JobScheduleService {
             log.error("[JobScheduleService] schedule cron job failed.", e);
         }
         log.info("[JobScheduleService] finished cron schedule, using time {}.", stopwatch);
-        stopwatch.reset();
+        stopwatch.reset().start();
 
         try {
             scheduleFrequentJob(allAppIds);
@@ -100,10 +100,17 @@ public class JobScheduleService {
             try {
 
                 // 查询条件：任务开启 + 使用CRON表达调度时间 + 指定appId + 即将需要调度执行
-                List<JobInfoDO> jobInfos = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionAndNextTriggerTimeLessThanEqual(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
+                List<JobInfoDO> jobInfos = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
+
+                if (CollectionUtils.isEmpty(jobInfos)) {
+                    log.debug("[JobScheduleService] no cron job need to schedule");
+                    return;
+                }
 
                 // 1. 批量写日志表
                 Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
+                log.info("[JobScheduleService] try to schedule some cron jobs, their jobId is {}.", jobId2InstanceId.keySet());
+
                 List<ExecuteLogDO> executeLogs = Lists.newLinkedList();
                 jobInfos.forEach(jobInfoDO -> {
 
@@ -173,8 +180,8 @@ public class JobScheduleService {
      */
     private void scheduleFrequentJob(List<Long> appIds) {
 
-        List<JobInfoDO> fixDelayJobs = jobInfoRepository.findByAppIdInAndStatusAndTimeExpression(appIds, JobStatus.ENABLE.getV(), TimeExpressionType.FIX_DELAY.getV());
-        List<JobInfoDO> fixRateJobs = jobInfoRepository.findByAppIdInAndStatusAndTimeExpression(appIds, JobStatus.ENABLE.getV(), TimeExpressionType.FIX_RATE.getV());
+        List<JobInfoDO> fixDelayJobs = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionType(appIds, JobStatus.ENABLE.getV(), TimeExpressionType.FIX_DELAY.getV());
+        List<JobInfoDO> fixRateJobs = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionType(appIds, JobStatus.ENABLE.getV(), TimeExpressionType.FIX_RATE.getV());
 
         List<Long> jobIds = Lists.newLinkedList();
         Map<Long, JobInfoDO> jobId2JobInfo = Maps.newHashMap();

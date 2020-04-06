@@ -53,13 +53,6 @@
             <version>${akka.version}</version>
         </dependency>
 
-        <!-- curator -->
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-recipes</artifactId>
-            <version>${curator.version}</version>
-        </dependency>
-
         <!-- SpringBoot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

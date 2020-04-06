@@ -57,7 +57,7 @@ public abstract class MapReduceProcessor implements BasicProcessor {
         // 2. 可靠发送请求（任务不允许丢失，需要使用 ask 方法，失败抛异常）
         boolean requestSucceed = false;
         try {
-            String akkaRemotePath = AkkaUtils.getAkkaRemotePath(task.getAddress(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
+            String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(task.getAddress(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
             ActorSelection actorSelection = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
             CompletionStage<Object> requestCS = Patterns.ask(actorSelection, req, Duration.ofMillis(REQUEST_TIMEOUT_MS));
             AskResponse respObj = (AskResponse) requestCS.toCompletableFuture().get(REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);

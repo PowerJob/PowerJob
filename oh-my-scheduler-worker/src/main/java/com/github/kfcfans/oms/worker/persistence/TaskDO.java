@@ -25,7 +25,7 @@ public class TaskDO {
     private String taskName;
     // 任务对象（序列化后的二进制数据）
     private byte[] taskContent;
-    // 对于JobTracker为workerAddress，对于普通Worker为jobTrackerAddress
+    // 对于TaskTracker为workerAddress（派发地址），对于普通Worker为TaskTrackerAddress（汇报地址）
     private String address;
     // 任务状态，0～10代表 JobTracker 使用，11～20代表普通Worker使用
     private Integer status;

@@ -1,11 +1,13 @@
 package com.github.kfcfans.oms.server.test;
 
+import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.common.utils.timewheel.HashedWheelTimer;
 import com.github.kfcfans.oms.server.common.utils.timewheel.TimerFuture;
 import com.github.kfcfans.oms.server.common.utils.timewheel.TimerTask;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -62,8 +64,11 @@ public class UtilsTest {
     }
 
     @Test
-    public void testCronExpression() {
-
+    public void testCronExpression() throws Exception {
+        String cron = "0 * * * * ? *";
+        CronExpression cronExpression = new CronExpression(cron);
+        final Date nextValidTimeAfter = cronExpression.getNextValidTimeAfter(new Date());
+        System.out.println(nextValidTimeAfter);
     }
 
 }

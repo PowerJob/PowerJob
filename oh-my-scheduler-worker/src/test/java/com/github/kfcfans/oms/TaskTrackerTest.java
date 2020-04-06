@@ -36,21 +36,26 @@ public class TaskTrackerTest {
         worker.init();
 
         ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));
-        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(NetUtils.getLocalHost(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
+        String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(NetUtils.getLocalHost() + ":25520", RemoteConstant.Task_TRACKER_ACTOR_NAME);
         remoteTaskTracker = testAS.actorSelection(akkaRemotePath);
+    }
+
+    @Test
+    public void justStartWorkerToTestServer() throws Exception {
+        Thread.sleep(277277277);
     }
 
     @Test
     public void testStandaloneJob() throws Exception {
 
         remoteTaskTracker.tell(genServerScheduleJobReq(ExecuteType.STANDALONE), null);
-        Thread.sleep(500000);
+        Thread.sleep(5000000);
     }
 
     @Test
     public void testMapReduceJob() throws Exception {
         remoteTaskTracker.tell(genServerScheduleJobReq(ExecuteType.MAP_REDUCE), null);
-        Thread.sleep(500000);
+        Thread.sleep(5000000);
     }
 
     private static ServerScheduleJobReq genServerScheduleJobReq(ExecuteType executeType) {
@@ -58,7 +63,7 @@ public class TaskTrackerTest {
 
         req.setJobId(1L);
         req.setInstanceId(10086L);
-        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost()));
+        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost() + ":25520"));
 
         req.setJobParams("this is job Params");
         req.setInstanceParams("this is instance Params");

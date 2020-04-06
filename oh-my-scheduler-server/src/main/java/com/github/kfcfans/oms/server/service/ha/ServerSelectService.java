@@ -121,7 +121,7 @@ public class ServerSelectService {
             downServerCache.remove(serverAddress);
             return response.isSuccess();
         }catch (Exception e) {
-            log.warn("[ServerSelectService] server({}) was down, try to elect a new server.", serverAddress);
+            log.warn("[ServerSelectService] server({}) was down, I will be the new server.", serverAddress);
         }
         downServerCache.add(serverAddress);
         return false;

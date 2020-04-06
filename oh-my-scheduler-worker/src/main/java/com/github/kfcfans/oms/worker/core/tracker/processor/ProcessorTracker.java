@@ -53,7 +53,7 @@ public class ProcessorTracker {
         this.instanceInfo = request.getInstanceInfo();
         this.instanceId = request.getInstanceInfo().getInstanceId();
         this.taskTrackerAddress = request.getTaskTrackerAddress();
-        String akkaRemotePath = AkkaUtils.getAkkaRemotePath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
+        String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
         // 初始化

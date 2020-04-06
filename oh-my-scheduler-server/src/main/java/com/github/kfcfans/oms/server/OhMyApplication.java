@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.server;
 import com.github.kfcfans.oms.server.core.akka.OhMyServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * SpringBoot 启动入口
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author tjq
  * @since 2020/3/29
  */
+@EnableScheduling
 @SpringBootApplication
 public class OhMyApplication {
 

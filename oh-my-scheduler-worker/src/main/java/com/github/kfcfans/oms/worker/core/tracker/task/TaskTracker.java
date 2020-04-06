@@ -198,7 +198,7 @@ public class TaskTracker {
         rootTask.setInstanceId(instanceInfo.getInstanceId());
         rootTask.setTaskId(TaskConstant.ROOT_TASK_ID);
         rootTask.setFailedCnt(0);
-        rootTask.setAddress(NetUtils.getLocalHost());
+        rootTask.setAddress(OhMyWorker.getWorkerAddress());
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
         rootTask.setCreatedTime(System.currentTimeMillis());
         rootTask.setLastModifiedTime(System.currentTimeMillis());
@@ -221,7 +221,7 @@ public class TaskTracker {
         TaskTrackerStopInstanceReq stopRequest = new TaskTrackerStopInstanceReq();
         stopRequest.setInstanceId(instanceId);
         ptStatusHolder.getAllProcessorTrackers().forEach(ptIP -> {
-            String ptPath = AkkaUtils.getAkkaRemotePath(ptIP, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+            String ptPath = AkkaUtils.getAkkaWorkerPath(ptIP, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
             ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptPath);
             // 不可靠通知，ProcessorTracker 也可以靠自己的定时任务/问询等方式关闭
             ptActor.tell(stopRequest, null);
@@ -289,7 +289,7 @@ public class TaskTracker {
                     if (StringUtils.isEmpty(ptAddress) || RemoteConstant.EMPTY_ADDRESS.equals(ptAddress)) {
                         ptAddress = availablePtIps.get(index.getAndIncrement() % availablePtIps.size());
                     }
-                    String ptActorPath = AkkaUtils.getAkkaRemotePath(ptAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+                    String ptActorPath = AkkaUtils.getAkkaWorkerPath(ptAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
                     ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptActorPath);
                     ptActor.tell(startTaskReq, null);
 
@@ -380,7 +380,7 @@ public class TaskTracker {
                         TaskDO newLastTask = new TaskDO();
                         newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
                         newLastTask.setTaskId(TaskConstant.LAST_TASK_ID);
-                        newLastTask.setAddress(NetUtils.getLocalHost());
+                        newLastTask.setAddress(OhMyWorker.getWorkerAddress());
                         addTask(Lists.newArrayList(newLastTask));
                     }
 
@@ -388,7 +388,7 @@ public class TaskTracker {
                 finished.set(finishedBoolean);
             }
 
-            String serverPath = AkkaUtils.getAkkaServerNodePath(RemoteConstant.SERVER_ACTOR_NAME);
+            String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
             ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
 
             // 3. 执行完毕，报告服务器

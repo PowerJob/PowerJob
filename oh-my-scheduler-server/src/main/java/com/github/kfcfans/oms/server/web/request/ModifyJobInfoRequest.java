@@ -4,6 +4,7 @@ import lombok.Data;
 
 /**
  * 创建/修改 JobInfo 请求
+ * 测试用例快速复制区域：MAP_REDUCE、EMBEDDED_JAVA、CRON、com.github.kfcfans.oms.processors.TestMapReduceProcessor
  *
  * @author tjq
  * @since 2020/3/30

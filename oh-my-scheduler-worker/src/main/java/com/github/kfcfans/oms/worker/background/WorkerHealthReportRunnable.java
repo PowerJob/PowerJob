@@ -9,6 +9,7 @@ import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SystemInfoUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 /**
  * Worker健康度定时上报
@@ -23,8 +24,13 @@ public class WorkerHealthReportRunnable implements Runnable {
     @Override
     public void run() {
 
-        SystemMetrics systemMetrics = SystemInfoUtils.getSystemMetrics();
+        // 没有可用Server，无法上报
+        String currentServer = OhMyWorker.getCurrentServer();
+        if (StringUtils.isEmpty(currentServer)) {
+            return;
+        }
 
+        SystemMetrics systemMetrics = SystemInfoUtils.getSystemMetrics();
         WorkerHeartbeat heartbeat = new WorkerHeartbeat();
 
         heartbeat.setSystemMetrics(systemMetrics);
@@ -34,7 +40,7 @@ public class WorkerHealthReportRunnable implements Runnable {
         heartbeat.setHeartbeatTime(System.currentTimeMillis());
 
         // 发送请求
-        String serverPath = AkkaUtils.getAkkaServerNodePath(RemoteConstant.SERVER_ACTOR_NAME);
+        String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
         ActorSelection actorSelection = OhMyWorker.actorSystem.actorSelection(serverPath);
         actorSelection.tell(heartbeat, null);
     }

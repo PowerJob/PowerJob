@@ -17,8 +17,8 @@ public class ProcessorTrackerStatus {
     private static final int DISPATCH_THRESHOLD = 20;
     private static final int HEARTBEAT_TIMEOUT_MS = 60000;
 
-    // 冗余存储一份 IP 地址
-    private String ip;
+    // 冗余存储一份 address 地址
+    private String address;
     // 上次活跃时间
     private long lastActiveTime;
     // 等待执行任务数
@@ -31,8 +31,8 @@ public class ProcessorTrackerStatus {
     /**
      * 初始化 ProcessorTracker，此时并未持有实际的 ProcessorTracker 状态
      */
-    public void init(String ptIP) {
-        this.ip = ptIP;
+    public void init(String address) {
+        this.address = address;
         this.lastActiveTime = System.currentTimeMillis();
         this.remainTaskNum = 0;
         this.dispatched = false;
@@ -50,7 +50,7 @@ public class ProcessorTrackerStatus {
             return;
         }
 
-        this.ip = req.getIp();
+        this.address = req.getAddress();
         this.lastActiveTime = req.getTime();
         this.remainTaskNum = req.getRemainTaskNum();
         this.dispatched = true;

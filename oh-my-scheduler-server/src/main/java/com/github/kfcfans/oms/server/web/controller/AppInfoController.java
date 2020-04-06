@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,11 @@ public class AppInfoController {
 
         AppInfoDO appInfoDO = new AppInfoDO();
         BeanUtils.copyProperties(appInfoRequest, appInfoDO);
+        Date now = new Date();
+        if (appInfoRequest.getId() == null) {
+            appInfoDO.setGmtCreate(now);
+        }
+        appInfoDO.setGmtModified(now);
         appInfoRepository.saveAndFlush(appInfoDO);
         return ResultDTO.success(null);
     }

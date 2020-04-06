@@ -1,7 +1,11 @@
 package com.github.kfcfans.oms.server.test;
 
 import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.constans.TimeExpressionType;
+import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.model.OmsLockDO;
+import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.persistence.repository.OmsLockRepository;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
@@ -23,6 +27,8 @@ import java.util.List;
 public class RepositoryTest {
 
     @Resource
+    private JobInfoRepository jobInfoRepository;
+    @Resource
     private OmsLockRepository omsLockRepository;
 
     /**
@@ -38,6 +44,12 @@ public class RepositoryTest {
         }
         omsLockRepository.saveAll(locks);
         omsLockRepository.flush();
+    }
+
+    @Test
+    public void testSelectCronJobSQL() {
+        List<JobInfoDO> result = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(Lists.newArrayList(1L), JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), System.currentTimeMillis());
+        System.out.println(result);
     }
 
 }

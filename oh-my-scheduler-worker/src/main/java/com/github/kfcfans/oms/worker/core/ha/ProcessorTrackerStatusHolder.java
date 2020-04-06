@@ -15,27 +15,28 @@ import java.util.Map;
  */
 public class ProcessorTrackerStatusHolder {
 
-    private final Map<String, ProcessorTrackerStatus> ip2Status;
+    // ProcessorTracker的address(IP:Port) -> 状态
+    private final Map<String, ProcessorTrackerStatus> address2Status;
 
     public ProcessorTrackerStatusHolder(List<String> allWorkerAddress) {
 
-        ip2Status = Maps.newConcurrentMap();
-        allWorkerAddress.forEach(ip -> {
+        address2Status = Maps.newConcurrentMap();
+        allWorkerAddress.forEach(address -> {
             ProcessorTrackerStatus pts = new ProcessorTrackerStatus();
-            pts.init(ip);
-            ip2Status.put(ip, pts);
+            pts.init(address);
+            address2Status.put(address, pts);
         });
     }
 
-    public ProcessorTrackerStatus getProcessorTrackerStatus(String ip) {
-        return ip2Status.get(ip);
+    public ProcessorTrackerStatus getProcessorTrackerStatus(String address) {
+        return address2Status.get(address);
     }
 
     /**
      * 根据 ProcessorTracker 的心跳更新状态
      */
     public void updateStatus(ProcessorTrackerStatusReportReq heartbeatReq) {
-        ProcessorTrackerStatus processorTrackerStatus = ip2Status.get(heartbeatReq.getIp());
+        ProcessorTrackerStatus processorTrackerStatus = address2Status.get(heartbeatReq.getAddress());
         processorTrackerStatus.update(heartbeatReq);
     }
 
@@ -45,9 +46,9 @@ public class ProcessorTrackerStatusHolder {
     public List<String> getAvailableProcessorTrackers() {
 
         List<String> result = Lists.newLinkedList();
-        ip2Status.forEach((ip, ptStatus) -> {
+        address2Status.forEach((address, ptStatus) -> {
             if (ptStatus.available()) {
-                result.add(ip);
+                result.add(address);
             }
         });
         return result;
@@ -57,7 +58,7 @@ public class ProcessorTrackerStatusHolder {
      * 获取所有 ProcessorTracker 的IP地址（包括不可用状态）
      */
     public List<String> getAllProcessorTrackers() {
-        return Lists.newArrayList(ip2Status.keySet());
+        return Lists.newArrayList(address2Status.keySet());
     }
 
     /**
@@ -66,7 +67,7 @@ public class ProcessorTrackerStatusHolder {
     public List<String> getAllDisconnectedProcessorTrackers() {
 
         List<String> result = Lists.newLinkedList();
-        ip2Status.forEach((ip, ptStatus) -> {
+        address2Status.forEach((ip, ptStatus) -> {
             if (ptStatus.isTimeout()) {
                 result.add(ip);
             }

@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
 import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.worker.OhMyWorker;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,13 +30,13 @@ public class ProcessorTrackerStatusReportReq {
     /**
      * 本机地址
      */
-    private String ip;
+    private String address;
 
     public ProcessorTrackerStatusReportReq(Long instanceId, long remainTaskNum) {
         this.instanceId = instanceId;
         this.remainTaskNum = remainTaskNum;
 
         this.time = System.currentTimeMillis();
-        this.ip = NetUtils.getLocalHost();
+        this.address = OhMyWorker.getWorkerAddress();
     }
 }

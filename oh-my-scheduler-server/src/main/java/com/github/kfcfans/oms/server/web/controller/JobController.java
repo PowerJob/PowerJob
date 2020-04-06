@@ -37,17 +37,22 @@ public class JobController {
         BeanUtils.copyProperties(request, jobInfoDO);
 
         // 拷贝枚举值
-        TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(request.getTimeExpression());
+        TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(request.getTimeExpressionType());
         jobInfoDO.setExecuteType(ExecuteType.valueOf(request.getExecuteType()).getV());
         jobInfoDO.setProcessorType(ProcessorType.valueOf(request.getProcessorType()).getV());
         jobInfoDO.setTimeExpressionType(timeExpressionType.getV());
         // 计算下次调度时间
+        Date now = new Date();
         if (timeExpressionType == TimeExpressionType.CRON) {
             CronExpression cronExpression = new CronExpression(request.getTimeExpression());
-            Date nextValidTime = cronExpression.getNextValidTimeAfter(new Date());
+            Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
             jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
         }
 
+        if (request.getId() == null) {
+            jobInfoDO.setGmtCreate(now);
+        }
+        jobInfoDO.setGmtModified(now);
         jobInfoRepository.saveAndFlush(jobInfoDO);
         return ResultDTO.success(null);
     }
