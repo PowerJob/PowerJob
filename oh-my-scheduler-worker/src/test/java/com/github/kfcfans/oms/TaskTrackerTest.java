@@ -36,7 +36,7 @@ public class TaskTrackerTest {
         worker.init();
 
         ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));
-        String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(NetUtils.getLocalHost() + ":25520", RemoteConstant.Task_TRACKER_ACTOR_NAME);
+        String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(NetUtils.getLocalHost() + ":" + RemoteConstant.DEFAULT_WORKER_PORT, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         remoteTaskTracker = testAS.actorSelection(akkaRemotePath);
     }
 
@@ -63,7 +63,7 @@ public class TaskTrackerTest {
 
         req.setJobId(1L);
         req.setInstanceId(10086L);
-        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost() + ":25520"));
+        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost() + ":" + RemoteConstant.DEFAULT_WORKER_PORT));
 
         req.setJobParams("this is job Params");
         req.setInstanceParams("this is instance Params");

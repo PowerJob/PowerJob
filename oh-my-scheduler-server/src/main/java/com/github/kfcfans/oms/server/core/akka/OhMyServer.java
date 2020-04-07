@@ -5,6 +5,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.utils.NetUtils;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -30,6 +31,8 @@ public class OhMyServer {
 
     public static void init() {
 
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        log.info("[OhMyServer] OhMyServer's akka system start to bootstrap...");
         // 1. 启动 ActorSystem
         Map<String, Object> overrideConfig = Maps.newHashMap();
         String localIP = NetUtils.getLocalHost();
@@ -45,6 +48,7 @@ public class OhMyServer {
 
         actorSystem.actorOf(Props.create(ServerActor.class), RemoteConstant.SERVER_ACTOR_NAME);
 
+        log.info("[OhMyServer] OhMyServer's akka system start successfully, using time {}.", stopwatch);
     }
 
     /**
@@ -58,7 +62,7 @@ public class OhMyServer {
     }
 
     public static ActorSelection getTaskTrackerActor(String address) {
-        String path = String.format(AKKA_PATH, RemoteConstant.ACTOR_SYSTEM_NAME, address, RemoteConstant.Task_TRACKER_ACTOR_NAME);
+        String path = String.format(AKKA_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         return actorSystem.actorSelection(path);
     }
 }

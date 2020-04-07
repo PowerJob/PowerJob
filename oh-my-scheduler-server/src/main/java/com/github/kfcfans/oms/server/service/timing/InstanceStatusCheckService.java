@@ -74,8 +74,8 @@ public class InstanceStatusCheckService {
             if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) is not triggered as expected.", waitingDispatchInstances);
                 waitingDispatchInstances.forEach(instance -> {
-                    // 重新派发
-                    JobInfoDO jobInfoDO = jobInfoRepository.getOne(instance.getJobId());
+                    // 重新派发(orElseGet用于消除编译器警告...)
+                    JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
                     dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), 0);
                 });
             }
@@ -87,7 +87,7 @@ public class InstanceStatusCheckService {
                 log.warn("[InstanceStatusCheckService] instances({}) did n’t receive any reply from worker.", waitingWorkerReceiveInstances);
                 waitingWorkerReceiveInstances.forEach(instance -> {
                     // 重新派发
-                    JobInfoDO jobInfoDO = jobInfoRepository.getOne(instance.getJobId());
+                    JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
                     dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), 0);
                 });
             }
@@ -99,7 +99,7 @@ public class InstanceStatusCheckService {
                 log.warn("[InstanceStatusCheckService] instances({}) has not received status report for a long time.", failedInstances);
                 failedInstances.forEach(instance -> {
                     // 重新派发
-                    JobInfoDO jobInfoDO = jobInfoRepository.getOne(instance.getJobId());
+                    JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
                     dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
                 });
             }

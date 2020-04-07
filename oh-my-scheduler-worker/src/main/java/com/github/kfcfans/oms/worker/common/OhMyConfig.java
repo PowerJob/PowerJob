@@ -20,9 +20,4 @@ public class OhMyConfig {
      * 调度服务器地址，ip:port
      */
     private List<String> serverAddress;
-    /**
-     * 通讯端口
-     */
-    private String listeningIP;
-    private Integer listeningPort;
 }

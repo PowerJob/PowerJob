@@ -17,7 +17,7 @@ public class AkkaUtils {
     private static final String AKKA_NODE_PATH = "akka://%s@%s/user/%s";
 
     public static String getAkkaWorkerPath(String address, String actorName) {
-        return String.format(AKKA_NODE_PATH, RemoteConstant.ACTOR_SYSTEM_NAME, address, actorName);
+        return String.format(AKKA_NODE_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, actorName);
     }
 
     public static String getAkkaServerPath(String actorName) {

@@ -53,8 +53,13 @@ public class ServerActor extends AbstractActor {
     private void onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) {
         try {
             InstanceManager.updateStatus(req);
+
+            // 回复接收成功
+            AskResponse askResponse = new AskResponse();
+            askResponse.setSuccess(true);
+            getSender().tell(askResponse, getSelf());
         }catch (Exception e) {
-            log.error("[ServerActor] update instance status failed for request: {}.", req);
+            log.error("[ServerActor] update instance status failed for request: {}.", req, e);
         }
     }
 }

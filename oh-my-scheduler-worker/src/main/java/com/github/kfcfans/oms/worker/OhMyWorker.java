@@ -78,17 +78,16 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
 
             // 初始化 ActorSystem
             Map<String, Object> overrideConfig = Maps.newHashMap();
-            String localIP = StringUtils.isEmpty(config.getListeningIP()) ? NetUtils.getLocalHost() : config.getListeningIP();
-            int port = config.getListeningPort() == null ? RemoteConstant.DEFAULT_CLIENT_PORT : config.getListeningPort();
-            overrideConfig.put("akka.remote.artery.canonical.hostname", localIP);
+            int port = NetUtils.getAvailablePort(RemoteConstant.DEFAULT_WORKER_PORT);
+            overrideConfig.put("akka.remote.artery.canonical.hostname", NetUtils.getLocalHost());
             overrideConfig.put("akka.remote.artery.canonical.port", port);
-            workerAddress = localIP + ":" + port;
+            workerAddress = NetUtils.getLocalHost() + ":" + port;
             log.info("[OhMyWorker] akka-remote listening address: {}", workerAddress);
 
             Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.WORKER_AKKA_CONFIG_NAME);
             Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
-            actorSystem = ActorSystem.create(RemoteConstant.ACTOR_SYSTEM_NAME, akkaFinalConfig);
+            actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
             actorSystem.actorOf(Props.create(TaskTrackerActor.class), RemoteConstant.Task_TRACKER_ACTOR_NAME);
             actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
             log.info("[OhMyWorker] akka ActorSystem({}) initialized successfully.", actorSystem);

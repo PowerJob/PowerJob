@@ -15,6 +15,7 @@ public class UtilsTest {
     @Test
     public void testNetUtils() {
         System.out.println("本机IP：" + NetUtils.getLocalHost());
+        System.out.println("端口：" + NetUtils.getAvailablePort(7777));
     }
 
     @Test

@@ -63,7 +63,7 @@ public class InstanceManager {
         if (!instanceId2JobInfo.containsKey(instanceId)) {
             log.warn("[InstanceManager] can't find any register info for instance(jobId={},instanceId={}), maybe change the server.", jobId, instanceId);
 
-            JobInfoDO JobInfoDo = getJobInfoRepository().getOne(jobId);
+            JobInfoDO JobInfoDo = getJobInfoRepository().findById(jobId).orElseGet(JobInfoDO::new);
             instanceId2JobInfo.put(instanceId, JobInfoDo);
         }
 
@@ -88,7 +88,7 @@ public class InstanceManager {
             return;
         }
 
-        ExecuteLogDO updateEntity = getExecuteLogRepository().getOne(instanceId);
+        ExecuteLogDO updateEntity = getExecuteLogRepository().findById(instanceId).orElseGet(ExecuteLogDO::new);
         updateEntity.setStatus(newStatus.getV());
         updateEntity.setGmtModified(new Date());
 
