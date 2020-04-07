@@ -30,12 +30,15 @@ public class ExecuteLogDO {
     private int status;
     // 执行结果
     private String result;
-    // 耗时
-    private Long usedTime;
     // 预计触发时间
     private Long expectedTriggerTime;
     // 实际触发时间
     private Long actualTriggerTime;
+    // 结束时间
+    private Long finishedTime;
+
+    // 总共执行的次数（CRON任务 -> 代表重试次数，FREQUENT -> 代表总执行次数）
+    private Long runningTimes;
 
     private Date gmtCreate;
     private Date gmtModified;

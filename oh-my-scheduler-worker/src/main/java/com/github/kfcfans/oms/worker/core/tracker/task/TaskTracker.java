@@ -346,6 +346,7 @@ public class TaskTracker {
             req.setTotalTaskNum(finishedNum + unfinishedNum);
             req.setSucceedTaskNum(succeedNum);
             req.setFailedTaskNum(failedNum);
+            req.setReportTime(System.currentTimeMillis());
 
             // 2. 如果未完成任务数为0，判断是否真正结束，并获取真正结束任务的执行结果
             TaskDO resultTask = null;

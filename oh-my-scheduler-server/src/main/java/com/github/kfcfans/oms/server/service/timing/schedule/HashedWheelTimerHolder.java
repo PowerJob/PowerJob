@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.service.schedule;
+package com.github.kfcfans.oms.server.service.timing.schedule;
 
 import com.github.kfcfans.oms.server.common.utils.timewheel.HashedWheelTimer;
 

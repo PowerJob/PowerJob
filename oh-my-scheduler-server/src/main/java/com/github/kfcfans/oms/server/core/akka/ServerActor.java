@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
 import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.server.core.InstanceManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,6 +21,7 @@ public class ServerActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(WorkerHeartbeat.class, this::onReceiveWorkerHeartbeat)
+                .match(TaskTrackerReportInstanceStatusReq.class, this::onReceiveTaskTrackerReportInstanceStatusReq)
                 .match(Ping.class, this::onReceivePing)
                 .matchAny(obj -> log.warn("[ServerActor] receive unknown request: {}.", obj))
                 .build();
@@ -48,7 +50,11 @@ public class ServerActor extends AbstractActor {
      * 处理 instance 状态
      * @param req 任务实例的状态上报请求
      */
-    private void onReceive(TaskTrackerReportInstanceStatusReq req) {
-
+    private void onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) {
+        try {
+            InstanceManager.updateStatus(req);
+        }catch (Exception e) {
+            log.error("[ServerActor] update instance status failed for request: {}.", req);
+        }
     }
 }

@@ -1,9 +1,10 @@
-package com.github.kfcfans.oms.server.service.schedule;
+package com.github.kfcfans.oms.server.service.timing.schedule;
 
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.common.constans.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
+import com.github.kfcfans.oms.server.core.InstanceManager;
 import com.github.kfcfans.oms.server.core.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
@@ -68,6 +69,7 @@ public class JobScheduleService {
         }
         List<Long> allAppIds = allAppInfos.stream().map(AppInfoDO::getId).collect(Collectors.toList());
 
+        // 调度 CRON 表达式 JOB
         try {
             scheduleCornJob(allAppIds);
         }catch (Exception e) {
@@ -76,6 +78,7 @@ public class JobScheduleService {
         log.info("[JobScheduleService] finished cron schedule, using time {}.", stopwatch);
         stopwatch.reset().start();
 
+        // 调度 FIX_RATE 和 FIX_DELAY JOB
         try {
             scheduleFrequentJob(allAppIds);
         }catch (Exception e) {
@@ -132,6 +135,10 @@ public class JobScheduleService {
                 // 2. 推入时间轮中等待调度执行
                 jobInfos.forEach(jobInfoDO ->  {
 
+                    Long instanceId = jobId2InstanceId.get(jobInfoDO.getId());
+                    // 注册到任务实例管理中心
+                    InstanceManager.register(instanceId, jobInfoDO);
+
                     long targetTriggerTime = jobInfoDO.getNextTriggerTime();
                     long delay = 0;
                     if (targetTriggerTime < nowTime) {
@@ -141,9 +148,8 @@ public class JobScheduleService {
                     }
 
                     HashedWheelTimerHolder.TIMER.schedule(() -> {
-                        dispatchService.dispatch(jobInfoDO, jobId2InstanceId.get(jobInfoDO.getId()));
+                        dispatchService.dispatch(jobInfoDO, instanceId, 0);
                     }, delay, TimeUnit.MILLISECONDS);
-
                 });
 
                 // 3. 计算下一次调度时间（忽略5S内的重复执行，即CRON模式下最小的连续执行间隔为 SCHEDULE_RATE ms）

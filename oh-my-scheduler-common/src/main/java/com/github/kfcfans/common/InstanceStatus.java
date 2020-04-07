@@ -22,4 +22,13 @@ public enum InstanceStatus {
 
     private int v;
     private String des;
+
+    public static InstanceStatus of(int v) {
+        for (InstanceStatus is : values()) {
+            if (v == is.v) {
+                return is;
+            }
+        }
+        throw new IllegalArgumentException("InstanceStatus has no item for value " + v);
+    }
 }

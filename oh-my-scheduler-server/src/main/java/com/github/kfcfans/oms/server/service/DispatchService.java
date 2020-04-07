@@ -20,7 +20,7 @@ import static com.github.kfcfans.common.InstanceStatus.*;
 
 
 /**
- * 派送服务
+ * 派送服务（将任务从Server派发到Worker）
  *
  * @author tjq
  * @since 2020/4/5
@@ -39,7 +39,7 @@ public class DispatchService {
     private static final String NO_WORKER_REASON = "no worker available";
     private static final String EMPTY_RESULT = "";
 
-    public void dispatch(JobInfoDO jobInfo, long instanceId) {
+    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
 
         log.debug("[DispatchService] start to dispatch job -> {}.", jobInfo);
 
@@ -50,7 +50,7 @@ public class DispatchService {
         if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
             String result = String.format(FAILED_REASON, runningInstanceCount);
             log.warn("[DispatchService] cancel dispatch job({}) due to too much instance(num={}) is running.", jobInfo, runningInstanceCount);
-            executeLogRepository.updateStatusAndLog(instanceId, FAILED.getV(), result);
+            executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, result);
 
             return;
         }
@@ -61,7 +61,7 @@ public class DispatchService {
 
         if (StringUtils.isEmpty(taskTrackerAddress)) {
             log.warn("[DispatchService] cancel dispatch job({}) due to no worker available.", jobInfo);
-            executeLogRepository.updateStatusAndLog(instanceId, FAILED.getV(), NO_WORKER_REASON);
+            executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, NO_WORKER_REASON);
             return;
         }
 
@@ -89,8 +89,9 @@ public class DispatchService {
         // 发送请求（不可靠，需要一个后台线程定期轮询状态）
         ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(taskTrackerAddress);
         taskTrackerActor.tell(req, null);
+        log.debug("[DispatchService] send request({}) to TaskTracker({}) succeed.", req, taskTrackerActor.pathString());
 
         // 修改状态
-        executeLogRepository.updateStatusAndLog(instanceId, WAITING_WORKER_RECEIVE.getV(), EMPTY_RESULT);
+        executeLogRepository.update4Trigger(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, EMPTY_RESULT);
     }
 }
