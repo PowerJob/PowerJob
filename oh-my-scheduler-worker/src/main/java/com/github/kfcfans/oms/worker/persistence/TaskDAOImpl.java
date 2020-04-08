@@ -1,9 +1,7 @@
 package com.github.kfcfans.oms.worker.persistence;
 
-import com.github.kfcfans.common.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.springframework.util.CollectionUtils;
 
 import java.sql.*;
 import java.util.Collection;

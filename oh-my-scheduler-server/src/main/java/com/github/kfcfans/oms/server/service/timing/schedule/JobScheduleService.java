@@ -80,7 +80,7 @@ public class JobScheduleService {
 
         // 调度 FIX_RATE 和 FIX_DELAY JOB
         try {
-            scheduleFrequentJob(allAppIds);
+//            scheduleFrequentJob(allAppIds);
         }catch (Exception e) {
             log.error("[JobScheduleService] schedule frequent job failed.", e);
         }

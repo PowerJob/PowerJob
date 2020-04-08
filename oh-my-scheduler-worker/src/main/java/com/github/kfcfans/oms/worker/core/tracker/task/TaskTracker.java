@@ -205,16 +205,20 @@ public class TaskTracker {
 
         if (!taskPersistenceService.save(rootTask)) {
             log.error("[TaskTracker-{}] create root task failed.", instanceInfo.getInstanceId());
-            throw new RuntimeException("create root task failed.");
+        }else {
+            log.info("[TaskTracker-{}] create root task successfully.", instanceInfo.getInstanceId());
         }
-        log.info("[TaskTracker-{}] create root task successfully.", instanceInfo.getInstanceId());
     }
 
 
     public void destroy() {
 
         // 0. 先关闭定时任务线程池，防止任务被派发出去
-        CommonUtils.executeIgnoreException(() -> scheduledPool.shutdownNow());
+        CommonUtils.executeIgnoreException(() -> {
+            // 不能使用 shutdownNow()，因为 destroy 方法本身就在 scheduledPool 的线程中执行，强行关闭会打断 destroy 的执行。
+            scheduledPool.shutdown();
+            return null;
+        });
 
         // 1. 通知 ProcessorTracker 释放资源
         Long instanceId = instanceInfo.getInstanceId();
@@ -353,46 +357,58 @@ public class TaskTracker {
             if (unfinishedNum == 0) {
 
                 boolean finishedBoolean = true;
-                ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
 
-                if (executeType == ExecuteType.STANDALONE) {
+                // 数据库中一个任务都没有，说明根任务创建失败，该任务实例失败
+                if (finishedNum == 0) {
+                    resultTask = new TaskDO();
+                    resultTask.setStatus(TaskStatus.WORKER_PROCESS_FAILED.getValue());
+                    resultTask.setResult("CREATE_ROOT_TASK_FAILED");
 
-                    List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId);
-                    if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
-                        log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
-                    }else {
-                        resultTask = allTask.get(0);
+                }else {
+                    ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
+
+                    // STANDALONE 只有一个任务，完成即结束
+                    if (executeType == ExecuteType.STANDALONE) {
+
+                        List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId);
+                        if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
+                            log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
+                        }else {
+                            resultTask = allTask.get(0);
+                        }
+
+                    } else {
+
+                        // MapReduce 和 Broadcast 任务实例是否完成根据**Last_Task**的执行情况判断
+                        Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId);
+                        if (lastTaskOptional.isPresent()) {
+
+                            // 存在则根据 reduce 任务来判断状态
+                            resultTask = lastTaskOptional.get();
+                            TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
+                            finishedBoolean = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED;
+                        }else {
+
+                            // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
+                            finishedBoolean = false;
+
+                            TaskDO newLastTask = new TaskDO();
+                            newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
+                            newLastTask.setTaskId(TaskConstant.LAST_TASK_ID);
+                            newLastTask.setAddress(OhMyWorker.getWorkerAddress());
+                            addTask(Lists.newArrayList(newLastTask));
+                        }
                     }
-
-                } else {
-                    Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId);
-
-                    if (lastTaskOptional.isPresent()) {
-
-                        // 存在则根据 reduce 任务来判断状态
-                        resultTask = lastTaskOptional.get();
-                        TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
-                        finishedBoolean = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED;
-                    }else {
-
-                        // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
-                        finishedBoolean = false;
-
-                        TaskDO newLastTask = new TaskDO();
-                        newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
-                        newLastTask.setTaskId(TaskConstant.LAST_TASK_ID);
-                        newLastTask.setAddress(OhMyWorker.getWorkerAddress());
-                        addTask(Lists.newArrayList(newLastTask));
-                    }
-
                 }
+
+
                 finished.set(finishedBoolean);
             }
 
             String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
             ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
 
-            // 3. 执行完毕，报告服务器
+            // 3. 执行完毕，报告服务器（第二个判断则是为了取消烦人的编译器警告）
             if (finished.get() && resultTask != null) {
 
                 boolean success = resultTask.getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();

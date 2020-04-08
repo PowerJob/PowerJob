@@ -88,7 +88,7 @@ public class InstanceManager {
             return;
         }
 
-        ExecuteLogDO updateEntity = getExecuteLogRepository().findById(instanceId).orElseGet(ExecuteLogDO::new);
+        ExecuteLogDO updateEntity = getExecuteLogRepository().findByInstanceId(instanceId);
         updateEntity.setStatus(newStatus.getV());
         updateEntity.setGmtModified(new Date());
 

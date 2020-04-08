@@ -2,8 +2,10 @@ package com.github.kfcfans.oms.server.persistence.repository;
 
 import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
@@ -31,9 +33,13 @@ public interface ExecuteLogRepository extends JpaRepository<ExecuteLogDO, Long> 
      * @param result 结果
      * @return 更新数量
      */
+    @Transactional
+    @Modifying
     @Query(value = "update execute_log set status = ?2, running_times = ?3, actual_trigger_time = now(), result = ?4, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
     int update4Trigger(long instanceId, int status, long runningTimes, String result);
 
+    @Modifying
+    @Transactional
     @Query(value = "update execute_log set status = ?2, running_times = ?3, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
     int update4FrequentJob(long instanceId, int status, long runningTimes);
 
@@ -41,4 +47,6 @@ public interface ExecuteLogRepository extends JpaRepository<ExecuteLogDO, Long> 
     List<ExecuteLogDO> findByJobIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
     List<ExecuteLogDO> findByJobIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
     List<ExecuteLogDO> findByJobIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
+
+    ExecuteLogDO findByInstanceId(long instanceId);
 }
