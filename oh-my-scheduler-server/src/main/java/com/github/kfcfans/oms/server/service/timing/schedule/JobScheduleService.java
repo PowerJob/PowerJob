@@ -75,17 +75,14 @@ public class JobScheduleService {
         }catch (Exception e) {
             log.error("[JobScheduleService] schedule cron job failed.", e);
         }
-        log.info("[JobScheduleService] finished cron schedule, using time {}.", stopwatch);
-        stopwatch.reset().start();
 
         // 调度 FIX_RATE 和 FIX_DELAY JOB
         try {
-//            scheduleFrequentJob(allAppIds);
+            scheduleFrequentJob(allAppIds);
         }catch (Exception e) {
             log.error("[JobScheduleService] schedule frequent job failed.", e);
         }
-        log.info("[JobScheduleService] finished frequent schedule, using time {}.", stopwatch);
-        stopwatch.stop();
+        log.info("[JobScheduleService] finished job schedule, using time {}.", stopwatch.stop());
     }
 
     /**
@@ -106,13 +103,13 @@ public class JobScheduleService {
                 List<JobInfoDO> jobInfos = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
 
                 if (CollectionUtils.isEmpty(jobInfos)) {
-                    log.debug("[JobScheduleService] no cron job need to schedule");
+                    log.info("[JobScheduleService] no cron job need to schedule");
                     return;
                 }
 
                 // 1. 批量写日志表
                 Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
-                log.info("[JobScheduleService] try to schedule some cron jobs, their jobId is {}.", jobId2InstanceId.keySet());
+                log.info("[JobScheduleService] try to schedule some cron jobs, they are {}.", jobInfos);
 
                 List<ExecuteLogDO> executeLogs = Lists.newLinkedList();
                 jobInfos.forEach(jobInfoDO -> {
@@ -199,7 +196,7 @@ public class JobScheduleService {
         fixRateJobs.forEach(consumer);
 
         if (CollectionUtils.isEmpty(jobIds)) {
-            log.debug("[JobScheduleService] no frequent job need to schedule.");
+            log.info("[JobScheduleService] no frequent job need to schedule for appIds in {}.", appIds);
             return;
         }
 

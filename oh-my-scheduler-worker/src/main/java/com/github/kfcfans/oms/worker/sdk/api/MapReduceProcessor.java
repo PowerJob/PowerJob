@@ -75,7 +75,7 @@ public abstract class MapReduceProcessor implements BasicProcessor {
 
     public boolean isRootTask() {
         TaskDO task = ThreadLocalStore.getTask();
-        return TaskConstant.ROOT_TASK_ID.equals(task.getTaskId());
+        return TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName());
     }
 
     public abstract ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result);

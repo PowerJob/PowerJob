@@ -12,10 +12,6 @@ public class TaskConstant {
      * 所有根任务的名称
      */
     public static final String ROOT_TASK_NAME = "OMS_ROOT_TASK";
-    /**
-     * 所有根任务的ID
-     */
-    public static final String ROOT_TASK_ID = "0";
 
     /**
      * 广播执行任务的名称

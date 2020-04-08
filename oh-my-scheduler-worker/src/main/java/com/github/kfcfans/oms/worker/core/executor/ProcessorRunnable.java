@@ -71,7 +71,7 @@ public class ProcessorRunnable implements Runnable {
 
         // 2. 根任务特殊处理
         ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
-        if (TaskConstant.ROOT_TASK_ID.equals(taskId)) {
+        if (TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName())) {
 
             // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
             if (executeType == ExecuteType.BROADCAST) {
@@ -99,7 +99,7 @@ public class ProcessorRunnable implements Runnable {
         }
 
         // 3. 最终任务特殊处理（一定和 TaskTracker 处于相同的机器）
-        if (TaskConstant.LAST_TASK_ID.equals(taskId)) {
+        if (TaskConstant.LAST_TASK_NAME.equals(task.getTaskName())) {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
             log.debug("[ProcessorRunnable-{}] the last task(taskId={}) start to process.", instanceId, taskId);
@@ -107,7 +107,7 @@ public class ProcessorRunnable implements Runnable {
             ProcessResult lastResult;
             Map<String, String> taskId2ResultMap = TaskPersistenceService.INSTANCE.getTaskId2ResultMap(instanceId);
             // 去除本任务
-            taskId2ResultMap.remove(TaskConstant.LAST_TASK_ID);
+            taskId2ResultMap.remove(taskId);
 
             try {
                 switch (executeType) {

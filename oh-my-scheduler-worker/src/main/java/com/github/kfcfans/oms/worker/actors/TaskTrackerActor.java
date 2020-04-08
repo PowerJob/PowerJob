@@ -2,8 +2,7 @@ package com.github.kfcfans.oms.worker.actors;
 
 import akka.actor.AbstractActor;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
-import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
+import com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
@@ -33,6 +32,7 @@ public class TaskTrackerActor extends AbstractActor {
                 .match(ServerScheduleJobReq.class, this::onReceiveServerScheduleJobReq)
                 .match(ProcessorMapTaskRequest.class, this::onReceiveProcessorMapTaskRequest)
                 .match(ProcessorTrackerStatusReportReq.class, this::onReceiveProcessorTrackerStatusReportReq)
+                .match(BroadcastTaskPreExecuteFinishedReq.class, this::onReceiveBroadcastTaskPreExecuteFinishedReq)
                 .matchAny(obj -> log.warn("[ServerRequestActor] receive unknown request: {}.", obj))
                 .build();
     }
@@ -48,7 +48,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
         } else {
 
-            taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), req.getStatus(), req.getResult());
+            taskTracker.updateTaskStatus(req.getTaskId(), req.getStatus(), req.getResult());
         }
     }
 
@@ -77,7 +77,7 @@ public class TaskTrackerActor extends AbstractActor {
                 subTaskList.add(subTask);
             });
 
-            success = taskTracker.addTask(subTaskList);
+            success = taskTracker.submitTask(subTaskList);
         }catch (Exception e) {
             log.warn("[TaskTrackerActor] process map task(instanceId={}) failed.", req.getInstanceId(), e);
         }
@@ -96,30 +96,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] receive BroadcastTaskPreExecuteFinishedReq({}) but system can't find TaskTracker.", req);
             return;
         }
-
-        log.info("[TaskTrackerActor] instance(id={}) pre process finished.", req.getInstanceId());
-
-        // TODO：考虑放到 BroadcastTaskTracker 中去
-        // 1. 生成集群子任务
-        boolean success = req.isSuccess();
-        if (success) {
-            List<String> allWorkerAddress = taskTracker.getPtStatusHolder().getAllProcessorTrackers();
-            List<TaskDO> subTaskList = Lists.newLinkedList();
-            for (int i = 0; i < allWorkerAddress.size(); i++) {
-                TaskDO subTask = new TaskDO();
-                subTask.setTaskName(TaskConstant.BROADCAST_TASK_NAME);
-                subTask.setTaskId(TaskConstant.ROOT_TASK_ID + "." + i);
-
-                subTaskList.add(subTask);
-            }
-            taskTracker.addTask(subTaskList);
-        }else {
-            log.info("[TaskTrackerActor] BroadcastTask(instanceId={}) failed because of preProcess failed.", req.getInstanceId());
-        }
-
-        // 2. 更新根任务状态（广播任务的根任务为 preProcess 任务）
-        int status = success ? TaskStatus.WORKER_PROCESS_SUCCESS.getValue() : TaskStatus.WORKER_PROCESS_FAILED.getValue();
-        taskTracker.updateTaskStatus(req.getInstanceId(), req.getTaskId(), status, req.getMsg());
+        taskTracker.broadcast(req.isSuccess(), req.getTaskId(), req.getMsg());
     }
 
     /**
@@ -135,7 +112,7 @@ public class TaskTrackerActor extends AbstractActor {
         }
 
         // 原子创建，防止多实例的存在
-        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> new TaskTracker(req));
+        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> new CommonTaskTracker(req));
     }
 
     /**

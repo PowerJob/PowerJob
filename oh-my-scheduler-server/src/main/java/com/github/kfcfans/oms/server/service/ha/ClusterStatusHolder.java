@@ -89,6 +89,11 @@ public class ClusterStatusHolder {
         return workers;
     }
 
+    /**
+     * 某台具体的 Worker 是否可用
+     * @param address 需要检测的Worker地址
+     * @return 可用状态
+     */
     private boolean available(String address) {
         SystemMetrics metrics = address2Metrics.get(address);
         if (metrics.calculateScore() == SystemMetrics.MIN_SCORE) {
@@ -98,5 +103,18 @@ public class ClusterStatusHolder {
         Long lastActiveTime = address2ActiveTime.getOrDefault(address, -1L);
         long timeout = System.currentTimeMillis() - lastActiveTime;
         return timeout < WORKER_TIMEOUT_MS;
+    }
+
+    /**
+     * 整个 Worker 集群是否可用（某个App下的所有机器是否可用）
+     * @return 有一台机器可用 -> true / 全军覆没 -> false
+     */
+    public boolean available() {
+        for (String address : address2Metrics.keySet()) {
+            if (available(address)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

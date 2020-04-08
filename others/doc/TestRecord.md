@@ -13,9 +13,9 @@ java.lang.InterruptedException: sleep interrupted
 	at com.github.kfcfans.common.utils.CommonUtils.executeWithRetry(CommonUtils.java:34)
 	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.execute(TaskPersistenceService.java:297)
 	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.deleteAllTasks(TaskPersistenceService.java:269)
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.destroy(TaskTracker.java:231)
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker$StatusCheckRunnable.innerRun(TaskTracker.java:421)
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker$StatusCheckRunnable.run(TaskTracker.java:467)
+	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker.destroy(TaskTracker.java:231)
+	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker$StatusCheckRunnable.innerRun(TaskTracker.java:421)
+	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker$StatusCheckRunnable.run(TaskTracker.java:467)
 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
 	at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:308)
 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:180)
@@ -32,8 +32,8 @@ java.lang.InterruptedException: sleep interrupted
 2020-04-08 10:10:08 ERROR - [TaskTracker-1586311804030] create root task failed.
 [ERROR] [04/08/2020 10:10:08.511] [oms-akka.actor.internal-dispatcher-20] [akka://oms/user/task_tracker] create root task failed.
 java.lang.RuntimeException: create root task failed.
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.persistenceRootTask(TaskTracker.java:208)
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.<init>(TaskTracker.java:81)
+	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker.persistenceRootTask(TaskTracker.java:208)
+	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker.<init>(TaskTracker.java:81)
 	at com.github.kfcfans.oms.worker.actors.TaskTrackerActor.lambda$onReceiveServerScheduleJobReq$2(TaskTrackerActor.java:138)
 	at java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1660)
 	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool.atomicCreateTaskTracker(TaskTrackerPool.java:30)

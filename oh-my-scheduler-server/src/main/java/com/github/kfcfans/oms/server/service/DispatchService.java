@@ -41,7 +41,7 @@ public class DispatchService {
 
     public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
 
-        log.debug("[DispatchService] start to dispatch job -> {}.", jobInfo);
+        log.info("[DispatchService] start to dispatch job -> {}.", jobInfo);
 
         // 查询当前运行的实例数
         long runningInstanceCount = executeLogRepository.countByJobIdAndStatusIn(jobInfo.getId(), runningStatus);
