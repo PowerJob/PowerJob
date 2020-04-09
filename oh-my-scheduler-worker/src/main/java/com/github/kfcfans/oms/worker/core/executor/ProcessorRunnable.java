@@ -80,6 +80,7 @@ public class ProcessorRunnable implements Runnable {
                 BroadcastTaskPreExecuteFinishedReq spReq = new BroadcastTaskPreExecuteFinishedReq();
                 spReq.setTaskId(taskId);
                 spReq.setInstanceId(instanceId);
+                spReq.setSubInstanceId(task.getSubInstanceId());
 
                 try {
                     ProcessResult processResult = broadcastProcessor.preProcess(taskContext);

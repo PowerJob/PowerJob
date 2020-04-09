@@ -2,7 +2,7 @@ package com.github.kfcfans.oms.server.test;
 
 import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
-import com.github.kfcfans.oms.server.common.constans.TimeExpressionType;
+import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.model.OmsLockDO;

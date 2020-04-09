@@ -14,6 +14,7 @@ import java.io.Serializable;
 public class BroadcastTaskPreExecuteFinishedReq implements Serializable {
 
     private Long instanceId;
+    private Long subInstanceId;
     private String taskId;
 
     private boolean success;

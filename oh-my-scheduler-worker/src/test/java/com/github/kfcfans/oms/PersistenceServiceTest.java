@@ -29,8 +29,9 @@ public class PersistenceServiceTest {
             TaskDO task = new TaskDO();
             taskList.add(task);
 
-            task.setJobId(1L);
-            task.setInstanceId(10086L + ThreadLocalRandom.current().nextInt(2));
+            long instanceId = 10086L + ThreadLocalRandom.current().nextInt(2);
+            task.setSubInstanceId(instanceId);
+            task.setInstanceId(instanceId);
             task.setTaskId(i + "");
             task.setFailedCnt(0);
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());

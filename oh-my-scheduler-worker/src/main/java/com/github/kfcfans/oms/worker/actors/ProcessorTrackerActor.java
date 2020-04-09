@@ -44,6 +44,7 @@ public class ProcessorTrackerActor extends AbstractActor {
         task.setTaskName(req.getTaskName());
         task.setTaskContent(req.getTaskContent());
         task.setFailedCnt(req.getTaskCurrentRetryNums());
+        task.setSubInstanceId(req.getSubInstanceId());
 
         processorTracker.submitTask(task);
     }

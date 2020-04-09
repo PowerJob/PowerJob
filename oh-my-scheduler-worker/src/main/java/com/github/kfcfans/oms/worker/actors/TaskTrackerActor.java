@@ -70,7 +70,10 @@ public class TaskTrackerActor extends AbstractActor {
 
             req.getSubTasks().forEach(originSubTask -> {
                 TaskDO subTask = new TaskDO();
+
                 subTask.setTaskName(req.getTaskName());
+                subTask.setSubInstanceId(req.getSubInstanceId());
+
                 subTask.setTaskId(originSubTask.getTaskId());
                 subTask.setTaskContent(originSubTask.getTaskContent());
 
@@ -96,7 +99,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] receive BroadcastTaskPreExecuteFinishedReq({}) but system can't find TaskTracker.", req);
             return;
         }
-        taskTracker.broadcast(req.isSuccess(), req.getTaskId(), req.getMsg());
+        taskTracker.broadcast(req.isSuccess(), req.getSubInstanceId(), req.getTaskId(), req.getMsg());
     }
 
     /**

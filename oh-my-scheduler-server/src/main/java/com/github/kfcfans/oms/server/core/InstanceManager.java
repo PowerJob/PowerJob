@@ -2,7 +2,7 @@ package com.github.kfcfans.oms.server.core;
 
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
-import com.github.kfcfans.oms.server.common.constans.TimeExpressionType;
+import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
 import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;

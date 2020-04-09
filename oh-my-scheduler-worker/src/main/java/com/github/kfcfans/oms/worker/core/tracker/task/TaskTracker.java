@@ -90,7 +90,7 @@ public abstract class TaskTracker {
 
         // 2. 数据库没查到，也允许写入（这个还需要日后仔细考虑）
         if (dbTaskStatusOpt.orElse(TaskStatus.WAITING_DISPATCH).getValue() > newStatus) {
-            // 必存在，但不怎么写，Java会警告...
+            // 必存在，但不这么写，Java会警告...
             TaskStatus dbTaskStatus = dbTaskStatusOpt.orElse(TaskStatus.WAITING_DISPATCH);
             log.warn("[TaskTracker-{}] task(taskId={},dbStatus={},requestStatus={}) status conflict, TaskTracker won't update the status.",
                     instanceId, taskId, dbTaskStatus, nTaskStatus);
@@ -100,9 +100,10 @@ public abstract class TaskTracker {
         // 3. 失败重试处理
         if (nTaskStatus == TaskStatus.WORKER_PROCESS_FAILED) {
 
-            // 数据库查询失败的话，就只重试一次
-            int failedCnt = taskPersistenceService.getTaskFailedCnt(instanceId, taskId).orElse(instanceInfo.getTaskRetryNum() - 1);
-            if (failedCnt < instanceInfo.getTaskRetryNum()) {
+            // 数据库查询失败的话，就最多只重试一次
+            int configTaskRetryNum = instanceInfo.getTaskRetryNum();
+            int failedCnt = taskPersistenceService.getTaskFailedCnt(instanceId, taskId).orElse(configTaskRetryNum - 1);
+            if (failedCnt < configTaskRetryNum && configTaskRetryNum > 1) {
 
                 TaskDO updateEntity = new TaskDO();
                 updateEntity.setFailedCnt(failedCnt + 1);
@@ -138,7 +139,6 @@ public abstract class TaskTracker {
         }
         // 基础处理（多循环一次虽然有些浪费，但分布式执行中，这点耗时绝不是主要占比，忽略不计！）
         newTaskList.forEach(task -> {
-            task.setJobId(instanceInfo.getJobId());
             task.setInstanceId(instanceId);
             task.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
             task.setFailedCnt(0);
@@ -162,10 +162,11 @@ public abstract class TaskTracker {
     /**
      * 生成广播任务
      * @param preExecuteSuccess 预执行广播任务运行状态
+     * @param subInstanceId 子实例ID
      * @param preTaskId 预执行广播任务的taskId
      * @param result 预执行广播任务的结果
      */
-    public void broadcast(boolean preExecuteSuccess, String preTaskId, String result) {
+    public void broadcast(boolean preExecuteSuccess, long subInstanceId, String preTaskId, String result) {
 
         log.info("[TaskTracker-{}] finished broadcast's preProcess.", instanceId);
 
@@ -175,6 +176,7 @@ public abstract class TaskTracker {
             List<TaskDO> subTaskList = Lists.newLinkedList();
             for (int i = 0; i < allWorkerAddress.size(); i++) {
                 TaskDO subTask = new TaskDO();
+                subTask.setSubInstanceId(subInstanceId);
                 subTask.setTaskName(TaskConstant.BROADCAST_TASK_NAME);
                 subTask.setTaskId(preTaskId + "." + i);
                 subTaskList.add(subTask);
@@ -190,6 +192,24 @@ public abstract class TaskTracker {
     }
 
     /* *************************** 对内方法区 *************************** */
+
+    protected void dispatchTask(TaskDO task, String processorTrackerAddress) {
+
+        TaskTrackerStartTaskReq startTaskReq = new TaskTrackerStartTaskReq(instanceInfo, task);
+
+        String ptActorPath = AkkaUtils.getAkkaWorkerPath(processorTrackerAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+        ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptActorPath);
+        ptActor.tell(startTaskReq, null);
+
+        // 更新 ProcessorTrackerStatus 状态
+        ptStatusHolder.getProcessorTrackerStatus(processorTrackerAddress).setDispatched(true);
+        // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
+        TaskDO updateEntity = new TaskDO();
+        updateEntity.setStatus(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue());
+        taskPersistenceService.updateTask(instanceId, task.getTaskId(), updateEntity);
+
+        log.debug("[TaskTracker-{}] dispatch task(taskId={},taskName={}) successfully.", instanceId, task.getTaskId(), task.getTaskName());
+    }
 
     /**
      * 销毁自身，释放资源
@@ -225,13 +245,13 @@ public abstract class TaskTracker {
         // 3. 移除顶层引用，送去 GC
         TaskTrackerPool.remove(instanceId);
 
-        log.info("[TaskTracker-{}] TaskTracker has left the world.", instanceId);
+        log.info("[TaskTracker-{}] TaskTracker has left the world, bye~", instanceId);
     }
 
     /**
      * 定时扫描数据库中的task（出于内存占用量考虑，每次最多获取100个），并将需要执行的任务派发出去
      */
-    protected class DispatcherRunnable implements Runnable {
+    protected class Dispatcher implements Runnable {
 
         // 数据库查询限制，每次最多查询几个任务
         private static final int DB_QUERY_LIMIT = 100;
@@ -268,26 +288,12 @@ public abstract class TaskTracker {
                 currentDispatchNum += needDispatchTasks.size();
 
                 needDispatchTasks.forEach(task -> {
-
-                    TaskTrackerStartTaskReq startTaskReq = new TaskTrackerStartTaskReq(instanceInfo, task);
-
                     // 获取 ProcessorTracker 地址，如果 Task 中自带了 Address，则使用该 Address
                     String ptAddress = task.getAddress();
                     if (StringUtils.isEmpty(ptAddress) || RemoteConstant.EMPTY_ADDRESS.equals(ptAddress)) {
                         ptAddress = availablePtIps.get(index.getAndIncrement() % availablePtIps.size());
                     }
-                    String ptActorPath = AkkaUtils.getAkkaWorkerPath(ptAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-                    ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptActorPath);
-                    ptActor.tell(startTaskReq, null);
-
-                    // 更新 ProcessorTrackerStatus 状态
-                    ptStatusHolder.getProcessorTrackerStatus(ptAddress).setDispatched(true);
-                    // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
-                    TaskDO updateEntity = new TaskDO();
-                    updateEntity.setStatus(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue());
-                    taskPersistenceService.updateTask(instanceId, task.getTaskId(), updateEntity);
-
-                    log.debug("[TaskTracker-{}] dispatch task(taskId={},taskName={}) successfully.", instanceId, task.getTaskId(), task.getTaskName());
+                    dispatchTask(task, ptAddress);
                 });
 
                 // 数量不足 或 查询失败，则终止循环

@@ -22,6 +22,7 @@ import java.util.List;
 public class ProcessorMapTaskRequest implements Serializable {
 
     private Long instanceId;
+    private Long subInstanceId;
 
     private String taskName;
     private List<SubTask> subTasks;
@@ -37,6 +38,7 @@ public class ProcessorMapTaskRequest implements Serializable {
     public ProcessorMapTaskRequest(TaskDO parentTask, List<?> subTaskList, String taskName) {
 
         this.instanceId = parentTask.getInstanceId();
+        this.subInstanceId = parentTask.getSubInstanceId();
         this.taskName = taskName;
         this.subTasks = Lists.newLinkedList();
 

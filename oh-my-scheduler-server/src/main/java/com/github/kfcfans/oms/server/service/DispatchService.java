@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.server.service;
 import akka.actor.ActorSelection;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
+import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.server.core.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
@@ -11,6 +12,7 @@ import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -71,20 +73,17 @@ public class DispatchService {
 
         // 构造请求
         ServerScheduleJobReq req = new ServerScheduleJobReq();
+        BeanUtils.copyProperties(jobInfo, req);
         req.setAllWorkerAddress(allAvailableWorker);
-        req.setJobId(jobInfo.getId());
-        req.setInstanceId(instanceId);
 
         req.setExecuteType(ExecuteType.of(jobInfo.getExecuteType()).name());
         req.setProcessorType(ProcessorType.of(jobInfo.getProcessorType()).name());
-        req.setProcessorInfo(jobInfo.getProcessorInfo());
+        req.setTimeExpressionType(TimeExpressionType.of(jobInfo.getTimeExpressionType()).name());
 
         req.setInstanceTimeoutMS(jobInfo.getInstanceTimeLimit());
         req.setTaskTimeoutMS(jobInfo.getTaskTimeLimit());
 
-        req.setJobParams(jobInfo.getJobParams());
         req.setThreadConcurrency(jobInfo.getConcurrency());
-        req.setTaskRetryNum(jobInfo.getTaskRetryNum());
 
         // 发送请求（不可靠，需要一个后台线程定期轮询状态）
         ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(taskTrackerAddress);

@@ -57,6 +57,12 @@ public class ServerScheduleJobReq implements Serializable {
     // 子任务重试次数（任务本身的重试机制由server控制）
     private int taskRetryNum;
 
-
+    /**
+     * 定时执行信息
+     */
+    // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
+    private String timeExpressionType;
+    // 时间表达式，CRON/NULL/LONG/LONG
+    private String timeExpression;
 
 }

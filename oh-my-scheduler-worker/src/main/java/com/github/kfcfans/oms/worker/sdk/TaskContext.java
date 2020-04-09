@@ -18,8 +18,8 @@ import lombok.Setter;
 @Setter
 public class TaskContext {
 
-    private String jobId;
-    private String instanceId;
+    private Long instanceId;
+    private Long subInstanceId;
     private String taskId;
     private String taskName;
 
@@ -34,7 +34,7 @@ public class TaskContext {
 
 
     public String getDescription() {
-        return "jobId='" + jobId + '\'' +
+        return "subInstanceId='" + subInstanceId + '\'' +
                 ", instanceId='" + instanceId + '\'' +
                 ", taskId='" + taskId + '\'' +
                 ", taskName='" + taskName + '\'' +

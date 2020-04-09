@@ -75,7 +75,6 @@ public class ProcessorTracker {
 
         boolean success = false;
         // 1. 设置值并提交执行
-        newTask.setJobId(instanceInfo.getJobId());
         newTask.setInstanceId(instanceInfo.getInstanceId());
         newTask.setAddress(taskTrackerAddress);
 

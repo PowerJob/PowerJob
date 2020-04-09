@@ -53,7 +53,7 @@ public class CommonTaskTracker extends TaskTracker {
         persistenceRootTask();
 
         // 启动定时任务（任务派发 & 状态检查）
-        scheduledPool.scheduleWithFixedDelay(new DispatcherRunnable(), 0, 1, TimeUnit.SECONDS);
+        scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 0, 1, TimeUnit.SECONDS);
         scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 10, 10, TimeUnit.SECONDS);
     }
 
@@ -72,7 +72,6 @@ public class CommonTaskTracker extends TaskTracker {
 
         TaskDO rootTask = new TaskDO();
         rootTask.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
-        rootTask.setJobId(instanceInfo.getJobId());
         rootTask.setInstanceId(instanceInfo.getInstanceId());
         rootTask.setTaskId(ROOT_TASK_ID);
         rootTask.setFailedCnt(0);
@@ -80,11 +79,12 @@ public class CommonTaskTracker extends TaskTracker {
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
         rootTask.setCreatedTime(System.currentTimeMillis());
         rootTask.setLastModifiedTime(System.currentTimeMillis());
+        rootTask.setSubInstanceId(instanceId);
 
         if (!taskPersistenceService.save(rootTask)) {
-            log.error("[TaskTracker-{}] create root task failed.", instanceInfo.getInstanceId());
+            log.error("[TaskTracker-{}] create root task failed.", instanceId);
         }else {
-            log.info("[TaskTracker-{}] create root task successfully.", instanceInfo.getInstanceId());
+            log.info("[TaskTracker-{}] create root task successfully.", instanceId);
         }
     }
 
@@ -166,6 +166,7 @@ public class CommonTaskTracker extends TaskTracker {
                             TaskDO newLastTask = new TaskDO();
                             newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
                             newLastTask.setTaskId(LAST_TASK_ID);
+                            newLastTask.setSubInstanceId(instanceId);
                             newLastTask.setAddress(OhMyWorker.getWorkerAddress());
                             submitTask(Lists.newArrayList(newLastTask));
                         }

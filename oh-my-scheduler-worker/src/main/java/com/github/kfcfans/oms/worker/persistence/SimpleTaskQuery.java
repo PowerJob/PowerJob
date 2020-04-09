@@ -15,7 +15,7 @@ public class SimpleTaskQuery {
     private static final String LINK = " and ";
 
     private String taskId;
-    private Long jobId;
+    private Long subInstanceId;
     private Long instanceId;
     private String taskName;
     private String address;
@@ -36,10 +36,10 @@ public class SimpleTaskQuery {
         if (!StringUtils.isEmpty(taskId)) {
             sb.append("task_id = '").append(taskId).append("'").append(LINK);
         }
-        if (!StringUtils.isEmpty(jobId)) {
-            sb.append("job_id = ").append(jobId).append(LINK);
+        if (subInstanceId != null) {
+            sb.append("sub_instance_id = ").append(subInstanceId).append(LINK);
         }
-        if (!StringUtils.isEmpty(instanceId)) {
+        if (instanceId != null) {
             sb.append("instance_id = ").append(instanceId).append(LINK);
         }
         if (!StringUtils.isEmpty(address)) {

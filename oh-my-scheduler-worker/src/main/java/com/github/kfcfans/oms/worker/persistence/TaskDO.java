@@ -19,8 +19,9 @@ public class TaskDO {
     // 层次命名法，可以表示 Map 后的父子关系，如 0.1.2 代表 rootTask map 的第一个 task map 的第二个 task
     private String taskId;
 
-    private Long jobId;
     private Long instanceId;
+    // 秒级任务专用
+    private Long subInstanceId;
     // 任务名称
     private String taskName;
     // 任务对象（序列化后的二进制数据）
@@ -62,7 +63,6 @@ public class TaskDO {
     public String toString() {
         return "TaskDO{" +
                 "taskId='" + taskId + '\'' +
-                ", jobId='" + jobId + '\'' +
                 ", instanceId='" + instanceId + '\'' +
                 ", taskName='" + taskName + '\'' +
                 ", address='" + address + '\'' +

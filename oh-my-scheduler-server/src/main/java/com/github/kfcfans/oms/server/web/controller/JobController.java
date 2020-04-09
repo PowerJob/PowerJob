@@ -2,7 +2,7 @@ package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
-import com.github.kfcfans.oms.server.common.constans.TimeExpressionType;
+import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.common.response.ResultDTO;

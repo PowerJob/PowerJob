@@ -50,7 +50,7 @@ public class TaskPersistenceService {
         try {
             return execute(() -> taskDAO.save(task));
         }catch (Exception e) {
-            log.error("[TaskPersistenceService] save task{} failed.",  task);
+            log.error("[TaskPersistenceService] save task{} failed.",  task, e);
         }
         return false;
     }
@@ -266,6 +266,18 @@ public class TaskPersistenceService {
         try {
             SimpleTaskQuery condition = new SimpleTaskQuery();
             condition.setInstanceId(instanceId);
+            return execute(() -> taskDAO.simpleDelete(condition));
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] deleteAllTasks failed, instanceId={}.", instanceId, e);
+        }
+        return false;
+    }
+
+    public boolean deleteAllSubInstanceTasks(Long instanceId, Long subInstanceId) {
+        try {
+            SimpleTaskQuery condition = new SimpleTaskQuery();
+            condition.setInstanceId(instanceId);
+
             return execute(() -> taskDAO.simpleDelete(condition));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] deleteAllTasks failed, instanceId={}.", instanceId, e);

@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
-import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
@@ -31,6 +30,9 @@ public class TaskTrackerStartTaskReq implements Serializable {
     // 子任务当前重试次数
     private int taskCurrentRetryNums;
 
+    // 秒级任务专用
+    private long subInstanceId;
+
 
     /**
      * 创建 TaskTrackerStartTaskReq，该构造方法必须在 TaskTracker 节点调用
@@ -45,5 +47,6 @@ public class TaskTrackerStartTaskReq implements Serializable {
         this.taskContent = task.getTaskContent();
 
         this.taskCurrentRetryNums = task.getFailedCnt();
+        this.subInstanceId = task.getSubInstanceId();
     }
 }

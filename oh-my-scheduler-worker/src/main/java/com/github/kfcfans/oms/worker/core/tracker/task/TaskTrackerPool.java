@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * 持有 Processor 对象
+ * 持有 TaskTracker 对象
  *
  * @author tjq
  * @since 2020/3/24
