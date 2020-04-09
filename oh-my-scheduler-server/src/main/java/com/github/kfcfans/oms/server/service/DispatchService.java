@@ -5,7 +5,7 @@ import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.oms.server.core.akka.OhMyServer;
+import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.ExecuteLogRepository;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;

@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.core.akka;
+package com.github.kfcfans.oms.server.akka.requests;
 
 import lombok.Data;
 

@@ -112,6 +112,8 @@ public class CommonTaskTracker extends TaskTracker {
             req.setSucceedTaskNum(holder.succeedNum);
             req.setFailedTaskNum(holder.failedNum);
             req.setReportTime(System.currentTimeMillis());
+            req.setSourceAddress(OhMyWorker.getWorkerAddress());
+
 
             // 2. 如果未完成任务数为0，判断是否真正结束，并获取真正结束任务的执行结果
             TaskDO resultTask = null;

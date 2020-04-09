@@ -4,8 +4,8 @@ import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
-import com.github.kfcfans.oms.server.core.InstanceManager;
-import com.github.kfcfans.oms.server.core.akka.OhMyServer;
+import com.github.kfcfans.oms.server.service.instance.InstanceManager;
+import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
@@ -29,11 +29,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * 任务调度执行服务
+ * 任务调度执行服务（调度 CRON 表达式的任务进行执行）
+ * FIX_RATE和FIX_DELAY任务不需要被调度，创建后直接被派发到Worker执行，只需要失败重试机制（在InstanceStatusCheckService中完成）
  *
  * @author tjq
  * @since 2020/4/5
@@ -74,13 +74,6 @@ public class JobScheduleService {
             scheduleCornJob(allAppIds);
         }catch (Exception e) {
             log.error("[JobScheduleService] schedule cron job failed.", e);
-        }
-
-        // 调度 FIX_RATE 和 FIX_DELAY JOB
-        try {
-            scheduleFrequentJob(allAppIds);
-        }catch (Exception e) {
-            log.error("[JobScheduleService] schedule frequent job failed.", e);
         }
         log.info("[JobScheduleService] finished job schedule, using time {}.", stopwatch.stop());
     }
@@ -175,42 +168,6 @@ public class JobScheduleService {
             }catch (Exception e) {
                 log.error("[JobScheduleService] schedule job failed.", e);
             }
-        });
-    }
-
-    /**
-     * 调度 FIX_RATE 和 FIX_DELAY 的任务
-     */
-    private void scheduleFrequentJob(List<Long> appIds) {
-
-        List<JobInfoDO> fixDelayJobs = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionType(appIds, JobStatus.ENABLE.getV(), TimeExpressionType.FIX_DELAY.getV());
-        List<JobInfoDO> fixRateJobs = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionType(appIds, JobStatus.ENABLE.getV(), TimeExpressionType.FIX_RATE.getV());
-
-        List<Long> jobIds = Lists.newLinkedList();
-        Map<Long, JobInfoDO> jobId2JobInfo = Maps.newHashMap();
-        Consumer<JobInfoDO> consumer = jobInfo -> {
-            jobIds.add(jobInfo.getId());
-            jobId2JobInfo.put(jobInfo.getId(), jobInfo);
-        };
-        fixDelayJobs.forEach(consumer);
-        fixRateJobs.forEach(consumer);
-
-        if (CollectionUtils.isEmpty(jobIds)) {
-            log.info("[JobScheduleService] no frequent job need to schedule for appIds in {}.", appIds);
-            return;
-        }
-
-        // 查询 ExecuteLog 表，不存在或非运行状态则重新调度
-        List<ExecuteLogDO> executeLogDOS = executeLogRepository.findByJobIdIn(jobIds);
-        executeLogDOS.forEach(executeLogDO -> {
-            if (executeLogDO.getStatus() == InstanceStatus.RUNNING.getV()) {
-                jobId2JobInfo.remove(executeLogDO.getJobId());
-            }
-        });
-
-        // 重新Dispatch
-        jobId2JobInfo.values().forEach(jobInfoDO -> {
-
         });
     }
 }

@@ -19,4 +19,12 @@ public enum JobStatus {
 
     private int v;
 
+    public static JobStatus of(int v) {
+        for (JobStatus type : values()) {
+            if (type.v == v) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("unknown JobStatus of " + v);
+    }
 }

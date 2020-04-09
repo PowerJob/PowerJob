@@ -37,7 +37,7 @@ public class ExecuteLogDO {
     // 结束时间
     private Long finishedTime;
 
-    // 总共执行的次数（CRON任务 -> 代表重试次数，FREQUENT -> 代表总执行次数）
+    // 总共执行的次数（用于重试判断）
     private Long runningTimes;
 
     private Date gmtCreate;

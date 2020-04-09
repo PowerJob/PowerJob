@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.core;
+package com.github.kfcfans.oms.server.service.instance;
 
 import lombok.Data;
 
@@ -22,4 +22,6 @@ public class InstanceStatusHolder {
 
     // 上次上报时间
     private long lastReportTime;
+    // 源地址（TaskTracker 地址）
+    private String sourceAddress;
 }

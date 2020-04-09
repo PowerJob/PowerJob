@@ -42,6 +42,8 @@ public class FrequentTaskTracker extends TaskTracker {
     // 时间表达式类型
     private TimeExpressionType timeExpressionType;
     private long timeParams;
+    // 最大同时运行实例数
+    private int maxInstanceNum;
 
     // 总运行次数（正常情况不会出现锁竞争，直接用 Atomic 系列，锁竞争验证推荐 LongAdder）
     private AtomicLong triggerTimes;
@@ -68,6 +70,7 @@ public class FrequentTaskTracker extends TaskTracker {
         // 0. 初始化实例变量
         timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
         timeParams = Long.parseLong(req.getTimeExpression());
+        maxInstanceNum = req.getMaxInstanceNum();
 
         triggerTimes = new AtomicLong(0);
         succeedTimes = new AtomicLong(0);
@@ -133,8 +136,16 @@ public class FrequentTaskTracker extends TaskTracker {
             newRootTask.setCreatedTime(System.currentTimeMillis());
             newRootTask.setLastModifiedTime(System.currentTimeMillis());
 
+            // 判断是否超出最大执行实例数
+            if (timeExpressionType == TimeExpressionType.FIX_RATE) {
+                if (subInstanceId2TimeHolder.size() > maxInstanceNum) {
+                    log.error("[TaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
+                    processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
+                    return;
+                }
+            }
 
-            // 必须先持久化，持久化成功才能 Dispatch，否则会导致后续报错（因为DB中没有这个taskId对应的记录，会各种报错）
+            // 必须先持久化，持久化成功才能 dispatch，否则会导致后续报错（因为DB中没有这个taskId对应的记录，会各种报错）
             if (!taskPersistenceService.save(newRootTask)) {
                 log.error("[TaskTracker-{}] Launcher create new root task failed.", instanceId);
                 processFinishedSubInstance(subInstanceId, false, "LAUNCH_FAILED");
@@ -259,6 +270,7 @@ public class FrequentTaskTracker extends TaskTracker {
             req.setSucceedTaskNum(succeedTimes.get());
             req.setFailedTaskNum(failedTimes.get());
             req.setReportTime(System.currentTimeMillis());
+            req.setSourceAddress(OhMyWorker.getWorkerAddress());
 
             String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
             ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);

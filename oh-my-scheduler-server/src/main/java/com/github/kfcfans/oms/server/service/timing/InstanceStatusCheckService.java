@@ -1,7 +1,9 @@
 package com.github.kfcfans.oms.server.service.timing;
 
 import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.oms.server.core.akka.OhMyServer;
+import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
@@ -98,12 +100,40 @@ public class InstanceStatusCheckService {
             if (!CollectionUtils.isEmpty(failedInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) has not received status report for a long time.", failedInstances);
                 failedInstances.forEach(instance -> {
-                    // 重新派发
+
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
-                    dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
+                    TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
+                    JobStatus jobStatus = JobStatus.of(jobInfoDO.getStatus());
+
+                    // 如果任务已关闭，则不进行重试，将任务置为失败即可
+                    if (jobStatus != JobStatus.ENABLE) {
+                        updateFailedInstance(instance);
+                        return;
+                    }
+
+                    // 秒级任务，无限重试，直接派发
+                    if (timeExpressionType == TimeExpressionType.FIX_RATE || timeExpressionType == TimeExpressionType.FIX_DELAY) {
+                        dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
+                        return;
+                    }
+
+                    // CRON 和 API一样，失败次数 + 1，根据重试配置进行重试
+                    if (instance.getRunningTimes() > jobInfoDO.getInstanceRetryNum()) {
+                        dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
+                    }else {
+                        updateFailedInstance(instance);
+                    }
+
                 });
             }
         });
     }
 
+    private void updateFailedInstance(ExecuteLogDO instance) {
+        instance.setStatus(InstanceStatus.FAILED.getV());
+        instance.setFinishedTime(System.currentTimeMillis());
+        instance.setGmtModified(new Date());
+        instance.setResult("worker report timeout, maybe all worker down");
+        executeLogRepository.saveAndFlush(instance);
+    }
 }

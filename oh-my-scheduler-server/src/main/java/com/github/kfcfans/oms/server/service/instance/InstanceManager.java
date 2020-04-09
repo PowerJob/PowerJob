@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.core;
+package com.github.kfcfans.oms.server.service.instance;
 
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
@@ -119,9 +119,23 @@ public class InstanceManager {
 
         // 清除已完成的实例信息
         if (finished) {
-            instanceId2JobInfo.remove(instanceId);
             instanceId2StatusHolder.remove(instanceId);
+            // 这一步也可能导致后面取不到 JobInfoDO
+            instanceId2JobInfo.remove(instanceId);
         }
+    }
+
+    /**
+     * 获取某个任务实例对应的 TaskTracker 地址
+     * @param instanceId 任务实例ID
+     * @return TaskTracker地址，IP:Port
+     */
+    public static String getTaskTrackerAddress(Long instanceId) {
+        InstanceStatusHolder statusHolder = instanceId2StatusHolder.get(instanceId);
+        if (statusHolder == null) {
+            return null;
+        }
+        return statusHolder.getSourceAddress();
     }
 
     private static ExecuteLogRepository getExecuteLogRepository() {

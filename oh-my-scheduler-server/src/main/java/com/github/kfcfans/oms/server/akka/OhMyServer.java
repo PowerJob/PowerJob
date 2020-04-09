@@ -1,10 +1,12 @@
-package com.github.kfcfans.oms.server.core.akka;
+package com.github.kfcfans.oms.server.akka;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.server.akka.actors.FriendActor;
+import com.github.kfcfans.oms.server.akka.actors.ServerActor;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
@@ -47,6 +49,7 @@ public class OhMyServer {
         actorSystem = ActorSystem.create(RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
 
         actorSystem.actorOf(Props.create(ServerActor.class), RemoteConstant.SERVER_ACTOR_NAME);
+        actorSystem.actorOf(Props.create(FriendActor.class), RemoteConstant.SERVER_FRIEND_ACTOR_NAME);
 
         log.info("[OhMyServer] OhMyServer's akka system start successfully, using time {}.", stopwatch);
     }
@@ -57,7 +60,7 @@ public class OhMyServer {
      * @return ActorSelection
      */
     public static ActorSelection getServerActor(String address) {
-        String path = String.format(AKKA_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, address, RemoteConstant.SERVER_ACTOR_NAME);
+        String path = String.format(AKKA_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, address, RemoteConstant.SERVER_FRIEND_ACTOR_NAME);
         return actorSystem.actorSelection(path);
     }
 

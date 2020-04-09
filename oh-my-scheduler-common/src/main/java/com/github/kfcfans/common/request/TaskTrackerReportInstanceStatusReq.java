@@ -26,4 +26,5 @@ public class TaskTrackerReportInstanceStatusReq implements Serializable {
     private long failedTaskNum;
 
     private long reportTime;
+    private String sourceAddress;
 }

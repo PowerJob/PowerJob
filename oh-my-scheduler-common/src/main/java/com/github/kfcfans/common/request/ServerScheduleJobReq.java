@@ -65,4 +65,7 @@ public class ServerScheduleJobReq implements Serializable {
     // 时间表达式，CRON/NULL/LONG/LONG（单位MS）
     private String timeExpression;
 
+    // 最大同时运行任务数，默认 1
+    private Integer maxInstanceNum;
+
 }

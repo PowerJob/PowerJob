@@ -1,10 +1,11 @@
-package com.github.kfcfans.oms.server.core.akka;
+package com.github.kfcfans.oms.server.akka.actors;
 
 import akka.actor.AbstractActor;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
 import com.github.kfcfans.common.response.AskResponse;
-import com.github.kfcfans.oms.server.core.InstanceManager;
+import com.github.kfcfans.oms.server.akka.requests.Ping;
+import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,21 +23,11 @@ public class ServerActor extends AbstractActor {
         return receiveBuilder()
                 .match(WorkerHeartbeat.class, this::onReceiveWorkerHeartbeat)
                 .match(TaskTrackerReportInstanceStatusReq.class, this::onReceiveTaskTrackerReportInstanceStatusReq)
-                .match(Ping.class, this::onReceivePing)
                 .matchAny(obj -> log.warn("[ServerActor] receive unknown request: {}.", obj))
                 .build();
     }
 
-    /**
-     * 处理存活检测的请求
-     * @param ping 存活检测请求
-     */
-    private void onReceivePing(Ping ping) {
-        AskResponse askResponse = new AskResponse();
-        askResponse.setSuccess(true);
-        askResponse.setExtra(System.currentTimeMillis() - ping.getCurrentTime());
-        getSender().tell(askResponse, getSelf());
-    }
+
 
     /**
      * 处理 Worker 的心跳请求
