@@ -4,8 +4,7 @@ import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.ProcessorType;
-import com.github.kfcfans.common.request.ServerScheduleJobReq;
+import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
@@ -21,7 +20,7 @@ import org.junit.jupiter.api.Test;
  * @author tjq
  * @since 2020/3/25
  */
-public class TaskTrackerTest {
+public class CommonTaskTrackerTest {
 
     private static ActorSelection remoteTaskTracker;
 
@@ -48,48 +47,14 @@ public class TaskTrackerTest {
     @Test
     public void testStandaloneJob() throws Exception {
 
-        remoteTaskTracker.tell(genServerScheduleJobReq(ExecuteType.STANDALONE), null);
+        remoteTaskTracker.tell(TestUtils.genServerScheduleJobReq(ExecuteType.STANDALONE, TimeExpressionType.CRON), null);
         Thread.sleep(5000000);
     }
 
     @Test
     public void testMapReduceJob() throws Exception {
-        remoteTaskTracker.tell(genServerScheduleJobReq(ExecuteType.MAP_REDUCE), null);
+        remoteTaskTracker.tell(TestUtils.genServerScheduleJobReq(ExecuteType.MAP_REDUCE, TimeExpressionType.CRON), null);
         Thread.sleep(5000000);
     }
-
-    private static ServerScheduleJobReq genServerScheduleJobReq(ExecuteType executeType) {
-        ServerScheduleJobReq req = new ServerScheduleJobReq();
-
-        req.setJobId(1L);
-        req.setInstanceId(10086L);
-        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost() + ":" + RemoteConstant.DEFAULT_WORKER_PORT));
-
-        req.setJobParams("this is job Params");
-        req.setInstanceParams("this is instance Params");
-        req.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
-        req.setTaskRetryNum(3);
-        req.setThreadConcurrency(20);
-        req.setInstanceTimeoutMS(500000);
-        req.setTaskTimeoutMS(500000);
-
-        switch (executeType) {
-            case STANDALONE:
-                req.setExecuteType(ExecuteType.STANDALONE.name());
-                req.setProcessorInfo("com.github.kfcfans.oms.processors.TestBasicProcessor");
-                break;
-            case MAP_REDUCE:
-                req.setExecuteType(ExecuteType.MAP_REDUCE.name());
-                req.setProcessorInfo("com.github.kfcfans.oms.processors.TestMapReduceProcessor");
-                break;
-            case BROADCAST:
-                req.setExecuteType(ExecuteType.BROADCAST.name());
-                req.setProcessorInfo("com.github.kfcfans.oms.processors.TestBroadcastProcessor");
-                break;
-        }
-
-        return req;
-    }
-
 
 }

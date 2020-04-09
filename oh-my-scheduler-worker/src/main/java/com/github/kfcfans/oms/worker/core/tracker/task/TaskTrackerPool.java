@@ -16,7 +16,7 @@ public class TaskTrackerPool {
     private static final Map<Long, TaskTracker> instanceId2TaskTracker = Maps.newConcurrentMap();
 
     /**
-     * 获取 ProcessorTracker，如果不存在则创建
+     * 获取 TaskTracker
      */
     public static TaskTracker getTaskTrackerPool(Long instanceId) {
         return instanceId2TaskTracker.get(instanceId);

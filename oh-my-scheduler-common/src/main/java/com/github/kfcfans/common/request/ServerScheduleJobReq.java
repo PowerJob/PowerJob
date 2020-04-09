@@ -62,7 +62,7 @@ public class ServerScheduleJobReq implements Serializable {
      */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
     private String timeExpressionType;
-    // 时间表达式，CRON/NULL/LONG/LONG
+    // 时间表达式，CRON/NULL/LONG/LONG（单位MS）
     private String timeExpression;
 
 }

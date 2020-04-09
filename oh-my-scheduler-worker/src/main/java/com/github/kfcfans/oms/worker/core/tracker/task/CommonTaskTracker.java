@@ -39,7 +39,7 @@ public class CommonTaskTracker extends TaskTracker {
     // 可以是除 ROOT_TASK_ID 的任何数字
     private static final String LAST_TASK_ID = "1111";
 
-    public CommonTaskTracker(ServerScheduleJobReq req) {
+    protected CommonTaskTracker(ServerScheduleJobReq req) {
         super(req);
     }
 
@@ -98,29 +98,19 @@ public class CommonTaskTracker extends TaskTracker {
 
         private void innerRun() {
 
-            Long instanceId = instanceInfo.getInstanceId();
+            InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
 
-            // 1. 查询统计信息
-            Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(instanceId);
+            long finishedNum = holder.succeedNum + holder.failedNum;
+            long unfinishedNum = holder.waitingDispatchNum + holder.workerUnreceivedNum + holder.receivedNum + holder.runningNum;
 
-            long waitingDispatchNum = status2Num.getOrDefault(TaskStatus.WAITING_DISPATCH, 0L);
-            long workerUnreceivedNum = status2Num.getOrDefault(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 0L);
-            long receivedNum = status2Num.getOrDefault(TaskStatus.WORKER_RECEIVED, 0L);
-            long runningNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESSING, 0L);
-            long failedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_FAILED, 0L);
-            long succeedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_SUCCESS, 0L);
-
-            long finishedNum = succeedNum + failedNum;
-            long unfinishedNum = waitingDispatchNum + workerUnreceivedNum + receivedNum + runningNum;
-
-            log.debug("[TaskTracker-{}] status check result: {}", instanceId, status2Num);
+            log.debug("[TaskTracker-{}] status check result: {}", instanceId, holder);
 
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
             req.setTotalTaskNum(finishedNum + unfinishedNum);
-            req.setSucceedTaskNum(succeedNum);
-            req.setFailedTaskNum(failedNum);
+            req.setSucceedTaskNum(holder.succeedNum);
+            req.setFailedTaskNum(holder.failedNum);
             req.setReportTime(System.currentTimeMillis());
 
             // 2. 如果未完成任务数为0，判断是否真正结束，并获取真正结束任务的执行结果
@@ -141,7 +131,7 @@ public class CommonTaskTracker extends TaskTracker {
                     // STANDALONE 只有一个任务，完成即结束
                     if (executeType == ExecuteType.STANDALONE) {
 
-                        List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId);
+                        List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
                         if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
                             log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
                         }else {
@@ -151,7 +141,7 @@ public class CommonTaskTracker extends TaskTracker {
                     } else {
 
                         // MapReduce 和 Broadcast 任务实例是否完成根据**Last_Task**的执行情况判断
-                        Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId);
+                        Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId, instanceId);
                         if (lastTaskOptional.isPresent()) {
 
                             // 存在则根据 reduce 任务来判断状态
@@ -216,7 +206,7 @@ public class CommonTaskTracker extends TaskTracker {
 
             // 5.1 定期检查 -> 重试派发后未确认的任务
             long currentMS = System.currentTimeMillis();
-            if (workerUnreceivedNum != 0) {
+            if (holder.workerUnreceivedNum != 0) {
                 taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 100).forEach(uncheckTask -> {
 
                     long elapsedTime = currentMS - uncheckTask.getLastModifiedTime();

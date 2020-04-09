@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.worker.sdk;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

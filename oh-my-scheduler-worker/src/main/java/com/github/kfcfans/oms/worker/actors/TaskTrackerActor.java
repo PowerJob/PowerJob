@@ -115,7 +115,7 @@ public class TaskTrackerActor extends AbstractActor {
         }
 
         // 原子创建，防止多实例的存在
-        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> new CommonTaskTracker(req));
+        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req));
     }
 
     /**

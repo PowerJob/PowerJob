@@ -62,7 +62,7 @@ public class TaskPersistenceService {
         try {
             return execute(() -> taskDAO.batchSave(tasks));
         }catch (Exception e) {
-            log.error("[TaskPersistenceService] batchSave tasks failed.", e);
+            log.error("[TaskPersistenceService] batchSave tasks({}) failed.", tasks, e);
         }
         return false;
     }
@@ -110,11 +110,12 @@ public class TaskPersistenceService {
     /**
      * 获取 MapReduce 或 Broadcast 的最后一个任务
      */
-    public Optional<TaskDO> getLastTask(Long instanceId) {
+    public Optional<TaskDO> getLastTask(Long instanceId, Long subInstanceId) {
 
         try {
             SimpleTaskQuery query = new SimpleTaskQuery();
             query.setInstanceId(instanceId);
+            query.setSubInstanceId(subInstanceId);
             query.setTaskName(TaskConstant.LAST_TASK_NAME);
             return execute(() -> {
                 List<TaskDO> taskDOS = taskDAO.simpleQuery(query);
@@ -130,13 +131,12 @@ public class TaskPersistenceService {
         return Optional.empty();
     }
 
-    public List<TaskDO> getAllTask(Long instanceId) {
+    public List<TaskDO> getAllTask(Long instanceId, Long subInstanceId) {
         try {
             SimpleTaskQuery query = new SimpleTaskQuery();
             query.setInstanceId(instanceId);
-            return execute(() -> {
-                return taskDAO.simpleQuery(query);
-            });
+            query.setSubInstanceId(subInstanceId);
+            return execute(() -> taskDAO.simpleQuery(query));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] getAllTask for instance(id={}) failed.", instanceId, e);
         }
@@ -163,11 +163,12 @@ public class TaskPersistenceService {
      * 获取 TaskTracker 管理的子 task 状态统计信息
      * TaskStatus -> num
      */
-    public Map<TaskStatus, Long> getTaskStatusStatistics(Long instanceId) {
+    public Map<TaskStatus, Long> getTaskStatusStatistics(Long instanceId, Long subInstanceId) {
         try {
 
             SimpleTaskQuery query = new SimpleTaskQuery();
             query.setInstanceId(instanceId);
+            query.setSubInstanceId(subInstanceId);
             query.setQueryContent("status, count(*) as num");
             query.setOtherCondition("GROUP BY status");
 
@@ -201,7 +202,7 @@ public class TaskPersistenceService {
     }
 
     /**
-     * 查询任务状态（只查询 status，节约 I/O 资源 -> 测试表明，效果惊人...磁盘I/O果然是重要瓶颈...）
+     * 查询任务状态（只查询 status，节约 I/O 资源 -> 测试表明，在（我高端的NVMe）SSD上都效果惊人...别说一般的HDD了...磁盘I/O果然是重要瓶颈...）
      */
     public Optional<TaskStatus> getTaskStatus(Long instanceId, String taskId) {
 
@@ -277,7 +278,7 @@ public class TaskPersistenceService {
         try {
             SimpleTaskQuery condition = new SimpleTaskQuery();
             condition.setInstanceId(instanceId);
-
+            condition.setSubInstanceId(subInstanceId);
             return execute(() -> taskDAO.simpleDelete(condition));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] deleteAllTasks failed, instanceId={}.", instanceId, e);
