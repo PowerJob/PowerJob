@@ -20,6 +20,8 @@ public class InstanceStatusHolder {
     private long succeedTaskNum;
     private long failedTaskNum;
 
+    // 任务开始时间
+    private long startTime;
     // 上次上报时间
     private long lastReportTime;
     // 源地址（TaskTracker 地址）

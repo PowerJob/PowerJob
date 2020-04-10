@@ -71,6 +71,7 @@ public class JobController {
 
             ExecuteLogDO executeLog = new ExecuteLogDO();
             executeLog.setJobId(jobInfoDO.getId());
+            executeLog.setAppId(jobInfoDO.getAppId());
             executeLog.setInstanceId(IdGenerateService.allocate());
             executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
             executeLog.setExpectedTriggerTime(System.currentTimeMillis());

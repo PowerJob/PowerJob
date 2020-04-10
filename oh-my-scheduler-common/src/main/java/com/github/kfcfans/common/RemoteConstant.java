@@ -1,5 +1,7 @@
 package com.github.kfcfans.common;
 
+import java.time.Duration;
+
 /**
  * RemoteConstant
  *
@@ -30,4 +32,5 @@ public class RemoteConstant {
 
     /* ************************ OTHERS ************************ */
     public static final String EMPTY_ADDRESS = "N/A";
+    public static final long DEFAULT_TIMEOUT_MS = 5000;
 }

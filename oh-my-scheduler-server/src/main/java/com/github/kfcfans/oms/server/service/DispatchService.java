@@ -81,7 +81,6 @@ public class DispatchService {
         req.setTimeExpressionType(TimeExpressionType.of(jobInfo.getTimeExpressionType()).name());
 
         req.setInstanceTimeoutMS(jobInfo.getInstanceTimeLimit());
-        req.setTaskTimeoutMS(jobInfo.getTaskTimeLimit());
 
         req.setThreadConcurrency(jobInfo.getConcurrency());
 

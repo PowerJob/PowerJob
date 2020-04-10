@@ -264,12 +264,12 @@ public class FrequentTaskTracker extends TaskTracker {
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
             req.setReportTime(System.currentTimeMillis());
+            req.setStartTime(createTime);
             req.setInstanceStatus(InstanceStatus.RUNNING.getV());
 
             req.setTotalTaskNum(triggerTimes.get());
             req.setSucceedTaskNum(succeedTimes.get());
             req.setFailedTaskNum(failedTimes.get());
-            req.setReportTime(System.currentTimeMillis());
             req.setSourceAddress(OhMyWorker.getWorkerAddress());
 
             String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);

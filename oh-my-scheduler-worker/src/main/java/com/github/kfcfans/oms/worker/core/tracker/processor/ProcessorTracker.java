@@ -105,21 +105,11 @@ public class ProcessorTracker {
     }
 
     /**
-     * 任务是否超时
-     */
-    public boolean isTimeout() {
-        return System.currentTimeMillis() - startTime > instanceInfo.getInstanceTimeoutMS();
-    }
-
-    /**
      * 释放资源
      */
     public void destroy() {
 
-        // 1. 关闭定时线程池
-        CommonUtils.executeIgnoreException(() -> timingPool.shutdownNow());
-
-        // 2. 关闭执行执行线程池
+        // 1. 关闭执行执行线程池
         CommonUtils.executeIgnoreException(() -> {
             List<Runnable> tasks = threadPool.shutdownNow();
             if (!CollectionUtils.isEmpty(tasks)) {
@@ -128,11 +118,14 @@ public class ProcessorTracker {
             return null;
         });
 
-        // 3. 去除顶层引用，送入GC世界
+        // 2. 去除顶层引用，送入GC世界
         taskTrackerActorRef = null;
         ProcessorTrackerPool.removeProcessorTracker(instanceId);
 
-        log.info("[ProcessorTracker-{}] mission complete, ProcessorTracker already destroyed!", instanceId);
+        log.info("[ProcessorTracker-{}] ProcessorTracker already destroyed!", instanceId);
+
+        // 3. 关闭定时线程池
+        CommonUtils.executeIgnoreException(() -> timingPool.shutdownNow());
     }
 
 
@@ -162,22 +155,30 @@ public class ProcessorTracker {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-processor-timing-pool-%d").build();
         timingPool = Executors.newSingleThreadScheduledExecutor(threadFactory);
 
-        timingPool.scheduleAtFixedRate(new TimingStatusReportRunnable(), 0, 10, TimeUnit.SECONDS);
+        timingPool.scheduleAtFixedRate(new CheckerAndReporter(), 0, 10, TimeUnit.SECONDS);
     }
 
 
     /**
      * 定时向 TaskTracker 汇报（携带任务执行信息的心跳）
      */
-    private class TimingStatusReportRunnable implements Runnable {
+    private class CheckerAndReporter implements Runnable {
 
         @Override
         public void run() {
+
+            long interval = System.currentTimeMillis() - startTime;
+            if (interval > instanceInfo.getInstanceTimeoutMS()) {
+                log.warn("[ProcessorTracker-{}] detected instance timeout, maybe TaskTracker's destroy request missed, so try to kill self now.", instanceId);
+                destroy();
+                return;
+            }
 
             long waitingNum = threadPool.getQueue().size();
             ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceId, waitingNum);
             taskTrackerActorRef.tell(req, null);
         }
+
     }
 
 }

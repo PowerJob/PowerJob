@@ -54,7 +54,7 @@ public abstract class TaskTracker {
     // 定时任务线程池
     protected ScheduledExecutorService scheduledPool;
     // 是否结束
-    protected AtomicBoolean finished = new AtomicBoolean(false);
+    protected AtomicBoolean finished;
 
     protected TaskTracker(ServerScheduleJobReq req) {
 
@@ -65,6 +65,7 @@ public abstract class TaskTracker {
         BeanUtils.copyProperties(req, instanceInfo);
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
+        this.finished = new AtomicBoolean(false);
 
         // 子类自定义初始化操作
         initTaskTracker(req);

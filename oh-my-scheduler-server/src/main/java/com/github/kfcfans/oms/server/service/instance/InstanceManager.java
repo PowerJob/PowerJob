@@ -138,6 +138,15 @@ public class InstanceManager {
         return statusHolder.getSourceAddress();
     }
 
+    /**
+     * 获取任务的详细运行信息，包括当前运行状态、任务数量、TaskTracker地址等
+     * @param instanceId 任务实例ID
+     * @return 任务实例详细运行信息
+     */
+    public static InstanceStatusHolder getInstanceDetail(Long instanceId) {
+        return instanceId2StatusHolder.get(instanceId);
+    }
+
     private static ExecuteLogRepository getExecuteLogRepository() {
         while (executeLogRepository == null) {
             try {

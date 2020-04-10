@@ -112,32 +112,36 @@ public class CommonTaskTracker extends TaskTracker {
             req.setSucceedTaskNum(holder.succeedNum);
             req.setFailedTaskNum(holder.failedNum);
             req.setReportTime(System.currentTimeMillis());
+            req.setStartTime(createTime);
             req.setSourceAddress(OhMyWorker.getWorkerAddress());
 
+            boolean success = false;
+            String result = null;
 
             // 2. 如果未完成任务数为0，判断是否真正结束，并获取真正结束任务的执行结果
-            TaskDO resultTask = null;
             if (unfinishedNum == 0) {
-
-                boolean finishedBoolean = true;
 
                 // 数据库中一个任务都没有，说明根任务创建失败，该任务实例失败
                 if (finishedNum == 0) {
-                    resultTask = new TaskDO();
-                    resultTask.setStatus(TaskStatus.WORKER_PROCESS_FAILED.getValue());
-                    resultTask.setResult("CREATE_ROOT_TASK_FAILED");
-
+                    finished.set(true);
+                    success = false;
+                    result = "CREATE_ROOT_TASK_FAILED";
                 }else {
                     ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
 
                     // STANDALONE 只有一个任务，完成即结束
                     if (executeType == ExecuteType.STANDALONE) {
 
+                        finished.set(true);
+
                         List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
                         if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
+                            success = false;
+                            result = "UNKNOWN BUG";
                             log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
                         }else {
-                            resultTask = allTask.get(0);
+                            result = allTask.get(0).getResult();
+                            success = allTask.get(0).getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
                         }
 
                     } else {
@@ -147,14 +151,18 @@ public class CommonTaskTracker extends TaskTracker {
                         if (lastTaskOptional.isPresent()) {
 
                             // 存在则根据 reduce 任务来判断状态
-                            resultTask = lastTaskOptional.get();
+                            TaskDO resultTask = lastTaskOptional.get();
                             TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
-                            finishedBoolean = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED;
+
+                            if (lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED) {
+                                finished.set(true);
+                                success = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS;
+                                result = resultTask.getResult();
+                            }
+
                         }else {
 
                             // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
-                            finishedBoolean = false;
-
                             TaskDO newLastTask = new TaskDO();
                             newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
                             newLastTask.setTaskId(LAST_TASK_ID);
@@ -164,19 +172,22 @@ public class CommonTaskTracker extends TaskTracker {
                         }
                     }
                 }
+            }
 
-
-                finished.set(finishedBoolean);
+            // 3. 检查任务实例整体是否超时
+            if (isTimeout()) {
+                finished.set(true);
+                success = false;
+                result = "TIMEOUT";
             }
 
             String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
             ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
 
-            // 3. 执行完毕，报告服务器（第二个判断则是为了取消烦人的编译器警告）
-            if (finished.get() && resultTask != null) {
+            // 4. 执行完毕，报告服务器
+            if (finished.get()) {
 
-                boolean success = resultTask.getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
-                req.setResult(resultTask.getResult());
+                req.setResult(result);
                 req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
 
                 CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(TIME_OUT_MS));
@@ -186,7 +197,7 @@ public class CommonTaskTracker extends TaskTracker {
                     AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(TIME_OUT_MS, TimeUnit.MILLISECONDS);
                     serverAccepted = askResponse.isSuccess();
                 }catch (Exception e) {
-                    log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, resultTask.getResult());
+                    log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, result);
                 }
 
                 // 服务器未接受上报，则等待下次重新上报
@@ -196,17 +207,17 @@ public class CommonTaskTracker extends TaskTracker {
 
                 // 服务器已经更新状态，任务已经执行完毕，开始释放所有资源
                 log.info("[TaskTracker-{}] instance(jobId={}) process finished,result = {}, start to release resource...",
-                        instanceId, instanceInfo.getJobId(), resultTask.getResult());
+                        instanceId, instanceInfo.getJobId(), result);
 
                 destroy();
                 return;
             }
 
-            // 4. 未完成，上报状态
+            // 5. 未完成，上报状态
             req.setInstanceStatus(InstanceStatus.RUNNING.getV());
             serverActor.tell(req, null);
 
-            // 5.1 定期检查 -> 重试派发后未确认的任务
+            // 6.1 定期检查 -> 重试派发后未确认的任务
             long currentMS = System.currentTimeMillis();
             if (holder.workerUnreceivedNum != 0) {
                 taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 100).forEach(uncheckTask -> {
@@ -230,14 +241,14 @@ public class CommonTaskTracker extends TaskTracker {
                 });
             }
 
-            // 5.2 定期检查 -> 重新执行被派发到宕机ProcessorTracker上的任务
+            // 6.2 定期检查 -> 重新执行被派发到宕机ProcessorTracker上的任务
             List<String> disconnectedPTs = ptStatusHolder.getAllDisconnectedProcessorTrackers();
             if (!disconnectedPTs.isEmpty()) {
                 log.warn("[TaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}.", instanceId, disconnectedPTs);
                 taskPersistenceService.updateLostTasks(disconnectedPTs);
             }
 
-            // 5.2 超时检查 -> 等待执行/执行中的任务（要不要采取 Worker不挂不行动准则，Worker挂了再重新派发任务）
+            // 6.3 超时检查 -> 检查超时的Task
 
         }
 

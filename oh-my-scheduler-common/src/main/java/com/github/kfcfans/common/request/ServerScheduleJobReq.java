@@ -41,8 +41,6 @@ public class ServerScheduleJobReq implements Serializable {
      */
     // 整个任务的总体超时时间
     private long instanceTimeoutMS;
-    // Task的超时时间
-    private long taskTimeoutMS;
 
     /**
      * 任务运行参数

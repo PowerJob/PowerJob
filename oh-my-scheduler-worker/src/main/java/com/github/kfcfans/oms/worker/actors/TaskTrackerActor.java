@@ -1,8 +1,9 @@
 package com.github.kfcfans.oms.worker.actors;
 
 import akka.actor.AbstractActor;
+import com.github.kfcfans.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker;
+import com.github.kfcfans.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
@@ -33,6 +34,8 @@ public class TaskTrackerActor extends AbstractActor {
                 .match(ProcessorMapTaskRequest.class, this::onReceiveProcessorMapTaskRequest)
                 .match(ProcessorTrackerStatusReportReq.class, this::onReceiveProcessorTrackerStatusReportReq)
                 .match(BroadcastTaskPreExecuteFinishedReq.class, this::onReceiveBroadcastTaskPreExecuteFinishedReq)
+                .match(ServerStopInstanceReq.class, this::onReceiveServerStopInstanceReq)
+                .match(ServerQueryInstanceStatusReq.class, this::onReceiveServerQueryInstanceStatusReq)
                 .matchAny(obj -> log.warn("[ServerRequestActor] receive unknown request: {}.", obj))
                 .build();
     }
@@ -128,5 +131,28 @@ public class TaskTrackerActor extends AbstractActor {
             return;
         }
         taskTracker.receiveProcessorTrackerHeartbeat(req);
+    }
+
+    /**
+     * 停止任务实例
+     */
+    private void onReceiveServerStopInstanceReq(ServerStopInstanceReq req) {
+        TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
+        if (taskTracker == null) {
+            log.warn("[TaskTrackerActor] receive ServerStopInstanceReq({}) but system can't find TaskTracker.", req);
+            return;
+        }
+        taskTracker.destroy();
+    }
+
+    /**
+     * 查询任务实例运行状态
+     */
+    private void onReceiveServerQueryInstanceStatusReq(ServerQueryInstanceStatusReq req) {
+        TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
+        if (taskTracker == null) {
+            log.warn("[TaskTrackerActor] receive ServerQueryInstanceStatusReq({}) but system can't find TaskTracker.", req);
+            return;
+        }
     }
 }

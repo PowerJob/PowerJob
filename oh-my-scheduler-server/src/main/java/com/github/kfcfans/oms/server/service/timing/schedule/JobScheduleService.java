@@ -109,6 +109,7 @@ public class JobScheduleService {
 
                     ExecuteLogDO executeLog = new ExecuteLogDO();
                     executeLog.setJobId(jobInfoDO.getId());
+                    executeLog.setAppId(jobInfoDO.getAppId());
                     executeLog.setInstanceId(IdGenerateService.allocate());
                     executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
                     executeLog.setExpectedTriggerTime(jobInfoDO.getNextTriggerTime());

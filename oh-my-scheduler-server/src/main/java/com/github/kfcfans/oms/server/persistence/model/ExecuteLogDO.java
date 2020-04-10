@@ -22,6 +22,8 @@ public class ExecuteLogDO {
 
     // 任务ID
     private Long jobId;
+    // 任务所属应用的ID，冗余提高查询效率
+    private Long appId;
     // 任务实例ID
     private Long instanceId;
     /**

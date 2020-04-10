@@ -53,8 +53,6 @@ public class JobInfoDO {
     private Integer concurrency;
     // 任务整体超时时间
     private Long instanceTimeLimit;
-    // 任务的每一个Task超时时间
-    private Long taskTimeLimit;
 
     /* ************************** 重试配置 ************************** */
     private Integer instanceRetryNum;
