@@ -206,8 +206,7 @@ public class CommonTaskTracker extends TaskTracker {
                 }
 
                 // 服务器已经更新状态，任务已经执行完毕，开始释放所有资源
-                log.info("[TaskTracker-{}] instance(jobId={}) process finished,result = {}, start to release resource...",
-                        instanceId, instanceInfo.getJobId(), result);
+                log.info("[TaskTracker-{}] instance process finished,result = {}, start to release resource...", instanceId, result);
 
                 destroy();
                 return;
@@ -231,6 +230,8 @@ public class CommonTaskTracker extends TaskTracker {
                         if (!TaskConstant.LAST_TASK_NAME.equals(uncheckTask.getTaskName())) {
                             updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
                         }
+                        // 失败次数 + 1
+                        updateEntity.setFailedCnt(uncheckTask.getFailedCnt() + 1);
 
                         taskPersistenceService.updateTask(instanceId, uncheckTask.getTaskId(), updateEntity);
 

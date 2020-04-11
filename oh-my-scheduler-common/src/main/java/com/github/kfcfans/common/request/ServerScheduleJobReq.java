@@ -22,7 +22,6 @@ public class ServerScheduleJobReq implements Serializable {
     /**
      * 基础信息
      */
-    private Long jobId;
     private Long instanceId;
 
     /**

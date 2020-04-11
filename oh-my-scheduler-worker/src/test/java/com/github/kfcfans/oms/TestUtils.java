@@ -19,7 +19,6 @@ public class TestUtils {
     public static ServerScheduleJobReq genServerScheduleJobReq(ExecuteType executeType, TimeExpressionType timeExpressionType) {
         ServerScheduleJobReq req = new ServerScheduleJobReq();
 
-        req.setJobId(1L);
         req.setInstanceId(10086L);
         req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost() + ":" + RemoteConstant.DEFAULT_WORKER_PORT));
 

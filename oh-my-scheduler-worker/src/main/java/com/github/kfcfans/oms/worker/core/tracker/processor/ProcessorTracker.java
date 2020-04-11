@@ -1,17 +1,21 @@
 package com.github.kfcfans.oms.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
+import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
+import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
+import com.github.kfcfans.oms.worker.sdk.api.BasicProcessor;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -35,6 +39,9 @@ public class ProcessorTracker {
     // 冗余 instanceId，方便日志
     private Long instanceId;
 
+    // 任务执行器
+    private BasicProcessor processor;
+
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
 
@@ -56,8 +63,11 @@ public class ProcessorTracker {
         String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
+        // 初始化 Processor
+        initProcessor();
+
         // 初始化
-        initProcessorPool();
+        initThreadPool();
         initTimingJob();
     }
 
@@ -78,7 +88,7 @@ public class ProcessorTracker {
         newTask.setInstanceId(instanceInfo.getInstanceId());
         newTask.setAddress(taskTrackerAddress);
 
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask);
+        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor);
         try {
             threadPool.submit(processorRunnable);
             success = true;
@@ -132,7 +142,7 @@ public class ProcessorTracker {
     /**
      * 初始化线程池
      */
-    private void initProcessorPool() {
+    private void initThreadPool() {
 
         int poolSize = instanceInfo.getThreadConcurrency();
         // 待执行队列，为了防止对内存造成较大压力，内存队列不能太大
@@ -179,6 +189,33 @@ public class ProcessorTracker {
             taskTrackerActorRef.tell(req, null);
         }
 
+    }
+
+    private void initProcessor() {
+
+        ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
+        String processorInfo = instanceInfo.getProcessorInfo();
+
+        switch (processorType) {
+            case EMBEDDED_JAVA:
+                // 先使用 Spring 加载
+                if (SpringUtils.supportSpringBean()) {
+                    try {
+                        processor = SpringUtils.getBean(processorInfo);
+                    }catch (Exception e) {
+                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}).", instanceId, processorInfo);
+                    }
+                }
+                // 反射加载
+                if (processor == null) {
+                    processor = ProcessorBeanFactory.getInstance().getLocalProcessor(processorInfo);
+                }
+        }
+
+        if (processor == null) {
+            log.warn("[ProcessorRunnable-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
+            throw new IllegalArgumentException("fetch Processor failed");
+        }
     }
 
 }

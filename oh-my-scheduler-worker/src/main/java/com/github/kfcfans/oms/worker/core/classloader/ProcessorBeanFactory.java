@@ -27,7 +27,7 @@ public class ProcessorBeanFactory {
 
         // 1. 初始化类加载器
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        URL path = contextClassLoader.getResource("/");
+        URL path = contextClassLoader.getResource("");
         ohMyClassLoader = new OhMyClassLoader(new URL[]{path}, contextClassLoader);
 
         // 2. 初始化对象缓存
@@ -41,7 +41,7 @@ public class ProcessorBeanFactory {
             try {
 
                 Class<?> clz = ohMyClassLoader.loadClass(className);
-                BasicProcessor processor = (BasicProcessor) clz.newInstance();
+                BasicProcessor processor = (BasicProcessor) clz.getDeclaredConstructor().newInstance();
                 processor.init();
 
                 return processor;

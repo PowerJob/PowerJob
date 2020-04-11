@@ -269,6 +269,8 @@ public abstract class TaskTracker {
         // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
         TaskDO updateEntity = new TaskDO();
         updateEntity.setStatus(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue());
+        // 写入处理该任务的 ProcessorTracker
+        updateEntity.setAddress(processorTrackerAddress);
         taskPersistenceService.updateTask(instanceId, task.getTaskId(), updateEntity);
 
         log.debug("[TaskTracker-{}] dispatch task(taskId={},taskName={}) successfully.", instanceId, task.getTaskId(), task.getTaskName());

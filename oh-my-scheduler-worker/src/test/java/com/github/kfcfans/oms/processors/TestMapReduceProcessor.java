@@ -1,10 +1,12 @@
 package com.github.kfcfans.oms.processors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.worker.sdk.ProcessResult;
 import com.github.kfcfans.oms.worker.sdk.TaskContext;
 import com.github.kfcfans.oms.worker.sdk.api.MapReduceProcessor;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -23,7 +25,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
     @Override
     public ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result) {
         System.out.println("============== TestMapReduceProcessor#reduce ==============");
-        System.out.println("taskContext:" + taskContext);
+        System.out.println("taskContext:" + JSONObject.toJSONString(taskContext));
         System.out.println("taskId2Result:" + taskId2Result);
         return new ProcessResult(true, "REDUCE_SUCCESS");
     }
@@ -32,10 +34,10 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
     public ProcessResult process(TaskContext context) throws Exception {
         System.out.println("============== TestMapReduceProcessor#process ==============");
         System.out.println("isRootTask:" + isRootTask());
-        System.out.println("TaskContext:" + context.toString());
+        System.out.println("taskContext:" + JSONObject.toJSONString(context));
 
         if (isRootTask()) {
-            System.out.println("start to map");
+            System.out.println("==== MAP ====");
             List<TestSubTask> subTasks = Lists.newLinkedList();
             for (int j = 0; j < 2; j++) {
                 for (int i = 0; i < 100; i++) {
@@ -43,14 +45,14 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
                     subTasks.add(new TestSubTask("name" + x, x));
                 }
                 ProcessResult mapResult = map(subTasks, "MAP_TEST_TASK");
-                System.out.println("map result = " + mapResult);
+                System.out.println("mapResult: " + mapResult);
                 subTasks.clear();
             }
             return new ProcessResult(true, "MAP_SUCCESS");
         }else {
-            System.out.println("start to process");
+            System.out.println("==== NORMAL_PROCESS ====");
+            System.out.println("subTask: " + JSONObject.toJSONString(context.getSubTask()));
             Thread.sleep(1000);
-            System.out.println(context.getSubTask());
             if (context.getCurrentRetryTimes() == 0) {
                 return new ProcessResult(false, "FIRST_FAILED");
             }else {
@@ -60,6 +62,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
 
     }
 
+    @Getter
     @ToString
     @NoArgsConstructor
     @AllArgsConstructor

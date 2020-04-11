@@ -2,13 +2,10 @@ package com.github.kfcfans.oms.worker.core.executor;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
-import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
-import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
@@ -40,6 +37,7 @@ public class ProcessorRunnable implements Runnable {
     private final InstanceInfo instanceInfo;
     private final ActorSelection taskTrackerActor;
     private final TaskDO task;
+    private final BasicProcessor processor;
 
     public void innerRun() {
 
@@ -62,14 +60,7 @@ public class ProcessorRunnable implements Runnable {
 
         reportStatus(TaskStatus.WORKER_PROCESSING, null);
 
-        // 1. 获取 Processor
-        BasicProcessor processor = getProcessor();
-        if (processor == null) {
-            reportStatus(TaskStatus.WORKER_PROCESS_FAILED, "NO_PROCESSOR");
-            return;
-        }
-
-        // 2. 根任务特殊处理
+        // 1. 根任务特殊处理
         ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
         if (TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName())) {
 
@@ -99,7 +90,7 @@ public class ProcessorRunnable implements Runnable {
             }
         }
 
-        // 3. 最终任务特殊处理（一定和 TaskTracker 处于相同的机器）
+        // 2. 最终任务特殊处理（一定和 TaskTracker 处于相同的机器）
         if (TaskConstant.LAST_TASK_NAME.equals(task.getTaskName())) {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -136,7 +127,7 @@ public class ProcessorRunnable implements Runnable {
         }
 
 
-        // 4. 正式提交运行
+        // 3. 正式提交运行
         ProcessResult processResult;
         try {
             processResult = processor.process(taskContext);
@@ -145,30 +136,6 @@ public class ProcessorRunnable implements Runnable {
             processResult = new ProcessResult(false, e.toString());
         }
         reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, processResult.getMsg());
-    }
-
-    private BasicProcessor getProcessor() {
-        BasicProcessor processor = null;
-        ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
-        String processorInfo = instanceInfo.getProcessorInfo();
-
-        switch (processorType) {
-            case EMBEDDED_JAVA:
-                // 先使用 Spring 加载
-                if (SpringUtils.supportSpringBean()) {
-                    try {
-                        processor = SpringUtils.getBean(processorInfo);
-                    }catch (Exception e) {
-                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}).", instanceInfo, processorInfo);
-                    }
-                }
-                // 反射加载
-                if (processor == null) {
-                    processor = ProcessorBeanFactory.getInstance().getLocalProcessor(processorInfo);
-                }
-        }
-
-        return processor;
     }
 
     /**

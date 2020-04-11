@@ -1,9 +1,11 @@
 package com.github.kfcfans.oms.worker.actors;
 
 import akka.actor.AbstractActor;
+import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.core.tracker.processor.ProcessorTracker;
 import com.github.kfcfans.oms.worker.core.tracker.processor.ProcessorTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
+import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStopInstanceReq;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +35,25 @@ public class ProcessorTrackerActor extends AbstractActor {
         Long jobId = req.getInstanceInfo().getJobId();
         Long instanceId = req.getInstanceInfo().getInstanceId();
         ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> {
-            ProcessorTracker pt = new ProcessorTracker(req);
-            log.info("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) success.", jobId, instanceId);
-            return pt;
+            try {
+                ProcessorTracker pt = new ProcessorTracker(req);
+                log.info("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) success.", jobId, instanceId);
+                return pt;
+            }catch (Exception e) {
+                log.warn("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) failed.", jobId, instanceId, e);
+
+                // 直接上报失败
+                ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, req.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), e.getMessage());
+                getSender().tell(report, getSelf());
+
+            }
+            return null;
         });
+
+        // 创建失败，直接返回
+        if (processorTracker == null) {
+            return;
+        }
 
         TaskDO task = new TaskDO();
 

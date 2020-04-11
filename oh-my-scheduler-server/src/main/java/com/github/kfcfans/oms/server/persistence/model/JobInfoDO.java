@@ -31,6 +31,8 @@ public class JobInfoDO {
     private Long appId;
     // 任务自带的参数
     private String jobParams;
+    // 任务实例的参数(API触发专用)
+    private String instanceParams;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
