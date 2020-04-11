@@ -117,6 +117,7 @@ public class TaskTrackerActor extends AbstractActor {
             return;
         }
 
+        log.debug("[TaskTrackerActor] server schedule job by request: {}.", req);
         // 原子创建，防止多实例的存在
         TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req));
     }

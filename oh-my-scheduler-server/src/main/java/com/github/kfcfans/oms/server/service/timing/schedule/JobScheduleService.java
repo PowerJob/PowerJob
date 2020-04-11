@@ -96,13 +96,12 @@ public class JobScheduleService {
                 List<JobInfoDO> jobInfos = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
 
                 if (CollectionUtils.isEmpty(jobInfos)) {
-                    log.info("[JobScheduleService] no cron job need to schedule");
                     return;
                 }
 
                 // 1. 批量写日志表
                 Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
-                log.info("[JobScheduleService] try to schedule some cron jobs, they are {}.", jobInfos);
+                log.info("[JobScheduleService] These cron jobs will be scheduled： {}.", jobInfos);
 
                 List<ExecuteLogDO> executeLogs = Lists.newLinkedList();
                 jobInfos.forEach(jobInfoDO -> {
@@ -159,7 +158,7 @@ public class JobScheduleService {
 
                         updatedJobInfos.add(updatedJobInfo);
                     } catch (Exception e) {
-                        log.error("[JobScheduleService] calculate next trigger time for job({}) failed.", jobInfoDO, e);
+                        log.error("[JobScheduleService] calculate next trigger time for job(jobId={}) failed.", jobInfoDO.getId(), e);
                     }
                 });
                 jobInfoRepository.saveAll(updatedJobInfos);

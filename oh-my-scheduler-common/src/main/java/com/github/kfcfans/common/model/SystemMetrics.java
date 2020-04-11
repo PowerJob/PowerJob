@@ -52,8 +52,13 @@ public class SystemMetrics implements Serializable, Comparable<SystemMetrics> {
         double availableMemory = jvmMaxMemory - jvmUsedMemory;
         double availableDisk = diskTotal - diskUsage;
 
+        // 保护性判断，Windows下无法获取CPU可用核心数，先固定 0.5
+        if (availableCPUCores < 0) {
+            availableCPUCores = 0.5;
+        }
+
         // 最低运行标准，1G磁盘 & 0.5G内存 & 一个可用的CPU核心
-        if (availableDisk < 1 || availableMemory < 0.5 || availableCPUCores < 1) {
+        if (availableDisk < 1 || availableMemory < 0.5 || availableCPUCores < 0.5) {
             score = MIN_SCORE;
         } else {
             // 磁盘只需要满足最低标准即可

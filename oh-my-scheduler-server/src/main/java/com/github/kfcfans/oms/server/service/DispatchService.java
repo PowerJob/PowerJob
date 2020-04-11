@@ -32,9 +32,6 @@ public class DispatchService {
     @Resource
     private ExecuteLogRepository executeLogRepository;
 
-    // 前三个状态都视为运行中
-    private static final List<Integer> runningStatus = Lists.newArrayList(WAITING_DISPATCH.getV(), WAITING_WORKER_RECEIVE.getV(), RUNNING.getV());
-
     private static final String EMPTY_RESULT = "";
 
     /**
@@ -45,16 +42,16 @@ public class DispatchService {
      */
     public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
 
+        Long jobId = jobInfo.getId();
         log.info("[DispatchService] start to dispatch job: {}.", jobInfo);
-
         // 查询当前运行的实例数
         long current = System.currentTimeMillis();
-        long runningInstanceCount = executeLogRepository.countByJobIdAndStatusIn(jobInfo.getId(), runningStatus);
+        long runningInstanceCount = executeLogRepository.countByJobIdAndStatusIn(jobId, generalizedRunningStatus);
 
         // 超出最大同时运行限制，不执行调度
         if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
             String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
-            log.warn("[DispatchService] cancel dispatch job({}) due to too much instance(num={}) is running.", jobInfo, runningInstanceCount);
+            log.warn("[DispatchService] cancel dispatch job(jobId={}) due to too much instance(num={}) is running.", jobId, runningInstanceCount);
             executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, current, RemoteConstant.EMPTY_ADDRESS, result);
             return;
         }
@@ -64,7 +61,8 @@ public class DispatchService {
         List<String> allAvailableWorker = WorkerManagerService.getAllAvailableWorker(jobInfo.getAppId());
 
         if (StringUtils.isEmpty(taskTrackerAddress)) {
-            log.warn("[DispatchService] cancel dispatch job({}) due to no worker available.", jobInfo);
+            String clusterStatusDescription = WorkerManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
+            log.warn("[DispatchService] cancel dispatch job(jobId={}) due to no worker available, clusterStatus is {}.", jobId, clusterStatusDescription);
             executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE);
             return;
         }

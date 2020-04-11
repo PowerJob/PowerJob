@@ -41,3 +41,11 @@ java.lang.RuntimeException: create root task failed.
 ```
 ***
 原因及解决方案：destroy方法调用了scheduledPool.shutdownNow()方法导致调用该方法的线程池被强制关闭，该方法也自然被中断，数据删到一半没删掉，破坏了数据库结构，后面的insert自然也就失败了。
+
+# 2020.4.11 "集群"测试
+#### 任务重试机制失效
+原因：SQL中的now()函数返回的是Datetime，不能用ing/bigint去接收... 
+
+#### SystemMetric算分问题
+问题：java.lang.management.OperatingSystemMXBean#getSystemLoadAverage 不一定能获取CPU当前负载，可能返回负数代表不可用...
+解决方案：印度Windows上getSystemLoadAverage()固定返回-1...太坑了...先做个保护性判断继续测试吧...

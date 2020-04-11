@@ -117,4 +117,12 @@ public class ClusterStatusHolder {
         }
         return false;
     }
+
+    /**
+     * 获取整个集群的简介
+     * @return 获取集群简介
+     */
+    public String getClusterDescription() {
+        return String.format("appName:%s,clusterStatus:%s", appName, address2Metrics.toString());
+    }
 }

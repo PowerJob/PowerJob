@@ -66,4 +66,18 @@ public class WorkerManagerService {
         appId2ClusterStatus.entrySet().removeIf(entry -> !keys.contains(entry.getKey()));
     }
 
+    /**
+     * 获取某个应用下的Worker集群状态描述
+     * @param appId 应用ID
+     * @return 集群状态描述信息
+     */
+    public static String getWorkerClusterStatusDescription(Long appId) {
+        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
+        if (clusterStatusHolder == null) {
+            return "CAN'T_FIND_ANY_WORKER";
+        }
+        return clusterStatusHolder.getClusterDescription();
+    }
+
+
 }
