@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 管理被调度的服务
@@ -63,8 +64,13 @@ public class InstanceManager {
         if (!instanceId2JobInfo.containsKey(instanceId)) {
             log.warn("[InstanceManager] can't find any register info for instance(jobId={},instanceId={}), maybe change the server.", jobId, instanceId);
 
-            JobInfoDO JobInfoDo = getJobInfoRepository().findById(jobId).orElseGet(JobInfoDO::new);
-            instanceId2JobInfo.put(instanceId, JobInfoDo);
+            Optional<JobInfoDO> jobInfoDOOptional = getJobInfoRepository().findById(jobId);
+            if (jobInfoDOOptional.isPresent()) {
+                JobInfoDO JobInfoDo = jobInfoDOOptional.get();
+                instanceId2JobInfo.put(instanceId, JobInfoDo);
+            }else {
+                throw new IllegalArgumentException("can't find JobIno by jobId:" + jobId);
+            }
         }
 
         // 更新本地保存的任务实例状态（用于未完成任务前的详细信息查询和缓存加速）

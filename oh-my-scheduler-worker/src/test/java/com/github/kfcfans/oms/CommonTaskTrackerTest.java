@@ -57,4 +57,10 @@ public class CommonTaskTrackerTest {
         Thread.sleep(5000000);
     }
 
+    @Test
+    public void testBroadcast() throws Exception {
+        remoteTaskTracker.tell(TestUtils.genServerScheduleJobReq(ExecuteType.BROADCAST, TimeExpressionType.CRON), null);
+        Thread.sleep(5000000);
+    }
+
 }

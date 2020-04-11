@@ -29,7 +29,6 @@ public class TestUtils {
         req.setTaskRetryNum(3);
         req.setThreadConcurrency(10);
         req.setInstanceTimeoutMS(500000);
-        req.setTaskTimeoutMS(500000);
         req.setTimeExpressionType(timeExpressionType.name());
         switch (timeExpressionType) {
             case CRON:req.setTimeExpression("0 * * * * ? ");

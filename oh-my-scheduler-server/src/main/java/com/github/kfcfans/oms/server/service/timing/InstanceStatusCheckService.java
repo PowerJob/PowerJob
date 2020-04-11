@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.service.timing;
 
 import com.github.kfcfans.common.InstanceStatus;
+import com.github.kfcfans.common.SystemInstanceResult;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
@@ -129,11 +130,14 @@ public class InstanceStatusCheckService {
         });
     }
 
+    /**
+     * 处理上报超时而失败的任务实例
+     */
     private void updateFailedInstance(ExecuteLogDO instance) {
         instance.setStatus(InstanceStatus.FAILED.getV());
         instance.setFinishedTime(System.currentTimeMillis());
         instance.setGmtModified(new Date());
-        instance.setResult("worker report timeout, maybe all worker down");
+        instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
         executeLogRepository.saveAndFlush(instance);
     }
 }

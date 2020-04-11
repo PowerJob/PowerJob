@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 /**
- * 处理内部请求的 Controller
+ * 处理Worker请求的 Controller
+ * Worker启动时，先请求assert验证appName的可用性，再根据得到的appId获取Server地址
  *
  * @author tjq
  * @since 2020/4/4

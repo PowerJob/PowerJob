@@ -72,7 +72,6 @@ public class ProcessorTrackerTest {
         instanceInfo.setProcessorInfo(processor);
 
         instanceInfo.setInstanceTimeoutMS(500000);
-        instanceInfo.setTaskTimeoutMS(5000000);
 
         instanceInfo.setThreadConcurrency(5);
         instanceInfo.setTaskRetryNum(3);

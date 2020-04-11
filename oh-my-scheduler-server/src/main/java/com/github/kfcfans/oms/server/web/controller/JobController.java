@@ -13,8 +13,11 @@ import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.IdGenerateService;
+import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -30,12 +34,16 @@ import java.util.Optional;
  * @author tjq
  * @since 2020/3/30
  */
+@Slf4j
 @RestController
 @RequestMapping("job")
 public class JobController {
 
     @Resource
     private DispatchService dispatchService;
+    @Resource
+    private InstanceService instanceService;
+
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
@@ -68,18 +76,7 @@ public class JobController {
 
         // 秒级任务直接调度执行
         if (timeExpressionType == TimeExpressionType.FIX_RATE || timeExpressionType == TimeExpressionType.FIX_DELAY) {
-
-            ExecuteLogDO executeLog = new ExecuteLogDO();
-            executeLog.setJobId(jobInfoDO.getId());
-            executeLog.setAppId(jobInfoDO.getAppId());
-            executeLog.setInstanceId(IdGenerateService.allocate());
-            executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-            executeLog.setExpectedTriggerTime(System.currentTimeMillis());
-            executeLog.setGmtCreate(new Date());
-            executeLog.setGmtModified(executeLog.getGmtCreate());
-
-            executeLogRepository.saveAndFlush(executeLog);
-            dispatchService.dispatch(jobInfoDO, executeLog.getInstanceId(), 0);
+            runJobImmediately(jobInfoDO);
         }
 
         return ResultDTO.success(null);
@@ -87,25 +84,79 @@ public class JobController {
 
     @GetMapping("/stop")
     public ResultDTO<Void> stopJob(Long jobId) throws Exception {
-        updateJobStatus(jobId, JobStatus.STOPPED);
+        shutdownOrStopJob(jobId, JobStatus.STOPPED);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/delete")
     public ResultDTO<Void> deleteJob(Long jobId) throws Exception {
-        updateJobStatus(jobId, JobStatus.DELETED);
+        shutdownOrStopJob(jobId, JobStatus.DELETED);
         return ResultDTO.success(null);
     }
 
-    private void updateJobStatus(Long jobId, JobStatus status) {
-        JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> {
-            throw new IllegalArgumentException("can't find job which id is " + jobId);
-        });
+    @GetMapping("/run")
+    public ResultDTO<Void> runImmediately(Long jobId) {
+        Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
+        if (!jobInfoOPT.isPresent()) {
+            throw new IllegalArgumentException("can't find job by jobId:" + jobId);
+        }
+        runJobImmediately(jobInfoOPT.get());
+        return ResultDTO.success(null);
+    }
+
+    /**
+     * 立即运行JOB
+     */
+    private void runJobImmediately(JobInfoDO jobInfoDO) {
+        ExecuteLogDO executeLog = new ExecuteLogDO();
+        executeLog.setJobId(jobInfoDO.getId());
+        executeLog.setAppId(jobInfoDO.getAppId());
+        executeLog.setInstanceId(IdGenerateService.allocate());
+        executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+        executeLog.setExpectedTriggerTime(System.currentTimeMillis());
+        executeLog.setGmtCreate(new Date());
+        executeLog.setGmtModified(executeLog.getGmtCreate());
+
+        executeLogRepository.saveAndFlush(executeLog);
+        dispatchService.dispatch(jobInfoDO, executeLog.getInstanceId(), 0);
+    }
+
+    /**
+     * 停止或删除某个JOB
+     * 秒级任务还要额外停止正在运行的任务实例
+     */
+    private void shutdownOrStopJob(Long jobId, JobStatus status) throws IllegalArgumentException {
+
+        // 1. 先更新 job_info 表
+        Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
+        if (!jobInfoOPT.isPresent()) {
+            throw new IllegalArgumentException("can't find job by jobId:" + jobId);
+        }
+        JobInfoDO jobInfoDO = jobInfoOPT.get();
         jobInfoDO.setStatus(status.getV());
         jobInfoRepository.saveAndFlush(jobInfoDO);
 
-        // TODO: 关闭秒级任务
+        // 2. 关闭秒级任务
+        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
+        if (timeExpressionType == TimeExpressionType.CRON || timeExpressionType == TimeExpressionType.API) {
+            return;
+        }
+        List<ExecuteLogDO> executeLogs = executeLogRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
+        if (CollectionUtils.isEmpty(executeLogs)) {
+            return;
+        }
+        if (executeLogs.size() > 1) {
+            log.warn("[JobController] frequent job has multi instance, there must ha");
+        }
+        executeLogs.forEach(instance -> {
+            try {
 
+                // 重复查询了数据库，不过问题不大，这个调用量很小
+                instanceService.stopInstance(instance.getInstanceId());
+            }catch (Exception ignore) {
+            }
+        });
     }
+
 
 }

@@ -4,6 +4,7 @@ import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.InstanceStatus;
+import com.github.kfcfans.common.SystemInstanceResult;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.response.AskResponse;
@@ -21,7 +22,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.*;
 
@@ -125,7 +125,7 @@ public class CommonTaskTracker extends TaskTracker {
                 if (finishedNum == 0) {
                     finished.set(true);
                     success = false;
-                    result = "CREATE_ROOT_TASK_FAILED";
+                    result = SystemInstanceResult.TASK_INIT_FAILED;
                 }else {
                     ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
 
@@ -137,7 +137,7 @@ public class CommonTaskTracker extends TaskTracker {
                         List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
                         if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
                             success = false;
-                            result = "UNKNOWN BUG";
+                            result = SystemInstanceResult.UNKNOWN_BUG;
                             log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
                         }else {
                             result = allTask.get(0).getResult();
@@ -178,7 +178,7 @@ public class CommonTaskTracker extends TaskTracker {
             if (isTimeout()) {
                 finished.set(true);
                 success = false;
-                result = "TIMEOUT";
+                result = SystemInstanceResult.INSTANCE_EXECUTE_TIMEOUT;
             }
 
             String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);

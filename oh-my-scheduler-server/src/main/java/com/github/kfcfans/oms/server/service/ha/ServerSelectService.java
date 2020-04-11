@@ -114,7 +114,7 @@ public class ServerSelectService {
         Ping ping = new Ping();
         ping.setCurrentTime(System.currentTimeMillis());
 
-        ActorSelection serverActor = OhMyServer.getServerActor(serverAddress);
+        ActorSelection serverActor = OhMyServer.getFriendActor(serverAddress);
         try {
             CompletionStage<Object> askCS = Patterns.ask(serverActor, ping, Duration.ofMillis(PING_TIMEOUT_MS));
             AskResponse response = (AskResponse) askCS.toCompletableFuture().get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);

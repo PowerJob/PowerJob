@@ -38,6 +38,8 @@ public class ExecuteLogDO {
     private Long actualTriggerTime;
     // 结束时间
     private Long finishedTime;
+    // TaskTracker地址
+    private String taskTrackerAddress;
 
     // 总共执行的次数（用于重试判断）
     private Long runningTimes;

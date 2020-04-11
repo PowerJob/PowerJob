@@ -16,6 +16,7 @@
     <properties>
         <slf4j.version>1.7.30</slf4j.version>
         <commons.lang.version>3.10</commons.lang.version>
+        <guava.version>28.2-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -31,6 +32,13 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons.lang.version}</version>
+        </dependency>
+
+        <!-- guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
     </dependencies>
 

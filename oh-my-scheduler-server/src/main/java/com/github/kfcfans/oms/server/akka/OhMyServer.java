@@ -59,7 +59,7 @@ public class OhMyServer {
      * @param address IP:port
      * @return ActorSelection
      */
-    public static ActorSelection getServerActor(String address) {
+    public static ActorSelection getFriendActor(String address) {
         String path = String.format(AKKA_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, address, RemoteConstant.SERVER_FRIEND_ACTOR_NAME);
         return actorSystem.actorSelection(path);
     }
