@@ -67,7 +67,7 @@ public class RepositoryTest {
 
     @Test
     public void testExecuteLogUpdate() {
-        executeLogRepository.update4Trigger(1586310414570L, 2, 100, "NULL");
+        executeLogRepository.update4Trigger(1586310414570L, 2, 100, System.currentTimeMillis(), "192.168.1.1", "NULL");
         executeLogRepository.update4FrequentJob(1586310419650L, 2, 200);
     }
 

@@ -48,13 +48,14 @@ public class DispatchService {
         log.info("[DispatchService] start to dispatch job: {}.", jobInfo);
 
         // 查询当前运行的实例数
+        long current = System.currentTimeMillis();
         long runningInstanceCount = executeLogRepository.countByJobIdAndStatusIn(jobInfo.getId(), runningStatus);
 
         // 超出最大同时运行限制，不执行调度
         if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
             String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
             log.warn("[DispatchService] cancel dispatch job({}) due to too much instance(num={}) is running.", jobInfo, runningInstanceCount);
-            executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, RemoteConstant.EMPTY_ADDRESS, result);
+            executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, current, RemoteConstant.EMPTY_ADDRESS, result);
             return;
         }
 
@@ -64,7 +65,7 @@ public class DispatchService {
 
         if (StringUtils.isEmpty(taskTrackerAddress)) {
             log.warn("[DispatchService] cancel dispatch job({}) due to no worker available.", jobInfo);
-            executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE);
+            executeLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE);
             return;
         }
 
@@ -75,6 +76,7 @@ public class DispatchService {
         // 构造请求
         ServerScheduleJobReq req = new ServerScheduleJobReq();
         BeanUtils.copyProperties(jobInfo, req);
+        req.setInstanceId(instanceId);
         req.setAllWorkerAddress(allAvailableWorker);
 
         req.setExecuteType(ExecuteType.of(jobInfo.getExecuteType()).name());
@@ -91,6 +93,6 @@ public class DispatchService {
         log.debug("[DispatchService] send request({}) to TaskTracker({}) succeed.", req, taskTrackerActor.pathString());
 
         // 修改状态
-        executeLogRepository.update4Trigger(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, taskTrackerAddress, EMPTY_RESULT);
+        executeLogRepository.update4Trigger(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress, EMPTY_RESULT);
     }
 }

@@ -35,8 +35,8 @@ public interface ExecuteLogRepository extends JpaRepository<ExecuteLogDO, Long> 
      */
     @Transactional
     @Modifying
-    @Query(value = "update execute_log set status = ?2, running_times = ?3, actual_trigger_time = now(), task_tracker_address = ?4, result = ?5, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
-    int update4Trigger(long instanceId, int status, long runningTimes, String taskTrackerAddress, String result);
+    @Query(value = "update execute_log set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, result = ?6, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
+    int update4Trigger(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress, String result);
 
     @Modifying
     @Transactional
