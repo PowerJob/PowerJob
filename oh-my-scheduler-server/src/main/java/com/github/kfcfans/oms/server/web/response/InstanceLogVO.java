@@ -1,24 +1,17 @@
-package com.github.kfcfans.oms.server.persistence.model;
+package com.github.kfcfans.oms.server.web.response;
 
 import lombok.Data;
 
-import javax.persistence.*;
 import java.util.Date;
 
 /**
- * 任务运行日志表
+ * ExecuteLog 对外展示对象
  *
  * @author tjq
- * @since 2020/3/30
+ * @since 2020/4/12
  */
 @Data
-@Entity
-@Table(name = "execute_log", indexes = {@Index(columnList = "jobId")})
-public class ExecuteLogDO {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class InstanceLogVO {
 
     // 任务ID
     private Long jobId;
@@ -26,10 +19,7 @@ public class ExecuteLogDO {
     private Long appId;
     // 任务实例ID
     private Long instanceId;
-    /**
-     * 任务状态 {@link com.github.kfcfans.common.InstanceStatus}
-     */
-    private int status;
+
     // 执行结果
     private String result;
     // 预计触发时间
@@ -47,4 +37,6 @@ public class ExecuteLogDO {
     private Date gmtCreate;
     private Date gmtModified;
 
+    /* ********** 不一致区域 ********** */
+    private String status;
 }

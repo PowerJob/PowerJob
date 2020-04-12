@@ -17,8 +17,8 @@ import java.util.List;
 public enum InstanceStatus {
 
     WAITING_DISPATCH(1, "等待任务派发"),
-    WAITING_WORKER_RECEIVE(2, "Server已完成任务派发，等待Worker接收"),
-    RUNNING(3, "Worker接收成功，正在运行任务"),
+    WAITING_WORKER_RECEIVE(2, "等待Worker接收"),
+    RUNNING(3, "运行中"),
     FAILED(4, "任务运行失败"),
     SUCCEED(5, "任务运行成功"),
     STOPPED(10, "任务被手动停止");

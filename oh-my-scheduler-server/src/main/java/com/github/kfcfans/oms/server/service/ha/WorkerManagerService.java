@@ -1,7 +1,6 @@
 package com.github.kfcfans.oms.server.service.ha;
 
 import com.github.kfcfans.common.request.WorkerHeartbeat;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -32,29 +31,15 @@ public class WorkerManagerService {
     }
 
     /**
-     * 选择状态最好的Worker执行任务
-     * @param appId 应用ID
-     * @return Worker的地址（null代表没有可用的Worker）
+     * 获取有序的当前所有可用的Worker地址（按得分高低排序，排在前面的健康度更高）
      */
-    public static String chooseBestWorker(Long appId) {
-        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
-        if (clusterStatusHolder == null) {
-            log.warn("[WorkerManagerService] can't find any worker for {} yet.", appId);
-            return null;
-        }
-        return clusterStatusHolder.chooseBestWorker();
-    }
-
-    /**
-     * 获取当前所有可用的Worker地址
-     */
-    public static List<String> getAllAvailableWorker(Long appId) {
+    public static List<String> getSortedAvailableWorker(Long appId, double minCPUCores, double minMemorySpace, double minDiskSpace) {
         ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
         if (clusterStatusHolder == null) {
             log.warn("[WorkerManagerService] can't find any worker for {} yet.", appId);
             return Collections.emptyList();
         }
-        return clusterStatusHolder.getAllAvailableWorker();
+        return clusterStatusHolder.getSortedAvailableWorker(minCPUCores, minMemorySpace, minDiskSpace);
     }
 
     /**

@@ -3,10 +3,10 @@ package com.github.kfcfans.oms.server.test;
 import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.common.TimeExpressionType;
-import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
+import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.model.OmsLockDO;
-import com.github.kfcfans.oms.server.persistence.repository.ExecuteLogRepository;
+import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.persistence.repository.OmsLockRepository;
 import org.assertj.core.util.Lists;
@@ -33,7 +33,7 @@ public class RepositoryTest {
     @Resource
     private OmsLockRepository omsLockRepository;
     @Resource
-    private ExecuteLogRepository executeLogRepository;
+    private InstanceLogRepository instanceLogRepository;
 
     /**
      * 需要证明批量写入失败后会回滚
@@ -58,17 +58,17 @@ public class RepositoryTest {
 
     @Test
     public void testUpdate() {
-        ExecuteLogDO updateEntity = new ExecuteLogDO();
+        InstanceLogDO updateEntity = new InstanceLogDO();
         updateEntity.setId(22L);
         updateEntity.setActualTriggerTime(System.currentTimeMillis());
         updateEntity.setResult("hahaha");
-        executeLogRepository.saveAndFlush(updateEntity);
+        instanceLogRepository.saveAndFlush(updateEntity);
     }
 
     @Test
     public void testExecuteLogUpdate() {
-        executeLogRepository.update4Trigger(1586310414570L, 2, 100, System.currentTimeMillis(), "192.168.1.1", "NULL");
-        executeLogRepository.update4FrequentJob(1586310419650L, 2, 200);
+        instanceLogRepository.update4Trigger(1586310414570L, 2, 100, System.currentTimeMillis(), "192.168.1.1", "NULL");
+        instanceLogRepository.update4FrequentJob(1586310419650L, 2, 200);
     }
 
 }

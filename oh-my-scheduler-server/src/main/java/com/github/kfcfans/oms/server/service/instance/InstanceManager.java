@@ -4,9 +4,9 @@ import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
-import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
+import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.ExecuteLogRepository;
+import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.google.common.collect.Maps;
@@ -33,7 +33,7 @@ public class InstanceManager {
 
     // Spring Bean
     private static DispatchService dispatchService;
-    private static ExecuteLogRepository executeLogRepository;
+    private static InstanceLogRepository instanceLogRepository;
     private static JobInfoRepository jobInfoRepository;
 
     /**
@@ -90,11 +90,11 @@ public class InstanceManager {
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
         if (timeExpressionType != TimeExpressionType.CRON.getV()) {
-            getExecuteLogRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum());
+            getInstanceLogRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum());
             return;
         }
 
-        ExecuteLogDO updateEntity = getExecuteLogRepository().findByInstanceId(instanceId);
+        InstanceLogDO updateEntity = getInstanceLogRepository().findByInstanceId(instanceId);
         updateEntity.setStatus(newStatus.getV());
         updateEntity.setGmtModified(new Date());
 
@@ -121,7 +121,7 @@ public class InstanceManager {
         }
 
         // 同步状态变更信息到数据库
-        getExecuteLogRepository().saveAndFlush(updateEntity);
+        getInstanceLogRepository().saveAndFlush(updateEntity);
 
         // 清除已完成的实例信息
         if (finished) {
@@ -153,15 +153,15 @@ public class InstanceManager {
         return instanceId2StatusHolder.get(instanceId);
     }
 
-    private static ExecuteLogRepository getExecuteLogRepository() {
-        while (executeLogRepository == null) {
+    private static InstanceLogRepository getInstanceLogRepository() {
+        while (instanceLogRepository == null) {
             try {
                 Thread.sleep(100);
             }catch (Exception ignore) {
             }
-            executeLogRepository = SpringUtils.getBean(ExecuteLogRepository.class);
+            instanceLogRepository = SpringUtils.getBean(InstanceLogRepository.class);
         }
-        return executeLogRepository;
+        return instanceLogRepository;
     }
 
     private static JobInfoRepository getJobInfoRepository() {

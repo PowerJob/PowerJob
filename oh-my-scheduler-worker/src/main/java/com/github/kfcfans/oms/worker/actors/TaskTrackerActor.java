@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.actors;
 
 import akka.actor.AbstractActor;
+import com.github.kfcfans.common.model.InstanceDetail;
 import com.github.kfcfans.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.common.request.ServerStopInstanceReq;
@@ -150,10 +151,17 @@ public class TaskTrackerActor extends AbstractActor {
      * 查询任务实例运行状态
      */
     private void onReceiveServerQueryInstanceStatusReq(ServerQueryInstanceStatusReq req) {
+        AskResponse askResponse = new AskResponse();
         TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
         if (taskTracker == null) {
             log.warn("[TaskTrackerActor] receive ServerQueryInstanceStatusReq({}) but system can't find TaskTracker.", req);
-            return;
+            askResponse.setSuccess(false);
+            askResponse.setExtra("can't find TaskTracker");
+        }else {
+            InstanceDetail instanceDetail = taskTracker.fetchRunningStatus();
+            askResponse.setSuccess(true);
+            askResponse.setExtra(instanceDetail);
         }
+        getSender().tell(askResponse, getSelf());
     }
 }

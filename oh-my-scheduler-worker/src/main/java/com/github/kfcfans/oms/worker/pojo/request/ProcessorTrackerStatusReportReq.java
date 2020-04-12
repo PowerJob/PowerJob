@@ -5,6 +5,8 @@ import com.github.kfcfans.oms.worker.OhMyWorker;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * ProcessorTracker 定时向 TaskTracker 上报健康状态
  *
@@ -13,7 +15,7 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
-public class ProcessorTrackerStatusReportReq {
+public class ProcessorTrackerStatusReportReq implements Serializable {
 
     private Long instanceId;
 

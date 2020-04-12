@@ -5,6 +5,7 @@ import akka.pattern.Patterns;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.SystemInstanceResult;
+import com.github.kfcfans.common.model.InstanceDetail;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.response.AskResponse;
@@ -55,6 +56,26 @@ public class CommonTaskTracker extends TaskTracker {
         // 启动定时任务（任务派发 & 状态检查）
         scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 0, 1, TimeUnit.SECONDS);
         scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 10, 10, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public InstanceDetail fetchRunningStatus() {
+
+        InstanceDetail detail = new InstanceDetail();
+        // 填充基础信息
+        detail.setActualTriggerTime(createTime);
+        detail.setStatus(InstanceStatus.RUNNING.getDes());
+        detail.setTaskTrackerAddress(OhMyWorker.getWorkerAddress());
+
+        // 填充详细信息
+        InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
+        InstanceDetail.TaskDetail taskDetail = new InstanceDetail.TaskDetail();
+        taskDetail.setSucceedTaskNum(holder.succeedNum);
+        taskDetail.setFailedTaskNum(holder.failedNum);
+        taskDetail.setTotalTaskNum(holder.getTotalTaskNum());
+        detail.setExtra(taskDetail);
+
+        return detail;
     }
 
 

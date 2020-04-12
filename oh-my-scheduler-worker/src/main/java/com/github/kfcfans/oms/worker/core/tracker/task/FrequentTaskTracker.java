@@ -5,6 +5,7 @@ import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.common.model.InstanceDetail;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.oms.worker.OhMyWorker;
@@ -17,10 +18,13 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -96,6 +100,27 @@ public class FrequentTaskTracker extends TaskTracker {
         // 4. 启动状态检查器
         scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(timeParams, 10000), TimeUnit.MILLISECONDS);
 
+    }
+
+    @Override
+    public InstanceDetail fetchRunningStatus() {
+        InstanceDetail detail = new InstanceDetail();
+        // 填充基础信息
+        detail.setActualTriggerTime(createTime);
+        detail.setStatus(InstanceStatus.RUNNING.getDes());
+        detail.setTaskTrackerAddress(OhMyWorker.getWorkerAddress());
+
+        List<InstanceDetail.SubInstanceDetail> history = Lists.newLinkedList();
+        recentSubInstanceInfo.forEach((ignore, subInstanceInfo) -> {
+            InstanceDetail.SubInstanceDetail subDetail = new InstanceDetail.SubInstanceDetail();
+            BeanUtils.copyProperties(subInstanceInfo, subDetail);
+            subDetail.setStatus(InstanceStatus.of(subInstanceInfo.status).getDes());
+
+            history.add(subDetail);
+        });
+
+        detail.setExtra(history);
+        return detail;
     }
 
     /**
@@ -300,6 +325,7 @@ public class FrequentTaskTracker extends TaskTracker {
             SubInstanceInfo subInstanceInfo = recentSubInstanceInfo.get(subInstanceId);
             subInstanceInfo.status = success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV();
             subInstanceInfo.result = result;
+            subInstanceInfo.finishedTime = System.currentTimeMillis();
         }
         // 删除数据库相关数据
         taskPersistenceService.deleteAllSubInstanceTasks(instanceId, subInstanceId);
@@ -310,9 +336,11 @@ public class FrequentTaskTracker extends TaskTracker {
         }
     }
 
+    @Data
     private static class SubInstanceInfo {
         private int status;
         private long startTime;
+        private long finishedTime;
         private String result;
     }
 

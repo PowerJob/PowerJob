@@ -31,8 +31,6 @@ public class SystemMetrics implements Serializable, Comparable<SystemMetrics> {
     // 缓存分数
     private int score;
 
-    public static final int MIN_SCORE = 1;
-
     @Override
     public int compareTo(SystemMetrics that) {
         return this.calculateScore() - that.calculateScore();
@@ -50,21 +48,25 @@ public class SystemMetrics implements Serializable, Comparable<SystemMetrics> {
 
         double availableCPUCores = cpuProcessors * cpuLoad;
         double availableMemory = jvmMaxMemory - jvmUsedMemory;
-        double availableDisk = diskTotal - diskUsage;
 
-        // 保护性判断，Windows下无法获取CPU可用核心数，先固定 0.5
-        if (availableCPUCores < 0) {
-            availableCPUCores = 0.5;
-        }
+        // Windows下无法获取CPU可用核心数，值固定为-1
+        cpuLoad = Math.max(0, cpuLoad);
 
-        // 最低运行标准，1G磁盘 & 0.5G内存 & 一个可用的CPU核心
-        if (availableDisk < 1 || availableMemory < 0.5 || availableCPUCores < 0.5) {
-            score = MIN_SCORE;
-        } else {
-            // 磁盘只需要满足最低标准即可
-            score = (int) (availableMemory * 2 + availableCPUCores);
-        }
+        return (int) (availableMemory * 2 + availableCPUCores);
+    }
 
-        return score;
+    /**
+     * 该机器是否可用
+     * @param minCPUCores 判断标准之最低可用CPU核心数量
+     * @param minMemorySpace 判断标准之最低可用内存
+     * @param minDiskSpace 判断标准之最低可用磁盘空间
+     * @return 是否可用
+     */
+    public boolean available(double minCPUCores, double minMemorySpace, double minDiskSpace) {
+
+        double currentCpuCores = Math.max(cpuLoad * cpuProcessors, 0);
+        double currentMemory = jvmMaxMemory - jvmUsedMemory;
+        double currentDisk = diskTotal - diskUsed;
+        return currentCpuCores >= minCPUCores && currentMemory >= minMemorySpace && currentDisk >= minDiskSpace;
     }
 }

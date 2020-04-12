@@ -7,11 +7,11 @@ import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
-import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
+import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
-import com.github.kfcfans.oms.server.persistence.repository.ExecuteLogRepository;
+import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.IdGenerateService;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
@@ -52,7 +52,7 @@ public class JobScheduleService {
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
-    private ExecuteLogRepository executeLogRepository;
+    private InstanceLogRepository instanceLogRepository;
 
     private static final long SCHEDULE_RATE = 5000;
 
@@ -103,10 +103,10 @@ public class JobScheduleService {
                 Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
                 log.info("[JobScheduleService] These cron jobs will be scheduled： {}.", jobInfos);
 
-                List<ExecuteLogDO> executeLogs = Lists.newLinkedList();
+                List<InstanceLogDO> executeLogs = Lists.newLinkedList();
                 jobInfos.forEach(jobInfoDO -> {
 
-                    ExecuteLogDO executeLog = new ExecuteLogDO();
+                    InstanceLogDO executeLog = new InstanceLogDO();
                     executeLog.setJobId(jobInfoDO.getId());
                     executeLog.setAppId(jobInfoDO.getAppId());
                     executeLog.setInstanceId(IdGenerateService.allocate());
@@ -119,8 +119,8 @@ public class JobScheduleService {
 
                     jobId2InstanceId.put(executeLog.getJobId(), executeLog.getInstanceId());
                 });
-                executeLogRepository.saveAll(executeLogs);
-                executeLogRepository.flush();
+                instanceLogRepository.saveAll(executeLogs);
+                instanceLogRepository.flush();
 
                 // 2. 推入时间轮中等待调度执行
                 jobInfos.forEach(jobInfoDO ->  {

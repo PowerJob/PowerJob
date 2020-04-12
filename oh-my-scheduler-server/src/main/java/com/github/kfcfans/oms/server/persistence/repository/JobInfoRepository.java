@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.persistence.repository;
 
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,5 +18,5 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
 
     List<JobInfoDO> findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(List<Long> appIds, int status, int timeExpressionType, long time);
 
-    List<JobInfoDO> findByAppIdInAndStatusAndTimeExpressionType(List<Long> appIds, int status, int timeExpressionType);
+    Page<JobInfoDO> findByAppId(Long appId, Pageable pageable);
 }

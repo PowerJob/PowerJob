@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.worker.core.tracker.task;
 import akka.actor.ActorSelection;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.common.model.InstanceDetail;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
@@ -371,6 +372,10 @@ public abstract class TaskTracker {
         protected long runningNum;
         protected long failedNum;
         protected long succeedNum;
+
+        public long getTotalTaskNum() {
+            return waitingDispatchNum + workerUnreceivedNum + receivedNum + runningNum + failedNum + succeedNum;
+        }
     }
 
     /**
@@ -378,4 +383,10 @@ public abstract class TaskTracker {
      * @param req 服务器调度任务实例运行请求
      */
     abstract protected void initTaskTracker(ServerScheduleJobReq req);
+
+    /**
+     * 查询任务实例的详细运行状态
+     * @return 任务实例的详细运行状态
+     */
+    abstract public InstanceDetail fetchRunningStatus();
 }

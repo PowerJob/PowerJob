@@ -1,6 +1,8 @@
 package com.github.kfcfans.common.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -11,6 +13,8 @@ import java.io.Serializable;
  * @since 2020/4/10
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ServerQueryInstanceStatusReq implements Serializable {
     private Long instanceId;
 }

@@ -1,6 +1,8 @@
-package com.github.kfcfans.oms.server.service.instance;
+package com.github.kfcfans.common.model;
 
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 任务实例的运行详细信息（对外）
@@ -9,7 +11,7 @@ import lombok.Data;
  * @since 2020/4/11
  */
 @Data
-public class InstanceDetail {
+public class InstanceDetail implements Serializable {
 
     // 任务整体开始时间
     private long actualTriggerTime;
@@ -26,15 +28,17 @@ public class InstanceDetail {
 
 
     // 秒级任务的 extra -> List<SubInstanceDetail>
-    private static class SubInstanceDetail {
+    @Data
+    public static class SubInstanceDetail implements Serializable {
         private long startTime;
         private long finishedTime;
-        private String status;
         private String result;
+        private String status;
     }
 
     // MapReduce 和 Broadcast 任务的 extra ->
-    private static class ClusterDetail {
+    @Data
+    public static class TaskDetail implements Serializable {
         private long totalTaskNum;
         private long succeedTaskNum;
         private long failedTaskNum;

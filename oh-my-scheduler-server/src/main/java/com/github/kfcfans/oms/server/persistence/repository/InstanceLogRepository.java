@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.persistence.repository;
 
-import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
+import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,14 +17,14 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/1
  */
-public interface ExecuteLogRepository extends JpaRepository<ExecuteLogDO, Long> {
+public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long> {
 
     /**
      * 统计当前JOB有多少实例正在运行
      */
     long countByJobIdAndStatusIn(long jobId, List<Integer> status);
 
-    List<ExecuteLogDO> findByJobIdAndStatusIn(long jobId, List<Integer> status);
+    List<InstanceLogDO> findByJobIdAndStatusIn(long jobId, List<Integer> status);
 
 
     /**
@@ -44,9 +46,11 @@ public interface ExecuteLogRepository extends JpaRepository<ExecuteLogDO, Long> 
     int update4FrequentJob(long instanceId, int status, long runningTimes);
 
     // 状态检查三兄弟，对应 WAITING_DISPATCH 、 WAITING_WORKER_RECEIVE 和 RUNNING 三阶段
-    List<ExecuteLogDO> findByJobIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
-    List<ExecuteLogDO> findByJobIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
-    List<ExecuteLogDO> findByJobIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
+    List<InstanceLogDO> findByJobIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
+    List<InstanceLogDO> findByJobIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
+    List<InstanceLogDO> findByJobIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
 
-    ExecuteLogDO findByInstanceId(long instanceId);
+    InstanceLogDO findByInstanceId(long instanceId);
+
+    Page<InstanceLogDO> findByAppId(long appId, Pageable pageable);
 }

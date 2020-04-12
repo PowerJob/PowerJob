@@ -65,6 +65,14 @@ public class JobInfoDO {
     // 下一次调度时间
     private Long nextTriggerTime;
 
+    /* ************************** 繁忙机器配置 ************************** */
+    // 最低CPU核心数量，0代表不限
+    private double minCpuCores;
+    // 最低内存空间，单位 GB，0代表不限
+    private double minMemorySpace;
+    // 最低磁盘空间，单位 GB，0代表不限
+    private double minDiskSpace;
+
 
     private Date gmtCreate;
     private Date gmtModified;

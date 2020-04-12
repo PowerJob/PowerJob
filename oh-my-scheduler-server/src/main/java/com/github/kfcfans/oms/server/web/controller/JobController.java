@@ -6,8 +6,9 @@ import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
-import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
-import com.github.kfcfans.oms.server.persistence.repository.ExecuteLogRepository;
+import com.github.kfcfans.oms.server.persistence.PageResult;
+import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
+import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
@@ -15,8 +16,12 @@ import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
+import com.github.kfcfans.oms.server.web.response.JobInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +32,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 任务信息管理 Controller
@@ -47,7 +53,7 @@ public class JobController {
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
-    private ExecuteLogRepository executeLogRepository;
+    private InstanceLogRepository instanceLogRepository;
 
     @PostMapping("/save")
     public ResultDTO<Void> saveJobInfo(ModifyJobInfoRequest request) throws Exception {
@@ -104,11 +110,28 @@ public class JobController {
         return ResultDTO.success(null);
     }
 
+    @GetMapping("/list")
+    public ResultDTO<PageResult<JobInfoVO>> listJobs(Long appId, int index, int pageSize) {
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "gmtCreate");
+        PageRequest pageRequest = PageRequest.of(index, pageSize, sort);
+        Page<JobInfoDO> jobInfoPage = jobInfoRepository.findByAppId(appId, pageRequest);
+        List<JobInfoVO> jobInfoVOList = jobInfoPage.getContent().stream().map(jobInfoDO -> {
+            JobInfoVO jobInfoVO = new JobInfoVO();
+            BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
+            return jobInfoVO;
+        }).collect(Collectors.toList());
+
+        PageResult<JobInfoVO> pageResult = new PageResult<>(jobInfoPage);
+        pageResult.setData(jobInfoVOList);
+        return ResultDTO.success(pageResult);
+    }
+
     /**
      * 立即运行JOB
      */
     private void runJobImmediately(JobInfoDO jobInfoDO) {
-        ExecuteLogDO executeLog = new ExecuteLogDO();
+        InstanceLogDO executeLog = new InstanceLogDO();
         executeLog.setJobId(jobInfoDO.getId());
         executeLog.setAppId(jobInfoDO.getAppId());
         executeLog.setInstanceId(IdGenerateService.allocate());
@@ -117,7 +140,7 @@ public class JobController {
         executeLog.setGmtCreate(new Date());
         executeLog.setGmtModified(executeLog.getGmtCreate());
 
-        executeLogRepository.saveAndFlush(executeLog);
+        instanceLogRepository.saveAndFlush(executeLog);
         dispatchService.dispatch(jobInfoDO, executeLog.getInstanceId(), 0);
     }
 
@@ -141,7 +164,7 @@ public class JobController {
         if (timeExpressionType == TimeExpressionType.CRON || timeExpressionType == TimeExpressionType.API) {
             return;
         }
-        List<ExecuteLogDO> executeLogs = executeLogRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
+        List<InstanceLogDO> executeLogs = instanceLogRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
         if (CollectionUtils.isEmpty(executeLogs)) {
             return;
         }

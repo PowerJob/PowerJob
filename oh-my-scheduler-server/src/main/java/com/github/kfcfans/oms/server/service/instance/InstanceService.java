@@ -1,20 +1,27 @@
 package com.github.kfcfans.oms.server.service.instance;
 
 import akka.actor.ActorSelection;
+import akka.pattern.Patterns;
 import com.github.kfcfans.common.InstanceStatus;
+import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.SystemInstanceResult;
-import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.common.model.InstanceDetail;
+import com.github.kfcfans.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.common.request.ServerStopInstanceReq;
+import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.persistence.model.ExecuteLogDO;
-import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
-import com.github.kfcfans.oms.server.persistence.repository.ExecuteLogRepository;
+import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
+import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.Date;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.kfcfans.common.InstanceStatus.RUNNING;
 import static com.github.kfcfans.common.InstanceStatus.STOPPED;
@@ -30,9 +37,7 @@ import static com.github.kfcfans.common.InstanceStatus.STOPPED;
 public class InstanceService {
 
     @Resource
-    private AppInfoRepository appInfoRepository;
-    @Resource
-    private ExecuteLogRepository executeLogRepository;
+    private InstanceLogRepository instanceLogRepository;
 
     /**
      * 停止任务实例
@@ -40,48 +45,84 @@ public class InstanceService {
      */
     public void stopInstance(Long instanceId) {
 
-        ExecuteLogDO executeLogDO = executeLogRepository.findByInstanceId(instanceId);
-        if (executeLogDO == null) {
+        InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
+        if (instanceLogDO == null) {
             log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
         // 更新数据库，将状态置为停止
-        executeLogDO.setStatus(STOPPED.getV());
-        executeLogDO.setGmtModified(new Date());
-        executeLogDO.setFinishedTime(System.currentTimeMillis());
-        executeLogDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
-        executeLogRepository.saveAndFlush(executeLogDO);
+        instanceLogDO.setStatus(STOPPED.getV());
+        instanceLogDO.setGmtModified(new Date());
+        instanceLogDO.setFinishedTime(System.currentTimeMillis());
+        instanceLogDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
+        instanceLogRepository.saveAndFlush(instanceLogDO);
 
         // 停止 TaskTracker
-        ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(executeLogDO.getTaskTrackerAddress());
+        ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceLogDO.getTaskTrackerAddress());
         ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
         taskTrackerActor.tell(req, null);
     }
 
+    /**
+     * 获取任务实例的详细运行详细
+     * @param instanceId 任务实例ID
+     * @return 详细运行状态
+     */
     public InstanceDetail getInstanceDetail(Long instanceId) {
 
-        ExecuteLogDO executeLogDO = executeLogRepository.findByInstanceId(instanceId);
-        if (executeLogDO == null) {
+        InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
+        if (instanceLogDO == null) {
             log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
 
-        InstanceStatus instanceStatus = InstanceStatus.of(executeLogDO.getStatus());
+        InstanceStatus instanceStatus = InstanceStatus.of(instanceLogDO.getStatus());
 
         InstanceDetail detail = new InstanceDetail();
         detail.setStatus(instanceStatus.getDes());
 
         // 只要不是运行状态，只需要返回简要信息
         if (instanceStatus != RUNNING) {
-            BeanUtils.copyProperties(executeLogDO, detail);
+            BeanUtils.copyProperties(instanceLogDO, detail);
             return detail;
         }
 
-        // 运行状态下，需要分别考虑MapReduce、Broadcast和秒级任务的详细信息
+        // 运行状态下，交由 TaskTracker 返回相关信息
+        try {
+            ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);
+            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceLogDO.getTaskTrackerAddress());
+            CompletionStage<Object> askCS = Patterns.ask(taskTrackerActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
+            AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
+            if (askResponse.isSuccess()) {
+                return (InstanceDetail) askResponse.getExtra();
+            }else {
+                log.warn("[InstanceService] ask InstanceStatus from TaskTracker failed, the message is {}.", askResponse.getExtra());
+            }
 
+        }catch (Exception e) {
+            log.error("[InstanceService] ask InstanceStatus from TaskTracker failed.", e);
+        }
 
-        return null;
+        // 失败则返回基础版信息
+        BeanUtils.copyProperties(instanceLogDO, detail);
+        return detail;
+    }
+
+    /**
+     * 获取任务实例列表
+     * @param appId 应用ID
+     * @param page 页码
+     * @param size 页大小
+     * @return 分页对象
+     */
+    public Page<InstanceLogDO> listInstance(long appId, int page, int size) {
+
+        // 按预计触发时间排序
+        Sort sort = Sort.by(Sort.Direction.DESC, "expectedTriggerTime");
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
+
+        return instanceLogRepository.findByAppId(appId, pageRequest);
     }
 
 }

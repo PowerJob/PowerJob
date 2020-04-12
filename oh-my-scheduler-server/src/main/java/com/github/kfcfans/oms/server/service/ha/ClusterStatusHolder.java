@@ -51,71 +51,34 @@ public class ClusterStatusHolder {
     }
 
     /**
-     * 选取状态最好的Worker进行任务派发
-     * @return Worker的地址（null代表没有可用的Worker）
-     */
-    public String chooseBestWorker() {
-
-        // 直接对 HashMap 根据Value进行排序
-        List<Map.Entry<String, SystemMetrics>> entryList = Lists.newArrayList(address2Metrics.entrySet());
-
-        // 降序排序（Comparator.comparingInt默认为升序，弃用）
-        entryList.sort((o1, o2) -> o2.getValue().calculateScore() - o1.getValue().calculateScore());
-
-        for (Map.Entry<String, SystemMetrics> entry : address2Metrics.entrySet()) {
-            String address = entry.getKey();
-            if (available(address)) {
-                return address;
-            }
-        }
-
-        log.warn("[ClusterStatusHolder] no worker available for {}, worker status is {}.", appName, address2Metrics);
-        return null;
-    }
-
-    /**
      * 获取当前所有可用的 Worker
+     * @param minCPUCores 最低CPU核心数量
+     * @param minMemorySpace 最低内存可用空间，单位GB
+     * @param minDiskSpace 最低磁盘可用空间，单位GB
      * @return List<Worker>
      */
-    public List<String> getAllAvailableWorker() {
+    public List<String> getSortedAvailableWorker(double minCPUCores, double minMemorySpace, double minDiskSpace) {
         List<String> workers = Lists.newLinkedList();
 
-        address2Metrics.forEach((address, ignore) -> {
-            if (available(address)) {
+        address2Metrics.forEach((address, metrics) -> {
+
+            // 排除超时机器
+            Long lastActiveTime = address2ActiveTime.getOrDefault(address, -1L);
+            long timeout = System.currentTimeMillis() - lastActiveTime;
+            if (timeout > WORKER_TIMEOUT_MS) {
+                return;
+            }
+
+            // 判断指标
+            if (metrics.available(minCPUCores, minMemorySpace, minDiskSpace)) {
                 workers.add(address);
             }
         });
 
+        // 按机器健康度排序
+        workers.sort((o1, o2) -> address2Metrics.get(o2).calculateScore() - address2Metrics.get(o1).calculateScore());
+
         return workers;
-    }
-
-    /**
-     * 某台具体的 Worker 是否可用
-     * @param address 需要检测的Worker地址
-     * @return 可用状态
-     */
-    private boolean available(String address) {
-        SystemMetrics metrics = address2Metrics.get(address);
-        if (metrics.calculateScore() == SystemMetrics.MIN_SCORE) {
-            return false;
-        }
-
-        Long lastActiveTime = address2ActiveTime.getOrDefault(address, -1L);
-        long timeout = System.currentTimeMillis() - lastActiveTime;
-        return timeout < WORKER_TIMEOUT_MS;
-    }
-
-    /**
-     * 整个 Worker 集群是否可用（某个App下的所有机器是否可用）
-     * @return 有一台机器可用 -> true / 全军覆没 -> false
-     */
-    public boolean available() {
-        for (String address : address2Metrics.keySet()) {
-            if (available(address)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
