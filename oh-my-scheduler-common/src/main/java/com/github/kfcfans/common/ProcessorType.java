@@ -13,7 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ProcessorType {
 
-    EMBEDDED_JAVA(1, "内置Java对象");
+    EMBEDDED_JAVA(1, "内置JAVA处理器");
 
     private int v;
     private String des;

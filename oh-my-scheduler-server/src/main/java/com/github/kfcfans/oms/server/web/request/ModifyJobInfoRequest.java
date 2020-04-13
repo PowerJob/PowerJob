@@ -2,6 +2,8 @@ package com.github.kfcfans.oms.server.web.request;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 创建/修改 JobInfo 请求
  * 测试用例快速复制区域：MAP_REDUCE、EMBEDDED_JAVA、CRON、com.github.kfcfans.oms.processors.TestMapReduceProcessor
@@ -25,8 +27,6 @@ public class ModifyJobInfoRequest {
     private String groupName;
     // 任务自带的参数
     private String jobParams;
-    // 任务实例的参数(API触发专用)
-    private String instanceParams;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
@@ -65,5 +65,13 @@ public class ModifyJobInfoRequest {
     private double minDiskSpace;
 
     // 1 正常运行，2 停止（不再调度）
-    private Integer status;
+    private boolean enable;
+
+    private Date gmtCreate;
+
+    /* ************************** 集群配置 ************************** */
+    // 指定机器运行，空代表不限，非空则只会使用其中的机器运行（多值逗号分割）
+    private String designatedWorkers;
+    // 最大机器数量
+    private Integer maxWorkerCount;
 }

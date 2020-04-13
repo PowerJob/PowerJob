@@ -4,11 +4,12 @@ import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.web.request.ModifyAppInfoRequest;
+import com.google.common.collect.Lists;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 /**
  * AppName Controller
+ * vue axios 的POST请求必须使用 @RequestBody 接收
  *
  * @author tjq
  * @since 2020/4/1
@@ -28,8 +30,8 @@ public class AppInfoController {
     @Resource
     private AppInfoRepository appInfoRepository;
 
-    @GetMapping("/save")
-    public ResultDTO<Void> saveAppInfo(ModifyAppInfoRequest appInfoRequest) {
+    @PostMapping("/save")
+    public ResultDTO<Void> saveAppInfo(@RequestBody ModifyAppInfoRequest appInfoRequest) {
 
         AppInfoDO appInfoDO = new AppInfoDO();
         BeanUtils.copyProperties(appInfoRequest, appInfoDO);
@@ -49,13 +51,25 @@ public class AppInfoController {
     }
 
     @GetMapping("/list")
-    public ResultDTO<List<AppInfoVO>> listAppInfo() {
-        List<AppInfoVO> result = appInfoRepository.findAll().stream().map(appInfoDO -> {
+    public ResultDTO<List<AppInfoVO>> listAppInfo(@RequestParam(required = false) String condition) {
+        List<AppInfoDO> result;
+        if (StringUtils.isEmpty(condition)) {
+            result = appInfoRepository.findAll();
+        }else {
+            result = appInfoRepository.findByAppNameLike("%" + condition + "%");
+        }
+        return ResultDTO.success(convert(result));
+    }
+
+    private static List<AppInfoVO> convert(List<AppInfoDO> data) {
+        if (CollectionUtils.isEmpty(data)) {
+            return Lists.newLinkedList();
+        }
+        return data.stream().map(appInfoDO -> {
             AppInfoVO appInfoVO = new AppInfoVO();
             BeanUtils.copyProperties(appInfoDO, appInfoVO);
             return appInfoVO;
         }).collect(Collectors.toList());
-        return ResultDTO.success(result);
     }
 
     @Data

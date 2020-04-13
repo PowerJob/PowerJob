@@ -7,13 +7,19 @@ import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.github.kfcfans.common.InstanceStatus.*;
 
@@ -32,15 +38,20 @@ public class DispatchService {
     private InstanceLogRepository instanceLogRepository;
 
     private static final String EMPTY_RESULT = "";
+    private static final Splitter commaSplitter = Splitter.on(",");
+
+    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
+        dispatch(jobInfo, instanceId, currentRunningTimes, null);
+    }
 
     /**
      * 将任务从Server派发到Worker（TaskTracker）
      * @param jobInfo 任务的元信息
      * @param instanceId 任务实例ID
      * @param currentRunningTimes 当前运行的次数
+     * @param instanceParams 实例的运行参数，API触发方式专用
      */
-    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
-
+    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams) {
         Long jobId = jobInfo.getId();
         log.info("[DispatchService] start to dispatch job: {}.", jobInfo);
         // 查询当前运行的实例数
@@ -55,21 +66,42 @@ public class DispatchService {
             return;
         }
 
-        // 获取 Worker
+        // 获取当前所有可用的Worker
         List<String> allAvailableWorker = WorkerManagerService.getSortedAvailableWorker(jobInfo.getAppId(), jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
 
-        if (CollectionUtils.isEmpty(allAvailableWorker)) {
+        // 筛选指定的机器
+        List<String> finalWorkers = Lists.newLinkedList();
+        if (!StringUtils.isEmpty(jobInfo.getDesignatedWorkers())) {
+            Set<String> designatedWorkers = Sets.newHashSet(commaSplitter.splitToList(jobInfo.getDesignatedWorkers()));
+            for (String av : allAvailableWorker) {
+                if (designatedWorkers.contains(av)) {
+                    finalWorkers.add(av);
+                }
+            }
+        }else {
+            finalWorkers = allAvailableWorker;
+        }
+
+        if (CollectionUtils.isEmpty(finalWorkers)) {
             String clusterStatusDescription = WorkerManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
             log.warn("[DispatchService] cancel dispatch job(jobId={}) due to no worker available, clusterStatus is {}.", jobId, clusterStatusDescription);
             instanceLogRepository.update4Trigger(instanceId, FAILED.getV(), currentRunningTimes, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE);
             return;
         }
 
+        // 限定集群大小（0代表不限制）
+        if (jobInfo.getMaxWorkerCount() > 0) {
+            if (finalWorkers.size() > jobInfo.getMaxWorkerCount()) {
+                finalWorkers = finalWorkers.subList(0, jobInfo.getMaxWorkerCount());
+            }
+        }
+
         // 构造请求
         ServerScheduleJobReq req = new ServerScheduleJobReq();
         BeanUtils.copyProperties(jobInfo, req);
+        req.setInstanceParams(instanceParams);
         req.setInstanceId(instanceId);
-        req.setAllWorkerAddress(allAvailableWorker);
+        req.setAllWorkerAddress(finalWorkers);
 
         req.setExecuteType(ExecuteType.of(jobInfo.getExecuteType()).name());
         req.setProcessorType(ProcessorType.of(jobInfo.getProcessorType()).name());

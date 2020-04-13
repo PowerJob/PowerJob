@@ -24,20 +24,18 @@ public class JobInfoVO {
     private Long appId;
     // 任务自带的参数
     private String jobParams;
-    // 任务实例的参数(API触发专用)
-    private String instanceParams;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
-    private Integer timeExpressionType;
+    private String timeExpressionType;
     // 时间表达式，CRON/NULL/LONG/LONG
     private String timeExpression;
 
     /* ************************** 执行方式 ************************** */
     // 执行类型，单机/广播/MR
-    private Integer executeType;
+    private String executeType;
     // 执行器类型，Java/Shell
-    private Integer processorType;
+    private String processorType;
     // 执行器信息
     private String processorInfo;
 
@@ -54,7 +52,7 @@ public class JobInfoVO {
     private Integer taskRetryNum;
 
     // 1 正常运行，2 停止（不再调度）
-    private Integer status;
+    private boolean enable;
     // 下一次调度时间
     private Long nextTriggerTime;
 
@@ -68,4 +66,10 @@ public class JobInfoVO {
 
     private Date gmtCreate;
     private Date gmtModified;
+
+    /* ************************** 集群配置 ************************** */
+    // 指定机器运行，空代表不限，非空则只会使用其中的机器运行（多值逗号分割）
+    private String designatedWorkers;
+    // 最大机器数量
+    private Integer maxWorkerCount;
 }

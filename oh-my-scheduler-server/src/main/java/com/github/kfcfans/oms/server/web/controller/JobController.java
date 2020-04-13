@@ -16,17 +16,17 @@ import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
+import com.github.kfcfans.oms.server.web.request.QueryJobInfoRequest;
 import com.github.kfcfans.oms.server.web.response.JobInfoVO;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -56,7 +56,7 @@ public class JobController {
     private InstanceLogRepository instanceLogRepository;
 
     @PostMapping("/save")
-    public ResultDTO<Void> saveJobInfo(ModifyJobInfoRequest request) throws Exception {
+    public ResultDTO<Void> saveJobInfo(@RequestBody ModifyJobInfoRequest request) throws Exception {
 
         JobInfoDO jobInfoDO = new JobInfoDO();
         BeanUtils.copyProperties(request, jobInfoDO);
@@ -66,6 +66,12 @@ public class JobController {
         jobInfoDO.setExecuteType(ExecuteType.valueOf(request.getExecuteType()).getV());
         jobInfoDO.setProcessorType(ProcessorType.valueOf(request.getProcessorType()).getV());
         jobInfoDO.setTimeExpressionType(timeExpressionType.getV());
+        jobInfoDO.setStatus(request.isEnable() ? JobStatus.ENABLE.getV() : JobStatus.STOPPED.getV());
+
+        if (jobInfoDO.getMaxWorkerCount() == null) {
+            jobInfoDO.setMaxInstanceNum(0);
+        }
+
         // 计算下次调度时间
         Date now = new Date();
         if (timeExpressionType == TimeExpressionType.CRON) {
@@ -110,21 +116,44 @@ public class JobController {
         return ResultDTO.success(null);
     }
 
-    @GetMapping("/list")
-    public ResultDTO<PageResult<JobInfoVO>> listJobs(Long appId, int index, int pageSize) {
+    @PostMapping("/list")
+    public ResultDTO<PageResult<JobInfoVO>> listJobs(@RequestBody QueryJobInfoRequest request) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtCreate");
-        PageRequest pageRequest = PageRequest.of(index, pageSize, sort);
-        Page<JobInfoDO> jobInfoPage = jobInfoRepository.findByAppId(appId, pageRequest);
-        List<JobInfoVO> jobInfoVOList = jobInfoPage.getContent().stream().map(jobInfoDO -> {
-            JobInfoVO jobInfoVO = new JobInfoVO();
-            BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
-            return jobInfoVO;
-        }).collect(Collectors.toList());
+        PageRequest pageRequest = PageRequest.of(request.getIndex(), request.getPageSize(), sort);
+        Page<JobInfoDO> jobInfoPage;
 
-        PageResult<JobInfoVO> pageResult = new PageResult<>(jobInfoPage);
-        pageResult.setData(jobInfoVOList);
-        return ResultDTO.success(pageResult);
+        // 无查询条件，查询全部
+        if (request.getJobId() == null && StringUtils.isEmpty(request.getKeyword())) {
+            jobInfoPage = jobInfoRepository.findByAppIdAndStatusNot(request.getAppId(), pageRequest, JobStatus.DELETED.getV());
+            return ResultDTO.success(convertPage(jobInfoPage));
+        }
+
+        // 有 jobId，直接精确查询
+        if (request.getJobId() != null) {
+
+            Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(request.getJobId());
+            PageResult<JobInfoVO> result = new PageResult<>();
+            result.setIndex(0);
+            result.setPageSize(request.getPageSize());
+
+            if (jobInfoOpt.isPresent()) {
+                result.setTotalItems(1);
+                result.setTotalPages(1);
+                result.setData(Lists.newArrayList(convert(jobInfoOpt.get())));
+            }else {
+                result.setTotalPages(0);
+                result.setTotalItems(0);
+                result.setData(Lists.newLinkedList());
+            }
+
+            return ResultDTO.success(result);
+        }
+
+        // 模糊查询
+        String condition = "%" + request.getKeyword() + "%";
+        jobInfoPage = jobInfoRepository.findByAppIdAndJobNameLikeAndStatusNot(request.getAppId(), condition, JobStatus.DELETED.getV(), pageRequest);
+        return ResultDTO.success(convertPage(jobInfoPage));
     }
 
     /**
@@ -179,6 +208,30 @@ public class JobController {
             }catch (Exception ignore) {
             }
         });
+    }
+
+    private static PageResult<JobInfoVO> convertPage(Page<JobInfoDO> jobInfoPage) {
+        List<JobInfoVO> jobInfoVOList = jobInfoPage.getContent().stream().map(JobController::convert).collect(Collectors.toList());
+
+        PageResult<JobInfoVO> pageResult = new PageResult<>(jobInfoPage);
+        pageResult.setData(jobInfoVOList);
+        return pageResult;
+    }
+
+    private static JobInfoVO convert(JobInfoDO jobInfoDO) {
+        JobInfoVO jobInfoVO = new JobInfoVO();
+        BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
+
+        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
+        ExecuteType executeType = ExecuteType.of(jobInfoDO.getExecuteType());
+        ProcessorType processorType = ProcessorType.of(jobInfoDO.getProcessorType());
+
+        jobInfoVO.setTimeExpressionType(timeExpressionType.name());
+        jobInfoVO.setExecuteType(executeType.name());
+        jobInfoVO.setProcessorType(processorType.name());
+        jobInfoVO.setEnable(jobInfoDO.getStatus() == JobStatus.ENABLE.getV());
+
+        return jobInfoVO;
     }
 
 

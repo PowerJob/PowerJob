@@ -18,5 +18,7 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
 
     List<JobInfoDO> findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(List<Long> appIds, int status, int timeExpressionType, long time);
 
-    Page<JobInfoDO> findByAppId(Long appId, Pageable pageable);
+    Page<JobInfoDO> findByAppIdAndStatusNot(Long appId, Pageable pageable, int status);
+
+    Page<JobInfoDO> findByAppIdAndJobNameLikeAndStatusNot(Long appId, String condition, int status, Pageable pageable);
 }

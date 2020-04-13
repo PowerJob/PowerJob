@@ -46,7 +46,7 @@ public class ServerScheduleJobReq implements Serializable {
      */
     // 任务级别的参数，相当于类的static变量
     private String jobParams;
-    // 实例级别的参数，相当于类的普通变量
+    // 实例级别的参数，相当于类的普通变量（API触发专用，从API触发处带入）
     private String instanceParams;
 
     // 每台机器的处理线程数上限

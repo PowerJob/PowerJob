@@ -8,10 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -32,7 +29,7 @@ public class UserInfoController {
     private UserInfoRepository userInfoRepository;
 
     @PostMapping("save")
-    public ResultDTO<Void> save(ModifyUserInfoRequest request) {
+    public ResultDTO<Void> save(@RequestBody ModifyUserInfoRequest request) {
         UserInfoDO userInfoDO = new UserInfoDO();
         BeanUtils.copyProperties(request, userInfoDO);
         userInfoDO.setGmtCreate(new Date());

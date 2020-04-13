@@ -31,8 +31,6 @@ public class JobInfoDO {
     private Long appId;
     // 任务自带的参数
     private String jobParams;
-    // 任务实例的参数(API触发专用)
-    private String instanceParams;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
@@ -73,6 +71,11 @@ public class JobInfoDO {
     // 最低磁盘空间，单位 GB，0代表不限
     private double minDiskSpace;
 
+    /* ************************** 集群配置 ************************** */
+    // 指定机器运行，空代表不限，非空则只会使用其中的机器运行（多值逗号分割）
+    private String designatedWorkers;
+    // 最大机器数量
+    private Integer maxWorkerCount;
 
     private Date gmtCreate;
     private Date gmtModified;

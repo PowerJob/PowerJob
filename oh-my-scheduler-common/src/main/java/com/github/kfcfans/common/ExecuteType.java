@@ -12,11 +12,12 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ExecuteType {
-    STANDALONE(1),
-    BROADCAST(2),
-    MAP_REDUCE(3);
+    STANDALONE(1, "单机执行"),
+    BROADCAST(2, "广播执行"),
+    MAP_REDUCE(3, "MapReduce");
 
     int v;
+    String des;
 
     public static ExecuteType of(int v) {
         for (ExecuteType type : values()) {
