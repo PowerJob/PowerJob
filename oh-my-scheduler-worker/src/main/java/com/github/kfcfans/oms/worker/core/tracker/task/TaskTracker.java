@@ -64,6 +64,10 @@ public abstract class TaskTracker {
         this.instanceId = req.getInstanceId();
         this.instanceInfo = new InstanceInfo();
         BeanUtils.copyProperties(req, instanceInfo);
+        // 特殊处理超时时间
+        if (instanceInfo.getInstanceTimeoutMS() <= 0) {
+            instanceInfo.setInstanceTimeoutMS(Long.MAX_VALUE);
+        }
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
         this.finished = new AtomicBoolean(false);
