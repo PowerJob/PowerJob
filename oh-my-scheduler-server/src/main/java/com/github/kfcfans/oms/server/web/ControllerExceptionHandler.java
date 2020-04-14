@@ -19,7 +19,13 @@ public class ControllerExceptionHandler {
     @ResponseBody
     @ExceptionHandler(Exception.class)
     public ResultDTO<Void> exceptionHandler(Exception e) {
-        log.error("[ControllerException] http request failed.", e);
+
+        // 不是所有异常都需要打印完整堆栈，后续可以定义内部的Exception，便于判断
+        if (e instanceof IllegalArgumentException) {
+            log.warn("[ControllerException] http request failed, message is {}.", e.getMessage());
+        }else {
+            log.error("[ControllerException] http request failed.", e);
+        }
         return ResultDTO.failed(e.getMessage());
     }
 }

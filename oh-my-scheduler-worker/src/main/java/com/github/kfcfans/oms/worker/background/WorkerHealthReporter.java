@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j
 @AllArgsConstructor
-public class WorkerHealthReportRunnable implements Runnable {
+public class WorkerHealthReporter implements Runnable {
 
     @Override
     public void run() {
@@ -41,6 +41,9 @@ public class WorkerHealthReportRunnable implements Runnable {
 
         // 发送请求
         String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
+        if (StringUtils.isEmpty(serverPath)) {
+            return;
+        }
         ActorSelection actorSelection = OhMyWorker.actorSystem.actorSelection(serverPath);
         actorSelection.tell(heartbeat, null);
     }

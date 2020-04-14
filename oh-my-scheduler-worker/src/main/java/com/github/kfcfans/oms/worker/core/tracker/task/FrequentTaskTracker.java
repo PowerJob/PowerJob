@@ -298,9 +298,11 @@ public class FrequentTaskTracker extends TaskTracker {
             req.setSourceAddress(OhMyWorker.getWorkerAddress());
 
             String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
-            ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
-
+            if (StringUtils.isEmpty(serverPath)) {
+                return;
+            }
             // 非可靠通知，Server挂掉后任务的kill工作交由其他线程去做
+            ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
             serverActor.tell(req, null);
         }
 

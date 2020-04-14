@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.common;
 
+import com.github.kfcfans.oms.worker.common.constants.StoreStrategy;
 import lombok.Data;
 
 import java.util.List;
@@ -20,4 +21,8 @@ public class OhMyConfig {
      * 调度服务器地址，ip:port
      */
     private List<String> serverAddress;
+    /**
+     * 本地持久化方式，默认使用磁盘
+     */
+    private StoreStrategy storeStrategy = StoreStrategy.DISK;
 }

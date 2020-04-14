@@ -10,8 +10,6 @@ import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
 import com.github.kfcfans.oms.server.web.response.InstanceLogVO;
-import com.github.kfcfans.oms.server.web.response.JobInfoVO;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -86,7 +84,11 @@ public class InstanceController {
             instanceLogVO.setJobName(cacheService.getJobName(instanceLogDO.getJobId()));
 
             // 格式化时间
-            instanceLogVO.setActualTriggerTime(DateFormatUtils.format(instanceLogDO.getActualTriggerTime(), TIME_PATTERN));
+            if (instanceLogDO.getActualTriggerTime() == null) {
+                instanceLogVO.setActualTriggerTime("N/A");
+            }else {
+                instanceLogVO.setActualTriggerTime(DateFormatUtils.format(instanceLogDO.getActualTriggerTime(), TIME_PATTERN));
+            }
             if (instanceLogDO.getFinishedTime() == null) {
                 instanceLogVO.setFinishedTime("N/A");
             }else {

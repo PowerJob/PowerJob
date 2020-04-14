@@ -25,6 +25,5 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
 
 
     long countByAppId(long appId);
-    long countByAppIdAndStatus(long appId, int status);
-    long countByAppIdAndStatusAndGmtCreateAfter(long appId, int status, Date time);
+
 }

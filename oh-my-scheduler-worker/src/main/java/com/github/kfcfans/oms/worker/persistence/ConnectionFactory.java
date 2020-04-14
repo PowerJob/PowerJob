@@ -1,5 +1,7 @@
 package com.github.kfcfans.oms.worker.persistence;
 
+import com.github.kfcfans.oms.worker.OhMyWorker;
+import com.github.kfcfans.oms.worker.common.constants.StoreStrategy;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
@@ -19,6 +21,9 @@ public class ConnectionFactory {
 
     private static volatile DataSource dataSource;
 
+    private static final String DISK_JDBC_URL = "jdbc:h2:file:~/.h2/oms/oms_worker_db";
+    private static final String MEMORY_JDBC_URL = "jdbc:h2:mem:~/.h2/oms/oms_worker_db";
+
     public static Connection getConnection() throws SQLException {
         return getDataSource().getConnection();
     }
@@ -29,17 +34,22 @@ public class ConnectionFactory {
         }
         synchronized (ConnectionFactory.class) {
             if (dataSource == null) {
+
+                StoreStrategy strategy = OhMyWorker.getConfig().getStoreStrategy();
+
                 HikariConfig config = new HikariConfig();
                 config.setDriverClassName("org.h2.Driver");
-                config.setJdbcUrl("jdbc:h2:file:~/.h2/oms/oms_worker_db");
+                config.setJdbcUrl(strategy == StoreStrategy.DISK ? DISK_JDBC_URL : MEMORY_JDBC_URL);
                 config.setAutoCommit(true);
                 // 池中最小空闲连接数量
                 config.setMinimumIdle(2);
                 // 池中最大连接数量
                 config.setMaximumPoolSize(32);
                 dataSource = new HikariDataSource(config);
+
             }
         }
         return dataSource;
     }
+
 }

@@ -11,6 +11,7 @@ import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.akka.requests.FriendQueryWorkerClusterStatusReq;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
+import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.web.response.SystemOverviewVO;
 import com.github.kfcfans.oms.server.web.response.WorkerStatusVO;
@@ -41,6 +42,8 @@ public class SystemInfoController {
     private AppInfoRepository appInfoRepository;
     @Resource
     private JobInfoRepository jobInfoRepository;
+    @Resource
+    private InstanceLogRepository instanceLogRepository;
 
     @GetMapping("/listWorker")
     @SuppressWarnings("unchecked")
@@ -86,10 +89,10 @@ public class SystemInfoController {
         // 总任务数量
         overview.setJobCount(jobInfoRepository.countByAppId(appId));
         // 运行任务数
-        overview.setRunningInstanceCount(jobInfoRepository.countByAppIdAndStatus(appId, InstanceStatus.RUNNING.getV()));
+        overview.setRunningInstanceCount(instanceLogRepository.countByAppIdAndStatus(appId, InstanceStatus.RUNNING.getV()));
         // 近期失败任务数（24H内）
         Date date = DateUtils.addDays(new Date(), -1);
-        overview.setFailedInstanceCount(jobInfoRepository.countByAppIdAndStatusAndGmtCreateAfter(appId, InstanceStatus.FAILED.getV(), date));
+        overview.setFailedInstanceCount(instanceLogRepository.countByAppIdAndStatusAndGmtCreateAfter(appId, InstanceStatus.FAILED.getV(), date));
 
         return ResultDTO.success(overview);
     }

@@ -56,4 +56,8 @@ public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long
     Page<InstanceLogDO> findByJobId(long jobId, Pageable pageable);
     // 只会有一条数据，只是为了统一
     Page<InstanceLogDO> findByInstanceId(long instanceId, Pageable pageable);
+
+    // 数据统计
+    long countByAppIdAndStatus(long appId, int status);
+    long countByAppIdAndStatusAndGmtCreateAfter(long appId, int status, Date time);
 }

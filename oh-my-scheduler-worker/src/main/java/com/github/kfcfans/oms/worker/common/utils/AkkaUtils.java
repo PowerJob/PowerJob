@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.worker.common.utils;
 
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.common.RemoteConstant;
+import org.springframework.util.StringUtils;
 
 /**
  * AKKA 工具类
@@ -21,6 +22,9 @@ public class AkkaUtils {
     }
 
     public static String getAkkaServerPath(String actorName) {
+        if (StringUtils.isEmpty(OhMyWorker.getCurrentServer())) {
+            return null;
+        }
         return String.format(AKKA_NODE_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, OhMyWorker.getCurrentServer(), actorName);
     }
 

@@ -5,11 +5,17 @@ import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.utils.HttpUtils;
+import com.github.kfcfans.oms.worker.core.tracker.task.FrequentTaskTracker;
+import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
+import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 服务发现
@@ -20,8 +26,14 @@ import java.util.Map;
 @Slf4j
 public class ServerDiscoveryService {
 
+    // 配置的可发起HTTP请求的Server（IP:Port）
     private static final Map<String, String> IP2ADDRESS = Maps.newHashMap();
+    // 服务发现地址
     private static final String DISCOVERY_URL = "http://%s/server/acquire?appId=%d&currentServer=%s";
+    // 失败次数
+    private static int FAILED_COUNT = 0;
+    // 最大失败次数
+    private static final int MAX_FAILED_COUNT = 3;
 
 
     public static String discovery() {
@@ -50,9 +62,27 @@ public class ServerDiscoveryService {
         }
 
         if (StringUtils.isEmpty(result)) {
-            log.error("[OMS-ServerDiscoveryService] can't find any available server, this worker has been quarantined.");
+            log.warn("[OMS-ServerDiscoveryService] can't find any available server, this worker has been quarantined.");
+
+            // 在 Server 高可用的前提下，连续失败多次，说明该节点与外界失联，Server已经将秒级任务转移到其他Worker，需要杀死本地的任务
+            if (FAILED_COUNT++ > MAX_FAILED_COUNT) {
+
+                log.error("[OMS-ServerDiscoveryService] can't find any available server for 3 consecutive times, It's time to kill all frequent job in this worker.");
+                List<Long> frequentInstanceIds = TaskTrackerPool.getAllFrequentTaskTrackerKeys();
+                if (!CollectionUtils.isEmpty(frequentInstanceIds)) {
+                    frequentInstanceIds.forEach(instanceId -> {
+                        TaskTracker taskTracker = TaskTrackerPool.remove(instanceId);
+                        taskTracker.destroy();
+                        log.warn("[OMS-ServerDiscoveryService] kill frequent instance(instanceId={}) due to can't find any available server.", instanceId);
+                    });
+                }
+
+                FAILED_COUNT = 0;
+            }
             return null;
         }else {
+            // 重置失败次数
+            FAILED_COUNT = 0;
             log.debug("[OMS-ServerDiscoveryService] current server is {}.", result);
             return result;
         }

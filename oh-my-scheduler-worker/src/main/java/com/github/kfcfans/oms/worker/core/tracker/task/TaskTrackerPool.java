@@ -1,7 +1,10 @@
 package com.github.kfcfans.oms.worker.core.tracker.task;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -22,12 +25,22 @@ public class TaskTrackerPool {
         return instanceId2TaskTracker.get(instanceId);
     }
 
-    public static void remove(Long instanceId) {
-        instanceId2TaskTracker.remove(instanceId);
+    public static TaskTracker remove(Long instanceId) {
+        return instanceId2TaskTracker.remove(instanceId);
     }
 
     public static void atomicCreateTaskTracker(Long instanceId, Function<Long, TaskTracker> creator) {
         instanceId2TaskTracker.computeIfAbsent(instanceId, creator);
+    }
+
+    public static List<Long> getAllFrequentTaskTrackerKeys() {
+        List<Long> keys = Lists.newLinkedList();
+        instanceId2TaskTracker.forEach((key, tk) -> {
+            if (tk instanceof FrequentTaskTracker) {
+                keys.add(key);
+            }
+        });
+        return keys;
     }
 
 }
