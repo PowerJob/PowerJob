@@ -24,12 +24,14 @@ public class SystemInfoUtils {
 
         // CPU 信息
         metrics.setCpuProcessors(osMXBean.getAvailableProcessors());
-        metrics.setCpuLoad(osMXBean.getSystemLoadAverage());
+        metrics.setCpuLoad(osMXBean.getSystemLoadAverage() / osMXBean.getAvailableProcessors());
 
         // JVM内存信息(maxMemory指JVM能从操作系统获取的最大内存，即-Xmx参数设置的值，totalMemory指JVM当前持久的总内存)
         metrics.setJvmMaxMemory(bytes2GB(runtime.maxMemory()));
-        metrics.setJvmTotalMemory(bytes2GB(runtime.totalMemory()));
-        metrics.setJvmUsedMemory(metrics.getJvmTotalMemory() - bytes2GB(runtime.freeMemory()));
+        // 已使用内存：当前申请总量 - 当前空余量
+        metrics.setJvmUsedMemory(bytes2GB(runtime.totalMemory() - runtime.freeMemory()));
+        // 百分比，直接 * 100
+        metrics.setJvmMemoryUsage(1.0 * metrics.getJvmUsedMemory() / runtime.maxMemory());
 
         // 磁盘信息
         long free = 0;
@@ -42,7 +44,7 @@ public class SystemInfoUtils {
 
         metrics.setDiskUsed(bytes2GB(total - free));
         metrics.setDiskTotal(bytes2GB(total));
-        metrics.setDiskUsage(metrics.getDiskUsed() / metrics.getDiskTotal());
+        metrics.setDiskUsage(metrics.getDiskUsed() / metrics.getDiskTotal() * 1.0);
 
         // 在Worker完成分数计算，减小Server压力
         metrics.calculateScore();

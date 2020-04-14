@@ -14,9 +14,9 @@ import java.io.Serializable;
 public class InstanceDetail implements Serializable {
 
     // 任务整体开始时间
-    private long actualTriggerTime;
+    private Long actualTriggerTime;
     // 任务整体结束时间（可能不存在）
-    private long finishedTime;
+    private Long finishedTime;
     // 任务状态（中文）
     private String status;
     // 任务执行结果（可能不存在）

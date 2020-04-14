@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.service.ha;
 
+import com.github.kfcfans.common.model.SystemMetrics;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -36,7 +37,7 @@ public class WorkerManagerService {
     public static List<String> getSortedAvailableWorker(Long appId, double minCPUCores, double minMemorySpace, double minDiskSpace) {
         ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
         if (clusterStatusHolder == null) {
-            log.warn("[WorkerManagerService] can't find any worker for {} yet.", appId);
+            log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
             return Collections.emptyList();
         }
         return clusterStatusHolder.getSortedAvailableWorker(minCPUCores, minMemorySpace, minDiskSpace);
@@ -64,5 +65,17 @@ public class WorkerManagerService {
         return clusterStatusHolder.getClusterDescription();
     }
 
+    /**
+     * 获取当前连接到该Server的Worker信息
+     * @param appId 应用ID
+     * @return Worker信息
+     */
+    public static Map<String, SystemMetrics> getActiveWorkerInfo(Long appId) {
+        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
+        if (clusterStatusHolder == null) {
+            return Collections.emptyMap();
+        }
+        return clusterStatusHolder.getActiveWorkerInfo();
+    }
 
 }

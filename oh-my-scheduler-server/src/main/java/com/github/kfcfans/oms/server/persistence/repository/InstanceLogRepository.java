@@ -53,4 +53,7 @@ public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long
     InstanceLogDO findByInstanceId(long instanceId);
 
     Page<InstanceLogDO> findByAppId(long appId, Pageable pageable);
+    Page<InstanceLogDO> findByJobId(long jobId, Pageable pageable);
+    // 只会有一条数据，只是为了统一
+    Page<InstanceLogDO> findByInstanceId(long instanceId, Pageable pageable);
 }

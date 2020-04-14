@@ -20,6 +20,10 @@ public class ServerScheduleJobReq implements Serializable {
     /* *********************** 任务相关属性 *********************** */
 
     /**
+     * 任务ID，当更换Server后需要根据 JobId 重新查询任务元数据
+     */
+    private Long jobId;
+    /**
      * 基础信息
      */
     private Long instanceId;

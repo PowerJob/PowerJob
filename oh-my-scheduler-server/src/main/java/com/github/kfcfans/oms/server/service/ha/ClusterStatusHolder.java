@@ -62,13 +62,9 @@ public class ClusterStatusHolder {
 
         address2Metrics.forEach((address, metrics) -> {
 
-            // 排除超时机器
-            Long lastActiveTime = address2ActiveTime.getOrDefault(address, -1L);
-            long timeout = System.currentTimeMillis() - lastActiveTime;
-            if (timeout > WORKER_TIMEOUT_MS) {
+            if (timeout(address)) {
                 return;
             }
-
             // 判断指标
             if (metrics.available(minCPUCores, minMemorySpace, minDiskSpace)) {
                 workers.add(address);
@@ -87,5 +83,26 @@ public class ClusterStatusHolder {
      */
     public String getClusterDescription() {
         return String.format("appName:%s,clusterStatus:%s", appName, address2Metrics.toString());
+    }
+
+    /**
+     * 获取当前连接的的机器详情
+     * @return map
+     */
+    public Map<String, SystemMetrics> getActiveWorkerInfo() {
+        Map<String, SystemMetrics> res = Maps.newHashMap();
+        address2Metrics.forEach((address, metrics) -> {
+            if (!timeout(address)) {
+                res.put(address, metrics);
+            }
+        });
+        return res;
+    }
+
+    private boolean timeout(String address) {
+        // 排除超时机器
+        Long lastActiveTime = address2ActiveTime.getOrDefault(address, -1L);
+        long timeout = System.currentTimeMillis() - lastActiveTime;
+        return timeout > WORKER_TIMEOUT_MS;
     }
 }

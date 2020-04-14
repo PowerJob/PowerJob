@@ -149,7 +149,9 @@ public class JobScheduleService {
 
                     try {
                         CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
-                        Date nextTriggerTime = cronExpression.getNextValidTimeAfter(now);
+
+                        Date benchmarkTime = new Date(jobInfoDO.getNextTriggerTime());
+                        Date nextTriggerTime = cronExpression.getNextValidTimeAfter(benchmarkTime);
 
                         JobInfoDO updatedJobInfo = new JobInfoDO();
                         BeanUtils.copyProperties(jobInfoDO, updatedJobInfo);

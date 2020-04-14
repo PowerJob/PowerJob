@@ -15,17 +15,19 @@ public class SystemMetrics implements Serializable, Comparable<SystemMetrics> {
 
     // CPU核心数量
     private int cpuProcessors;
-    // CPU负载
+    // CPU负载（需要处以核心数）
     private double cpuLoad;
 
     // 内存（单位 GB）
     private double jvmUsedMemory;
-    private double jvmTotalMemory;
     private double jvmMaxMemory;
+    // 内存占用（0.X，非百分比）
+    private double jvmMemoryUsage;
 
     // 磁盘（单位 GB）
     private double diskUsed;
     private double diskTotal;
+    // 磁盘占用（0.X，非百分比）
     private double diskUsage;
 
     // 缓存分数

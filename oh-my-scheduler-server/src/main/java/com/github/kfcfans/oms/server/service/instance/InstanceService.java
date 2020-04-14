@@ -50,6 +50,12 @@ public class InstanceService {
             log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
+
+        // 判断状态，只有运行中才能停止
+        if (!InstanceStatus.generalizedRunningStatus.contains(instanceLogDO.getStatus())) {
+            throw new IllegalArgumentException("can't stop finished instance!");
+        }
+
         // 更新数据库，将状态置为停止
         instanceLogDO.setStatus(STOPPED.getV());
         instanceLogDO.setGmtModified(new Date());
@@ -107,22 +113,6 @@ public class InstanceService {
         // 失败则返回基础版信息
         BeanUtils.copyProperties(instanceLogDO, detail);
         return detail;
-    }
-
-    /**
-     * 获取任务实例列表
-     * @param appId 应用ID
-     * @param page 页码
-     * @param size 页大小
-     * @return 分页对象
-     */
-    public Page<InstanceLogDO> listInstance(long appId, int page, int size) {
-
-        // 按预计触发时间排序
-        Sort sort = Sort.by(Sort.Direction.DESC, "expectedTriggerTime");
-        PageRequest pageRequest = PageRequest.of(page, size, sort);
-
-        return instanceLogRepository.findByAppId(appId, pageRequest);
     }
 
 }

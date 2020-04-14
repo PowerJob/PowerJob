@@ -83,6 +83,10 @@ public class CommonTaskTracker extends TaskTracker {
      * 任务是否超时
      */
     public boolean isTimeout() {
+        // 时间不限
+        if (instanceInfo.getInstanceTimeoutMS() <= 0) {
+            return false;
+        }
         return System.currentTimeMillis() - createTime > instanceInfo.getInstanceTimeoutMS();
     }
 

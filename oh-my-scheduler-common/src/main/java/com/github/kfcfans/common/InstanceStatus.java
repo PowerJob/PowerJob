@@ -16,12 +16,12 @@ import java.util.List;
 @AllArgsConstructor
 public enum InstanceStatus {
 
-    WAITING_DISPATCH(1, "等待任务派发"),
+    WAITING_DISPATCH(1, "等待派发"),
     WAITING_WORKER_RECEIVE(2, "等待Worker接收"),
     RUNNING(3, "运行中"),
-    FAILED(4, "任务运行失败"),
-    SUCCEED(5, "任务运行成功"),
-    STOPPED(10, "任务被手动停止");
+    FAILED(4, "失败"),
+    SUCCEED(5, "成功"),
+    STOPPED(10, "手动停止");
 
     private int v;
     private String des;

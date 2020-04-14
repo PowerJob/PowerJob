@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,4 +22,9 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
     Page<JobInfoDO> findByAppIdAndStatusNot(Long appId, Pageable pageable, int status);
 
     Page<JobInfoDO> findByAppIdAndJobNameLikeAndStatusNot(Long appId, String condition, int status, Pageable pageable);
+
+
+    long countByAppId(long appId);
+    long countByAppIdAndStatus(long appId, int status);
+    long countByAppIdAndStatusAndGmtCreateAfter(long appId, int status, Date time);
 }
