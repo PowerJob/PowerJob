@@ -99,6 +99,8 @@ public class DispatchService {
         // 构造请求
         ServerScheduleJobReq req = new ServerScheduleJobReq();
         BeanUtils.copyProperties(jobInfo, req);
+        // 传入 JobId
+        req.setJobId(jobInfo.getId());
         req.setInstanceParams(instanceParams);
         req.setInstanceId(instanceId);
         req.setAllWorkerAddress(finalWorkers);

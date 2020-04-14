@@ -164,7 +164,7 @@ public class FrequentTaskTracker extends TaskTracker {
             // 判断是否超出最大执行实例数
             if (timeExpressionType == TimeExpressionType.FIX_RATE) {
                 if (subInstanceId2TimeHolder.size() > maxInstanceNum) {
-                    log.error("[TaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
+                    log.warn("[TaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
                     processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
                     return;
                 }
@@ -319,6 +319,9 @@ public class FrequentTaskTracker extends TaskTracker {
         } else {
             failedTimes.incrementAndGet();
         }
+
+        // 从运行中任务列表移除
+        subInstanceId2TimeHolder.remove(subInstanceId);
 
         // 更新缓存数据
         if (recentSubInstanceInfo.containsKey(subInstanceId)) {
