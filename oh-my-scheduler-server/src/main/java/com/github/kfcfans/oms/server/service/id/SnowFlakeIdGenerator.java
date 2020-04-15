@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.common.utils.snowflake;
+package com.github.kfcfans.oms.server.service.id;
 
 /**
  * Twitter SnowFlake（Scala -> Java）
@@ -6,19 +6,19 @@ package com.github.kfcfans.oms.server.common.utils.snowflake;
  * @author tjq
  * @since 2020/4/6
  */
-public class SnowFlakeIdGenerator {
+class SnowFlakeIdGenerator {
 
     /**
-     * 起始的时间戳
+     * 起始的时间戳(a special day for me)
      */
-    private final static long START_STAMP = 1480166465631L;
+    private final static long START_STAMP = 1555776000000L;
 
     /**
      * 每一部分占用的位数
      */
     private final static long SEQUENCE_BIT = 12; //序列号占用的位数
-    private final static long MACHINE_BIT = 5;   //机器标识占用的位数
-    private final static long DATA_CENTER_BIT = 5;//数据中心占用的位数
+    private final static long MACHINE_BIT = 7;   //机器标识占用的位数
+    private final static long DATA_CENTER_BIT = 3;//数据中心占用的位数
 
     /**
      * 每一部分的最大值
@@ -56,7 +56,7 @@ public class SnowFlakeIdGenerator {
     public synchronized long nextId() {
         long currStamp = getNewStamp();
         if (currStamp < lastTimestamp) {
-            throw new RuntimeException("Clock moved backwards.  Refusing to generate id");
+            throw new RuntimeException("clock moved backwards, refusing to generate id");
         }
 
         if (currStamp == lastTimestamp) {

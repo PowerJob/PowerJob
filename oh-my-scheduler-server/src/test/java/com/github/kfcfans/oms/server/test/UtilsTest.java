@@ -71,4 +71,10 @@ public class UtilsTest {
         System.out.println(nextValidTimeAfter);
     }
 
+    @Test
+    public void normalTest() {
+        String s = "000000000111010000001100000000010110100110100000000001000000000000";
+        System.out.println(s.length());
+    }
+
 }

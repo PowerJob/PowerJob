@@ -13,7 +13,7 @@ import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
-import com.github.kfcfans.oms.server.service.IdGenerateService;
+import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -46,7 +46,8 @@ public class JobScheduleService {
 
     @Resource
     private DispatchService dispatchService;
-
+    @Resource
+    private IdGenerateService idGenerateService;
     @Resource
     private AppInfoRepository appInfoRepository;
     @Resource
@@ -109,7 +110,7 @@ public class JobScheduleService {
                     InstanceLogDO executeLog = new InstanceLogDO();
                     executeLog.setJobId(jobInfoDO.getId());
                     executeLog.setAppId(jobInfoDO.getAppId());
-                    executeLog.setInstanceId(IdGenerateService.allocate());
+                    executeLog.setInstanceId(idGenerateService.allocate());
                     executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
                     executeLog.setExpectedTriggerTime(jobInfoDO.getNextTriggerTime());
                     executeLog.setGmtCreate(new Date());

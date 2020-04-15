@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.test;
 
+import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.lock.LockService;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
@@ -22,6 +23,8 @@ public class ServiceTest {
 
     @Resource
     private LockService lockService;
+    @Resource
+    private IdGenerateService idGenerateService;
 
     @Test
     public void testLockService() {
@@ -43,6 +46,11 @@ public class ServiceTest {
     public void testBatchUnLock() {
         List<String> lockNames = Lists.newArrayList("a", "b", "C", "d", "e");
         lockService.batchUnLock(lockNames);
+    }
+
+    @Test
+    public void testIdGenerator() {
+        System.out.println(idGenerateService.allocate());
     }
 
 }

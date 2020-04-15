@@ -13,7 +13,7 @@ import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.service.DispatchService;
-import com.github.kfcfans.oms.server.service.IdGenerateService;
+import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
 import com.github.kfcfans.oms.server.web.request.QueryJobInfoRequest;
@@ -47,6 +47,8 @@ public class JobController {
 
     @Resource
     private DispatchService dispatchService;
+    @Resource
+    private IdGenerateService idGenerateService;
     @Resource
     private InstanceService instanceService;
 
@@ -163,7 +165,7 @@ public class JobController {
         InstanceLogDO executeLog = new InstanceLogDO();
         executeLog.setJobId(jobInfoDO.getId());
         executeLog.setAppId(jobInfoDO.getAppId());
-        executeLog.setInstanceId(IdGenerateService.allocate());
+        executeLog.setInstanceId(idGenerateService.allocate());
         executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
         executeLog.setExpectedTriggerTime(System.currentTimeMillis());
         executeLog.setGmtCreate(new Date());
