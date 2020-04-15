@@ -1,6 +1,6 @@
 [toc]
 # 任务配置
->前端界面目前可能有那么一点点丑...不过问题不是很大OvO
+>前端界面目前可能有那么一点点丑...不过问题不是很大 (>▽<) 
 
 ### 系统首页
 > 展示了系统整体的概览和集群Worker列表。
@@ -171,7 +171,7 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
 # OpenAPI
 >OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活，启用OpenAPI需要依赖`oh-my-scheduler-client`库。
 
-### 简单实例
+### 简单示例
 ```java
 // 初始化 client，需要server地址和应用名称作为参数
 OhMyClient ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test");
