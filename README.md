@@ -17,7 +17,7 @@ OhMyScheduler是一个分布式调度平台和分布式计算框架
 1. 部署数据库：由于调度Server数据持久化层基于Spring Data Jpa实现，**开发者仅需完成数据库的创建**，即运行SQL`CREATE database if NOT EXISTS oms default character set utf8mb4 collate utf8mb4_unicode_ci;`
 2. 部署调度服务器（oh-my-scheduler-server）：修改配置文件（application.properties），按需修改，之后maven打包部署运行一条龙。
 3. 部署前端页面（可选，server多实例部署时需要），自行使用[源码](https://github.com/KFCFans/OhMyScheduler-Console)打包部署即可。
-4. 被调度任务集成`oh-my-scheduler-worker`依赖，并完成处理器的开发，详细教程见文档。
+4. 被调度任务集成`oh-my-scheduler-worker`依赖，并完成处理器的开发，详细教程见[开发文档](https://github.com/KFCFans/OhMyScheduler/blob/master/others/doc/DevelopmentGuide.md)。
 
 # 开发日志
 ### 已完成

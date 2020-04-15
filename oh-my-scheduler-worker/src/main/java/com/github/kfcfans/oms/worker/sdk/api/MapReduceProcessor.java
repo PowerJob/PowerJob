@@ -73,6 +73,10 @@ public abstract class MapReduceProcessor implements BasicProcessor {
         }
     }
 
+    /**
+     * 是否为根任务
+     * @return true -> 根任务 / false -> 非根任务
+     */
     public boolean isRootTask() {
         TaskDO task = ThreadLocalStore.getTask();
         return TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName());
