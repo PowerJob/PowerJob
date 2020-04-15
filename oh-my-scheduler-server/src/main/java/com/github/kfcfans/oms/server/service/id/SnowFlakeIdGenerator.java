@@ -17,8 +17,8 @@ class SnowFlakeIdGenerator {
      * 每一部分占用的位数
      */
     private final static long SEQUENCE_BIT = 12; //序列号占用的位数
-    private final static long MACHINE_BIT = 7;   //机器标识占用的位数
-    private final static long DATA_CENTER_BIT = 3;//数据中心占用的位数
+    private final static long MACHINE_BIT = 8;   //机器标识占用的位数
+    private final static long DATA_CENTER_BIT = 2;//数据中心占用的位数
 
     /**
      * 每一部分的最大值

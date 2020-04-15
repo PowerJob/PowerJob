@@ -17,6 +17,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <commons.lang.version>3.10</commons.lang.version>
         <guava.version>28.2-jre</guava.version>
+        <okhttp.version>4.4.1</okhttp.version>
     </properties>
 
     <dependencies>
@@ -39,6 +40,13 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+
+        <!-- OKHttp -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
         </dependency>
     </dependencies>
 

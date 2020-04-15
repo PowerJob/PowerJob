@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.service;
 
+import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -23,13 +25,24 @@ public class CacheService {
 
     @Resource
     private JobInfoRepository jobInfoRepository;
+    @Resource
+    private InstanceLogRepository instanceLogRepository;
 
     private final Cache<Long, String> jobId2JobNameCache;
+    private final Cache<Long, Long> instanceId2AppId;
+    private final Cache<Long, Long> jobId2AppId;
 
     public CacheService() {
         jobId2JobNameCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(Duration.ofHours(1))
                 .maximumSize(1024)
+                .build();
+
+        instanceId2AppId = CacheBuilder.newBuilder()
+                .maximumSize(4096)
+                .build();
+        jobId2AppId = CacheBuilder.newBuilder()
+                .maximumSize(4096)
                 .build();
     }
 
@@ -40,11 +53,48 @@ public class CacheService {
         try {
             return jobId2JobNameCache.get(jobId, () -> {
                 Optional<JobInfoDO> jobInfoDOOptional = jobInfoRepository.findById(jobId);
-                // 防止缓存穿透 hhh
+                // 防止缓存穿透 hhh（但是一开始没有，后来创建的情况下会有问题，不过问题不大，这里就不管了）
                 return jobInfoDOOptional.map(JobInfoDO::getJobName).orElse("");
             });
         }catch (Exception e) {
-            log.error("[CacheService] getJobName for {} failed.", jobId, e);
+            log.error("[CacheService] getAppIdByInstanceId for {} failed.", jobId, e);
+        }
+        return null;
+    }
+
+    public Long getAppIdByInstanceId(Long instanceId) {
+
+        try {
+            return instanceId2AppId.get(instanceId, () -> {
+                // 内部记录数据库异常
+                try {
+                    InstanceLogDO instanceLog = instanceLogRepository.findByInstanceId(instanceId);
+                    if (instanceLog != null) {
+                        return instanceLog.getAppId();
+                    }
+                }catch (Exception e) {
+                    log.error("[CacheService] getAppId for instanceId:{} failed.", instanceId, e);
+                }
+                return null;
+            });
+        }catch (Exception ignore) {
+            // 忽略缓存 load 失败的异常
+        }
+        return null;
+    }
+
+    public Long getAppIdByJobId(Long jobId) {
+        try {
+            return jobId2AppId.get(jobId, () -> {
+                try {
+                    Optional<JobInfoDO> jobInfoDOOptional = jobInfoRepository.findById(jobId);
+                    return jobInfoDOOptional.map(JobInfoDO::getAppId).orElse(null);
+                }catch (Exception e) {
+                    log.error("[CacheService] getAppId for job:{} failed.", jobId, e);
+                }
+                return null;
+            });
+        } catch (Exception ignore) {
         }
         return null;
     }

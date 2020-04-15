@@ -2,6 +2,7 @@ package com.github.kfcfans.common.response;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -12,10 +13,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 @Getter
 @Setter
+@ToString
 public class ResultDTO<T> {
 
     private boolean success;
+    // 数据（success为 true 时存在）
     private T data;
+    // 错误信息（success为 false 时存在）
     private String message;
 
     public static <T> ResultDTO<T> success(T data) {

@@ -1,19 +1,16 @@
 package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.PageResult;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.service.DispatchService;
-import com.github.kfcfans.oms.server.service.id.IdGenerateService;
+import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
 import com.github.kfcfans.oms.server.web.request.QueryJobInfoRequest;
@@ -24,7 +21,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,9 +42,7 @@ import java.util.stream.Collectors;
 public class JobController {
 
     @Resource
-    private DispatchService dispatchService;
-    @Resource
-    private IdGenerateService idGenerateService;
+    private JobService jobService;
     @Resource
     private InstanceService instanceService;
 
@@ -68,7 +62,7 @@ public class JobController {
         jobInfoDO.setExecuteType(ExecuteType.valueOf(request.getExecuteType()).getV());
         jobInfoDO.setProcessorType(ProcessorType.valueOf(request.getProcessorType()).getV());
         jobInfoDO.setTimeExpressionType(timeExpressionType.getV());
-        jobInfoDO.setStatus(request.isEnable() ? JobStatus.ENABLE.getV() : JobStatus.STOPPED.getV());
+        jobInfoDO.setStatus(request.isEnable() ? JobStatus.ENABLE.getV() : JobStatus.DISABLE.getV());
 
         if (jobInfoDO.getMaxWorkerCount() == null) {
             jobInfoDO.setMaxInstanceNum(0);
@@ -90,31 +84,27 @@ public class JobController {
 
         // 秒级任务直接调度执行
         if (timeExpressionType == TimeExpressionType.FIX_RATE || timeExpressionType == TimeExpressionType.FIX_DELAY) {
-            runJobImmediately(jobInfoDO);
+            jobService.runJob(jobInfoDO.getId(), null);
         }
 
         return ResultDTO.success(null);
     }
 
-    @GetMapping("/stop")
-    public ResultDTO<Void> stopJob(Long jobId) throws Exception {
-        shutdownOrStopJob(jobId, JobStatus.STOPPED);
+    @GetMapping("/disable")
+    public ResultDTO<Void> disableJob(Long jobId) throws Exception {
+        jobService.disableJob(jobId);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/delete")
     public ResultDTO<Void> deleteJob(Long jobId) throws Exception {
-        shutdownOrStopJob(jobId, JobStatus.DELETED);
+        jobService.deleteJob(jobId);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/run")
     public ResultDTO<Void> runImmediately(Long jobId) {
-        Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
-        if (!jobInfoOPT.isPresent()) {
-            throw new IllegalArgumentException("can't find job by jobId:" + jobId);
-        }
-        runJobImmediately(jobInfoOPT.get());
+        jobService.runJob(jobId, null);
         return ResultDTO.success(null);
     }
 
@@ -158,59 +148,8 @@ public class JobController {
         return ResultDTO.success(convertPage(jobInfoPage));
     }
 
-    /**
-     * 立即运行JOB
-     */
-    private void runJobImmediately(JobInfoDO jobInfoDO) {
-        InstanceLogDO executeLog = new InstanceLogDO();
-        executeLog.setJobId(jobInfoDO.getId());
-        executeLog.setAppId(jobInfoDO.getAppId());
-        executeLog.setInstanceId(idGenerateService.allocate());
-        executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-        executeLog.setExpectedTriggerTime(System.currentTimeMillis());
-        executeLog.setGmtCreate(new Date());
-        executeLog.setGmtModified(executeLog.getGmtCreate());
 
-        instanceLogRepository.saveAndFlush(executeLog);
-        dispatchService.dispatch(jobInfoDO, executeLog.getInstanceId(), 0);
-    }
 
-    /**
-     * 停止或删除某个JOB
-     * 秒级任务还要额外停止正在运行的任务实例
-     */
-    private void shutdownOrStopJob(Long jobId, JobStatus status) throws IllegalArgumentException {
-
-        // 1. 先更新 job_info 表
-        Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
-        if (!jobInfoOPT.isPresent()) {
-            throw new IllegalArgumentException("can't find job by jobId:" + jobId);
-        }
-        JobInfoDO jobInfoDO = jobInfoOPT.get();
-        jobInfoDO.setStatus(status.getV());
-        jobInfoRepository.saveAndFlush(jobInfoDO);
-
-        // 2. 关闭秒级任务
-        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
-        if (timeExpressionType == TimeExpressionType.CRON || timeExpressionType == TimeExpressionType.API) {
-            return;
-        }
-        List<InstanceLogDO> executeLogs = instanceLogRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
-        if (CollectionUtils.isEmpty(executeLogs)) {
-            return;
-        }
-        if (executeLogs.size() > 1) {
-            log.warn("[JobController] frequent job has multi instance, there must ha");
-        }
-        executeLogs.forEach(instance -> {
-            try {
-
-                // 重复查询了数据库，不过问题不大，这个调用量很小
-                instanceService.stopInstance(instance.getInstanceId());
-            }catch (Exception ignore) {
-            }
-        });
-    }
 
     private static PageResult<JobInfoVO> convertPage(Page<JobInfoDO> jobInfoPage) {
         List<JobInfoVO> jobInfoVOList = jobInfoPage.getContent().stream().map(JobController::convert).collect(Collectors.toList());

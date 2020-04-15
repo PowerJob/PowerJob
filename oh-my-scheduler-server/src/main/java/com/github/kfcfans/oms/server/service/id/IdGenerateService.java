@@ -7,12 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-
 /**
  * 唯一ID生成服务，使用 Twitter snowflake 算法
- * 机房ID：固定为0，占用三位（8个机房怎么样也够了吧）
- * 机器ID：数据库自增，占用7位（最多支持128台机器）
+ * 机房ID：固定为0，占用2位
+ * 机器ID：数据库自增，占用8位（最多支持256台机器，如果频繁部署需要删除数据库重置id）
  *
  * @author tjq
  * @since 2020/4/6

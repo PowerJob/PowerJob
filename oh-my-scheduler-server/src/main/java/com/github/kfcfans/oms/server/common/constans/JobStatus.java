@@ -14,7 +14,7 @@ import lombok.Getter;
 public enum JobStatus {
 
     ENABLE(1),
-    STOPPED(2),
+    DISABLE(2),
     DELETED(99);
 
     private int v;

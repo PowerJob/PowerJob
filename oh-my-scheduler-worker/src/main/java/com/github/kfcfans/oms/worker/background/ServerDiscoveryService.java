@@ -4,8 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.oms.worker.common.utils.HttpUtils;
-import com.github.kfcfans.oms.worker.core.tracker.task.FrequentTaskTracker;
+import com.github.kfcfans.common.utils.HttpUtils;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.google.common.collect.Maps;
@@ -15,7 +14,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 服务发现

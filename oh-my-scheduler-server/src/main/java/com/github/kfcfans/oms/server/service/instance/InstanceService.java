@@ -14,7 +14,6 @@ import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -67,6 +66,20 @@ public class InstanceService {
         ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceLogDO.getTaskTrackerAddress());
         ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
         taskTrackerActor.tell(req, null);
+    }
+
+    /**
+     * 获取任务实例的壮体啊
+     * @param instanceId 任务实例ID
+     * @return 任务实例的状态
+     */
+    public InstanceStatus getInstanceStatus(Long instanceId) {
+        InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
+        if (instanceLogDO == null) {
+            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            throw new IllegalArgumentException("invalid instanceId: " + instanceId);
+        }
+        return InstanceStatus.of(instanceLogDO.getStatus());
     }
 
     /**
