@@ -10,6 +10,7 @@ import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
+import com.github.kfcfans.oms.worker.core.executor.ShellProcessor;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
@@ -53,7 +54,7 @@ public class ProcessorTracker {
     /**
      * 创建 ProcessorTracker（其实就是创建了个执行用的线程池 T_T）
      */
-    public ProcessorTracker(TaskTrackerStartTaskReq request) {
+    public ProcessorTracker(TaskTrackerStartTaskReq request) throws Exception {
 
         // 赋值
         this.startTime = System.currentTimeMillis();
@@ -191,7 +192,7 @@ public class ProcessorTracker {
 
     }
 
-    private void initProcessor() {
+    private void initProcessor() throws Exception {
 
         ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
         String processorInfo = instanceInfo.getProcessorInfo();
@@ -210,6 +211,13 @@ public class ProcessorTracker {
                 if (processor == null) {
                     processor = ProcessorBeanFactory.getInstance().getLocalProcessor(processorInfo);
                 }
+                break;
+            case SHELL:
+                processor = new ShellProcessor(instanceId, instanceInfo.getProcessorInfo());
+                break;
+            case PYTHON2:
+
+
         }
 
         if (processor == null) {

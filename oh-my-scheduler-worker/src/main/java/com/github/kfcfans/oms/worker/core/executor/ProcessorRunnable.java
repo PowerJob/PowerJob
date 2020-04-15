@@ -65,7 +65,7 @@ public class ProcessorRunnable implements Runnable {
         if (TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName())) {
 
             // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
-            if (executeType == ExecuteType.BROADCAST) {
+            if (executeType == ExecuteType.BROADCAST && processor instanceof BroadcastProcessor) {
 
                 BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
                 BroadcastTaskPreExecuteFinishedReq spReq = new BroadcastTaskPreExecuteFinishedReq();

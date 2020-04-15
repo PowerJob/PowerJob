@@ -21,8 +21,8 @@ public class ConnectionFactory {
 
     private static volatile DataSource dataSource;
 
-    private static final String DISK_JDBC_URL = "jdbc:h2:file:~/.h2/oms/oms_worker_db";
-    private static final String MEMORY_JDBC_URL = "jdbc:h2:mem:~/.h2/oms/oms_worker_db";
+    private static final String DISK_JDBC_URL = "jdbc:h2:file:~/.oms/h2/oms_worker_db";
+    private static final String MEMORY_JDBC_URL = "jdbc:h2:mem:~/.oms/h2/oms_worker_db";
 
     public static Connection getConnection() throws SQLException {
         return getDataSource().getConnection();

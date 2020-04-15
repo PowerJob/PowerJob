@@ -13,7 +13,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ProcessorType {
 
-    EMBEDDED_JAVA(1, "内置JAVA处理器");
+    EMBEDDED_JAVA(1, "内置JAVA处理器"),
+    SHELL(2, "SHELL脚本"),
+    PYTHON2(3, "Python2脚本");
 
     private int v;
     private String des;
