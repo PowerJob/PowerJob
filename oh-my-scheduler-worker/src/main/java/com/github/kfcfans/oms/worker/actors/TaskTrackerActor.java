@@ -52,7 +52,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
         } else {
 
-            taskTracker.updateTaskStatus(req.getTaskId(), req.getStatus(), req.getResult());
+            taskTracker.updateTaskStatus(req.getTaskId(), req.getStatus(), req.getReportTime(), req.getResult());
         }
     }
 
@@ -103,7 +103,7 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] receive BroadcastTaskPreExecuteFinishedReq({}) but system can't find TaskTracker.", req);
             return;
         }
-        taskTracker.broadcast(req.isSuccess(), req.getSubInstanceId(), req.getTaskId(), req.getMsg());
+        taskTracker.broadcast(req.isSuccess(), req.getSubInstanceId(), req.getTaskId(), req.getReportTime(), req.getMsg());
     }
 
     /**

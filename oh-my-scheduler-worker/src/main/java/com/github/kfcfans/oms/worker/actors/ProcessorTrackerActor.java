@@ -43,7 +43,7 @@ public class ProcessorTrackerActor extends AbstractActor {
                 log.warn("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) failed.", jobId, instanceId, e);
 
                 // 直接上报失败
-                ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, req.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), e.getMessage());
+                ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, req.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), e.getMessage(), System.currentTimeMillis());
                 getSender().tell(report, getSelf());
 
             }

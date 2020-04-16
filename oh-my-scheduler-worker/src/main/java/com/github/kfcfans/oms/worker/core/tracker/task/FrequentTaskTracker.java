@@ -160,6 +160,7 @@ public class FrequentTaskTracker extends TaskTracker {
             newRootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
             newRootTask.setCreatedTime(System.currentTimeMillis());
             newRootTask.setLastModifiedTime(System.currentTimeMillis());
+            newRootTask.setLastReportTime(-1L);
 
             // 判断是否超出最大执行实例数
             if (timeExpressionType == TimeExpressionType.FIX_RATE) {

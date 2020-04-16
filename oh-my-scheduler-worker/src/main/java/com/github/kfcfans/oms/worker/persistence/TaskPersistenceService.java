@@ -220,20 +220,20 @@ public class TaskPersistenceService {
     }
 
     /**
-     * 查询任务失败数量（只查询 failed_cnt，节约 I/O 资源）
+     * 根据主键查询 Task
      */
-    public Optional<Integer> getTaskFailedCnt(Long instanceId, String taskId) {
-
+    public Optional<TaskDO> getTask(Long instanceId, String taskId) {
         try {
             SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
-            query.setQueryContent("failed_cnt");
             return execute(() -> {
-                List<Map<String, Object>> rows = taskDAO.simpleQueryPlus(query);
-                // 查询成功不可能为空
-                return Optional.of((Integer) rows.get(0).get("FAILED_CNT"));
+                List<TaskDO> res = taskDAO.simpleQuery(query);
+                if (CollectionUtils.isEmpty(res)) {
+                    return Optional.empty();
+                }
+                return Optional.of(res.get(0));
             });
         }catch (Exception e) {
-            log.error("[TaskPersistenceService] getTaskFailedCnt failed, instanceId={},taskId={}.", instanceId, taskId, e);
+            log.error("[TaskPersistenceService] getTask failed, instanceId={},taskId={}.", instanceId, taskId, e);
         }
         return Optional.empty();
     }

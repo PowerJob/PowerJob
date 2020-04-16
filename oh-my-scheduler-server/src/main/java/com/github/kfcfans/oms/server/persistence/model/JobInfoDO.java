@@ -1,7 +1,9 @@
 package com.github.kfcfans.oms.server.persistence.model;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -14,6 +16,8 @@ import java.util.Date;
  */
 @Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "job_info", indexes = {@Index(columnList = "appId")})
 public class JobInfoDO {
 
@@ -80,4 +84,8 @@ public class JobInfoDO {
     private Date gmtCreate;
     private Date gmtModified;
 
+    // 针对只查询 id 的情况
+    public JobInfoDO(Long id) {
+        this.id = id;
+    }
 }

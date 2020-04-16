@@ -19,4 +19,7 @@ public class BroadcastTaskPreExecuteFinishedReq implements OmsSerializable {
 
     private boolean success;
     private String msg;
+
+    // 上报时间
+    private long reportTime;
 }

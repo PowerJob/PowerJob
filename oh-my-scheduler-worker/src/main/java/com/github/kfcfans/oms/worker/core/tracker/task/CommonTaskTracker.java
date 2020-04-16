@@ -100,6 +100,7 @@ public class CommonTaskTracker extends TaskTracker {
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
         rootTask.setCreatedTime(System.currentTimeMillis());
         rootTask.setLastModifiedTime(System.currentTimeMillis());
+        rootTask.setLastReportTime(-1L);
         rootTask.setSubInstanceId(instanceId);
 
         if (!taskPersistenceService.save(rootTask)) {

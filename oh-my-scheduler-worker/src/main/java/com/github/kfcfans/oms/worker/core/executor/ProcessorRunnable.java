@@ -83,6 +83,7 @@ public class ProcessorRunnable implements Runnable {
                     spReq.setMsg(e.toString());
                 }
 
+                spReq.setReportTime(System.currentTimeMillis());
                 taskTrackerActor.tell(spReq, null);
 
                 // 广播执行的第一个 task 只执行 preProcess 部分
@@ -148,6 +149,7 @@ public class ProcessorRunnable implements Runnable {
         req.setTaskId(task.getTaskId());
         req.setStatus(status.getValue());
         req.setResult(result);
+        req.setReportTime(System.currentTimeMillis());
 
         taskTrackerActor.tell(req, null);
     }

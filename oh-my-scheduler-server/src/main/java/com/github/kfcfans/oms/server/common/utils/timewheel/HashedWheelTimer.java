@@ -84,9 +84,14 @@ public class HashedWheelTimer implements Timer {
         long targetTime = System.currentTimeMillis() + unit.toMillis(delay);
         HashedWheelTimerFuture timerFuture = new HashedWheelTimerFuture(task, targetTime);
 
+        // 直接运行到期、过期任务
+        if (delay <= 0) {
+            runTask(timerFuture);
+            return timerFuture;
+        }
+
         // 写入阻塞队列，保证并发安全（性能进一步优化可以考虑 Netty 的 Multi-Producer-Single-Consumer队列）
         waitingTasks.add(timerFuture);
-
         return timerFuture;
     }
 
@@ -182,11 +187,7 @@ public class HashedWheelTimer implements Timer {
                     timerFuture.status = HashedWheelTimerFuture.RUNNING;
                     try {
                         // 提交执行
-                        if (taskProcessPool == null) {
-                            timerFuture.timerTask.run();
-                        }else {
-                            taskProcessPool.submit(timerFuture.timerTask);
-                        }
+                        runTask(timerFuture);
                     }catch (Exception ignore) {
                     } finally {
                         timerFuture.status = HashedWheelTimerFuture.FINISHED;
@@ -198,7 +199,14 @@ public class HashedWheelTimer implements Timer {
             });
 
         }
+    }
 
+    private void runTask(HashedWheelTimerFuture timerFuture) {
+        if (taskProcessPool == null) {
+            timerFuture.timerTask.run();
+        }else {
+            taskProcessPool.submit(timerFuture.timerTask);
+        }
     }
 
     /**

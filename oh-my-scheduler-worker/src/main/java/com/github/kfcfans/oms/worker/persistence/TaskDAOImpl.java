@@ -20,7 +20,7 @@ public class TaskDAOImpl implements TaskDAO {
     public void initTable() throws Exception {
 
         String delTableSQL = "drop table if exists task_info";
-        String createTableSQL = "create table task_info (task_id varchar(20), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(20), task_content blob, address varchar(20), status int(11), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), unique KEY pkey (instance_id, task_id))";
+        String createTableSQL = "create table task_info (task_id varchar(20), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(20), task_content blob, address varchar(20), status int(11), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), last_report_time bigint(20), unique KEY pkey (instance_id, task_id))";
 
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);
@@ -30,7 +30,7 @@ public class TaskDAOImpl implements TaskDAO {
 
     @Override
     public boolean save(TaskDO task) throws SQLException {
-        String insertSQL = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time) values (?,?,?,?,?,?,?,?,?,?,?)";
+        String insertSQL = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time, last_report_time) values (?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
             fillInsertPreparedStatement(task, ps);
             return ps.executeUpdate() == 1;
@@ -39,7 +39,7 @@ public class TaskDAOImpl implements TaskDAO {
 
     @Override
     public boolean batchSave(Collection<TaskDO> tasks) throws SQLException {
-        String insertSQL = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time) values (?,?,?,?,?,?,?,?,?,?,?)";
+        String insertSQL = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time, last_report_time) values (?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
 
             for (TaskDO task : tasks) {
@@ -162,9 +162,11 @@ public class TaskDAOImpl implements TaskDAO {
         task.setFailedCnt(rs.getInt("failed_cnt"));
         task.setCreatedTime(rs.getLong("created_time"));
         task.setLastModifiedTime(rs.getLong("last_modified_time"));
+        task.setLastReportTime(rs.getLong("last_report_time"));
         return task;
     }
 
+    // 填充插入字段
     private static void fillInsertPreparedStatement(TaskDO task, PreparedStatement ps) throws SQLException {
         ps.setString(1, task.getTaskId());
         ps.setLong(2, task.getInstanceId());
@@ -177,6 +179,7 @@ public class TaskDAOImpl implements TaskDAO {
         ps.setInt(9, task.getFailedCnt());
         ps.setLong(10, task.getCreatedTime());
         ps.setLong(11, task.getLastModifiedTime());
+        ps.setLong(12, task.getLastReportTime());
     }
 
 

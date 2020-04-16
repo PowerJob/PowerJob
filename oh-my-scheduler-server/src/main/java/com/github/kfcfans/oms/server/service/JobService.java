@@ -51,11 +51,14 @@ public class JobService {
         if (!jobInfoOPT.isPresent()) {
             throw new IllegalArgumentException("can't find job by jobId:" + jobId);
         }
-        JobInfoDO jobInfo = jobInfoOPT.get();
+        return runJob(jobInfoOPT.get(), instanceParams);
+    }
+
+    public long runJob(JobInfoDO jobInfo, String instanceParams) {
         long instanceId = idGenerateService.allocate();
 
         InstanceLogDO executeLog = new InstanceLogDO();
-        executeLog.setJobId(jobId);
+        executeLog.setJobId(jobInfo.getId());
         executeLog.setAppId(jobInfo.getAppId());
         executeLog.setInstanceId(instanceId);
         executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());

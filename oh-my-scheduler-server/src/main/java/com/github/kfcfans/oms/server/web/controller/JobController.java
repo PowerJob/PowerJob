@@ -6,12 +6,10 @@ import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.PageResult;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.service.JobService;
-import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
 import com.github.kfcfans.oms.server.web.request.QueryJobInfoRequest;
 import com.github.kfcfans.oms.server.web.response.JobInfoVO;
@@ -44,12 +42,7 @@ public class JobController {
     @Resource
     private JobService jobService;
     @Resource
-    private InstanceService instanceService;
-
-    @Resource
     private JobInfoRepository jobInfoRepository;
-    @Resource
-    private InstanceLogRepository instanceLogRepository;
 
     @PostMapping("/save")
     public ResultDTO<Void> saveJobInfo(@RequestBody ModifyJobInfoRequest request) throws Exception {
@@ -81,11 +74,6 @@ public class JobController {
         }
         jobInfoDO.setGmtModified(now);
         jobInfoRepository.saveAndFlush(jobInfoDO);
-
-        // 秒级任务直接调度执行
-        if (timeExpressionType == TimeExpressionType.FIX_RATE || timeExpressionType == TimeExpressionType.FIX_DELAY) {
-            jobService.runJob(jobInfoDO.getId(), null);
-        }
 
         return ResultDTO.success(null);
     }

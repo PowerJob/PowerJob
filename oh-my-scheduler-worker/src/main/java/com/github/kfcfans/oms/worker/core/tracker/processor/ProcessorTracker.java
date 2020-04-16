@@ -107,8 +107,8 @@ public class ProcessorTracker {
             reportReq.setInstanceId(instanceId);
             reportReq.setTaskId(newTask.getTaskId());
             reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
+            reportReq.setReportTime(System.currentTimeMillis());
 
-            reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             taskTrackerActorRef.tell(reportReq, null);
 
             log.debug("[ProcessorTracker-{}] submit task(taskId={}, taskName={}) success, current queue size: {}.",

@@ -26,4 +26,7 @@ public class ProcessorReportTaskStatusReq implements OmsSerializable {
      */
     private String result;
 
+    // 上报时间
+    private long reportTime;
+
 }

@@ -26,7 +26,7 @@ public class TaskDO {
     private String taskName;
     // 任务对象（序列化后的二进制数据）
     private byte[] taskContent;
-    // 对于TaskTracker为workerAddress（派发地址），对于普通Worker为TaskTrackerAddress（汇报地址）
+    // 对于TaskTracker为workerAddress（派发地址），对于普通Worker为TaskTrackerAddress（汇报地址），所有地址都是 IP:Port
     private String address;
     // 任务状态，0～10代表 JobTracker 使用，11～20代表普通Worker使用
     private Integer status;
@@ -38,6 +38,8 @@ public class TaskDO {
     private Long createdTime;
     // 最后修改时间
     private Long lastModifiedTime;
+    // ProcessorTracker 最后上报时间
+    private Long lastReportTime;
 
     public String getUpdateSQL() {
         StringBuilder sb = new StringBuilder();
@@ -54,6 +56,9 @@ public class TaskDO {
         }
         if (failedCnt != null) {
             sb.append(" failed_cnt = ").append(failedCnt).append(",");
+        }
+        if (lastReportTime != null) {
+            sb.append(" last_report_time = ").append(lastReportTime).append(",");
         }
         sb.append(" last_modified_time = ").append(lastModifiedTime == null ? System.currentTimeMillis() : lastModifiedTime);
         return sb.toString();

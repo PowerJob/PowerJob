@@ -4,6 +4,7 @@ import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
+import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
@@ -18,6 +19,7 @@ import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,6 +30,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -55,7 +58,10 @@ public class JobScheduleService {
     @Resource
     private InstanceLogRepository instanceLogRepository;
 
-    private static final long SCHEDULE_RATE = 5000;
+    @Resource
+    private JobService jobService;
+
+    private static final long SCHEDULE_RATE = 15000;
 
     @Scheduled(fixedRate = SCHEDULE_RATE)
     public void timingSchedule() {
@@ -69,6 +75,8 @@ public class JobScheduleService {
             return;
         }
         List<Long> allAppIds = allAppInfos.stream().map(AppInfoDO::getId).collect(Collectors.toList());
+        // 清理不需要维护的数据
+        WorkerManagerService.clean(allAppIds);
 
         // 调度 CRON 表达式 JOB
         try {
@@ -76,7 +84,16 @@ public class JobScheduleService {
         }catch (Exception e) {
             log.error("[JobScheduleService] schedule cron job failed.", e);
         }
-        log.info("[JobScheduleService] finished job schedule, using time {}.", stopwatch.stop());
+        String cronTime = stopwatch.toString();
+        stopwatch.reset().start();
+
+        // 调度 秒级任务
+        try {
+            scheduleFrequentJob(allAppIds);
+        }catch (Exception e) {
+            log.error("[JobScheduleService] schedule frequent job failed.", e);
+        }
+        log.info("[JobScheduleService] cron schedule: {}, frequent schedule: {}.", cronTime, stopwatch.stop());
     }
 
     /**
@@ -84,8 +101,6 @@ public class JobScheduleService {
      */
     private void scheduleCornJob(List<Long> appIds) {
 
-        // 清理不需要维护的数据
-        WorkerManagerService.clean(appIds);
 
         long nowTime = System.currentTimeMillis();
         long timeThreshold = nowTime + 2 * SCHEDULE_RATE;
@@ -169,7 +184,36 @@ public class JobScheduleService {
 
 
             }catch (Exception e) {
-                log.error("[JobScheduleService] schedule job failed.", e);
+                log.error("[JobScheduleService] schedule cron job failed.", e);
+            }
+        });
+    }
+
+    private void scheduleFrequentJob(List<Long> appIds) {
+
+        Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
+            try {
+                // 查询所有的秒级任务（只包含ID）
+                List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
+                // 查询日志记录表中是否存在相关的任务
+                List<Long> runningJobIdList = instanceLogRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.generalizedRunningStatus);
+                Set<Long> runningJobIdSet = Sets.newHashSet(runningJobIdList);
+
+                List<Long> notRunningJobIds = Lists.newLinkedList();
+                jobIds.forEach(jobId -> {
+                    if (!runningJobIdSet.contains(jobId)) {
+                        notRunningJobIds.add(jobId);
+                    }
+                });
+
+                if (CollectionUtils.isEmpty(notRunningJobIds)) {
+                    return;
+                }
+
+                log.info("[JobScheduleService] These frequent jobs will be scheduled： {}.", notRunningJobIds);
+                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null));
+            }catch (Exception e) {
+                log.error("[JobScheduleService] schedule frequent job failed.", e);
             }
         });
     }

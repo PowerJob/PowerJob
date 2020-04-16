@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.persistence.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,7 +15,9 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table(name = "instance_log", indexes = {@Index(columnList = "jobId")})
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "instance_log", indexes = {@Index(columnList = "jobId"), @Index(columnList = "appId")})
 public class InstanceLogDO {
 
     @Id
@@ -47,4 +51,9 @@ public class InstanceLogDO {
     private Date gmtCreate;
     private Date gmtModified;
 
+
+    // 针对 只查询 jobId 的情况
+    public InstanceLogDO(Long jobId) {
+        this.jobId = jobId;
+    }
 }

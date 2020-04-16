@@ -60,4 +60,8 @@ public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long
     // 数据统计
     long countByAppIdAndStatus(long appId, int status);
     long countByAppIdAndStatusAndGmtCreateAfter(long appId, int status, Date time);
+
+    @Query(value = "select job_id from instance_log where job_id in ?1 and status in ?2", nativeQuery = true)
+    List<Long> findByJobIdInAndStatusIn(List<Long> jobIds, List<Integer> status);
+
 }

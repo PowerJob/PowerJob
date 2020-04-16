@@ -18,6 +18,8 @@ import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportRe
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStopInstanceReq;
 import com.google.common.base.Stopwatch;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +58,8 @@ public abstract class TaskTracker {
     protected ScheduledExecutorService scheduledPool;
     // 是否结束
     protected AtomicBoolean finished;
+    // 上报时间缓存
+    private Cache<String, Long> taskId2LastReportTime;
 
     protected TaskTracker(ServerScheduleJobReq req) {
 
@@ -71,6 +75,9 @@ public abstract class TaskTracker {
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
         this.finished = new AtomicBoolean(false);
+
+        // 构建缓存
+        taskId2LastReportTime = CacheBuilder.newBuilder().maximumSize(1024).build();
 
         // 子类自定义初始化操作
         initTaskTracker(req);
@@ -97,58 +104,89 @@ public abstract class TaskTracker {
      * 更新Task状态（任务状态机限定只允许状态变量递增，eg. 允许 FAILED -> SUCCEED，但不允许 SUCCEED -> FAILED）
      * @param taskId task的ID（task为任务实例的执行单位）
      * @param newStatus task的新状态
+     * @param reportTime 上报时间
      * @param result task的执行结果，未执行完成时为空
      */
-    public void updateTaskStatus(String taskId, int newStatus, @Nullable String result) {
+    public void updateTaskStatus(String taskId, int newStatus, long reportTime, @Nullable String result) {
 
         boolean updateResult;
         TaskStatus nTaskStatus = TaskStatus.of(newStatus);
-        // 1. 读取当前 Task 状态，防止逆状态机变更的出现
-        Optional<TaskStatus> dbTaskStatusOpt = taskPersistenceService.getTaskStatus(instanceId, taskId);
 
-        if (!dbTaskStatusOpt.isPresent()) {
-            log.warn("[TaskTracker-{}] query TaskStatus from DB failed when try to update new TaskStatus(taskId={},newStatus={}).",
-                    instanceId, taskId, newStatus);
-        }
+        // 同一个task，串行执行
+        // 需要保证 worker 的其他代码没有用 taskId 或者 String 作为锁...否则就等着找bug吧...（主要是不舍得加前缀，这用的可以常量池内存啊...）
+        synchronized (taskId.intern()) {
 
-        // 2. 数据库没查到，也允许写入（这个还需要日后仔细考虑）
-        if (dbTaskStatusOpt.orElse(TaskStatus.WAITING_DISPATCH).getValue() > newStatus) {
-            // 必存在，但不这么写，Java会警告...
-            TaskStatus dbTaskStatus = dbTaskStatusOpt.orElse(TaskStatus.WAITING_DISPATCH);
-            log.warn("[TaskTracker-{}] task(taskId={},dbStatus={},requestStatus={}) status conflict, TaskTracker won't update the status.",
-                    instanceId, taskId, dbTaskStatus, nTaskStatus);
-            return;
-        }
+            Long lastReportTime = taskId2LastReportTime.getIfPresent(taskId);
 
-        // 3. 失败重试处理
-        if (nTaskStatus == TaskStatus.WORKER_PROCESS_FAILED) {
+            // 缓存中不存在，从数据库查
+            if (lastReportTime == null) {
+                Optional<TaskDO> taskOpt = taskPersistenceService.getTask(instanceId, taskId);
+                if (taskOpt.isPresent()) {
+                    lastReportTime = taskOpt.get().getLastReportTime();
+                }else {
+                    // 理论上不存在这种情况
+                    log.error("[TaskTracker-{}] can't find task by pkey(instanceId={}&taskId={}).", instanceId, instanceId, taskId);
+                }
 
-            // 数据库查询失败的话，就最多只重试一次
-            int configTaskRetryNum = instanceInfo.getTaskRetryNum();
-            int failedCnt = taskPersistenceService.getTaskFailedCnt(instanceId, taskId).orElse(configTaskRetryNum - 1);
-            if (failedCnt < configTaskRetryNum && configTaskRetryNum > 1) {
-
-                TaskDO updateEntity = new TaskDO();
-                updateEntity.setFailedCnt(failedCnt + 1);
-                updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
-                updateEntity.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
-
-                boolean retryTask = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
-                if (retryTask) {
-                    log.info("[TaskTracker-{}] task(taskId={}) process failed, TaskTracker will have a retry.", instanceId, taskId);
-                    return;
+                if (lastReportTime == null) {
+                    lastReportTime = -1L;
                 }
             }
-        }
 
-        // 4. 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）
-        TaskDO updateEntity = new TaskDO();
-        updateEntity.setStatus(nTaskStatus.getValue());
-        updateEntity.setResult(result);
-        updateResult = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
+            // 过滤过期的请求（潜在的集群时间一致性需求，重试跨Worker时时间不一致可能导致问题）
+            if (lastReportTime > reportTime) {
+                log.warn("[TaskTracker-{}] receive expired(last {} > current {}) task status report(taskId={},newStatus={}), TaskTracker will drop this report.",
+                        lastReportTime, reportTime, instanceId, taskId, newStatus);
+                return;
+            }
 
-        if (!updateResult) {
-            log.warn("[TaskTracker-{}] update task status failed, this task(taskId={}) may be processed repeatedly!", instanceId, taskId);
+            // 此时本次请求已经有效，先写入最新的时间
+            taskId2LastReportTime.put(taskId, reportTime);
+
+            // 处理失败的情况
+            int configTaskRetryNum = instanceInfo.getTaskRetryNum();
+            if (nTaskStatus == TaskStatus.WORKER_PROCESS_FAILED && configTaskRetryNum > 1) {
+
+                // 失败不是主要的情况，多查一次数据库也问题不大（况且前面有缓存顶着，大部分情况不会去查DB）
+                Optional<TaskDO> taskOpt = taskPersistenceService.getTask(instanceId, taskId);
+                // 查询DB再失败的话，就不重试了...
+                if (taskOpt.isPresent()) {
+                    int failedCnt = taskOpt.get().getFailedCnt();
+                    if (failedCnt < configTaskRetryNum) {
+
+                        TaskDO updateEntity = new TaskDO();
+                        updateEntity.setFailedCnt(failedCnt + 1);
+
+                        // 非本机任务，则更换 ProcessorTracker 地址进行执行
+                        String oldAddress = taskOpt.get().getAddress();
+                        if (!StringUtils.isEmpty(oldAddress)) {
+                            if (!oldAddress.equals(OhMyWorker.getWorkerAddress())) {
+                                updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
+                            }
+                        }
+
+                        updateEntity.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
+                        updateEntity.setLastReportTime(reportTime);
+
+                        boolean retryTask = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
+                        if (retryTask) {
+                            log.info("[TaskTracker-{}] task(taskId={}) process failed, TaskTracker will have a retry.", instanceId, taskId);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）
+            TaskDO updateEntity = new TaskDO();
+            updateEntity.setStatus(nTaskStatus.getValue());
+            updateEntity.setResult(result);
+            updateEntity.setLastReportTime(reportTime);
+            updateResult = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
+
+            if (!updateResult) {
+                log.warn("[TaskTracker-{}] update task status failed, this task(taskId={}) may be processed repeatedly!", instanceId, taskId);
+            }
         }
     }
 
@@ -167,6 +205,7 @@ public abstract class TaskTracker {
             task.setFailedCnt(0);
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
+            task.setLastReportTime(-1L);
         });
 
         log.debug("[TaskTracker-{}] receive new tasks: {}", instanceId, newTaskList);
@@ -187,9 +226,10 @@ public abstract class TaskTracker {
      * @param preExecuteSuccess 预执行广播任务运行状态
      * @param subInstanceId 子实例ID
      * @param preTaskId 预执行广播任务的taskId
+     * @param reportTime 上报时间
      * @param result 预执行广播任务的结果
      */
-    public void broadcast(boolean preExecuteSuccess, long subInstanceId, String preTaskId, String result) {
+    public void broadcast(boolean preExecuteSuccess, long subInstanceId, String preTaskId, long reportTime, String result) {
 
         log.info("[TaskTracker-{}] finished broadcast's preProcess.", instanceId);
 
@@ -211,7 +251,7 @@ public abstract class TaskTracker {
 
         // 2. 更新根任务状态（广播任务的根任务为 preProcess 任务）
         int status = preExecuteSuccess ? TaskStatus.WORKER_PROCESS_SUCCESS.getValue() : TaskStatus.WORKER_PROCESS_FAILED.getValue();
-        updateTaskStatus(preTaskId, status, result);
+        updateTaskStatus(preTaskId, status, reportTime, result);
     }
 
     /**
