@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.Data;
 
-import java.io.Serializable;
 
 /**
  * TaskTracker 停止 ProcessorTracker，释放相关资源
@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @since 2020/3/25
  */
 @Data
-public class TaskTrackerStopInstanceReq implements Serializable {
+public class TaskTrackerStopInstanceReq implements OmsSerializable {
 
     private Long instanceId;
     // 保留字段，暂时没用

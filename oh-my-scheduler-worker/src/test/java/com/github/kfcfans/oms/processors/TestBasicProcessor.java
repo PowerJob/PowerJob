@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.processors;
 
-import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
@@ -16,7 +16,7 @@ public class TestBasicProcessor implements BasicProcessor {
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
         System.out.println("======== BasicProcessor#process ========");
-        System.out.println("TaskContext: " + JSONObject.toJSONString(context) + ";time = " + System.currentTimeMillis());
+        System.out.println("TaskContext: " + JsonUtils.toJSONString(context) + ";time = " + System.currentTimeMillis());
         return new ProcessResult(true, System.currentTimeMillis() + "success");
     }
 

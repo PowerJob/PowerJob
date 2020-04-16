@@ -15,7 +15,6 @@
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
-        <akka.version>2.6.4</akka.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
         <oms.common.version>1.0.0-SNAPSHOT</oms.common.version>
         <hikaricp.version>3.4.2</hikaricp.version>
@@ -44,13 +43,6 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
-        </dependency>
-
-        <!-- akka remote -->
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-remote_2.13</artifactId>
-            <version>${akka.version}</version>
         </dependency>
 
         <!-- SpringBoot -->
@@ -83,7 +75,6 @@
             <artifactId>springfox-swagger-ui</artifactId>
             <version>${swagger.version}</version>
         </dependency>
-
 
     </dependencies>
 

@@ -1,10 +1,10 @@
 package com.github.kfcfans.oms.server.akka.requests;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 
 /**
  * 查询 Worker 集群状态
@@ -15,6 +15,6 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FriendQueryWorkerClusterStatusReq implements Serializable {
+public class FriendQueryWorkerClusterStatusReq implements OmsSerializable {
     private Long appId;
 }

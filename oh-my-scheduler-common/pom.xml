@@ -18,6 +18,7 @@
         <commons.lang.version>3.10</commons.lang.version>
         <guava.version>28.2-jre</guava.version>
         <okhttp.version>4.4.1</okhttp.version>
+        <akka.version>2.6.4</akka.version>
     </properties>
 
     <dependencies>
@@ -47,6 +48,18 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${okhttp.version}</version>
+        </dependency>
+
+        <!-- akka remote -->
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-remote_2.13</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-serialization-jackson_2.13</artifactId>
+            <version>${akka.version}</version>
         </dependency>
     </dependencies>
 

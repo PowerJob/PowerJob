@@ -1,9 +1,9 @@
 package com.github.kfcfans.oms.client;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.common.OpenAPIConstant;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.utils.HttpUtils;
+import com.github.kfcfans.common.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
@@ -43,7 +43,7 @@ public class OhMyClient {
         String url = getUrl(OpenAPIConstant.ASSERT) + "?appName=" + appName;
         String result = HttpUtils.get(url);
         if (StringUtils.isNotEmpty(result)) {
-            ResultDTO resultDTO = JSONObject.parseObject(result, ResultDTO.class);
+            ResultDTO resultDTO = JsonUtils.parseObject(result, ResultDTO.class);
             if (resultDTO.isSuccess()) {
                 appId = Long.parseLong(resultDTO.getData().toString());
             }else {
@@ -72,7 +72,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = HttpUtils.post(url, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -88,7 +88,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = HttpUtils.post(url, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -108,7 +108,7 @@ public class OhMyClient {
             builder.add("instanceParams", instanceParams);
         }
         String post = HttpUtils.post(url, builder.build());
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JsonUtils.parseObject(post, ResultDTO.class);
     }
     public ResultDTO<Long> runJob(Long jobId) throws Exception {
         return runJob(jobId, null);
@@ -128,7 +128,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = HttpUtils.post(url, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -143,6 +143,6 @@ public class OhMyClient {
                 .add("instanceId", instanceId.toString())
                 .build();
         String post = HttpUtils.post(url, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JsonUtils.parseObject(post, ResultDTO.class);
     }
 }

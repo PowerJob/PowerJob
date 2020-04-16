@@ -16,7 +16,6 @@
     <properties>
         <oms.common.version>1.0.0-SNAPSHOT</oms.common.version>
         <junit.version>5.6.1</junit.version>
-        <fastjson.version>1.2.68</fastjson.version>
     </properties>
 
     <dependencies>
@@ -25,12 +24,6 @@
             <groupId>com.github.kfcfans</groupId>
             <artifactId>oh-my-scheduler-common</artifactId>
             <version>${oms.common.version}</version>
-        </dependency>
-        <!-- fastJson -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>${fastjson.version}</version>
         </dependency>
         <!-- Junit 测试 -->
         <dependency>

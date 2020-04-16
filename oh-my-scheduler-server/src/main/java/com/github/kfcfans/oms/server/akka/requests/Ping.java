@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.akka.requests;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.Data;
 
-import java.io.Serializable;
 
 /**
  * 检测目标机器是否存活
@@ -11,6 +11,6 @@ import java.io.Serializable;
  * @since 2020/4/5
  */
 @Data
-public class Ping implements Serializable {
+public class Ping implements OmsSerializable {
     private long currentTime;
 }

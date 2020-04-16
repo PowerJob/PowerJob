@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.worker.background;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.utils.CommonUtils;
+import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.common.utils.HttpUtils;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
@@ -95,9 +95,12 @@ public class ServerDiscoveryService {
         }catch (Exception ignore) {
         }
         if (!StringUtils.isEmpty(result)) {
-            ResultDTO resultDTO = JSONObject.parseObject(result, ResultDTO.class);
-            if (resultDTO.isSuccess()) {
-                return resultDTO.getData().toString();
+            try {
+                ResultDTO resultDTO = JsonUtils.parseObject(result, ResultDTO.class);
+                if (resultDTO.isSuccess()) {
+                    return resultDTO.getData().toString();
+                }
+            }catch (Exception ignore) {
             }
         }
         return null;

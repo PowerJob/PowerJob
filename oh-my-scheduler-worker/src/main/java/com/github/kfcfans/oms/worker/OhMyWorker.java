@@ -2,9 +2,9 @@ package com.github.kfcfans.oms.worker;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.utils.CommonUtils;
+import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.actors.ProcessorTrackerActor;
 import com.github.kfcfans.oms.worker.actors.TaskTrackerActor;
 import com.github.kfcfans.oms.worker.background.ServerDiscoveryService;
@@ -131,7 +131,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
             String realUrl = String.format(url, server, appName);
             try {
                 String resultDTOStr = CommonUtils.executeWithRetry0(() -> HttpUtils.get(realUrl));
-                ResultDTO resultDTO = JSONObject.parseObject(resultDTOStr, ResultDTO.class);
+                ResultDTO resultDTO = JsonUtils.parseObject(resultDTOStr, ResultDTO.class);
                 if (resultDTO.isSuccess()) {
                     Long appId = Long.valueOf(resultDTO.getData().toString());
                     log.info("[OhMyWorker] assert appName({}) succeed, the appId for this application is {}.", appName, appId);

@@ -1,5 +1,6 @@
 package com.github.kfcfans.common.response;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,7 +15,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 @Getter
 @Setter
 @ToString
-public class ResultDTO<T> {
+public class ResultDTO<T> implements OmsSerializable {
 
     private boolean success;
     // 数据（success为 true 时存在）

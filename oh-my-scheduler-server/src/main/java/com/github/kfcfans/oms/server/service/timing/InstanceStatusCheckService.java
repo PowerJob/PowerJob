@@ -73,7 +73,7 @@ public class InstanceStatusCheckService {
 
             // 1. 检查等待 WAITING_DISPATCH 状态的任务
             long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
-            List<InstanceLogDO> waitingDispatchInstances = instanceLogRepository.findByJobIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
+            List<InstanceLogDO> waitingDispatchInstances = instanceLogRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) is not triggered as expected.", waitingDispatchInstances);
                 waitingDispatchInstances.forEach(instance -> {
@@ -85,7 +85,7 @@ public class InstanceStatusCheckService {
 
             // 2. 检查 WAITING_WORKER_RECEIVE 状态的任务
             threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
-            List<InstanceLogDO> waitingWorkerReceiveInstances = instanceLogRepository.findByJobIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
+            List<InstanceLogDO> waitingWorkerReceiveInstances = instanceLogRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingWorkerReceiveInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) did n’t receive any reply from worker.", waitingWorkerReceiveInstances);
                 waitingWorkerReceiveInstances.forEach(instance -> {
@@ -97,7 +97,7 @@ public class InstanceStatusCheckService {
 
             // 3. 检查 RUNNING 状态的任务（一定时间没收到 TaskTracker 的状态报告，视为失败）
             threshold = System.currentTimeMillis() - RUNNING_TIMEOUT_MS;
-            List<InstanceLogDO> failedInstances = instanceLogRepository.findByJobIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold));
+            List<InstanceLogDO> failedInstances = instanceLogRepository.findByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold));
             if (!CollectionUtils.isEmpty(failedInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) has not received status report for a long time.", failedInstances);
                 failedInstances.forEach(instance -> {

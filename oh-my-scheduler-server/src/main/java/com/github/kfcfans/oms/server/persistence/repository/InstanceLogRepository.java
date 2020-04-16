@@ -46,9 +46,9 @@ public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long
     int update4FrequentJob(long instanceId, int status, long runningTimes);
 
     // 状态检查三兄弟，对应 WAITING_DISPATCH 、 WAITING_WORKER_RECEIVE 和 RUNNING 三阶段
-    List<InstanceLogDO> findByJobIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
-    List<InstanceLogDO> findByJobIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
-    List<InstanceLogDO> findByJobIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
+    List<InstanceLogDO> findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
+    List<InstanceLogDO> findByAppIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
+    List<InstanceLogDO> findByAppIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
 
     InstanceLogDO findByInstanceId(long instanceId);
 

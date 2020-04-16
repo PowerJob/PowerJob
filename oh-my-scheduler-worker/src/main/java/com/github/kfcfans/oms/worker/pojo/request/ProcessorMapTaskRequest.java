@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
+import com.github.kfcfans.common.OmsSerializable;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
@@ -8,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Getter
 @NoArgsConstructor
-public class ProcessorMapTaskRequest implements Serializable {
+public class ProcessorMapTaskRequest implements OmsSerializable {
 
     private Long instanceId;
     private Long subInstanceId;

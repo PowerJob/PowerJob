@@ -1,10 +1,10 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 
 /**
  * worker 上报 task 执行情况
@@ -15,7 +15,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProcessorReportTaskStatusReq implements Serializable {
+public class ProcessorReportTaskStatusReq implements OmsSerializable {
 
     private Long instanceId;
     private String taskId;

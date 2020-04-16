@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
+import com.github.kfcfans.common.OmsSerializable;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
@@ -7,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 
 /**
  * TaskTracker 派发 task 进行执行
@@ -18,7 +18,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @NoArgsConstructor
-public class TaskTrackerStartTaskReq implements Serializable {
+public class TaskTrackerStartTaskReq implements OmsSerializable {
 
     // TaskTracker 地址
     private String taskTrackerAddress;

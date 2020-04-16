@@ -1,10 +1,10 @@
 package com.github.kfcfans.common.response;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 
 /**
  * Pattens.ask 的响应
@@ -15,7 +15,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AskResponse implements Serializable {
+public class AskResponse implements OmsSerializable {
     private boolean success;
     private Object extra;
 

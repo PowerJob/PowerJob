@@ -49,3 +49,45 @@ java.lang.RuntimeException: create root task failed.
 #### SystemMetric算分问题
 问题：java.lang.management.OperatingSystemMXBean#getSystemLoadAverage 不一定能获取CPU当前负载，可能返回负数代表不可用...
 解决方案：印度Windows上getSystemLoadAverage()固定返回-1...太坑了...先做个保护性判断继续测试吧...
+
+#### 未知的数组越界问题（可能是数据库性能问题）
+秒级Broadcast任务在第四次执行时，当Processor完成执行上报状态时，TaskTracker报错，错误的本质原因是无法从数据库中找到这个task对应的记录...
+时间表达式：FIX_DELAY，对应的TaskTracker为FrequentTaskTracker
+
+异常堆栈
+```text
+2020-04-16 18:05:09 ERROR - [TaskPersistenceService] getTaskStatus failed, instanceId=1586857062542,taskId=4.
+java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
+	at java.util.LinkedList.checkElementIndex(LinkedList.java:555)
+	at java.util.LinkedList.get(LinkedList.java:476)
+	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.lambda$getTaskStatus$10(TaskPersistenceService.java:214)
+	at com.github.kfcfans.common.utils.CommonUtils.executeWithRetry(CommonUtils.java:37)
+	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.execute(TaskPersistenceService.java:310)
+	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.getTaskStatus(TaskPersistenceService.java:212)
+	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.updateTaskStatus(TaskTracker.java:107)
+	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.broadcast(TaskTracker.java:214)
+	at com.github.kfcfans.oms.worker.actors.TaskTrackerActor.onReceiveBroadcastTaskPreExecuteFinishedReq(TaskTrackerActor.java:106)
+	at akka.japi.pf.UnitCaseStatement.apply(CaseStatements.scala:24)
+	at akka.japi.pf.UnitCaseStatement.apply(CaseStatements.scala:20)
+	at scala.PartialFunction.applyOrElse(PartialFunction.scala:187)
+	at scala.PartialFunction.applyOrElse$(PartialFunction.scala:186)
+	at akka.japi.pf.UnitCaseStatement.applyOrElse(CaseStatements.scala:20)
+	at scala.PartialFunction$OrElse.applyOrElse(PartialFunction.scala:241)
+	at scala.PartialFunction$OrElse.applyOrElse(PartialFunction.scala:242)
+	at scala.PartialFunction$OrElse.applyOrElse(PartialFunction.scala:242)
+	at scala.PartialFunction$OrElse.applyOrElse(PartialFunction.scala:242)
+	at scala.PartialFunction$OrElse.applyOrElse(PartialFunction.scala:242)
+	at akka.actor.Actor.aroundReceive(Actor.scala:534)
+	at akka.actor.Actor.aroundReceive$(Actor.scala:532)
+	at akka.actor.AbstractActor.aroundReceive(AbstractActor.scala:220)
+	at akka.actor.ActorCell.receiveMessage(ActorCell.scala:573)
+	at akka.actor.ActorCell.invoke(ActorCell.scala:543)
+	at akka.dispatch.Mailbox.processMailbox(Mailbox.scala:269)
+	at akka.dispatch.Mailbox.run(Mailbox.scala:230)
+	at akka.dispatch.Mailbox.exec(Mailbox.scala:242)
+	at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:289)
+	at java.util.concurrent.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1056)
+	at java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1692)
+	at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:157)
+2020-04-16 18:05:09 WARN  - [TaskTracker-1586857062542] query TaskStatus from DB failed when try to update new TaskStatus(taskId=4,newStatus=6).
+```

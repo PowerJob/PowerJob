@@ -1,8 +1,8 @@
 package com.github.kfcfans.common.request;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -12,7 +12,7 @@ import java.util.List;
  * @since 2020/3/17
  */
 @Data
-public class ServerScheduleJobReq implements Serializable {
+public class ServerScheduleJobReq implements OmsSerializable {
 
     // 可用处理器地址，可能多值，逗号分隔
     private List<String> allWorkerAddress;

@@ -1,8 +1,8 @@
 package com.github.kfcfans.common.request;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.Data;
 
-import java.io.Serializable;
 
 /**
  * TaskTracker 将状态上报给服务器
@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @since 2020/3/17
  */
 @Data
-public class TaskTrackerReportInstanceStatusReq implements Serializable {
+public class TaskTrackerReportInstanceStatusReq implements OmsSerializable {
 
     private Long jobId;
     private Long instanceId;

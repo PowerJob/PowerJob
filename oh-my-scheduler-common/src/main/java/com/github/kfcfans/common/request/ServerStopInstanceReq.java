@@ -1,10 +1,10 @@
 package com.github.kfcfans.common.request;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 
 /**
  * 服务器要求任务实例停止执行请求
@@ -15,6 +15,6 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServerStopInstanceReq implements Serializable {
+public class ServerStopInstanceReq implements OmsSerializable {
     private Long instanceId;
 }

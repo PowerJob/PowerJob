@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.processors;
 
-import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.sdk.MapReduceProcessor;
@@ -24,7 +24,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
     @Override
     public ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result) {
         System.out.println("============== TestMapReduceProcessor#reduce ==============");
-        System.out.println("taskContext:" + JSONObject.toJSONString(taskContext));
+        System.out.println("taskContext:" + JsonUtils.toJSONString(taskContext));
         System.out.println("taskId2Result:" + taskId2Result);
         return new ProcessResult(true, "REDUCE_SUCCESS");
     }
@@ -33,7 +33,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
     public ProcessResult process(TaskContext context) throws Exception {
         System.out.println("============== TestMapReduceProcessor#process ==============");
         System.out.println("isRootTask:" + isRootTask());
-        System.out.println("taskContext:" + JSONObject.toJSONString(context));
+        System.out.println("taskContext:" + JsonUtils.toJSONString(context));
 
         if (isRootTask()) {
             System.out.println("==== MAP ====");
@@ -50,7 +50,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
             return new ProcessResult(true, "MAP_SUCCESS");
         }else {
             System.out.println("==== NORMAL_PROCESS ====");
-            System.out.println("subTask: " + JSONObject.toJSONString(context.getSubTask()));
+            System.out.println("subTask: " + JsonUtils.toJSONString(context.getSubTask()));
             Thread.sleep(1000);
             if (context.getCurrentRetryTimes() == 0) {
                 return new ProcessResult(false, "FIRST_FAILED");
