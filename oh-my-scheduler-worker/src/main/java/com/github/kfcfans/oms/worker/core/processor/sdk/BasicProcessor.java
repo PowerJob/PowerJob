@@ -1,7 +1,7 @@
-package com.github.kfcfans.oms.worker.sdk.api;
+package com.github.kfcfans.oms.worker.core.processor.sdk;
 
-import com.github.kfcfans.oms.worker.sdk.TaskContext;
-import com.github.kfcfans.oms.worker.sdk.ProcessResult;
+import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 
 /**
  * 基础的处理器，适用于单机执行

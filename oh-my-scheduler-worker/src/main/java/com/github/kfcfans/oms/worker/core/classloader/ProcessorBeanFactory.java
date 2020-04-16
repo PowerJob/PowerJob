@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.worker.core.classloader;
 
-import com.github.kfcfans.oms.worker.sdk.api.BasicProcessor;
+import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 

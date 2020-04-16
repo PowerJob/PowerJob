@@ -1,16 +1,9 @@
 package com.github.kfcfans.oms.processors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.ProcessorType;
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.TimeExpressionType;
-import com.github.kfcfans.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.common.utils.NetUtils;
-import com.github.kfcfans.oms.worker.sdk.ProcessResult;
-import com.github.kfcfans.oms.worker.sdk.TaskContext;
-import com.github.kfcfans.oms.worker.sdk.api.BasicProcessor;
-import com.google.common.collect.Lists;
+import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
+import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 
 /**
  * 测试用的基础处理器

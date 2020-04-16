@@ -23,6 +23,7 @@
         <kryo.version>5.0.0-RC5</kryo.version>
         <fastjson.version>1.2.68</fastjson.version>
         <okhttp.version>4.4.1</okhttp.version>
+        <commons.io.version>2.6</commons.io.version>
     </properties>
 
     <dependencies>
@@ -90,6 +91,14 @@
             <artifactId>fastjson</artifactId>
             <version>${fastjson.version}</version>
         </dependency>
+
+        <!-- commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
+
 
 
         <!-- 开发阶段输出日志 -->

@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.worker.sdk;
+package com.github.kfcfans.oms.worker.core.processor;
 
 import lombok.Getter;
 import lombok.Setter;

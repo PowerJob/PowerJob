@@ -22,6 +22,8 @@
     * 固定延迟 -> 填写整数，单位毫秒
 * 执行配置：由执行类型（单机、广播和MapReduce）、处理器类型和处理器参数组成，后两项相互关联。
     * 内置Java处理器 -> 填写该处理器的全限定类名（eg, `com.github.kfcfans.oms.processors.demo.MapReduceProcessorDemo`）
+    * SHELL -> 填写需要处理的脚本（直接复制文件内容）或脚本下载连接（http://xxx）
+    * PYTHON -> 填写完整的python脚本或下载连接（http://xxx）
     
 * 运行配置
     * 最大实例数：该任务同时执行的数量（任务和实例就像是类和对象的关系，任务被调度执行后被称为实例）
@@ -54,7 +56,7 @@
 >搭载处理器的宿主应用需要添加`oh-my-scheduler-worker`依赖。
 
 ### 单机处理器
->单机执行的策略下，server会在所有可用worker中选取健康度最佳的机器进行执行。单机执行任务需要实现接口：`com.github.kfcfans.oms.worker.sdk.api.BasicProcessor`，代码示例如下：
+>单机执行的策略下，server会在所有可用worker中选取健康度最佳的机器进行执行。单机执行任务需要实现接口：`com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor`，代码示例如下：
 
 ```java
 public class BasicProcessorDemo implements BasicProcessor {

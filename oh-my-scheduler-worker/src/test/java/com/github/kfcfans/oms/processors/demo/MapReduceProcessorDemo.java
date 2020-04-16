@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.processors.demo;
 
-import com.github.kfcfans.oms.worker.sdk.ProcessResult;
-import com.github.kfcfans.oms.worker.sdk.TaskContext;
-import com.github.kfcfans.oms.worker.sdk.api.MapReduceProcessor;
+import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
+import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.sdk.MapReduceProcessor;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 

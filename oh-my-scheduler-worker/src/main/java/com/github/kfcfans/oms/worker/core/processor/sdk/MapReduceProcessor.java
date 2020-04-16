@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.worker.sdk.api;
+package com.github.kfcfans.oms.worker.core.processor.sdk;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
@@ -10,8 +10,8 @@ import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.common.response.AskResponse;
-import com.github.kfcfans.oms.worker.sdk.TaskContext;
-import com.github.kfcfans.oms.worker.sdk.ProcessResult;
+import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 

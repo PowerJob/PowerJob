@@ -1,16 +1,15 @@
 package com.github.kfcfans.oms.processors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.oms.worker.sdk.ProcessResult;
-import com.github.kfcfans.oms.worker.sdk.TaskContext;
-import com.github.kfcfans.oms.worker.sdk.api.MapReduceProcessor;
+import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
+import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.sdk.MapReduceProcessor;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 

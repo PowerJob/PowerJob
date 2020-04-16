@@ -10,13 +10,14 @@ import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
-import com.github.kfcfans.oms.worker.core.executor.ShellProcessor;
+import com.github.kfcfans.oms.worker.core.processor.built.PythonProcessor;
+import com.github.kfcfans.oms.worker.core.processor.built.ShellProcessor;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.github.kfcfans.oms.worker.pojo.request.TaskTrackerStartTaskReq;
-import com.github.kfcfans.oms.worker.sdk.api.BasicProcessor;
+import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -213,11 +214,14 @@ public class ProcessorTracker {
                 }
                 break;
             case SHELL:
-                processor = new ShellProcessor(instanceId, instanceInfo.getProcessorInfo());
+                processor = new ShellProcessor(instanceId, processorInfo);
                 break;
-            case PYTHON2:
-
-
+            case PYTHON:
+                processor = new PythonProcessor(instanceId, processorInfo);
+                break;
+            default:
+                log.warn("[ProcessorRunnable-{}] unknown processor type: {}.", instanceId, processorType);
+                throw new IllegalArgumentException("unknown processor type of " + processorType);
         }
 
         if (processor == null) {

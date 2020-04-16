@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms;
 
-import com.github.kfcfans.oms.worker.core.executor.ShellProcessor;
+import com.github.kfcfans.oms.worker.core.processor.built.PythonProcessor;
+import com.github.kfcfans.oms.worker.core.processor.built.ShellProcessor;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,12 +13,24 @@ import org.junit.jupiter.api.Test;
 public class ScriptProcessorTest {
 
     @Test
-    public void testShellProcessor() throws Exception {
-        ShellProcessor sp = new ShellProcessor(277L, "ls -a");
+    public void testLocalShellProcessor() throws Exception {
+        ShellProcessor sp = new ShellProcessor(1L, "ls -a");
         sp.process(null);
 
-        ShellProcessor sp2 = new ShellProcessor(277L, "pwd");
+        ShellProcessor sp2 = new ShellProcessor(2777L, "pwd");
         sp2.process(null);
+    }
+
+    @Test
+    public void testLocalPythonProcessor() throws Exception {
+        PythonProcessor pp = new PythonProcessor(2L, "print 'Hello World!'");
+        pp.process(null);
+    }
+
+    @Test
+    public void testNetShellProcessor() throws Exception {
+        ShellProcessor sp = new ShellProcessor(18L, "http://localhost:8080/test/test.sh");
+        sp.process(null);
     }
 
 }
