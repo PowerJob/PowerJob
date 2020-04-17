@@ -6,6 +6,7 @@ import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BroadcastProcessor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -18,6 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @since 2020/4/17
  */
 @Slf4j
+@Component
 public class BroadcastProcessorDemo extends BroadcastProcessor {
 
     @Override

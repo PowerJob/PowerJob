@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.akka.actors;
 
 import akka.actor.AbstractActor;
+import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
 import com.github.kfcfans.common.response.AskResponse;
@@ -45,8 +46,10 @@ public class ServerActor extends AbstractActor {
         try {
             InstanceManager.updateStatus(req);
 
-            // 回复接收成功
-            getSender().tell(AskResponse.succeed(null), getSelf());
+            // 结束状态（成功/失败）需要回复消息
+            if (!InstanceStatus.generalizedRunningStatus.contains(req.getInstanceStatus())) {
+                getSender().tell(AskResponse.succeed(null), getSelf());
+            }
         }catch (Exception e) {
             log.error("[ServerActor] update instance status failed for request: {}.", req, e);
         }

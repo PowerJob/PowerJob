@@ -257,17 +257,17 @@ public class FrequentTaskTracker extends TaskTracker {
                         continue;
                     }
 
-                    String result;
                     switch (executeType) {
                         // STANDALONE 代表任务确实已经执行完毕了
                         case STANDALONE:
                             // 查询数据库获取结果（STANDALONE每个SubInstance只会有一条Task记录）
-                            result = taskPersistenceService.getAllTask(instanceId, subInstanceId).get(0).getResult();
-                            onFinished(subInstanceId, true, result, iterator);
+                            TaskDO resultTask = taskPersistenceService.getAllTask(instanceId, subInstanceId).get(0);
+                            boolean success = resultTask.getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
+                            onFinished(subInstanceId, success, resultTask.getResult(), iterator);
                             continue;
                         // MAP 不关心结果，最简单
                         case MAP:
-                            result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.succeedNum, holder.failedNum);
+                            String result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.succeedNum, holder.failedNum);
                             onFinished(subInstanceId, holder.failedNum == 0, result, iterator);
                             continue;
                         // MapReduce 和 BroadCast 需要根据是否有 LAST_TASK 来判断结束与否

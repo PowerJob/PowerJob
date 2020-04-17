@@ -146,7 +146,7 @@ public abstract class TaskTracker {
 
             // 处理失败的情况
             int configTaskRetryNum = instanceInfo.getTaskRetryNum();
-            if (nTaskStatus == TaskStatus.WORKER_PROCESS_FAILED && configTaskRetryNum > 1) {
+            if (nTaskStatus == TaskStatus.WORKER_PROCESS_FAILED && configTaskRetryNum >= 1) {
 
                 // 失败不是主要的情况，多查一次数据库也问题不大（况且前面有缓存顶着，大部分情况之前不会去查DB）
                 Optional<TaskDO> taskOpt = taskPersistenceService.getTask(instanceId, taskId);

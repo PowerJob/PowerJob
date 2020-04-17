@@ -5,6 +5,7 @@ import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -16,15 +17,16 @@ import java.util.concurrent.ThreadLocalRandom;
  * @since 2020/4/17
  */
 @Slf4j
+@Component
 public class StandaloneProcessorDemo implements BasicProcessor {
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
 
         System.out.println("================ StandaloneProcessorDemo#process ================");
-        System.out.println("TaskContext: " + JSONObject.toJSONString(context));
-
         boolean success = ThreadLocalRandom.current().nextBoolean();
+        System.out.println("TaskContext: " + JSONObject.toJSONString(context));
+        System.out.println("ProcessSuccess: " + success);
         return new ProcessResult(success, context + ": " + success);
     }
 }

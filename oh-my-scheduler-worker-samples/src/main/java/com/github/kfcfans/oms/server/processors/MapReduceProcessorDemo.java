@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -24,6 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @since 2020/4/17
  */
 @Slf4j
+@Component
 public class MapReduceProcessorDemo extends MapReduceProcessor {
 
     // 每一批发送任务大小
