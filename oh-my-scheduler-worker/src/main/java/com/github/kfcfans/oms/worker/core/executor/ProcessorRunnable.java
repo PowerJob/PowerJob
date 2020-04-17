@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.worker.core.executor;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.common.ExecuteType;
+import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
@@ -65,24 +66,30 @@ public class ProcessorRunnable implements Runnable {
         if (TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName())) {
 
             // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
-            if (executeType == ExecuteType.BROADCAST && processor instanceof BroadcastProcessor) {
+            if (executeType == ExecuteType.BROADCAST) {
 
-                BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
                 BroadcastTaskPreExecuteFinishedReq spReq = new BroadcastTaskPreExecuteFinishedReq();
                 spReq.setTaskId(taskId);
                 spReq.setInstanceId(instanceId);
                 spReq.setSubInstanceId(task.getSubInstanceId());
 
-                try {
-                    ProcessResult processResult = broadcastProcessor.preProcess(taskContext);
-                    spReq.setSuccess(processResult.isSuccess());
-                    spReq.setMsg(processResult.getMsg());
-                }catch (Exception e) {
-                    log.warn("[ProcessorRunnable-{}] broadcast task preProcess failed.", instanceId, e);
-                    spReq.setSuccess(false);
-                    spReq.setMsg(e.toString());
-                }
+                if (processor instanceof BroadcastProcessor) {
 
+                    BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
+                    try {
+                        ProcessResult processResult = broadcastProcessor.preProcess(taskContext);
+                        spReq.setSuccess(processResult.isSuccess());
+                        spReq.setMsg(suit(processResult.getMsg()));
+                    }catch (Exception e) {
+                        log.warn("[ProcessorRunnable-{}] broadcast task preProcess failed.", instanceId, e);
+                        spReq.setSuccess(false);
+                        spReq.setMsg(e.toString());
+                    }
+
+                }else {
+                    spReq.setSuccess(true);
+                    spReq.setMsg("NO_PREPOST_TASK");
+                }
                 spReq.setReportTime(System.currentTimeMillis());
                 taskTrackerActor.tell(spReq, null);
 
@@ -121,7 +128,7 @@ public class ProcessorRunnable implements Runnable {
             }
 
             TaskStatus status = lastResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED;
-            reportStatus(status, lastResult.getMsg());
+            reportStatus(status, suit(lastResult.getMsg()));
 
             log.info("[ProcessorRunnable-{}] the last task execute successfully, using time: {}", instanceId, stopwatch);
             return;
@@ -136,7 +143,7 @@ public class ProcessorRunnable implements Runnable {
             log.warn("[ProcessorRunnable-{}] task({}) process failed.", instanceId, taskContext.getDescription(), e);
             processResult = new ProcessResult(false, e.toString());
         }
-        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, processResult.getMsg());
+        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()));
     }
 
     /**
@@ -163,5 +170,17 @@ public class ProcessorRunnable implements Runnable {
         }finally {
             ThreadLocalStore.clear();
         }
+    }
+
+    // 裁剪返回结果到合适的大小
+    private String suit(String result) {
+
+        final int maxLength = OhMyWorker.getConfig().getMaxResultLength();
+        if (result.length() <= maxLength) {
+            return result;
+        }
+        log.warn("[ProcessorRunnable-{}] task(taskId={})'s result is too large({}>{}), a part will be discarded.",
+                task.getInstanceId(), task.getTaskId(), result.length(), maxLength);
+        return result.substring(0, maxLength).concat("...");
     }
 }

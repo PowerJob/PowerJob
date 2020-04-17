@@ -51,8 +51,8 @@ java.lang.RuntimeException: create root task failed.
 解决方案：印度Windows上getSystemLoadAverage()固定返回-1...太坑了...先做个保护性判断继续测试吧...
 
 #### 未知的数组越界问题（可能是数据库性能问题）
-秒级Broadcast任务在第四次执行时，当Processor完成执行上报状态时，TaskTracker报错，错误的本质原因是无法从数据库中找到这个task对应的记录...
-时间表达式：FIX_DELAY，对应的TaskTracker为FrequentTaskTracker
+问题：秒级Broadcast任务在第四次执行时，当Processor完成执行上报状态时，TaskTracker报错，错误的本质原因是无法从数据库中找到这个task对应的记录...
+场景：时间表达式：FIX_DELAY，对应的TaskTracker为FrequentTaskTracker
 
 异常堆栈
 ```text
@@ -91,3 +91,4 @@ java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
 	at java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:157)
 2020-04-16 18:05:09 WARN  - [TaskTracker-1586857062542] query TaskStatus from DB failed when try to update new TaskStatus(taskId=4,newStatus=6).
 ```
+解决方案：初步怀疑在连续更改时，由于数据库锁的存在导致行不可见（不知道H2具体的特性）。因此，需要保证同一个taskId串行更新 -> synchronize Yes！

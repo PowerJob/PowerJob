@@ -36,7 +36,7 @@ public abstract class MapReduceProcessor implements BasicProcessor {
     /**
      * 分发子任务
      * @param taskList 子任务，再次执行时可通过 TaskContext#getSubTask 获取
-     * @param taskName 子任务名称，作用不大
+     * @param taskName 子任务名称，即子任务处理器中 TaskContext#getTaskName 获取到的值
      * @return map结果
      */
     public ProcessResult map(List<?> taskList, String taskName) {
@@ -82,5 +82,11 @@ public abstract class MapReduceProcessor implements BasicProcessor {
         return TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName());
     }
 
-    public abstract ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result);
+    /**
+     * reduce方法将在所有任务结束后调用
+     * @param context 任务上下文
+     * @param taskId2Result 保存了各个子Task的执行结果
+     * @return reduce产生的结果将作为任务最终的返回结果
+     */
+    public abstract ProcessResult reduce(TaskContext context, Map<String, String> taskId2Result);
 }

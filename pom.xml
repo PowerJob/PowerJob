@@ -6,7 +6,7 @@
 
     <groupId>com.github.kfcfans</groupId>
     <artifactId>oh-my-scheduler</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <modules>
         <module>oh-my-scheduler-worker</module>
         <module>oh-my-scheduler-server</module>

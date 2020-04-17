@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
@@ -65,11 +66,11 @@ public class ProcessorTracker {
         String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
+        // 初始化 线程池
+        initThreadPool();
         // 初始化 Processor
         initProcessor();
-
-        // 初始化
-        initThreadPool();
+        // 初始化定时任务
         initTimingJob();
     }
 
@@ -146,7 +147,7 @@ public class ProcessorTracker {
      */
     private void initThreadPool() {
 
-        int poolSize = instanceInfo.getThreadConcurrency();
+        int poolSize = calThreadPoolSize();
         // 待执行队列，为了防止对内存造成较大压力，内存队列不能太大
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(THREAD_POOL_QUEUE_MAX_SIZE);
         // 自定义线程池中线程名称
@@ -164,7 +165,9 @@ public class ProcessorTracker {
      * 初始化定时任务
      */
     private void initTimingJob() {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-processor-timing-pool-%d").build();
+
+        // 全称 oms-ProcessTracker-TimingPool
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("oms-ProcessorTrackerTimingPool-%d").build();
         timingPool = Executors.newSingleThreadScheduledExecutor(threadFactory);
 
         timingPool.scheduleAtFixedRate(new CheckerAndReporter(), 0, 10, TimeUnit.SECONDS);
@@ -193,6 +196,9 @@ public class ProcessorTracker {
 
     }
 
+    /**
+     * 初始化处理器 Processor
+     */
     private void initProcessor() throws Exception {
 
         ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
@@ -214,10 +220,10 @@ public class ProcessorTracker {
                 }
                 break;
             case SHELL:
-                processor = new ShellProcessor(instanceId, processorInfo);
+                processor = new ShellProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS(), threadPool);
                 break;
             case PYTHON:
-                processor = new PythonProcessor(instanceId, processorInfo);
+                processor = new PythonProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS(), threadPool);
                 break;
             default:
                 log.warn("[ProcessorRunnable-{}] unknown processor type: {}.", instanceId, processorType);
@@ -228,6 +234,25 @@ public class ProcessorTracker {
             log.warn("[ProcessorRunnable-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
             throw new IllegalArgumentException("fetch Processor failed");
         }
+    }
+
+    /**
+     * 计算线程池大小
+     */
+    private int calThreadPoolSize() {
+        ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
+        ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
+
+        if (executeType == ExecuteType.MAP_REDUCE) {
+            return instanceInfo.getThreadConcurrency();
+        }
+
+        // 脚本类需要三个线程（执行线程、输入流、错误流），分配 N + 1个线程给线程池
+        if (processorType == ProcessorType.PYTHON || processorType == ProcessorType.SHELL) {
+            return 4;
+        }
+
+        return 2;
     }
 
 }

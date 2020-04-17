@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.persistence.repository;
 
 import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,15 +38,18 @@ public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long
      */
     @Transactional
     @Modifying
+    @CanIgnoreReturnValue
     @Query(value = "update instance_log set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, result = ?6, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
     int update4Trigger(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress, String result);
 
     @Modifying
     @Transactional
+    @CanIgnoreReturnValue
     @Query(value = "update instance_log set status = ?2, running_times = ?3, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
     int update4FrequentJob(long instanceId, int status, long runningTimes);
 
     // 状态检查三兄弟，对应 WAITING_DISPATCH 、 WAITING_WORKER_RECEIVE 和 RUNNING 三阶段
+    // 数据量一般不大，就不单独写SQL优化 IO 了
     List<InstanceLogDO> findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
     List<InstanceLogDO> findByAppIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
     List<InstanceLogDO> findByAppIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);

@@ -23,6 +23,7 @@ import com.typesafe.config.ConfigFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -42,7 +43,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2020/3/16
  */
 @Slf4j
-public class OhMyWorker implements ApplicationContextAware, InitializingBean {
+public class OhMyWorker implements ApplicationContextAware, InitializingBean, DisposableBean {
 
     @Getter
     private static OhMyConfig config;
@@ -147,5 +148,10 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean {
         }
         log.error("[OhMyWorker] no available server in {}.", config.getServerAddress());
         throw new RuntimeException("no server available!");
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        timingPool.shutdownNow();
     }
 }

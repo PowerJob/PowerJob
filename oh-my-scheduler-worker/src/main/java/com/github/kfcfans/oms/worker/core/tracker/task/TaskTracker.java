@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.worker.core.tracker.task;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.common.model.InstanceDetail;
@@ -101,7 +102,7 @@ public abstract class TaskTracker {
 
     /* *************************** 对外方法区 *************************** */
     /**
-     * 更新Task状态（任务状态机限定只允许状态变量递增，eg. 允许 FAILED -> SUCCEED，但不允许 SUCCEED -> FAILED）
+     * 更新Task状态
      * @param taskId task的ID（task为任务实例的执行单位）
      * @param newStatus task的新状态
      * @param reportTime 上报时间
@@ -109,11 +110,11 @@ public abstract class TaskTracker {
      */
     public void updateTaskStatus(String taskId, int newStatus, long reportTime, @Nullable String result) {
 
-        boolean updateResult;
         TaskStatus nTaskStatus = TaskStatus.of(newStatus);
 
         // 同一个task，串行执行
         // 需要保证 worker 的其他代码没有用 taskId 或者 String 作为锁...否则就等着找bug吧...（主要是不舍得加前缀，这用的可以常量池内存啊...）
+        // taskId其实是可能重复的（同一台机器上多个 TaskTracker...不过真实冲突概率较低，就算冲突了也问题不大，忽略）
         synchronized (taskId.intern()) {
 
             Long lastReportTime = taskId2LastReportTime.getIfPresent(taskId);
@@ -133,7 +134,7 @@ public abstract class TaskTracker {
                 }
             }
 
-            // 过滤过期的请求（潜在的集群时间一致性需求，重试跨Worker时时间不一致可能导致问题）
+            // 过滤过期的请求（潜在的集群时间一致性需求，重试跨Worker时，时间不一致可能导致问题）
             if (lastReportTime > reportTime) {
                 log.warn("[TaskTracker-{}] receive expired(last {} > current {}) task status report(taskId={},newStatus={}), TaskTracker will drop this report.",
                         lastReportTime, reportTime, instanceId, taskId, newStatus);
@@ -147,7 +148,7 @@ public abstract class TaskTracker {
             int configTaskRetryNum = instanceInfo.getTaskRetryNum();
             if (nTaskStatus == TaskStatus.WORKER_PROCESS_FAILED && configTaskRetryNum > 1) {
 
-                // 失败不是主要的情况，多查一次数据库也问题不大（况且前面有缓存顶着，大部分情况不会去查DB）
+                // 失败不是主要的情况，多查一次数据库也问题不大（况且前面有缓存顶着，大部分情况之前不会去查DB）
                 Optional<TaskDO> taskOpt = taskPersistenceService.getTask(instanceId, taskId);
                 // 查询DB再失败的话，就不重试了...
                 if (taskOpt.isPresent()) {
@@ -157,12 +158,16 @@ public abstract class TaskTracker {
                         TaskDO updateEntity = new TaskDO();
                         updateEntity.setFailedCnt(failedCnt + 1);
 
-                        // 非本机任务，则更换 ProcessorTracker 地址进行执行
-                        String oldAddress = taskOpt.get().getAddress();
-                        if (!StringUtils.isEmpty(oldAddress)) {
-                            if (!oldAddress.equals(OhMyWorker.getWorkerAddress())) {
-                                updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
-                            }
+                        /*
+                        地址规则：
+                        1. 当前存储的地址为任务派发的目的地（ProcessorTracker地址）
+                        2. 根任务、最终任务必须由TaskTracker所在机器执行（如果是根任务和最终任务，不应当修改地址）
+                        3. 广播任务每台机器都需要执行，因此不应该重新分配worker（广播任务不应当修改地址）
+                         */
+                        String taskName = taskOpt.get().getTaskName();
+                        ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
+                        if (!taskName.equals(TaskConstant.ROOT_TASK_NAME) && !taskName.equals(TaskConstant.LAST_TASK_NAME) && executeType != ExecuteType.BROADCAST) {
+                            updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
                         }
 
                         updateEntity.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
@@ -182,7 +187,7 @@ public abstract class TaskTracker {
             updateEntity.setStatus(nTaskStatus.getValue());
             updateEntity.setResult(result);
             updateEntity.setLastReportTime(reportTime);
-            updateResult = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
+            boolean updateResult = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
 
             if (!updateResult) {
                 log.warn("[TaskTracker-{}] update task status failed, this task(taskId={}) may be processed repeatedly!", instanceId, taskId);
@@ -276,8 +281,8 @@ public abstract class TaskTracker {
         // 2. 删除所有数据库数据
         boolean dbSuccess = taskPersistenceService.deleteAllTasks(instanceId);
         if (!dbSuccess) {
-            log.warn("[TaskTracker-{}] delete tasks from database failed.", instanceId);
-            taskPersistenceService.deleteAllTasks(instanceId);
+            log.error("[TaskTracker-{}] delete tasks from database failed, shutdown TaskTracker failed.", instanceId);
+            return;
         }else {
             log.debug("[TaskTracker-{}] delete all tasks from database successfully.", instanceId);
         }
@@ -303,20 +308,27 @@ public abstract class TaskTracker {
      */
     protected void dispatchTask(TaskDO task, String processorTrackerAddress) {
 
-        TaskTrackerStartTaskReq startTaskReq = new TaskTrackerStartTaskReq(instanceInfo, task);
-
-        String ptActorPath = AkkaUtils.getAkkaWorkerPath(processorTrackerAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-        ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptActorPath);
-        ptActor.tell(startTaskReq, null);
-
-        // 更新 ProcessorTrackerStatus 状态
-        ptStatusHolder.getProcessorTrackerStatus(processorTrackerAddress).setDispatched(true);
-        // 更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
+        // 1. 持久化，更新数据库（如果更新数据库失败，可能导致重复执行，先不处理）
         TaskDO updateEntity = new TaskDO();
         updateEntity.setStatus(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue());
         // 写入处理该任务的 ProcessorTracker
         updateEntity.setAddress(processorTrackerAddress);
-        taskPersistenceService.updateTask(instanceId, task.getTaskId(), updateEntity);
+        boolean success = taskPersistenceService.updateTask(instanceId, task.getTaskId(), updateEntity);
+        if (!success) {
+            log.warn("[TaskTracker-{}] dispatch task(taskId={},taskName={}) failed due to update task status failed.", instanceId, task.getTaskId(), task.getTaskName());
+            return;
+        }
+
+        // 2. 更新 ProcessorTrackerStatus 状态
+        ptStatusHolder.getProcessorTrackerStatus(processorTrackerAddress).setDispatched(true);
+        // 3. 初始化缓存
+        taskId2LastReportTime.put(task.getTaskId(), -1L);
+
+        // 4. 任务派发
+        TaskTrackerStartTaskReq startTaskReq = new TaskTrackerStartTaskReq(instanceInfo, task);
+        String ptActorPath = AkkaUtils.getAkkaWorkerPath(processorTrackerAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+        ActorSelection ptActor = OhMyWorker.actorSystem.actorSelection(ptActorPath);
+        ptActor.tell(startTaskReq, null);
 
         log.debug("[TaskTracker-{}] dispatch task(taskId={},taskName={}) successfully.", instanceId, task.getTaskId(), task.getTaskName());
     }

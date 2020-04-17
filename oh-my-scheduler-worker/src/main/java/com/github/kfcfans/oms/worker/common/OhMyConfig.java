@@ -25,4 +25,9 @@ public class OhMyConfig {
      * 本地持久化方式，默认使用磁盘
      */
     private StoreStrategy storeStrategy = StoreStrategy.DISK;
+    /**
+     * 最大返回值长度，超过会被截断
+     */
+    private int maxResultLength = 8096;
+
 }

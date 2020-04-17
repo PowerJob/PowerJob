@@ -2,6 +2,8 @@ package com.github.kfcfans.oms.worker.core.processor.built;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * Shell 处理器
  * 由 ProcessorTracker 创建
@@ -12,14 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ShellProcessor extends ScriptProcessor {
 
-
-    public ShellProcessor(Long instanceId, String processorInfo) throws Exception {
-        super(instanceId, processorInfo);
+    public ShellProcessor(Long instanceId, String processorInfo, long timeout, ExecutorService pool) throws Exception {
+        super(instanceId, processorInfo, timeout, pool);
     }
 
     @Override
-    protected String genScriptPath(Long instanceId) {
-        return String.format("~/oms/script/shell/%d.sh", instanceId);
+    protected String genScriptName(Long instanceId) {
+        return String.format("shell_%d.sh", instanceId);
     }
 
     @Override

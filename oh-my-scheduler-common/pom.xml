@@ -5,18 +5,18 @@
     <parent>
         <artifactId>oh-my-scheduler</artifactId>
         <groupId>com.github.kfcfans</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>oh-my-scheduler-common</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
         <slf4j.version>1.7.30</slf4j.version>
         <commons.lang.version>3.10</commons.lang.version>
-        <guava.version>28.2-jre</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <okhttp.version>4.4.1</okhttp.version>
         <akka.version>2.6.4</akka.version>
     </properties>
