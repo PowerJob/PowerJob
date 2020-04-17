@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.processors;
 import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.github.kfcfans.oms.worker.core.processor.sdk.MapReduceProcessor;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -20,14 +21,6 @@ import java.util.Map;
  * @since 2020/3/24
  */
 public class TestMapReduceProcessor extends MapReduceProcessor {
-
-    @Override
-    public ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result) {
-        System.out.println("============== TestMapReduceProcessor#reduce ==============");
-        System.out.println("taskContext:" + JsonUtils.toJSONString(taskContext));
-        System.out.println("taskId2Result:" + taskId2Result);
-        return new ProcessResult(true, "REDUCE_SUCCESS");
-    }
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
@@ -59,6 +52,14 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
             }
         }
 
+    }
+
+    @Override
+    public ProcessResult reduce(TaskContext context, List<TaskResult> taskResults) {
+        System.out.println("============== TestMapReduceProcessor#reduce ==============");
+        System.out.println("taskContext:" + JsonUtils.toJSONString(context));
+        System.out.println("taskId2Result:" + taskResults);
+        return new ProcessResult(true, "REDUCE_SUCCESS");
     }
 
     @Getter

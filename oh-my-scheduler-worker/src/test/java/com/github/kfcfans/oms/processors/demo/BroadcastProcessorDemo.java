@@ -2,8 +2,10 @@ package com.github.kfcfans.oms.processors.demo;
 
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BroadcastProcessor;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,7 +14,7 @@ import java.util.Map;
  * @author tjq
  * @since 2020/4/15
  */
-public class BroadcastProcessorDemo implements BroadcastProcessor {
+public class BroadcastProcessorDemo extends BroadcastProcessor {
 
     @Override
     public ProcessResult preProcess(TaskContext taskContext) throws Exception {
@@ -27,11 +29,11 @@ public class BroadcastProcessorDemo implements BroadcastProcessor {
     }
 
     @Override
-    public ProcessResult postProcess(TaskContext taskContext, Map<String, String> taskId2Result) throws Exception {
+    public ProcessResult postProcess(TaskContext taskContext, List<TaskResult> taskResults) throws Exception {
 
-        // taskId2Result 存储了所有worker执行的结果（包括preProcess）
+        // taskResults 存储了所有worker执行的结果（包括preProcess）
 
-        // 收尾，会在所有 worker 执行完毕 process 方法后调用
+        // 收尾，会在所有 worker 执行完毕 process 方法后调用，该结果将作为最终的执行结果在
         return new ProcessResult(true, "process success");
     }
 

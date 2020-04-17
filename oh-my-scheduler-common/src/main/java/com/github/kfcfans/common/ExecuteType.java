@@ -14,7 +14,8 @@ import lombok.Getter;
 public enum ExecuteType {
     STANDALONE(1, "单机执行"),
     BROADCAST(2, "广播执行"),
-    MAP_REDUCE(3, "MapReduce");
+    MAP_REDUCE(3, "MapReduce"),
+    MAP(4, "Map");
 
     int v;
     String des;

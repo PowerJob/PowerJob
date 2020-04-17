@@ -151,47 +151,53 @@ public class CommonTaskTracker extends TaskTracker {
                 }else {
                     ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
 
-                    // STANDALONE 只有一个任务，完成即结束
-                    if (executeType == ExecuteType.STANDALONE) {
+                    switch (executeType) {
 
-                        finished.set(true);
-
-                        List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
-                        if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
-                            success = false;
-                            result = SystemInstanceResult.UNKNOWN_BUG;
-                            log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
-                        }else {
-                            result = allTask.get(0).getResult();
-                            success = allTask.get(0).getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
-                        }
-
-                    } else {
-
-                        // MapReduce 和 Broadcast 任务实例是否完成根据**Last_Task**的执行情况判断
-                        Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId, instanceId);
-                        if (lastTaskOptional.isPresent()) {
-
-                            // 存在则根据 reduce 任务来判断状态
-                            TaskDO resultTask = lastTaskOptional.get();
-                            TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
-
-                            if (lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED) {
-                                finished.set(true);
-                                success = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS;
-                                result = resultTask.getResult();
+                        // STANDALONE 只有一个任务，完成即结束
+                        case STANDALONE:
+                            finished.set(true);
+                            List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
+                            if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
+                                success = false;
+                                result = SystemInstanceResult.UNKNOWN_BUG;
+                                log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
+                            }else {
+                                result = allTask.get(0).getResult();
+                                success = allTask.get(0).getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
                             }
+                            break;
+                        // MAP 不关心结果，最简单
+                        case MAP:
+                            finished.set(true);
+                            success = holder.failedNum == 0;
+                            result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.succeedNum, holder.failedNum);
+                            break;
+                        // MapReduce 和 Broadcast 任务实例是否完成根据**Last_Task**的执行情况判断
+                        default:
 
-                        }else {
+                            Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId, instanceId);
+                            if (lastTaskOptional.isPresent()) {
 
-                            // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
-                            TaskDO newLastTask = new TaskDO();
-                            newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
-                            newLastTask.setTaskId(LAST_TASK_ID);
-                            newLastTask.setSubInstanceId(instanceId);
-                            newLastTask.setAddress(OhMyWorker.getWorkerAddress());
-                            submitTask(Lists.newArrayList(newLastTask));
-                        }
+                                // 存在则根据 reduce 任务来判断状态
+                                TaskDO resultTask = lastTaskOptional.get();
+                                TaskStatus lastTaskStatus = TaskStatus.of(resultTask.getStatus());
+
+                                if (lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED) {
+                                    finished.set(true);
+                                    success = lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS;
+                                    result = resultTask.getResult();
+                                }
+
+                            }else {
+
+                                // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
+                                TaskDO newLastTask = new TaskDO();
+                                newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
+                                newLastTask.setTaskId(LAST_TASK_ID);
+                                newLastTask.setSubInstanceId(instanceId);
+                                newLastTask.setAddress(OhMyWorker.getWorkerAddress());
+                                submitTask(Lists.newArrayList(newLastTask));
+                            }
                     }
                 }
             }

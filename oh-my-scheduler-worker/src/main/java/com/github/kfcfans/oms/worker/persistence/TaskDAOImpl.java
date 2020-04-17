@@ -1,5 +1,7 @@
 package com.github.kfcfans.oms.worker.persistence;
 
+import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
+import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -20,7 +22,7 @@ public class TaskDAOImpl implements TaskDAO {
     public void initTable() throws Exception {
 
         String delTableSQL = "drop table if exists task_info";
-        String createTableSQL = "create table task_info (task_id varchar(20), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(20), task_content blob, address varchar(20), status int(11), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), last_report_time bigint(20), unique KEY pkey (instance_id, task_id))";
+        String createTableSQL = "create table task_info (task_id varchar(20), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(20), task_content blob, address varchar(20), status int(5), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), last_report_time bigint(20), unique KEY pkey (instance_id, task_id))";
 
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);
@@ -128,15 +130,27 @@ public class TaskDAOImpl implements TaskDAO {
     }
 
     @Override
-    public Map<String, String> queryTaskId2TaskResult(Long instanceId) throws SQLException {
+    public List<TaskResult> getAllTaskResult(Long instanceId, Long subInstanceId) throws SQLException {
         ResultSet rs = null;
-        Map<String, String> taskId2Result = Maps.newLinkedHashMapWithExpectedSize(4096);
-        String sql = "select task_id, result from task_info where instance_id = ?";
+        List<TaskResult> taskResults = Lists.newLinkedList();
+        String sql = "select task_id, status, result from task_info where instance_id = ? and sub_instance_id = ?";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, instanceId);
+            ps.setLong(2, subInstanceId);
             rs = ps.executeQuery();
             while (rs.next()) {
-                taskId2Result.put(rs.getString("task_id"), rs.getString("result"));
+
+                int taskStatus = rs.getInt(2);
+
+                // 只需要完成的结果
+                if (taskStatus == TaskStatus.WORKER_PROCESS_SUCCESS.getValue() || taskStatus == TaskStatus.WORKER_PROCESS_FAILED.getValue()) {
+                    TaskResult result = new TaskResult();
+                    taskResults.add(result);
+
+                    result.setTaskId(rs.getString(1));
+                    result.setSuccess(taskStatus == TaskStatus.WORKER_PROCESS_SUCCESS.getValue());
+                    result.setResult(rs.getString(3));
+                }
             }
         }finally {
             if (rs != null) {
@@ -146,7 +160,7 @@ public class TaskDAOImpl implements TaskDAO {
                 }
             }
         }
-        return taskId2Result;
+        return taskResults;
     }
 
     private static TaskDO convert(ResultSet rs) throws SQLException {

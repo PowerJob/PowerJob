@@ -3,8 +3,10 @@ package com.github.kfcfans.oms.processors;
 import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BroadcastProcessor;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,7 +15,7 @@ import java.util.Map;
  * @author tjq
  * @since 2020/3/25
  */
-public class TestBroadcastProcessor implements BroadcastProcessor {
+public class TestBroadcastProcessor extends BroadcastProcessor {
     @Override
     public ProcessResult preProcess(TaskContext taskContext) throws Exception {
         System.out.println("=============== TestBroadcastProcessor#preProcess ===============");
@@ -22,10 +24,10 @@ public class TestBroadcastProcessor implements BroadcastProcessor {
     }
 
     @Override
-    public ProcessResult postProcess(TaskContext taskContext, Map<String, String> taskId2Result) throws Exception {
+    public ProcessResult postProcess(TaskContext taskContext, List<TaskResult> taskResults) throws Exception {
         System.out.println("=============== TestBroadcastProcessor#postProcess ===============");
         System.out.println("taskContext:" + JsonUtils.toJSONString(taskContext));
-        System.out.println("taskId2Result:" + taskId2Result);
+        System.out.println("taskId2Result:" + taskResults);
         return new ProcessResult(true, "postProcess success");
     }
 

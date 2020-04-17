@@ -6,6 +6,7 @@ import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.common.utils.SupplierPlus;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
+import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -192,13 +193,13 @@ public class TaskPersistenceService {
     /**
      * 查询 taskId -> taskResult，reduce阶段或postProcess 阶段使用
      */
-    public Map<String, String> getTaskId2ResultMap(Long instanceId) {
+    public List<TaskResult> getAllTaskResult(Long instanceId, Long subInstanceId) {
         try {
-            return execute(() -> taskDAO.queryTaskId2TaskResult(instanceId));
+            return execute(() -> taskDAO.getAllTaskResult(instanceId, subInstanceId));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] getTaskId2ResultMap for instance(id={}) failed.", instanceId, e);
         }
-        return Maps.newHashMap();
+        return Lists.newLinkedList();
     }
 
     /**

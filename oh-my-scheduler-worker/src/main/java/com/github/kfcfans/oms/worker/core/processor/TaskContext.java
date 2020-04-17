@@ -31,7 +31,6 @@ public class TaskContext {
     private Object subTask;
 
 
-
     public String getDescription() {
         return "subInstanceId='" + subInstanceId + '\'' +
                 ", instanceId='" + instanceId + '\'' +

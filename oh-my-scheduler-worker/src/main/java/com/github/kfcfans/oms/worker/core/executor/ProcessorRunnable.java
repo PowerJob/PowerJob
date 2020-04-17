@@ -7,6 +7,7 @@ import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
+import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
@@ -22,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -105,19 +107,26 @@ public class ProcessorRunnable implements Runnable {
             log.debug("[ProcessorRunnable-{}] the last task(taskId={}) start to process.", instanceId, taskId);
 
             ProcessResult lastResult;
-            Map<String, String> taskId2ResultMap = TaskPersistenceService.INSTANCE.getTaskId2ResultMap(instanceId);
-            // 去除本任务
-            taskId2ResultMap.remove(taskId);
-
+            List<TaskResult> taskResults = TaskPersistenceService.INSTANCE.getAllTaskResult(instanceId, task.getSubInstanceId());
             try {
                 switch (executeType) {
                     case BROADCAST:
-                        BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
-                        lastResult = broadcastProcessor.postProcess(taskContext, taskId2ResultMap);
+
+                        if (processor instanceof  BroadcastProcessor) {
+                            BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
+                            lastResult = broadcastProcessor.postProcess(taskContext, taskResults);
+                        }else {
+                            lastResult = BroadcastProcessor.defaultResult(taskResults);
+                        }
                         break;
                     case MAP_REDUCE:
-                        MapReduceProcessor mapReduceProcessor = (MapReduceProcessor) processor;
-                        lastResult = mapReduceProcessor.reduce(taskContext, taskId2ResultMap);
+
+                        if (processor instanceof MapReduceProcessor) {
+                            MapReduceProcessor mapReduceProcessor = (MapReduceProcessor) processor;
+                            lastResult = mapReduceProcessor.reduce(taskContext, taskResults);
+                        }else {
+                            lastResult = new ProcessResult(false, "not implement the MapReduceProcessor");
+                        }
                         break;
                     default:
                         lastResult = new ProcessResult(false, "IMPOSSIBLE OR BUG");

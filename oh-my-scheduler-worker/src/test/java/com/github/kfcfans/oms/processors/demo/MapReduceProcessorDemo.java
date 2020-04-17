@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.processors.demo;
 
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
+import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.github.kfcfans.oms.worker.core.processor.sdk.MapReduceProcessor;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -47,15 +48,15 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
     }
 
     @Override
-    public ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result) {
+    public ProcessResult reduce(TaskContext taskContext, List<TaskResult> taskResults) {
 
         // 所有 Task 执行结束后，reduce 将会被执行
-        // taskId2Result 保存了所有子任务的执行结果（子任务的成功与否需要开发者自行根据 result 判断，比如可以使用字符串前缀匹配等方式）
+        // taskResults 保存了所有子任务的执行结果
 
         // 用法举例，统计执行结果
         AtomicLong successCnt = new AtomicLong(0);
-        taskId2Result.forEach((taskId, result) -> {
-            if (StringUtils.isNotEmpty(result) && result.startsWith("success")) {
+        taskResults.forEach(tr -> {
+            if (tr.isSuccess()) {
                 successCnt.incrementAndGet();
             }
         });

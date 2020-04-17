@@ -87,8 +87,8 @@ public class BasicProcessorDemo implements BasicProcessor {
 >广播执行的策略下，所有机器都会被调度执行该任务。为了便于资源的准备和释放，广播处理器在`BasicProcessor`的基础上额外增加了`preProcess`和`postProcess`方法，分别在整个集群开始之前/结束之后**选一台机器**执行相关方法。代码示例如下：
 
 ```java
-public class BroadcastProcessorDemo implements BroadcastProcessor {
-    
+public class BroadcastProcessorDemo extends BroadcastProcessor {
+
     @Override
     public ProcessResult preProcess(TaskContext taskContext) throws Exception {
         // 预执行，会在所有 worker 执行 process 方法前调用
@@ -100,16 +100,16 @@ public class BroadcastProcessorDemo implements BroadcastProcessor {
         // 撰写整个worker集群都会执行的代码逻辑
         return new ProcessResult(true, "release resource success");
     }
-    
+
     @Override
-    public ProcessResult postProcess(TaskContext taskContext, Map<String, String> taskId2Result) throws Exception {
-        
-        // taskId2Result 存储了所有worker执行的结果（包括preProcess）
-        
-        // 收尾，会在所有 worker 执行完毕 process 方法后调用
+    public ProcessResult postProcess(TaskContext taskContext, List<TaskResult> taskResults) throws Exception {
+
+        // taskResults 存储了所有worker执行的结果（包括preProcess）
+
+        // 收尾，会在所有 worker 执行完毕 process 方法后调用，该结果将作为最终的执行结果在
         return new ProcessResult(true, "process success");
     }
-    
+
 }
 ```
 
@@ -118,7 +118,7 @@ public class BroadcastProcessorDemo implements BroadcastProcessor {
 
 ```java
 public class MapReduceProcessorDemo extends MapReduceProcessor {
-    
+
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
         // 判断是否为根任务
@@ -148,15 +148,15 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
     }
 
     @Override
-    public ProcessResult reduce(TaskContext taskContext, Map<String, String> taskId2Result) {
-        
+    public ProcessResult reduce(TaskContext taskContext, List<TaskResult> taskResults) {
+
         // 所有 Task 执行结束后，reduce 将会被执行
-        // taskId2Result 保存了所有子任务的执行结果（子任务的成功与否需要开发者自行根据 result 判断，比如可以使用字符串前缀匹配等方式）
-        
+        // taskResults 保存了所有子任务的执行结果
+
         // 用法举例，统计执行结果
         AtomicLong successCnt = new AtomicLong(0);
-        taskId2Result.forEach((taskId, result) -> {
-            if (StringUtils.isNotEmpty(result) && result.startsWith("success")) {
+        taskResults.forEach(tr -> {
+            if (tr.isSuccess()) {
                 successCnt.incrementAndGet();
             }
         });
@@ -168,6 +168,7 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
         private Long siteId;
         private List<Long> idList;
     }
+}
 ```
 
 # OpenAPI
