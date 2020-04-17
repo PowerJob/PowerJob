@@ -20,6 +20,8 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
@@ -111,15 +113,25 @@ public class FrequentTaskTracker extends TaskTracker {
         detail.setTaskTrackerAddress(OhMyWorker.getWorkerAddress());
 
         List<InstanceDetail.SubInstanceDetail> history = Lists.newLinkedList();
-        recentSubInstanceInfo.forEach((ignore, subInstanceInfo) -> {
+        recentSubInstanceInfo.forEach((subId, subInstanceInfo) -> {
             InstanceDetail.SubInstanceDetail subDetail = new InstanceDetail.SubInstanceDetail();
             BeanUtils.copyProperties(subInstanceInfo, subDetail);
-            subDetail.setStatus(InstanceStatus.of(subInstanceInfo.status).getDes());
+            InstanceStatus status = InstanceStatus.of(subInstanceInfo.status);
+            subDetail.setStatus(status.getDes());
+            subDetail.setSubInstanceId(subId);
+
+            // 设置时间
+            subDetail.setStartTime(DateFormatUtils.format(subInstanceInfo.getStartTime(), "yyyy-MM-dd HH:mm:ss"));
+            if (status == InstanceStatus.SUCCEED || status == InstanceStatus.FAILED) {
+                subDetail.setFinishedTime(DateFormatUtils.format(subInstanceInfo.getFinishedTime(), "yyyy-MM-dd HH:mm:ss"));
+            }else {
+                subDetail.setFinishedTime("N/A");
+            }
 
             history.add(subDetail);
         });
 
-        detail.setExtra(history);
+        detail.setSubInstanceDetails(history);
         return detail;
     }
 

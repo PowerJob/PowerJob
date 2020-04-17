@@ -106,15 +106,9 @@ public class InstanceStatusCheckService {
                     TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
                     JobStatus jobStatus = JobStatus.of(jobInfoDO.getStatus());
 
-                    // 如果任务已关闭，则不进行重试，将任务置为失败即可
-                    if (jobStatus != JobStatus.ENABLE) {
+                    // 如果任务已关闭，则不进行重试，将任务置为失败即可；秒级任务也直接置为失败，由派发器重新调度
+                    if (jobStatus != JobStatus.ENABLE || TimeExpressionType.frequentTypes.contains(timeExpressionType.getV())) {
                         updateFailedInstance(instance);
-                        return;
-                    }
-
-                    // 秒级任务，无限重试，直接派发
-                    if (timeExpressionType == TimeExpressionType.FIX_RATE || timeExpressionType == TimeExpressionType.FIX_DELAY) {
-                        dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
                         return;
                     }
 
@@ -134,6 +128,9 @@ public class InstanceStatusCheckService {
      * 处理上报超时而失败的任务实例
      */
     private void updateFailedInstance(InstanceLogDO instance) {
+
+        log.warn("[InstanceStatusCheckService] detected instance(instanceId={},jobId={})'s TaskTracker report timeout,this instance is considered a failure.", instance.getInstanceId(), instance.getJobId());
+
         instance.setStatus(InstanceStatus.FAILED.getV());
         instance.setFinishedTime(System.currentTimeMillis());
         instance.setGmtModified(new Date());

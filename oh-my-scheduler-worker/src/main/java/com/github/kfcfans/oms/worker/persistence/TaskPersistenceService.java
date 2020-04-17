@@ -69,7 +69,7 @@ public class TaskPersistenceService {
     }
 
     /**
-     * 依靠主键更新 Task
+     * 依靠主键更新 Task（不涉及 result 的，都可以用该方法更新）
      */
     public boolean updateTask(Long instanceId, String taskId, TaskDO updateEntity) {
         try {
@@ -78,6 +78,18 @@ public class TaskPersistenceService {
             return execute(() -> taskDAO.simpleUpdate(query, updateEntity));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] updateTask failed.", e);
+        }
+        return false;
+    }
+
+    /**
+     * 更新任务状态
+     */
+    public boolean updateTaskStatus(Long instanceId, String taskId, int status, long lastReportTime, String result) {
+        try {
+            return execute(() -> taskDAO.updateTaskStatus(instanceId, taskId, status, lastReportTime, result));
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] updateTaskStatus failed.", e);
         }
         return false;
     }

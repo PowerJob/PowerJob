@@ -39,8 +39,14 @@ public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long
     @Transactional
     @Modifying
     @CanIgnoreReturnValue
-    @Query(value = "update instance_log set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, result = ?6, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
-    int update4Trigger(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress, String result);
+    @Query(value = "update instance_log set status = ?2, running_times = ?3, actual_trigger_time = ?4, finished_time = ?5, task_tracker_address = ?6, result = ?7, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
+    int update4TriggerFailed(long instanceId, int status, long runningTimes, long actualTriggerTime, long finishedTime, String taskTrackerAddress, String result);
+
+    @Transactional
+    @Modifying
+    @CanIgnoreReturnValue
+    @Query(value = "update instance_log set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
+    int update4TriggerSucceed(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress);
 
     @Modifying
     @Transactional

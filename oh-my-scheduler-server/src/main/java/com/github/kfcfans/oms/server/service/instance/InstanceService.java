@@ -114,9 +114,9 @@ public class InstanceService {
             AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
             if (askResponse.isSuccess()) {
-                return (InstanceDetail) askResponse.getExtra();
+                return askResponse.getData(InstanceDetail.class);
             }else {
-                log.warn("[InstanceService] ask InstanceStatus from TaskTracker failed, the message is {}.", askResponse.getExtra());
+                log.warn("[InstanceService] ask InstanceStatus from TaskTracker failed, the message is {}.", askResponse.getMessage());
             }
 
         }catch (Exception e) {

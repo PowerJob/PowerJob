@@ -46,9 +46,7 @@ public class ServerActor extends AbstractActor {
             InstanceManager.updateStatus(req);
 
             // 回复接收成功
-            AskResponse askResponse = new AskResponse();
-            askResponse.setSuccess(true);
-            getSender().tell(askResponse, getSelf());
+            getSender().tell(AskResponse.succeed(null), getSelf());
         }catch (Exception e) {
             log.error("[ServerActor] update instance status failed for request: {}.", req, e);
         }

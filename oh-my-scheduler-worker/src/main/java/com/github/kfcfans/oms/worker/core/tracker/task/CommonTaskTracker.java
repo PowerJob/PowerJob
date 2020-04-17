@@ -73,7 +73,7 @@ public class CommonTaskTracker extends TaskTracker {
         taskDetail.setSucceedTaskNum(holder.succeedNum);
         taskDetail.setFailedTaskNum(holder.failedNum);
         taskDetail.setTotalTaskNum(holder.getTotalTaskNum());
-        detail.setExtra(taskDetail);
+        detail.setTaskDetail(taskDetail);
 
         return detail;
     }

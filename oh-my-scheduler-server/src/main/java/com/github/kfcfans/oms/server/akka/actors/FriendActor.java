@@ -31,10 +31,7 @@ public class FriendActor extends AbstractActor {
      * 处理存活检测的请求
      */
     private void onReceivePing(Ping ping) {
-        AskResponse askResponse = new AskResponse();
-        askResponse.setSuccess(true);
-        askResponse.setExtra(System.currentTimeMillis() - ping.getCurrentTime());
-        getSender().tell(askResponse, getSelf());
+        getSender().tell(AskResponse.succeed(System.currentTimeMillis() - ping.getCurrentTime()), getSelf());
     }
 
     /**
@@ -42,9 +39,7 @@ public class FriendActor extends AbstractActor {
      */
     private void onReceiveFriendQueryWorkerClusterStatusReq(FriendQueryWorkerClusterStatusReq req) {
         Map<String, SystemMetrics> workerInfo = WorkerManagerService.getActiveWorkerInfo(req.getAppId());
-        AskResponse askResponse = new AskResponse();
-        askResponse.setSuccess(true);
-        askResponse.setExtra(workerInfo);
+        AskResponse askResponse = AskResponse.succeed(workerInfo);
         getSender().tell(askResponse, getSelf());
     }
 }

@@ -13,12 +13,12 @@ import java.util.Date;
 @Data
 public class InstanceLogVO {
 
-    // 任务ID
-    private Long jobId;
+    // 任务ID（JS精度丢失）
+    private String jobId;
     // 任务名称
     private String jobName;
-    // 任务实例ID
-    private Long instanceId;
+    // 任务实例ID（JS精度丢失）
+    private String instanceId;
 
     // 执行结果
     private String result;
@@ -28,9 +28,10 @@ public class InstanceLogVO {
 
     // 总共执行的次数（用于重试判断）
     private Long runningTimes;
+    private int status;
 
     /* ********** 不一致区域 ********** */
-    private String status;
+    private String statusStr;
     // 实际触发时间（需要格式化为人看得懂的时间）
     private String actualTriggerTime;
     // 结束时间（同理，需要格式化）

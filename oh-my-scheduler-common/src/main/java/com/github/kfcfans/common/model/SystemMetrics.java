@@ -1,5 +1,6 @@
 package com.github.kfcfans.common.model;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,7 +12,7 @@ import java.io.Serializable;
  * @since 2020/3/25
  */
 @Data
-public class SystemMetrics implements Serializable, Comparable<SystemMetrics> {
+public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics> {
 
     // CPU核心数量
     private int cpuProcessors;

@@ -39,4 +39,9 @@ public interface TaskDAO {
      */
     List<TaskResult> getAllTaskResult(Long instanceId, Long subInstanceId) throws SQLException;
 
+    /**
+     * 更新任务状态（result可能出现千奇百怪的字符，比如 ' ，只能特殊定制SQL直接写入）
+     */
+    boolean updateTaskStatus(Long instanceId, String taskId, int status, long lastReportTime, String result) throws SQLException;
+
 }

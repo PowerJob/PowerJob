@@ -163,6 +163,22 @@ public class TaskDAOImpl implements TaskDAO {
         return taskResults;
     }
 
+    @Override
+    public boolean updateTaskStatus(Long instanceId, String taskId, int status, long lastReportTime, String result) throws SQLException {
+        String sql = "update task_info set status = ?, last_report_time = ?, result = ?, last_modified_time = ? where instance_id = ? and task_id = ?";
+        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, status);
+            ps.setLong(2, lastReportTime);
+            ps.setString(3, result);
+            ps.setLong(4, lastReportTime);
+            ps.setLong(5, instanceId);
+            ps.setString(6, taskId);
+            ps.executeUpdate();
+            return true;
+        }
+    }
+
     private static TaskDO convert(ResultSet rs) throws SQLException {
         TaskDO task = new TaskDO();
         task.setTaskId(rs.getString("task_id"));

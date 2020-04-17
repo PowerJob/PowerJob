@@ -7,6 +7,7 @@ import com.github.kfcfans.common.RemoteConstant;
 import com.github.kfcfans.common.model.SystemMetrics;
 import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.common.response.ResultDTO;
+import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.akka.requests.FriendQueryWorkerClusterStatusReq;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
@@ -16,6 +17,7 @@ import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.web.response.SystemOverviewVO;
 import com.github.kfcfans.oms.server.web.response.WorkerStatusVO;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  * @author tjq
  * @since 2020/4/14
  */
+@Slf4j
 @RestController
 @RequestMapping("/system")
 public class SystemInfoController {
@@ -46,7 +49,7 @@ public class SystemInfoController {
     private InstanceLogRepository instanceLogRepository;
 
     @GetMapping("/listWorker")
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public ResultDTO<List<WorkerStatusVO>> listWorker(Long appId) {
         Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(appId);
         if (!appInfoOpt.isPresent()) {
@@ -67,16 +70,22 @@ public class SystemInfoController {
             AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
             if (askResponse.isSuccess()) {
-                Map<String, SystemMetrics> address2Info = (Map<String, SystemMetrics>) askResponse.getExtra();
+                Map address2Info = askResponse.getData(Map.class);
                 List<WorkerStatusVO> result = Lists.newLinkedList();
-                address2Info.forEach((address, metrics) -> {
-                    WorkerStatusVO info = new WorkerStatusVO(address, metrics);
-                    result.add(info);
+                address2Info.forEach((address, m) -> {
+                    try {
+                        SystemMetrics metrics = JsonUtils.parseObject(JsonUtils.toJSONString(m), SystemMetrics.class);
+                        WorkerStatusVO info = new WorkerStatusVO(String.valueOf(address), metrics);
+                        result.add(info);
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 });
                 return ResultDTO.success(result);
             }
-            return ResultDTO.failed(String.valueOf(askResponse.getExtra()));
+            return ResultDTO.failed(askResponse.getMessage());
         }catch (Exception e) {
+            log.error("[SystemInfoController] listWorker for appId:{} failed.", appId, e);
             return ResultDTO.failed("no worker or server available");
         }
     }

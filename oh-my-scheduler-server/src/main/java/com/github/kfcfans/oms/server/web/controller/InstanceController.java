@@ -49,8 +49,8 @@ public class InstanceController {
     }
 
     @GetMapping("/status")
-    public ResultDTO<InstanceDetail> getRunningStatus(Long instanceId) {
-        return ResultDTO.success(instanceService.getInstanceDetail(instanceId));
+    public ResultDTO<InstanceDetail> getRunningStatus(String instanceId) {
+        return ResultDTO.success(instanceService.getInstanceDetail(Long.valueOf(instanceId)));
     }
 
     @PostMapping("/list")
@@ -79,9 +79,13 @@ public class InstanceController {
             BeanUtils.copyProperties(instanceLogDO, instanceLogVO);
 
             // 状态转化为中文
-            instanceLogVO.setStatus(InstanceStatus.of(instanceLogDO.getStatus()).getDes());
+            instanceLogVO.setStatusStr(InstanceStatus.of(instanceLogDO.getStatus()).getDes());
             // 额外设置任务名称，提高可读性
             instanceLogVO.setJobName(cacheService.getJobName(instanceLogDO.getJobId()));
+
+            // ID 转化为 String（JS精度丢失）
+            instanceLogVO.setJobId(instanceLogDO.getJobId().toString());
+            instanceLogVO.setInstanceId(instanceLogDO.getInstanceId().toString());
 
             // 格式化时间
             if (instanceLogDO.getActualTriggerTime() == null) {

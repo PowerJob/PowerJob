@@ -89,7 +89,8 @@ public class TaskTrackerActor extends AbstractActor {
             log.warn("[TaskTrackerActor] process map task(instanceId={}) failed.", req.getInstanceId(), e);
         }
 
-        AskResponse response = new AskResponse(success);
+        AskResponse response = new AskResponse();
+        response.setSuccess(success);
         getSender().tell(response, getSelf());
     }
 
@@ -151,16 +152,14 @@ public class TaskTrackerActor extends AbstractActor {
      * 查询任务实例运行状态
      */
     private void onReceiveServerQueryInstanceStatusReq(ServerQueryInstanceStatusReq req) {
-        AskResponse askResponse = new AskResponse();
+        AskResponse askResponse;
         TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
         if (taskTracker == null) {
             log.warn("[TaskTrackerActor] receive ServerQueryInstanceStatusReq({}) but system can't find TaskTracker.", req);
-            askResponse.setSuccess(false);
-            askResponse.setExtra("can't find TaskTracker");
+            askResponse = AskResponse.failed("can't find TaskTracker");
         }else {
             InstanceDetail instanceDetail = taskTracker.fetchRunningStatus();
-            askResponse.setSuccess(true);
-            askResponse.setExtra(instanceDetail);
+            askResponse = AskResponse.succeed(instanceDetail);
         }
         getSender().tell(askResponse, getSelf());
     }

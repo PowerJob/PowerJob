@@ -1,8 +1,11 @@
 package com.github.kfcfans.common.model;
 
+import com.github.kfcfans.common.OmsSerializable;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 任务实例的运行详细信息（对外）
@@ -11,7 +14,8 @@ import java.io.Serializable;
  * @since 2020/4/11
  */
 @Data
-public class InstanceDetail implements Serializable {
+@NoArgsConstructor
+public class InstanceDetail implements OmsSerializable {
 
     // 任务整体开始时间
     private Long actualTriggerTime;
@@ -24,21 +28,27 @@ public class InstanceDetail implements Serializable {
     // TaskTracker地址
     private String taskTrackerAddress;
 
-    private Object extra;
+    // MR或BD任务专用
+    private TaskDetail taskDetail;
+    // 秒级任务专用
+    private List<SubInstanceDetail> subInstanceDetails;
 
 
     // 秒级任务的 extra -> List<SubInstanceDetail>
     @Data
-    public static class SubInstanceDetail implements Serializable {
-        private long startTime;
-        private long finishedTime;
+    @NoArgsConstructor
+    public static class SubInstanceDetail implements OmsSerializable {
+        private long subInstanceId;
+        private String startTime;
+        private String finishedTime;
         private String result;
         private String status;
     }
 
     // MapReduce 和 Broadcast 任务的 extra ->
     @Data
-    public static class TaskDetail implements Serializable {
+    @NoArgsConstructor
+    public static class TaskDetail implements OmsSerializable {
         private long totalTaskNum;
         private long succeedTaskNum;
         private long failedTaskNum;

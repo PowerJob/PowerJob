@@ -183,11 +183,8 @@ public abstract class TaskTracker {
             }
 
             // 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）
-            TaskDO updateEntity = new TaskDO();
-            updateEntity.setStatus(nTaskStatus.getValue());
-            updateEntity.setResult(result);
-            updateEntity.setLastReportTime(reportTime);
-            boolean updateResult = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
+            result = result == null ? "" : result;
+            boolean updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, newStatus, reportTime, result);
 
             if (!updateResult) {
                 log.warn("[TaskTracker-{}] update task status failed, this task(taskId={}) may be processed repeatedly!", instanceId, taskId);

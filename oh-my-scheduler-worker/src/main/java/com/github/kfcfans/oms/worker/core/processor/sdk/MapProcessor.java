@@ -44,7 +44,7 @@ public abstract class MapProcessor implements BasicProcessor {
         }
 
         if (taskList.size() > RECOMMEND_BATCH_SIZE) {
-            log.warn("[MapReduceProcessor] map task size is too large, network maybe overload... please try to split the tasks.");
+            log.warn("[MapProcessor] map task size is too large, network maybe overload... please try to split the tasks.");
         }
 
         TaskDO task = ThreadLocalStore.getTask();
@@ -61,7 +61,7 @@ public abstract class MapProcessor implements BasicProcessor {
             AskResponse respObj = (AskResponse) requestCS.toCompletableFuture().get(REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             requestSucceed = respObj.isSuccess();
         }catch (Exception e) {
-            log.warn("[MapReduceProcessor] map failed.", e);
+            log.warn("[MapProcessor] map failed.", e);
         }
 
         if (requestSucceed) {
