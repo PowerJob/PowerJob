@@ -5,7 +5,6 @@ import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.service.JobService;
-import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
@@ -142,8 +141,6 @@ public class JobScheduleService {
                 jobInfos.forEach(jobInfoDO ->  {
 
                     Long instanceId = jobId2InstanceId.get(jobInfoDO.getId());
-                    // 注册到任务实例管理中心
-                    InstanceManager.register(instanceId, jobInfoDO);
 
                     long targetTriggerTime = jobInfoDO.getNextTriggerTime();
                     long delay = 0;

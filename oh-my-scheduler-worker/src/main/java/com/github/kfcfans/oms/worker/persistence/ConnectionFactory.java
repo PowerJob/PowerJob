@@ -4,8 +4,6 @@ import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.constants.StoreStrategy;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -21,8 +19,8 @@ public class ConnectionFactory {
 
     private static volatile DataSource dataSource;
 
-    private static final String DISK_JDBC_URL = "jdbc:h2:file:~/.oms/h2/oms_worker_db";
-    private static final String MEMORY_JDBC_URL = "jdbc:h2:mem:~/.oms/h2/oms_worker_db";
+    private static final String DISK_JDBC_URL = "jdbc:h2:file:~/oms/h2/oms_worker_db";
+    private static final String MEMORY_JDBC_URL = "jdbc:h2:mem:~/oms/h2/oms_worker_db";
 
     public static Connection getConnection() throws SQLException {
         return getDataSource().getConnection();

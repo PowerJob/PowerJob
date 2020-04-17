@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController
-@RequestMapping("job")
+@RequestMapping("/job")
 public class JobController {
 
     @Resource

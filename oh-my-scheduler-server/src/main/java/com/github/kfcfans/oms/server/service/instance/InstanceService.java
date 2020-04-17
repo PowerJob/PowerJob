@@ -44,28 +44,42 @@ public class InstanceService {
      */
     public void stopInstance(Long instanceId) {
 
-        InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
-        if (instanceLogDO == null) {
-            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
-            throw new IllegalArgumentException("invalid instanceId: " + instanceId);
+        try {
+
+            InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
+            if (instanceLogDO == null) {
+                log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+                throw new IllegalArgumentException("invalid instanceId: " + instanceId);
+            }
+
+            // 判断状态，只有运行中才能停止
+            if (!InstanceStatus.generalizedRunningStatus.contains(instanceLogDO.getStatus())) {
+                throw new IllegalArgumentException("can't stop finished instance!");
+            }
+
+            // 更新数据库，将状态置为停止
+            instanceLogDO.setStatus(STOPPED.getV());
+            instanceLogDO.setGmtModified(new Date());
+            instanceLogDO.setFinishedTime(System.currentTimeMillis());
+            instanceLogDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
+            instanceLogRepository.saveAndFlush(instanceLogDO);
+
+            /*
+            不可靠通知停止 TaskTracker
+            假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭
+             */
+            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceLogDO.getTaskTrackerAddress());
+            ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
+            taskTrackerActor.tell(req, null);
+
+            log.info("[InstanceService-{}] update instance log and send request succeed.", instanceId);
+
+        }catch (IllegalArgumentException ie) {
+            throw ie;
+        }catch (Exception e) {
+            log.error("[InstanceService-{}] stopInstance failed.", instanceId, e);
+            throw e;
         }
-
-        // 判断状态，只有运行中才能停止
-        if (!InstanceStatus.generalizedRunningStatus.contains(instanceLogDO.getStatus())) {
-            throw new IllegalArgumentException("can't stop finished instance!");
-        }
-
-        // 更新数据库，将状态置为停止
-        instanceLogDO.setStatus(STOPPED.getV());
-        instanceLogDO.setGmtModified(new Date());
-        instanceLogDO.setFinishedTime(System.currentTimeMillis());
-        instanceLogDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
-        instanceLogRepository.saveAndFlush(instanceLogDO);
-
-        // 停止 TaskTracker
-        ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceLogDO.getTaskTrackerAddress());
-        ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
-        taskTrackerActor.tell(req, null);
     }
 
     /**

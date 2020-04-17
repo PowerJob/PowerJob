@@ -28,7 +28,7 @@ public class InstanceManager {
 
     // 存储 instanceId 对应的 Job 信息，便于重试
     private static final Map<Long, JobInfoDO> instanceId2JobInfo = Maps.newConcurrentMap();
-    // 存储 instance 的状态，只有状态变更才会更新数据库，减轻DB压力
+    // 存储 instance 的状态（暂时只用到了 lastReportTime）
     private static final Map<Long, InstanceStatusHolder> instanceId2StatusHolder = Maps.newConcurrentMap();
 
     // Spring Bean
@@ -129,28 +129,6 @@ public class InstanceManager {
             // 这一步也可能导致后面取不到 JobInfoDO
             instanceId2JobInfo.remove(instanceId);
         }
-    }
-
-    /**
-     * 获取某个任务实例对应的 TaskTracker 地址
-     * @param instanceId 任务实例ID
-     * @return TaskTracker地址，IP:Port
-     */
-    public static String getTaskTrackerAddress(Long instanceId) {
-        InstanceStatusHolder statusHolder = instanceId2StatusHolder.get(instanceId);
-        if (statusHolder == null) {
-            return null;
-        }
-        return statusHolder.getSourceAddress();
-    }
-
-    /**
-     * 获取任务的详细运行信息，包括当前运行状态、任务数量、TaskTracker地址等
-     * @param instanceId 任务实例ID
-     * @return 任务实例详细运行信息
-     */
-    public static InstanceStatusHolder getInstanceDetail(Long instanceId) {
-        return instanceId2StatusHolder.get(instanceId);
     }
 
     private static InstanceLogRepository getInstanceLogRepository() {

@@ -7,6 +7,7 @@ import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -17,7 +18,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +37,6 @@ public class DispatchService {
     @Resource
     private InstanceLogRepository instanceLogRepository;
 
-    private static final String EMPTY_RESULT = "";
     private static final Splitter commaSplitter = Splitter.on(",");
 
     public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
@@ -95,6 +94,9 @@ public class DispatchService {
                 finalWorkers = finalWorkers.subList(0, jobInfo.getMaxWorkerCount());
             }
         }
+
+        // 注册到任务实例管理中心
+        InstanceManager.register(instanceId, jobInfo);
 
         // 构造请求
         ServerScheduleJobReq req = new ServerScheduleJobReq();

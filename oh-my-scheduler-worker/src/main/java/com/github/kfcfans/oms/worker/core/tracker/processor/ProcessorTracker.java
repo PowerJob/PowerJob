@@ -211,7 +211,7 @@ public class ProcessorTracker {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
                     }catch (Exception e) {
-                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}).", instanceId, processorInfo);
+                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}).", instanceId, processorInfo, e);
                     }
                 }
                 // 反射加载

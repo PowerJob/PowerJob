@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.server.service;
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
@@ -99,6 +100,7 @@ public class JobService {
         }
         JobInfoDO jobInfoDO = jobInfoOPT.get();
         jobInfoDO.setStatus(status.getV());
+        jobInfoDO.setGmtModified(new Date());
         jobInfoRepository.saveAndFlush(jobInfoDO);
 
         // 2. 关闭秒级任务
@@ -111,11 +113,10 @@ public class JobService {
             return;
         }
         if (executeLogs.size() > 1) {
-            log.warn("[JobController] frequent job should just have one running instance, there must have some bug.");
+            log.warn("[JobService] frequent job should just have one running instance, there must have some bug.");
         }
         executeLogs.forEach(instance -> {
             try {
-
                 // 重复查询了数据库，不过问题不大，这个调用量很小
                 instanceService.stopInstance(instance.getInstanceId());
             }catch (Exception ignore) {
