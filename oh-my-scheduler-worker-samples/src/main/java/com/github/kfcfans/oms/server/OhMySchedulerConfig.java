@@ -27,7 +27,8 @@ public class OhMySchedulerConfig {
         OhMyConfig config = new OhMyConfig();
         config.setAppName("oms-test");
         config.setServerAddress(serverAddress);
-        config.setStoreStrategy(StoreStrategy.DISK);
+        // 如果没有大型 Map/MapReduce 的需求，建议使用内存来加速计算
+        config.setStoreStrategy(StoreStrategy.MEMORY);
 
         // 2. 创建 Worker 对象，设置配置文件
         OhMyWorker ohMyWorker = new OhMyWorker();

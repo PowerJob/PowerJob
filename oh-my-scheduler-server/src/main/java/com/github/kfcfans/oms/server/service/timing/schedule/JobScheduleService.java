@@ -145,7 +145,7 @@ public class JobScheduleService {
                     long targetTriggerTime = jobInfoDO.getNextTriggerTime();
                     long delay = 0;
                     if (targetTriggerTime < nowTime) {
-                        log.warn("[JobScheduleService] Job({}) was delayed.", jobInfoDO);
+                        log.warn("[JobScheduleService] find a delayed Job: {}.", jobInfoDO);
                     }else {
                         delay = targetTriggerTime - nowTime;
                     }

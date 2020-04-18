@@ -7,8 +7,6 @@ import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 /**
  * 单机处理器 示例
  * com.github.kfcfans.oms.server.processors.StandaloneProcessorDemo
@@ -24,7 +22,8 @@ public class StandaloneProcessorDemo implements BasicProcessor {
     public ProcessResult process(TaskContext context) throws Exception {
 
         System.out.println("================ StandaloneProcessorDemo#process ================");
-        boolean success = ThreadLocalRandom.current().nextBoolean();
+        // 根据控制台参数判断是否成功
+        boolean success = "success".equals(context.getJobParams());
         System.out.println("TaskContext: " + JSONObject.toJSONString(context));
         System.out.println("ProcessSuccess: " + success);
         return new ProcessResult(success, context + ": " + success);

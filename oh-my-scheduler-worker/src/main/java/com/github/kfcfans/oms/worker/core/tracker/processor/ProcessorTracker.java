@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.worker.core.tracker.processor;
 import akka.actor.ActorSelection;
 import com.github.kfcfans.common.ExecuteType;
 import com.github.kfcfans.common.ProcessorType;
+import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.common.RemoteConstant;
@@ -183,10 +184,13 @@ public class ProcessorTracker {
         public void run() {
 
             long interval = System.currentTimeMillis() - startTime;
-            if (interval > instanceInfo.getInstanceTimeoutMS()) {
-                log.warn("[ProcessorTracker-{}] detected instance timeout, maybe TaskTracker's destroy request missed, so try to kill self now.", instanceId);
-                destroy();
-                return;
+            // 秒级任务的ProcessorTracker不应该关闭
+            if (!TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType())) {
+                if (interval > instanceInfo.getInstanceTimeoutMS()) {
+                    log.warn("[ProcessorTracker-{}] detected instance timeout, maybe TaskTracker's destroy request missed, so try to kill self now.", instanceId);
+                    destroy();
+                    return;
+                }
             }
 
             long waitingNum = threadPool.getQueue().size();

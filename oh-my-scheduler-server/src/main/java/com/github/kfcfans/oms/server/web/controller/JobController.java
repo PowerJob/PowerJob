@@ -79,21 +79,20 @@ public class JobController {
     }
 
     @GetMapping("/disable")
-    public ResultDTO<Void> disableJob(Long jobId) throws Exception {
-        jobService.disableJob(jobId);
+    public ResultDTO<Void> disableJob(String jobId) throws Exception {
+        jobService.disableJob(Long.valueOf(jobId));
         return ResultDTO.success(null);
     }
 
     @GetMapping("/delete")
-    public ResultDTO<Void> deleteJob(Long jobId) throws Exception {
-        jobService.deleteJob(jobId);
+    public ResultDTO<Void> deleteJob(String jobId) throws Exception {
+        jobService.deleteJob(Long.valueOf(jobId));
         return ResultDTO.success(null);
     }
 
     @GetMapping("/run")
-    public ResultDTO<Void> runImmediately(Long jobId) {
-        jobService.runJob(jobId, null);
-        return ResultDTO.success(null);
+    public ResultDTO<Long> runImmediately(String jobId) {
+        return ResultDTO.success(jobService.runJob(Long.valueOf(jobId), null));
     }
 
     @PostMapping("/list")

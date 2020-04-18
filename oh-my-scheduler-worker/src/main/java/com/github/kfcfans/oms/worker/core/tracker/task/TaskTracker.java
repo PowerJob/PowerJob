@@ -73,6 +73,9 @@ public abstract class TaskTracker {
         if (instanceInfo.getInstanceTimeoutMS() <= 0) {
             instanceInfo.setInstanceTimeoutMS(Long.MAX_VALUE);
         }
+        // 赋予时间表达式类型
+        instanceInfo.setTimeExpressionType(TimeExpressionType.valueOf(req.getTimeExpressionType()).getV());
+
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
         this.finished = new AtomicBoolean(false);

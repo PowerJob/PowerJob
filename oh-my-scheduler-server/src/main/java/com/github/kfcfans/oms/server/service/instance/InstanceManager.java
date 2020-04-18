@@ -89,7 +89,7 @@ public class InstanceManager {
         // FREQUENT 任务没有失败重试机制，TaskTracker一直运行即可，只需要将存活信息同步到DB即可
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
-        if (timeExpressionType != TimeExpressionType.CRON.getV()) {
+        if (TimeExpressionType.frequentTypes.contains(timeExpressionType)) {
             getInstanceLogRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum());
             return;
         }
@@ -107,8 +107,8 @@ public class InstanceManager {
             log.info("[InstanceManager] instance(instanceId={}) execute succeed.", instanceId);
         }else if (newStatus == InstanceStatus.FAILED) {
 
-            // 当前重试次数 < 最大重试次数，进行重试
-            if (updateEntity.getRunningTimes() < instanceId2JobInfo.get(instanceId).getInstanceRetryNum()) {
+            // 当前重试次数 <= 最大重试次数，进行重试 （第一次运行，runningTimes为1，重试一次，instanceRetryNum也为1，故需要 =）
+            if (updateEntity.getRunningTimes() <= instanceId2JobInfo.get(instanceId).getInstanceRetryNum()) {
 
                 log.info("[InstanceManager] instance(instanceId={}) execute failed but will take the {}th retry.", instanceId, updateEntity.getRunningTimes());
                 getDispatchService().dispatch(instanceId2JobInfo.get(instanceId), instanceId, updateEntity.getRunningTimes());

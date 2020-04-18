@@ -28,6 +28,8 @@ public class InstanceInfo implements Serializable {
     private String processorType;
     // 处理器信息
     private String processorInfo;
+    // 定时类型
+    private int timeExpressionType;
 
     /**
      * 超时时间
