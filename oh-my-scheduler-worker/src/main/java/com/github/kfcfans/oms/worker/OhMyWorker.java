@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.worker;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.remote.RemoteTransportException;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.common.utils.JsonUtils;
@@ -81,21 +82,28 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
                 log.warn("[OhMyWorker] using TestMode now, it's dangerous if this is production env.");
             }
 
-            // 初始化 ActorSystem
-            Map<String, Object> overrideConfig = Maps.newHashMap();
-            int port = NetUtils.getAvailablePort(RemoteConstant.DEFAULT_WORKER_PORT);
-            overrideConfig.put("akka.remote.artery.canonical.hostname", NetUtils.getLocalHost());
-            overrideConfig.put("akka.remote.artery.canonical.port", port);
-            workerAddress = NetUtils.getLocalHost() + ":" + port;
-            log.info("[OhMyWorker] akka-remote listening address: {}", workerAddress);
+            // 初始化 ActorSystem（macOS上 new ServerSocket 检测端口占用的方法并不生效，可能是AKKA是Scala写的缘故？没办法...只能靠异常重试了）
+            for (int port = NetUtils.getAvailablePort(RemoteConstant.DEFAULT_WORKER_PORT); port < NetUtils.MAX_PORT; port++) {
+                try {
+                    Map<String, Object> overrideConfig = Maps.newHashMap();
+                    overrideConfig.put("akka.remote.artery.canonical.hostname", NetUtils.getLocalHost());
+                    overrideConfig.put("akka.remote.artery.canonical.port", port);
+                    workerAddress = NetUtils.getLocalHost() + ":" + port;
 
-            Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.WORKER_AKKA_CONFIG_NAME);
-            Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
+                    Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.WORKER_AKKA_CONFIG_NAME);
+                    Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
-            actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
-            actorSystem.actorOf(Props.create(TaskTrackerActor.class), RemoteConstant.Task_TRACKER_ACTOR_NAME);
-            actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-            log.info("[OhMyWorker] akka ActorSystem({}) initialized successfully.", actorSystem);
+                    actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
+                    actorSystem.actorOf(Props.create(TaskTrackerActor.class), RemoteConstant.Task_TRACKER_ACTOR_NAME);
+                    actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+
+                    log.info("[OhMyWorker] akka-remote listening address: {}", workerAddress);
+                    log.info("[OhMyWorker] akka ActorSystem({}) initialized successfully.", actorSystem);
+                    break;
+                }catch (RemoteTransportException ignore) {
+                    log.warn("[OhMyWorker] port:{} already in use, try to use a new port.", port);
+                }
+            }
 
             // 初始化存储
             TaskPersistenceService.INSTANCE.init();

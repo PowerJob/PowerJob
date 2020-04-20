@@ -116,7 +116,7 @@ public class DispatchService {
         req.setThreadConcurrency(jobInfo.getConcurrency());
 
         // 发送请求（不可靠，需要一个后台线程定期轮询状态）
-        String taskTrackerAddress = allAvailableWorker.get(0);
+        String taskTrackerAddress = finalWorkers.get(0);
         ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(taskTrackerAddress);
         taskTrackerActor.tell(req, null);
         log.debug("[DispatchService] send request({}) to TaskTracker({}) succeed.", req, taskTrackerActor.pathString());

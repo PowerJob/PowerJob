@@ -1,3 +1,4 @@
+import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.client.OhMyClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,13 +19,12 @@ public class TestClient {
     }
 
     @Test
-    public void testInstanceOpenAPI() throws Exception {
-        System.out.println(ohMyClient.stopInstance(1586855173043L));
-        System.out.println(ohMyClient.fetchInstanceStatus(1586855173043L));
+    public void testStopInstance() throws Exception {
+        ResultDTO<Void> res = ohMyClient.stopInstance(132522955178508352L);
+        System.out.println(res.toString());
     }
-
     @Test
-    public void testJobOpenAPI() throws Exception {
-        System.out.println(ohMyClient.runJob(1L, "hhhh"));
+    public void testFetchInstanceStatus() throws Exception {
+        System.out.println(ohMyClient.fetchInstanceStatus(132522955178508352L));
     }
 }

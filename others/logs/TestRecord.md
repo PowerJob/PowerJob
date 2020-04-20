@@ -92,3 +92,14 @@ java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
 2020-04-16 18:05:09 WARN  - [TaskTracker-1586857062542] query TaskStatus from DB failed when try to update new TaskStatus(taskId=4,newStatus=6).
 ```
 解决方案：初步怀疑在连续更改时，由于数据库锁的存在导致行不可见（不知道H2具体的特性）。因此，需要保证同一个taskId串行更新 -> synchronize Yes！
+
+# 2020.4.20 1.0.0发布前测试
+#### Server & Worker
+* 指定机器执行 -> 验证通过
+* Map/MapReduce/Standalone/Broadcast/Shell/Python处理器的执行 -> 验证通过
+* 超时失败 -> 验证通过
+* 破坏测试：指定错误的处理器 -> 发现问题，会造成死锁(TT创建PT，PT创建失败，无法定期汇报心跳，TT长时间未收到PT心跳，认为PT宕机（确实宕机了），无法选择可用的PT再次派发任务，死锁形成，GG斯密达 T_T)。通过确保ProcessorTracker一定能创建成功解决，如果处理器构建失败，之后所有提交的任务直接返回错误。
+#### Client
+* StopInstance -> success
+* FetchInstanceStatus -> success
+

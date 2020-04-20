@@ -12,7 +12,7 @@ public class RemoteConstant {
 
 
     /* ************************ AKKA WORKER ************************ */
-    public static final int DEFAULT_WORKER_PORT = 2777;
+    public static final int DEFAULT_WORKER_PORT = 27777;
 
     public static final String WORKER_ACTOR_SYSTEM_NAME = "oms";
 

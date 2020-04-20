@@ -71,7 +71,8 @@ public abstract class TaskTracker {
         BeanUtils.copyProperties(req, instanceInfo);
         // 特殊处理超时时间
         if (instanceInfo.getInstanceTimeoutMS() <= 0) {
-            instanceInfo.setInstanceTimeoutMS(Long.MAX_VALUE);
+            // Integer最大值：2147483647，一天的毫秒数：86400000；够执行24天了...要是不满足需求就让开发者手动指定吧
+            instanceInfo.setInstanceTimeoutMS(Integer.MAX_VALUE);
         }
         // 赋予时间表达式类型
         instanceInfo.setTimeExpressionType(TimeExpressionType.valueOf(req.getTimeExpressionType()).getV());

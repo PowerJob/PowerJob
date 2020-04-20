@@ -29,7 +29,7 @@ public class NetUtils {
 
     // valid port range is (0, 65535]
     private static final int MIN_PORT = 0;
-    private static final int MAX_PORT = 65535;
+    public static final int MAX_PORT = 65535;
 
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");

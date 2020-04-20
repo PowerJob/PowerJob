@@ -86,6 +86,7 @@ public class ServerSelectService {
                 appInfo.setGmtModified(new Date());
 
                 appInfoRepository.saveAndFlush(appInfo);
+                log.info("[ServerSelectService] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
                 return appInfo.getCurrentServer();
             }catch (Exception e) {
                 log.warn("[ServerSelectService] write new server to db failed for app {}.", appName);
@@ -121,7 +122,7 @@ public class ServerSelectService {
             downServerCache.remove(serverAddress);
             return response.isSuccess();
         }catch (Exception e) {
-            log.warn("[ServerSelectService] server({}) was down, I will be the new server.", serverAddress);
+            log.warn("[ServerSelectService] server({}) was down.", serverAddress);
         }
         downServerCache.add(serverAddress);
         return false;

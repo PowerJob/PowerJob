@@ -26,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 负责管理 Processor 的执行
@@ -54,25 +55,36 @@ public class ProcessorTracker {
 
     private static final int THREAD_POOL_QUEUE_MAX_SIZE = 100;
 
+    // 当 ProcessorTracker 出现根本性错误（比如 Processor 创建失败，所有的任务直接失败）
+    private boolean lethal = false;
+    private String lethalReason;
+
     /**
      * 创建 ProcessorTracker（其实就是创建了个执行用的线程池 T_T）
      */
-    public ProcessorTracker(TaskTrackerStartTaskReq request) throws Exception {
+    public ProcessorTracker(TaskTrackerStartTaskReq request) {
+        try {
+            // 赋值
+            this.startTime = System.currentTimeMillis();
+            this.instanceInfo = request.getInstanceInfo();
+            this.instanceId = request.getInstanceInfo().getInstanceId();
+            this.taskTrackerAddress = request.getTaskTrackerAddress();
+            String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
+            this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
-        // 赋值
-        this.startTime = System.currentTimeMillis();
-        this.instanceInfo = request.getInstanceInfo();
-        this.instanceId = request.getInstanceInfo().getInstanceId();
-        this.taskTrackerAddress = request.getTaskTrackerAddress();
-        String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
-        this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
+            // 初始化 线程池
+            initThreadPool();
+            // 初始化 Processor
+            initProcessor();
+            // 初始化定时任务
+            initTimingJob();
 
-        // 初始化 线程池
-        initThreadPool();
-        // 初始化 Processor
-        initProcessor();
-        // 初始化定时任务
-        initTimingJob();
+            log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
+        }catch (Exception e) {
+            log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, e);
+            lethal = true;
+            lethalReason = e.toString();
+        }
     }
 
     /**
@@ -86,6 +98,14 @@ public class ProcessorTracker {
      * @param newTask 需要提交到线程池执行的任务
      */
     public void submitTask(TaskDO newTask) {
+
+        // 一旦 ProcessorTracker 出现异常，所有提交到此处的任务直接返回失败，防止形成死锁
+        // 死锁分析：TT创建PT，PT创建失败，无法定期汇报心跳，TT长时间未收到PT心跳，认为PT宕机（确实宕机了），无法选择可用的PT再次派发任务，死锁形成，GG斯密达 T_T
+        if (lethal) {
+            ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, newTask.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), lethalReason, System.currentTimeMillis());
+            taskTrackerActorRef.tell(report, null);
+            return;
+        }
 
         boolean success = false;
         // 1. 设置值并提交执行
@@ -215,7 +235,7 @@ public class ProcessorTracker {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
                     }catch (Exception e) {
-                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}).", instanceId, processorInfo, e);
+                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, e.toString());
                     }
                 }
                 // 反射加载

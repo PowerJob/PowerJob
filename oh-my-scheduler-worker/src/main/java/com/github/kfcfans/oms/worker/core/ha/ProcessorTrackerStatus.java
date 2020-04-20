@@ -91,7 +91,11 @@ public class ProcessorTrackerStatus {
      * 是否超时（超过一定时间没有收到心跳）
      */
     public boolean isTimeout() {
-        return System.currentTimeMillis() - lastActiveTime > HEARTBEAT_TIMEOUT_MS;
+        if (dispatched) {
+            return System.currentTimeMillis() - lastActiveTime > HEARTBEAT_TIMEOUT_MS;
+        }
+        // 未曾派发过任务的机器，不用处理
+        return false;
     }
 
 }

@@ -32,28 +32,12 @@ public class ProcessorTrackerActor extends AbstractActor {
      * 处理来自TaskTracker的task执行请求
      */
     private void onReceiveTaskTrackerStartTaskReq(TaskTrackerStartTaskReq req) {
+
         Long jobId = req.getInstanceInfo().getJobId();
         Long instanceId = req.getInstanceInfo().getInstanceId();
-        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> {
-            try {
-                ProcessorTracker pt = new ProcessorTracker(req);
-                log.info("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) success.", jobId, instanceId);
-                return pt;
-            }catch (Exception e) {
-                log.warn("[ProcessorTrackerActor] create ProcessorTracker for instance(jobId={}&instanceId={}) failed.", jobId, instanceId, e);
 
-                // 直接上报失败
-                ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, req.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), e.getMessage(), System.currentTimeMillis());
-                getSender().tell(report, getSelf());
-
-            }
-            return null;
-        });
-
-        // 创建失败，直接返回
-        if (processorTracker == null) {
-            return;
-        }
+        // 创建 ProcessorTracker 一定能成功，且每个任务实例只会创建一个 ProcessorTracker
+        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> new ProcessorTracker(req));
 
         TaskDO task = new TaskDO();
 
