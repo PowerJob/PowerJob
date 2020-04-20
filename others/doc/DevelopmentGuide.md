@@ -27,19 +27,23 @@
     
 * 运行配置
     * 最大实例数：该任务同时执行的数量（任务和实例就像是类和对象的关系，任务被调度执行后被称为实例）
-    * 单机线程并发数：该实例执行过程中每台机器使用的线程数量（MapReduce任务生效，其余无论填什么，实际都是1，因为用不到多个线程...）
-    * 运行时间限制：限定任务的最大运行时间，超时则视为失败，单位毫秒，0代表不限制超时时间。
+    * 单机线程并发数：该实例执行过程中每个Worker使用的线程数量（MapReduce任务生效，其余无论填什么，都只会使用1个线程或3个线程...）
+    * 运行时间限制：限定任务的最大运行时间，超时则视为失败，单位**毫秒**，0代表不限制超时时间。
 
 * 重试配置：
-    * 任务重试次数：实例级别，失败了整个重试。
-    * 子任务重试次数：MapReduce和广播执行模式下生效，每个子Task失败后单独重试。
+    * 任务重试次数：实例级别，失败了整个重试，会更换TaskTracker（本次任务实例的Master节点）。
+    * 子任务重试次数：Task级别，每个子Task失败后单独重试，会更换ProcessorTracker（本次任务实际执行的Worker节点）。
+    * 注：对于单机任务来说，假如任务重试次数和子任务重试次数都配置了1且都执行失败，实际执行次数会变成4次！推荐任务实例重试配置为0，子任务重试次数根据实际情况配置。
 
 * 机器配置：用来标明允许执行任务的机器状态，避开那些摇摇欲坠的机器，0代表无任何限制。
+    * 最低CPU核心数：填写浮点数，CPU可用核心数小于该值的Worker将不会执行该任务。
+    * 最低内存（GB）：填写浮点数，可用内存小于该值的Worker将不会执行该任务。
+    * 最低磁盘（GB）：填写浮点数，可用磁盘空间小于该值的Worker将不会执行该任务。
 * 集群配置
-    * 执行机器地址：指定集群中的某几台机器执行任务（debug的好帮手）
+    * 执行机器地址：指定集群中的某几台机器执行任务（debug的好帮手），多值英文逗号分割，如`192.168.1.1:27777,192.168.1.2:27777`
     * 最大执行机器数量：限定调动执行的机器数量
 
-* 报警配置：预计由报警方式和报警人两个下拉框组成。
+* 报警配置：选择任务执行失败后报警通知的对象。
 
 ### 任务管理
 >可以方便地查看和管理系统当前录入的任务信息。
@@ -53,13 +57,26 @@
 
 
 # 处理器开发
->搭载处理器的宿主应用需要添加`oh-my-scheduler-worker`依赖。
+>搭载处理器的宿主应用需要添加`oh-my-scheduler-worker`依赖，然后编写实现指定接口或抽象类的Java类即可。
+
+```xml
+<dependency>
+  <groupId>com.github.kfcfans</groupId>
+  <artifactId>oh-my-scheduler-worker</artifactId>
+  <version>${oms.worker.latest.version}</version>
+</dependency>
+```
 
 ### 单机处理器
 >单机执行的策略下，server会在所有可用worker中选取健康度最佳的机器进行执行。单机执行任务需要实现接口：`com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor`，代码示例如下：
 
 ```java
+@Componet
 public class BasicProcessorDemo implements BasicProcessor {
+    
+    // 支持 Spring Bean
+    @Resource
+    private MysteryService mysteryService;
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
@@ -67,7 +84,8 @@ public class BasicProcessorDemo implements BasicProcessor {
         // TaskContext为任务的上下文信息，包含了在控制台录入的任务元数据，常用字段为
         // jobParams（任务参数，在控制台录入），instanceParams（任务实例参数，通过 OpenAPI 触发的任务实例才可能存在该参数）
 
-        // 进行实际处理...
+        // 可以根据控制台传递的参数进行实际处理...
+        mysteryService.hasaki(context.getJobParams());
 
         // 返回结果，该结果会被持久化到数据库，在前端页面直接查看，极为方便
         return new ProcessResult(true, "result is xxx");
@@ -173,6 +191,14 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
 
 # OpenAPI
 >OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活，启用OpenAPI需要依赖`oh-my-scheduler-client`库。
+
+```xml
+<dependency>
+  <groupId>com.github.kfcfans</groupId>
+  <artifactId>oh-my-scheduler-client</artifactId>
+  <version>${oms.client.latest.version}</version>
+</dependency>
+```
 
 ### 简单示例
 ```java
