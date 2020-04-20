@@ -19,8 +19,8 @@ public interface SupplierPlus<T> {
 
     /**
      * Gets a result.
-     *
      * @return a result
+     * @throws Exception allow to throw Exception
      */
     T get() throws Exception;
 }

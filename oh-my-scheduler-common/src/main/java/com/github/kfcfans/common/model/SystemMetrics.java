@@ -40,8 +40,8 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
     }
 
     /**
-     * 计算得分情况，内存 > CPU > 磁盘
-     * 磁盘必须有1G以上的剩余空间
+     * 计算得分情况，内存 then CPU then 磁盘（磁盘必须有1G以上的剩余空间）
+     * @return 得分情况
      */
     public int calculateScore() {
 

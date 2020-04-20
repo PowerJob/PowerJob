@@ -157,16 +157,15 @@ public class NetUtils {
 
     /**
      * 获取本机 IP 地址
+     * @return 本机IP地址
      */
     public static String getLocalHost() {
         InetAddress address = getLocalAddress();
         return address == null ? LOCALHOST_VALUE : address.getHostAddress();
     }
 
-
     /**
      * Find first valid IP from local network card
-     *
      * @return first valid local IP
      */
     public static InetAddress getLocalAddress() {
@@ -258,7 +257,8 @@ public class NetUtils {
     }
 
     /**
-     * @param hostName
+     * getIpByHost
+     * @param hostName hostName
      * @return ip address or hostName if UnknownHostException
      */
     public static String getIpByHost(String hostName) {
@@ -340,13 +340,7 @@ public class NetUtils {
         }
     }
 
-    /**
-     * @param pattern
-     * @param host
-     * @param port
-     * @return
-     * @throws UnknownHostException
-     */
+
     public static boolean matchIpRange(String pattern, String host, int port) throws UnknownHostException {
         if (pattern == null || host == null) {
             throw new IllegalArgumentException("Illegal Argument pattern or hostName. Pattern:" + pattern + ", Host:" + host);

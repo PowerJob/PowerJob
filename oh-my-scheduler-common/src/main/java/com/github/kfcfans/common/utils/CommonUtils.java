@@ -20,6 +20,7 @@ public class CommonUtils {
      * @param executor 需要执行的方法
      * @param retryTimes 重试的次数
      * @param intervalMS 失败后下一次执行的间隔时间
+     * @param <T> 执行函数返回值类型
      * @return 函数成功执行后的返回值
      * @throws Exception 执行失败，调用方自行处理
      */
@@ -66,9 +67,11 @@ public class CommonUtils {
         return booleanExecutor.get();
     }
 
+
     /**
      * 生成数据库查询语句 in 后的条件
-     * ["a", "b", "c"] -> ('a','b','c')
+     * @param collection eg,["a", "b", "c"]
+     * @return eg,('a','b','c')
      */
     public static String getInStringCondition(Collection<String> collection) {
         if (collection == null || collection.isEmpty()) {
