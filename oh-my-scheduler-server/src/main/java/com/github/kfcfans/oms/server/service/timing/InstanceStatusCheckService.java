@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class InstanceStatusCheckService {
 
     private static final int MAX_BATCH_NUM = 10;
-    private static final long DISPATCH_TIMEOUT_MS = 10000;
+    private static final long DISPATCH_TIMEOUT_MS = 30000;
     private static final long RECEIVE_TIMEOUT_MS = 60000;
     private static final long RUNNING_TIMEOUT_MS = 60000;
 
@@ -77,6 +77,13 @@ public class InstanceStatusCheckService {
             if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) is not triggered as expected.", waitingDispatchInstances);
                 waitingDispatchInstances.forEach(instance -> {
+
+                    // 过滤因为失败重试而改成 WAITING_DISPATCH 状态的任务实例
+                    long t = System.currentTimeMillis() - instance.getGmtModified().getTime();
+                    if (t < DISPATCH_TIMEOUT_MS) {
+                        return;
+                    }
+
                     // 重新派发(orElseGet用于消除编译器警告...)
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
                     dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), 0);

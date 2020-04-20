@@ -9,6 +9,7 @@ import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
+import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -16,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 管理被调度的服务
@@ -111,7 +113,15 @@ public class InstanceManager {
             if (updateEntity.getRunningTimes() <= instanceId2JobInfo.get(instanceId).getInstanceRetryNum()) {
 
                 log.info("[InstanceManager] instance(instanceId={}) execute failed but will take the {}th retry.", instanceId, updateEntity.getRunningTimes());
-                getDispatchService().dispatch(instanceId2JobInfo.get(instanceId), instanceId, updateEntity.getRunningTimes());
+
+                // 延迟10S重试（由于重试不改变 instanceId，如果派发到同一台机器，上一个 TaskTracker 还处于资源释放阶段，无法创建新的TaskTracker，任务失败）
+                HashedWheelTimerHolder.TIMER.schedule(() -> {
+                    getDispatchService().dispatch(instanceId2JobInfo.get(instanceId), instanceId, updateEntity.getRunningTimes());
+                }, 10, TimeUnit.SECONDS);
+
+                // 修改状态为 等待派发，正式开始重试
+                // 问题：会丢失以往的调度记录（actualTriggerTime什么的都会被覆盖）
+                updateEntity.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
             }else {
                 updateEntity.setResult(req.getResult());
                 updateEntity.setFinishedTime(System.currentTimeMillis());

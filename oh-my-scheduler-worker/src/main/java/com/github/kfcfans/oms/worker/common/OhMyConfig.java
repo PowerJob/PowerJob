@@ -30,4 +30,9 @@ public class OhMyConfig {
      */
     private int maxResultLength = 8096;
 
+    /**
+     * 启动测试模式，true情况下，不再尝试连接 server 并验证appName
+     * true -> 用于本地写单元测试调试； false -> 默认值，标准模式
+     */
+    private boolean enableTestMode = false;
 }

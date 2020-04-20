@@ -13,12 +13,15 @@ import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
 import com.github.kfcfans.oms.server.web.request.QueryJobInfoRequest;
 import com.github.kfcfans.oms.server.web.response.JobInfoVO;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +47,9 @@ public class JobController {
     @Resource
     private JobInfoRepository jobInfoRepository;
 
+    private static final Splitter commaSplitter = Splitter.on(",");
+    private static final Joiner commaJoiner = Joiner.on(",").skipNulls();
+
     @PostMapping("/save")
     public ResultDTO<Void> saveJobInfo(@RequestBody ModifyJobInfoRequest request) throws Exception {
 
@@ -59,6 +65,11 @@ public class JobController {
 
         if (jobInfoDO.getMaxWorkerCount() == null) {
             jobInfoDO.setMaxInstanceNum(0);
+        }
+
+        // 转化报警用户列表
+        if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
+            jobInfoDO.setNotifyUserIds(commaJoiner.join(request.getNotifyUserIds()));
         }
 
         // 计算下次调度时间
@@ -158,6 +169,12 @@ public class JobController {
         jobInfoVO.setExecuteType(executeType.name());
         jobInfoVO.setProcessorType(processorType.name());
         jobInfoVO.setEnable(jobInfoDO.getStatus() == JobStatus.ENABLE.getV());
+
+        if (!StringUtils.isEmpty(jobInfoDO.getNotifyUserIds())) {
+            jobInfoVO.setNotifyUserIds(commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));
+        }else {
+            jobInfoVO.setNotifyUserIds(Lists.newLinkedList());
+        }
 
         return jobInfoVO;
     }

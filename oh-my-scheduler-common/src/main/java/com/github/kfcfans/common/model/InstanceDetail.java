@@ -33,6 +33,8 @@ public class InstanceDetail implements OmsSerializable {
     // 秒级任务专用
     private List<SubInstanceDetail> subInstanceDetails;
 
+    // 重试次数
+    private Long runningTimes;
 
     // 秒级任务的 extra -> List<SubInstanceDetail>
     @Data

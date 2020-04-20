@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 /**
  * 唯一ID生成服务，使用 Twitter snowflake 算法
  * 机房ID：固定为0，占用2位
- * 机器ID：数据库自增，占用8位（最多支持256台机器，如果频繁部署需要删除数据库重置id）
+ * 机器ID：数据库自增，占用14位（如果频繁部署需要删除数据库重置id）
  *
  * @author tjq
  * @since 2020/4/6

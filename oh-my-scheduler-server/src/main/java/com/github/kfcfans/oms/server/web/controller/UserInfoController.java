@@ -4,10 +4,13 @@ import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.model.UserInfoDO;
 import com.github.kfcfans.oms.server.persistence.repository.UserInfoRepository;
 import com.github.kfcfans.oms.server.web.request.ModifyUserInfoRequest;
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -39,11 +42,23 @@ public class UserInfoController {
     }
 
     @GetMapping("list")
-    public ResultDTO<List<UserItemVO>> list() {
-        List<UserItemVO> result = userInfoRepository.findAll().stream().map(x -> new UserItemVO(x.getId(), x.getUsername())).collect(Collectors.toList());
-        return ResultDTO.success(result);
+    public ResultDTO<List<UserItemVO>> list(@RequestParam(required = false) String name) {
+
+        List<UserInfoDO> result;
+        if (StringUtils.isEmpty(name)) {
+            result = userInfoRepository.findAll();
+        }else {
+            result = userInfoRepository.findByUsernameLike("%" + name + "%");
+        }
+        return ResultDTO.success(convert(result));
     }
 
+    private static List<UserItemVO> convert(List<UserInfoDO> data) {
+        if (CollectionUtils.isEmpty(data)) {
+            return Lists.newLinkedList();
+        }
+        return data.stream().map(x -> new UserItemVO(x.getId(), x.getUsername())).collect(Collectors.toList());
+    }
 
     @Getter
     @NoArgsConstructor

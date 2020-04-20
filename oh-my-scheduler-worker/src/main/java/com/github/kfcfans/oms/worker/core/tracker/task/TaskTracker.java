@@ -264,6 +264,7 @@ public abstract class TaskTracker {
      */
     public void destroy() {
 
+        Stopwatch sw = Stopwatch.createStarted();
         // 0. 开始关闭线程池，不能使用 shutdownNow()，因为 destroy 方法本身就在 scheduledPool 的线程中执行，强行关闭会打断 destroy 的执行。
         scheduledPool.shutdown();
 
@@ -290,7 +291,7 @@ public abstract class TaskTracker {
         // 3. 移除顶层引用，送去 GC
         TaskTrackerPool.remove(instanceId);
 
-        log.info("[TaskTracker-{}] TaskTracker has left the world, bye~", instanceId);
+        log.info("[TaskTracker-{}] TaskTracker has left the world(using {}), bye~", instanceId, sw.stop());
 
         // 4. 强制关闭线程池
         if (!scheduledPool.isTerminated()) {

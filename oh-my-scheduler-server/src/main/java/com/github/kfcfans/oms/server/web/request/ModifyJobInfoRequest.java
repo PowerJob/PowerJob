@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.server.web.request;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 创建/修改 JobInfo 请求
@@ -74,4 +75,7 @@ public class ModifyJobInfoRequest {
     private String designatedWorkers;
     // 最大机器数量
     private Integer maxWorkerCount;
+
+    // 报警用户ID列表
+    private List<Long> notifyUserIds;
 }

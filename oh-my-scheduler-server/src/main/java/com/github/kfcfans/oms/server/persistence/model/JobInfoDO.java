@@ -81,11 +81,9 @@ public class JobInfoDO {
     // 最大机器数量
     private Integer maxWorkerCount;
 
+    // 报警用户ID列表，多值逗号分隔
+    private String notifyUserIds;
+
     private Date gmtCreate;
     private Date gmtModified;
-
-    // 针对只查询 id 的情况
-    public JobInfoDO(Long id) {
-        this.id = id;
-    }
 }

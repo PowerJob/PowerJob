@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.server.web.response;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * JobInfo 对外展示对象
@@ -72,4 +73,7 @@ public class JobInfoVO {
     private String designatedWorkers;
     // 最大机器数量
     private Integer maxWorkerCount;
+
+    // 报警用户ID列表
+    private List<String> notifyUserIds;
 }

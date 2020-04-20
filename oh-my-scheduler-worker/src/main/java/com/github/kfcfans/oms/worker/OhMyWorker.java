@@ -75,7 +75,11 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
         try {
 
             // 校验 appName
-            appId = assertAppName();
+            if (!config.isEnableTestMode()) {
+                appId = assertAppName();
+            }else {
+                log.warn("[OhMyWorker] using TestMode now, it's dangerous if this is production env.");
+            }
 
             // 初始化 ActorSystem
             Map<String, Object> overrideConfig = Maps.newHashMap();
@@ -99,7 +103,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
             // 服务发现
             currentServer = ServerDiscoveryService.discovery();
-            if (StringUtils.isEmpty(currentServer)) {
+            if (StringUtils.isEmpty(currentServer) && !config.isEnableTestMode()) {
                 throw new RuntimeException("can't find any available server, this worker has been quarantined.");
             }
             log.info("[OhMyWorker] discovery server succeed, current server is {}.", currentServer);

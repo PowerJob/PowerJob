@@ -30,6 +30,8 @@ public class CommonTaskTrackerTest {
         OhMyConfig ohMyConfig = new OhMyConfig();
         ohMyConfig.setAppName("oms-test");
         ohMyConfig.setServerAddress(Lists.newArrayList("127.0.0.1:7700"));
+        ohMyConfig.setEnableTestMode(true);
+
         OhMyWorker worker = new OhMyWorker();
         worker.setConfig(ohMyConfig);
         worker.init();
