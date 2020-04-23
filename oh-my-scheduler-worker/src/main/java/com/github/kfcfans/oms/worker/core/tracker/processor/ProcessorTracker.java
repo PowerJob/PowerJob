@@ -14,6 +14,8 @@ import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
 import com.github.kfcfans.oms.worker.core.processor.built.PythonProcessor;
 import com.github.kfcfans.oms.worker.core.processor.built.ShellProcessor;
+import com.github.kfcfans.oms.worker.log.OmsLogger;
+import com.github.kfcfans.oms.worker.log.impl.OmsServerLogger;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
@@ -46,6 +48,8 @@ public class ProcessorTracker {
 
     // 任务执行器
     private BasicProcessor processor;
+    // 在线日志
+    private OmsLogger omsLogger;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
@@ -71,6 +75,8 @@ public class ProcessorTracker {
             this.taskTrackerAddress = request.getTaskTrackerAddress();
             String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
             this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
+
+            this.omsLogger = new OmsServerLogger(instanceId);
 
             // 初始化 线程池
             initThreadPool();
@@ -112,7 +118,7 @@ public class ProcessorTracker {
         newTask.setInstanceId(instanceInfo.getInstanceId());
         newTask.setAddress(taskTrackerAddress);
 
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor);
+        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger);
         try {
             threadPool.submit(processorRunnable);
             success = true;

@@ -8,6 +8,7 @@ import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.oms.worker.core.processor.TaskResult;
+import com.github.kfcfans.oms.worker.log.OmsLogger;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.oms.worker.pojo.model.InstanceInfo;
@@ -41,6 +42,7 @@ public class ProcessorRunnable implements Runnable {
     private final ActorSelection taskTrackerActor;
     private final TaskDO task;
     private final BasicProcessor processor;
+    private final OmsLogger omsLogger;
 
     public void innerRun() {
 
@@ -56,6 +58,7 @@ public class ProcessorRunnable implements Runnable {
         taskContext.setCurrentRetryTimes(task.getFailedCnt());
         taskContext.setJobParams(instanceInfo.getJobParams());
         taskContext.setInstanceParams(instanceInfo.getInstanceParams());
+        taskContext.setOmsLogger(omsLogger);
         if (task.getTaskContent() != null && task.getTaskContent().length > 0) {
             taskContext.setSubTask(SerializerUtils.deSerialized(task.getTaskContent()));
         }

@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.core.processor;
 
+import com.github.kfcfans.oms.worker.log.OmsLogger;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,14 +23,30 @@ public class TaskContext {
     private String taskId;
     private String taskName;
 
+    /**
+     * 通过控制台传递的参数
+     */
     private String jobParams;
+    /**
+     * 通过 OpenAPI 传递的参数
+     */
     private String instanceParams;
-
+    /**
+     * 最大重试次数
+     */
     private int maxRetryTimes;
+    /**
+     * 当前重试次数
+     */
     private int currentRetryTimes;
-
+    /**
+     * 子任务对象，通过Map/MapReduce处理器的map方法生成
+     */
     private Object subTask;
-
+    /**
+     * 在线日志记录
+     */
+    private OmsLogger omsLogger;
 
     public String getDescription() {
         return "subInstanceId='" + subInstanceId + '\'' +
