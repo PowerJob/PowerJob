@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.web.request.ModifyAppInfoRequest;
 import com.google.common.collect.Lists;

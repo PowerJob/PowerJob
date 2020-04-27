@@ -1,6 +1,6 @@
-package com.github.kfcfans.oms.server.persistence.repository;
+package com.github.kfcfans.oms.server.persistence.core.repository;
 
-import com.github.kfcfans.oms.server.persistence.model.OmsLockDO;
+import com.github.kfcfans.oms.server.persistence.core.model.OmsLockDO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

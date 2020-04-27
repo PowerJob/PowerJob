@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.persistence.model;
+package com.github.kfcfans.oms.server.persistence.core.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

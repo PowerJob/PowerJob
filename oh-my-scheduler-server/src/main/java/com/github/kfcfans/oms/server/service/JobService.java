@@ -3,11 +3,10 @@ package com.github.kfcfans.oms.server.service;
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
-import com.github.kfcfans.oms.server.common.utils.CronExpression;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
-import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +38,7 @@ public class JobService {
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
 
     /**
      * 手动立即运行某个任务
@@ -58,7 +57,7 @@ public class JobService {
     public long runJob(JobInfoDO jobInfo, String instanceParams) {
         long instanceId = idGenerateService.allocate();
 
-        InstanceLogDO executeLog = new InstanceLogDO();
+        InstanceInfoDO executeLog = new InstanceInfoDO();
         executeLog.setJobId(jobInfo.getId());
         executeLog.setAppId(jobInfo.getAppId());
         executeLog.setInstanceId(instanceId);
@@ -67,7 +66,7 @@ public class JobService {
         executeLog.setGmtCreate(new Date());
         executeLog.setGmtModified(executeLog.getGmtCreate());
 
-        instanceLogRepository.saveAndFlush(executeLog);
+        instanceInfoRepository.saveAndFlush(executeLog);
         dispatchService.dispatch(jobInfo, executeLog.getInstanceId(), 0, instanceParams);
         return instanceId;
     }
@@ -108,7 +107,7 @@ public class JobService {
         if (timeExpressionType == TimeExpressionType.CRON || timeExpressionType == TimeExpressionType.API) {
             return;
         }
-        List<InstanceLogDO> executeLogs = instanceLogRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
+        List<InstanceInfoDO> executeLogs = instanceInfoRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
         if (CollectionUtils.isEmpty(executeLogs)) {
             return;
         }

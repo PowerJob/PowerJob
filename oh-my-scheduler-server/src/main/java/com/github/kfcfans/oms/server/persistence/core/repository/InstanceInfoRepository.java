@@ -1,6 +1,6 @@
-package com.github.kfcfans.oms.server.persistence.repository;
+package com.github.kfcfans.oms.server.persistence.core.repository;
 
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,14 +18,14 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/1
  */
-public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long> {
+public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Long> {
 
     /**
      * 统计当前JOB有多少实例正在运行
      */
     long countByJobIdAndStatusIn(long jobId, List<Integer> status);
 
-    List<InstanceLogDO> findByJobIdAndStatusIn(long jobId, List<Integer> status);
+    List<InstanceInfoDO> findByJobIdAndStatusIn(long jobId, List<Integer> status);
 
 
     /**
@@ -56,16 +56,16 @@ public interface InstanceLogRepository extends JpaRepository<InstanceLogDO, Long
 
     // 状态检查三兄弟，对应 WAITING_DISPATCH 、 WAITING_WORKER_RECEIVE 和 RUNNING 三阶段
     // 数据量一般不大，就不单独写SQL优化 IO 了
-    List<InstanceLogDO> findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
-    List<InstanceLogDO> findByAppIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
-    List<InstanceLogDO> findByAppIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
+    List<InstanceInfoDO> findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> jobIds, int status, long time);
+    List<InstanceInfoDO> findByAppIdInAndStatusAndActualTriggerTimeLessThan(List<Long> jobIds, int status, long time);
+    List<InstanceInfoDO> findByAppIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
 
-    InstanceLogDO findByInstanceId(long instanceId);
+    InstanceInfoDO findByInstanceId(long instanceId);
 
-    Page<InstanceLogDO> findByAppId(long appId, Pageable pageable);
-    Page<InstanceLogDO> findByJobId(long jobId, Pageable pageable);
+    Page<InstanceInfoDO> findByAppId(long appId, Pageable pageable);
+    Page<InstanceInfoDO> findByJobId(long jobId, Pageable pageable);
     // 只会有一条数据，只是为了统一
-    Page<InstanceLogDO> findByInstanceId(long instanceId, Pageable pageable);
+    Page<InstanceInfoDO> findByInstanceId(long instanceId, Pageable pageable);
 
     // 数据统计
     long countByAppIdAndStatus(long appId, int status);

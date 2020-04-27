@@ -5,12 +5,12 @@ import com.github.kfcfans.common.SystemInstanceResult;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
-import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -44,7 +44,7 @@ public class InstanceStatusCheckService {
     @Resource
     private AppInfoRepository appInfoRepository;
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
     @Resource
     private JobInfoRepository jobInfoRepository;
 
@@ -73,7 +73,7 @@ public class InstanceStatusCheckService {
 
             // 1. 检查等待 WAITING_DISPATCH 状态的任务
             long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
-            List<InstanceLogDO> waitingDispatchInstances = instanceLogRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
+            List<InstanceInfoDO> waitingDispatchInstances = instanceInfoRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) is not triggered as expected.", waitingDispatchInstances);
                 waitingDispatchInstances.forEach(instance -> {
@@ -92,7 +92,7 @@ public class InstanceStatusCheckService {
 
             // 2. 检查 WAITING_WORKER_RECEIVE 状态的任务
             threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
-            List<InstanceLogDO> waitingWorkerReceiveInstances = instanceLogRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
+            List<InstanceInfoDO> waitingWorkerReceiveInstances = instanceInfoRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingWorkerReceiveInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) did n’t receive any reply from worker.", waitingWorkerReceiveInstances);
                 waitingWorkerReceiveInstances.forEach(instance -> {
@@ -104,7 +104,7 @@ public class InstanceStatusCheckService {
 
             // 3. 检查 RUNNING 状态的任务（一定时间没收到 TaskTracker 的状态报告，视为失败）
             threshold = System.currentTimeMillis() - RUNNING_TIMEOUT_MS;
-            List<InstanceLogDO> failedInstances = instanceLogRepository.findByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold));
+            List<InstanceInfoDO> failedInstances = instanceInfoRepository.findByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold));
             if (!CollectionUtils.isEmpty(failedInstances)) {
                 log.warn("[InstanceStatusCheckService] instances({}) has not received status report for a long time.", failedInstances);
                 failedInstances.forEach(instance -> {
@@ -134,7 +134,7 @@ public class InstanceStatusCheckService {
     /**
      * 处理上报超时而失败的任务实例
      */
-    private void updateFailedInstance(InstanceLogDO instance) {
+    private void updateFailedInstance(InstanceInfoDO instance) {
 
         log.warn("[InstanceStatusCheckService] detected instance(instanceId={},jobId={})'s TaskTracker report timeout,this instance is considered a failure.", instance.getInstanceId(), instance.getJobId());
 
@@ -142,6 +142,6 @@ public class InstanceStatusCheckService {
         instance.setFinishedTime(System.currentTimeMillis());
         instance.setGmtModified(new Date());
         instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
-        instanceLogRepository.saveAndFlush(instance);
+        instanceInfoRepository.saveAndFlush(instance);
     }
 }

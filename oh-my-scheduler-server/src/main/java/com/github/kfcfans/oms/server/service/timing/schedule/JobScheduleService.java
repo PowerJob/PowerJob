@@ -6,12 +6,12 @@ import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
-import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
@@ -55,7 +55,7 @@ public class JobScheduleService {
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
 
     @Resource
     private JobService jobService;
@@ -118,10 +118,10 @@ public class JobScheduleService {
                 Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
                 log.info("[JobScheduleService] These cron jobs will be scheduled： {}.", jobInfos);
 
-                List<InstanceLogDO> executeLogs = Lists.newLinkedList();
+                List<InstanceInfoDO> executeLogs = Lists.newLinkedList();
                 jobInfos.forEach(jobInfoDO -> {
 
-                    InstanceLogDO executeLog = new InstanceLogDO();
+                    InstanceInfoDO executeLog = new InstanceInfoDO();
                     executeLog.setJobId(jobInfoDO.getId());
                     executeLog.setAppId(jobInfoDO.getAppId());
                     executeLog.setInstanceId(idGenerateService.allocate());
@@ -134,8 +134,8 @@ public class JobScheduleService {
 
                     jobId2InstanceId.put(executeLog.getJobId(), executeLog.getInstanceId());
                 });
-                instanceLogRepository.saveAll(executeLogs);
-                instanceLogRepository.flush();
+                instanceInfoRepository.saveAll(executeLogs);
+                instanceInfoRepository.flush();
 
                 // 2. 推入时间轮中等待调度执行
                 jobInfos.forEach(jobInfoDO ->  {
@@ -193,7 +193,7 @@ public class JobScheduleService {
                 // 查询所有的秒级任务（只包含ID）
                 List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
                 // 查询日志记录表中是否存在相关的任务
-                List<Long> runningJobIdList = instanceLogRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.generalizedRunningStatus);
+                List<Long> runningJobIdList = instanceInfoRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.generalizedRunningStatus);
                 Set<Long> runningJobIdSet = Sets.newHashSet(runningJobIdList);
 
                 List<Long> notRunningJobIds = Lists.newLinkedList();

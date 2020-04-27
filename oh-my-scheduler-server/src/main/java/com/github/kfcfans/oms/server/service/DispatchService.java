@@ -4,8 +4,8 @@ import akka.actor.ActorSelection;
 import com.github.kfcfans.common.*;
 import com.github.kfcfans.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.google.common.base.Splitter;
@@ -35,7 +35,7 @@ import static com.github.kfcfans.common.InstanceStatus.*;
 public class DispatchService {
 
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
 
     private static final Splitter commaSplitter = Splitter.on(",");
 
@@ -55,13 +55,13 @@ public class DispatchService {
         log.info("[DispatchService] start to dispatch job: {}.", jobInfo);
         // 查询当前运行的实例数
         long current = System.currentTimeMillis();
-        long runningInstanceCount = instanceLogRepository.countByJobIdAndStatusIn(jobId, generalizedRunningStatus);
+        long runningInstanceCount = instanceInfoRepository.countByJobIdAndStatusIn(jobId, generalizedRunningStatus);
 
         // 超出最大同时运行限制，不执行调度
         if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
             String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
             log.warn("[DispatchService] cancel dispatch job(jobId={}) due to too much instance(num={}) is running.", jobId, runningInstanceCount);
-            instanceLogRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result);
+            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result);
             return;
         }
 
@@ -84,7 +84,7 @@ public class DispatchService {
         if (CollectionUtils.isEmpty(finalWorkers)) {
             String clusterStatusDescription = WorkerManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
             log.warn("[DispatchService] cancel dispatch job(jobId={}) due to no worker available, clusterStatus is {}.", jobId, clusterStatusDescription);
-            instanceLogRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE);
+            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE);
             return;
         }
 
@@ -122,6 +122,6 @@ public class DispatchService {
         log.debug("[DispatchService] send request({}) to TaskTracker({}) succeed.", req, taskTrackerActor.pathString());
 
         // 修改状态
-        instanceLogRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress);
+        instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress);
     }
 }

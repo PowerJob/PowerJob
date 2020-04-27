@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.AppInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.service.ha.ServerSelectService;
 import com.github.kfcfans.common.response.ResultDTO;
 import org.springframework.web.bind.annotation.GetMapping;

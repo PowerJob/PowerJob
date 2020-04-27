@@ -1,12 +1,11 @@
-package com.github.kfcfans.oms.server.persistence.repository;
+package com.github.kfcfans.oms.server.persistence.core.repository;
 
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Date;
 import java.util.List;
 
 /**

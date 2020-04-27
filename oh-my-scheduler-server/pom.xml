@@ -17,9 +17,8 @@
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
         <oms.common.version>1.0.0</oms.common.version>
-        <hikaricp.version>3.4.2</hikaricp.version>
         <mysql.version>8.0.19</mysql.version>
-        <curator.version>4.3.0</curator.version>
+        <h2.db.version>1.4.200</h2.db.version>
     </properties>
 
     <dependencies>
@@ -31,18 +30,17 @@
             <version>${oms.common.version}</version>
         </dependency>
 
-        <!-- HikariCP -->
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>${hikaricp.version}</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <!-- mysql -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
+        </dependency>
+        <!-- h2 database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.db.version}</version>
         </dependency>
 
         <!-- SpringBoot -->

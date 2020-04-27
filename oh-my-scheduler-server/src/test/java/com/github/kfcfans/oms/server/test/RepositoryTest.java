@@ -3,12 +3,12 @@ package com.github.kfcfans.oms.server.test;
 import com.github.kfcfans.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.common.TimeExpressionType;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.model.OmsLockDO;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
-import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
-import com.github.kfcfans.oms.server.persistence.repository.OmsLockRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.OmsLockDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.OmsLockRepository;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +33,7 @@ public class RepositoryTest {
     @Resource
     private OmsLockRepository omsLockRepository;
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
 
     /**
      * 需要证明批量写入失败后会回滚
@@ -58,17 +58,17 @@ public class RepositoryTest {
 
     @Test
     public void testUpdate() {
-        InstanceLogDO updateEntity = new InstanceLogDO();
+        InstanceInfoDO updateEntity = new InstanceInfoDO();
         updateEntity.setId(22L);
         updateEntity.setActualTriggerTime(System.currentTimeMillis());
         updateEntity.setResult("hahaha");
-        instanceLogRepository.saveAndFlush(updateEntity);
+        instanceInfoRepository.saveAndFlush(updateEntity);
     }
 
     @Test
     public void testExecuteLogUpdate() {
-        instanceLogRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL");
-        instanceLogRepository.update4FrequentJob(1586310419650L, 2, 200);
+        instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL");
+        instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200);
     }
 
 }

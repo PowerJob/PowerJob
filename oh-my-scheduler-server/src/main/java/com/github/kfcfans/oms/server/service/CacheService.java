@@ -1,9 +1,9 @@
 package com.github.kfcfans.oms.server.service;
 
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
-import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class CacheService {
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
 
     private final Cache<Long, String> jobId2JobNameCache;
     private final Cache<Long, Long> instanceId2AppId;
@@ -68,7 +68,7 @@ public class CacheService {
             return instanceId2AppId.get(instanceId, () -> {
                 // 内部记录数据库异常
                 try {
-                    InstanceLogDO instanceLog = instanceLogRepository.findByInstanceId(instanceId);
+                    InstanceInfoDO instanceLog = instanceInfoRepository.findByInstanceId(instanceId);
                     if (instanceLog != null) {
                         return instanceLog.getAppId();
                     }

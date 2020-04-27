@@ -1,10 +1,9 @@
 package com.github.kfcfans.oms.server.service.alarm;
 
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -20,7 +19,7 @@ public class AlarmService {
 
     private static List<Alarmable> alarmableList = Lists.newLinkedList();
 
-    public static void alarm(JobInfoDO jobInfo, InstanceLogDO instanceLog) {
+    public static void alarm(JobInfoDO jobInfo, InstanceInfoDO instanceLog) {
         if (CollectionUtils.isEmpty(alarmableList)) {
             return;
         }

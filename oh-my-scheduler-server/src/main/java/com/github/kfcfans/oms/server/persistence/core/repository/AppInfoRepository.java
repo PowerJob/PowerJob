@@ -1,6 +1,6 @@
-package com.github.kfcfans.oms.server.persistence.repository;
+package com.github.kfcfans.oms.server.persistence.core.repository;
 
-import com.github.kfcfans.oms.server.persistence.model.AppInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

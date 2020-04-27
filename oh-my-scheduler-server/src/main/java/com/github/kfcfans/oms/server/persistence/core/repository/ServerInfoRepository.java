@@ -1,6 +1,6 @@
-package com.github.kfcfans.oms.server.persistence.repository;
+package com.github.kfcfans.oms.server.persistence.core.repository;
 
-import com.github.kfcfans.oms.server.persistence.model.ServerInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.ServerInfoDO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

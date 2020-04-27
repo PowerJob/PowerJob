@@ -10,8 +10,8 @@ import com.github.kfcfans.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.common.response.AskResponse;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ import static com.github.kfcfans.common.InstanceStatus.STOPPED;
 public class InstanceService {
 
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
 
     /**
      * 停止任务实例
@@ -46,29 +46,29 @@ public class InstanceService {
 
         try {
 
-            InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
-            if (instanceLogDO == null) {
+            InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
+            if (instanceInfoDO == null) {
                 log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
                 throw new IllegalArgumentException("invalid instanceId: " + instanceId);
             }
 
             // 判断状态，只有运行中才能停止
-            if (!InstanceStatus.generalizedRunningStatus.contains(instanceLogDO.getStatus())) {
+            if (!InstanceStatus.generalizedRunningStatus.contains(instanceInfoDO.getStatus())) {
                 throw new IllegalArgumentException("can't stop finished instance!");
             }
 
             // 更新数据库，将状态置为停止
-            instanceLogDO.setStatus(STOPPED.getV());
-            instanceLogDO.setGmtModified(new Date());
-            instanceLogDO.setFinishedTime(System.currentTimeMillis());
-            instanceLogDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
-            instanceLogRepository.saveAndFlush(instanceLogDO);
+            instanceInfoDO.setStatus(STOPPED.getV());
+            instanceInfoDO.setGmtModified(new Date());
+            instanceInfoDO.setFinishedTime(System.currentTimeMillis());
+            instanceInfoDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
+            instanceInfoRepository.saveAndFlush(instanceInfoDO);
 
             /*
             不可靠通知停止 TaskTracker
             假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭
              */
-            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceLogDO.getTaskTrackerAddress());
+            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfoDO.getTaskTrackerAddress());
             ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
             taskTrackerActor.tell(req, null);
 
@@ -88,12 +88,12 @@ public class InstanceService {
      * @return 任务实例的状态
      */
     public InstanceStatus getInstanceStatus(Long instanceId) {
-        InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
-        if (instanceLogDO == null) {
+        InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
+        if (instanceInfoDO == null) {
             log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
-        return InstanceStatus.of(instanceLogDO.getStatus());
+        return InstanceStatus.of(instanceInfoDO.getStatus());
     }
 
     /**
@@ -103,33 +103,33 @@ public class InstanceService {
      */
     public InstanceDetail getInstanceDetail(Long instanceId) {
 
-        InstanceLogDO instanceLogDO = instanceLogRepository.findByInstanceId(instanceId);
-        if (instanceLogDO == null) {
+        InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
+        if (instanceInfoDO == null) {
             log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
 
-        InstanceStatus instanceStatus = InstanceStatus.of(instanceLogDO.getStatus());
+        InstanceStatus instanceStatus = InstanceStatus.of(instanceInfoDO.getStatus());
 
         InstanceDetail detail = new InstanceDetail();
         detail.setStatus(instanceStatus.getDes());
 
         // 只要不是运行状态，只需要返回简要信息
         if (instanceStatus != RUNNING) {
-            BeanUtils.copyProperties(instanceLogDO, detail);
+            BeanUtils.copyProperties(instanceInfoDO, detail);
             return detail;
         }
 
         // 运行状态下，交由 TaskTracker 返回相关信息
         try {
             ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);
-            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceLogDO.getTaskTrackerAddress());
+            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfoDO.getTaskTrackerAddress());
             CompletionStage<Object> askCS = Patterns.ask(taskTrackerActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
             AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
             if (askResponse.isSuccess()) {
                 InstanceDetail instanceDetail = askResponse.getData(InstanceDetail.class);
-                instanceDetail.setRunningTimes(instanceLogDO.getRunningTimes());
+                instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());
                 return instanceDetail;
             }else {
                 log.warn("[InstanceService] ask InstanceStatus from TaskTracker failed, the message is {}.", askResponse.getMessage());
@@ -140,7 +140,7 @@ public class InstanceService {
         }
 
         // 失败则返回基础版信息
-        BeanUtils.copyProperties(instanceLogDO, detail);
+        BeanUtils.copyProperties(instanceInfoDO, detail);
         return detail;
     }
 

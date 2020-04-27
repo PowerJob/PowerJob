@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.persistence.model;
+package com.github.kfcfans.oms.server.persistence.core.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "instance_log", indexes = {@Index(columnList = "jobId"), @Index(columnList = "appId")})
-public class InstanceLogDO {
+public class InstanceInfoDO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,7 +53,7 @@ public class InstanceLogDO {
 
 
     // 针对 只查询 jobId 的情况
-    public InstanceLogDO(Long jobId) {
+    public InstanceInfoDO(Long jobId) {
         this.jobId = jobId;
     }
 }

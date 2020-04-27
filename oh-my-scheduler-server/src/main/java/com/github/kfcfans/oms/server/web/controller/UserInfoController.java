@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.common.response.ResultDTO;
-import com.github.kfcfans.oms.server.persistence.model.UserInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.UserInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.UserInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.UserInfoRepository;
 import com.github.kfcfans.oms.server.web.request.ModifyUserInfoRequest;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;

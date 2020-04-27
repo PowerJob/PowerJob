@@ -8,6 +8,7 @@ import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author tjq
  * @since 2020/4/21
  */
+@Slf4j
 public class OmsLogHandler {
 
     private OmsLogHandler() {
@@ -60,6 +62,7 @@ public class OmsLogHandler {
                     for (int i = 0; i < 1024; i++) {
                         logQueue.remove();
                     }
+                    log.warn("[OmsLogHandler] because there is no available server to report logs which leads to queue accumulation, oms discarded some logs.");
                 }
                 return;
             }

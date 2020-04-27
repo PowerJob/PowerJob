@@ -4,8 +4,8 @@ import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.model.InstanceDetail;
 import com.github.kfcfans.oms.server.persistence.PageResult;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -38,7 +37,7 @@ public class InstanceController {
     @Resource
     private CacheService cacheService;
     @Resource
-    private InstanceLogRepository instanceLogRepository;
+    private InstanceInfoRepository instanceInfoRepository;
 
     private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
@@ -61,19 +60,19 @@ public class InstanceController {
 
         // 查询全部数据
         if (request.getJobId() == null && request.getInstanceId() == null) {
-            return ResultDTO.success(convertPage(instanceLogRepository.findByAppId(request.getAppId(), pageable)));
+            return ResultDTO.success(convertPage(instanceInfoRepository.findByAppId(request.getAppId(), pageable)));
         }
 
         // 根据JobId查询
         if (request.getJobId() != null) {
-            return ResultDTO.success(convertPage(instanceLogRepository.findByJobId(request.getJobId(), pageable)));
+            return ResultDTO.success(convertPage(instanceInfoRepository.findByJobId(request.getJobId(), pageable)));
         }
 
         // 根据InstanceId查询
-        return ResultDTO.success(convertPage(instanceLogRepository.findByInstanceId(request.getInstanceId(), pageable)));
+        return ResultDTO.success(convertPage(instanceInfoRepository.findByInstanceId(request.getInstanceId(), pageable)));
     }
 
-    private PageResult<InstanceLogVO> convertPage(Page<InstanceLogDO> page) {
+    private PageResult<InstanceLogVO> convertPage(Page<InstanceInfoDO> page) {
         List<InstanceLogVO> content = page.getContent().stream().map(instanceLogDO -> {
             InstanceLogVO instanceLogVO = new InstanceLogVO();
             BeanUtils.copyProperties(instanceLogDO, instanceLogVO);

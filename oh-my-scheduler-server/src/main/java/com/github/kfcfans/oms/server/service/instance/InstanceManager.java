@@ -4,10 +4,10 @@ import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
-import com.github.kfcfans.oms.server.persistence.model.InstanceLogDO;
-import com.github.kfcfans.oms.server.persistence.model.JobInfoDO;
-import com.github.kfcfans.oms.server.persistence.repository.InstanceLogRepository;
-import com.github.kfcfans.oms.server.persistence.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;
 import com.google.common.collect.Maps;
@@ -35,7 +35,7 @@ public class InstanceManager {
 
     // Spring Bean
     private static DispatchService dispatchService;
-    private static InstanceLogRepository instanceLogRepository;
+    private static InstanceInfoRepository instanceInfoRepository;
     private static JobInfoRepository jobInfoRepository;
 
     /**
@@ -92,11 +92,11 @@ public class InstanceManager {
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
         if (TimeExpressionType.frequentTypes.contains(timeExpressionType)) {
-            getInstanceLogRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum());
+            getInstanceInfoRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum());
             return;
         }
 
-        InstanceLogDO updateEntity = getInstanceLogRepository().findByInstanceId(instanceId);
+        InstanceInfoDO updateEntity = getInstanceInfoRepository().findByInstanceId(instanceId);
         updateEntity.setStatus(newStatus.getV());
         updateEntity.setGmtModified(new Date());
 
@@ -131,7 +131,7 @@ public class InstanceManager {
         }
 
         // 同步状态变更信息到数据库
-        getInstanceLogRepository().saveAndFlush(updateEntity);
+        getInstanceInfoRepository().saveAndFlush(updateEntity);
 
         // 清除已完成的实例信息
         if (finished) {
@@ -141,15 +141,15 @@ public class InstanceManager {
         }
     }
 
-    private static InstanceLogRepository getInstanceLogRepository() {
-        while (instanceLogRepository == null) {
+    private static InstanceInfoRepository getInstanceInfoRepository() {
+        while (instanceInfoRepository == null) {
             try {
                 Thread.sleep(100);
             }catch (Exception ignore) {
             }
-            instanceLogRepository = SpringUtils.getBean(InstanceLogRepository.class);
+            instanceInfoRepository = SpringUtils.getBean(InstanceInfoRepository.class);
         }
-        return instanceLogRepository;
+        return instanceInfoRepository;
     }
 
     private static JobInfoRepository getJobInfoRepository() {
