@@ -28,7 +28,7 @@ import java.util.Objects;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         // repository包名
-        basePackages = CoreJpaConfig.PACKAGES,
+        basePackages = CoreJpaConfig.CORE_PACKAGES,
         // 实体管理bean名称
         entityManagerFactoryRef = "coreEntityManagerFactory",
         // 事务管理bean名称
@@ -39,7 +39,7 @@ public class CoreJpaConfig {
     @Resource(name = "omsCoreDatasource")
     private DataSource omsCoreDatasource;
 
-    public static final String PACKAGES = "com.github.kfcfans.oms.server.persistence.core";
+    public static final String CORE_PACKAGES = "com.github.kfcfans.oms.server.persistence.core";
 
     /**
      * 生成配置文件，包括 JPA配置文件和Hibernate配置文件，相当于一下三个配置
@@ -49,7 +49,7 @@ public class CoreJpaConfig {
      *
      * @return 配置Map
      */
-    private Map<String, Object> genDatasourceProperties() {
+    private static Map<String, Object> genDatasourceProperties() {
 
         JpaProperties jpaProperties = new JpaProperties();
         jpaProperties.setOpenInView(false);
@@ -67,7 +67,7 @@ public class CoreJpaConfig {
         return builder
                 .dataSource(omsCoreDatasource)
                 .properties(genDatasourceProperties())
-                .packages(PACKAGES)
+                .packages(CORE_PACKAGES)
                 .persistenceUnit("corePersistenceUnit")
                 .build();
     }
