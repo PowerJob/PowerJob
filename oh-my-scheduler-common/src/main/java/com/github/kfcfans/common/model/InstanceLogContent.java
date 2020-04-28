@@ -19,8 +19,8 @@ public class InstanceLogContent implements OmsSerializable {
     // 实例ID
     private long instanceId;
     // 日志提交时间
-    private long timestamp;
+    private long logTime;
     // 日志内容
-    private String content;
+    private String logContent;
 }
 

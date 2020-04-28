@@ -18,5 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkerLogReportReq implements OmsSerializable {
+    private String workerAddress;
     private List<InstanceLogContent> instanceLogContents;
 }

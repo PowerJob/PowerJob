@@ -4,8 +4,10 @@ import akka.actor.AbstractActor;
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.common.request.WorkerHeartbeat;
+import com.github.kfcfans.common.request.WorkerLogReportReq;
 import com.github.kfcfans.common.response.AskResponse;
-import com.github.kfcfans.oms.server.akka.requests.Ping;
+import com.github.kfcfans.oms.server.common.utils.SpringUtils;
+import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +26,10 @@ public class ServerActor extends AbstractActor {
         return receiveBuilder()
                 .match(WorkerHeartbeat.class, this::onReceiveWorkerHeartbeat)
                 .match(TaskTrackerReportInstanceStatusReq.class, this::onReceiveTaskTrackerReportInstanceStatusReq)
+                .match(WorkerLogReportReq.class, this::onReceiveWorkerLogReportReq)
                 .matchAny(obj -> log.warn("[ServerActor] receive unknown request: {}.", obj))
                 .build();
     }
-
 
 
     /**
@@ -53,5 +55,10 @@ public class ServerActor extends AbstractActor {
         }catch (Exception e) {
             log.error("[ServerActor] update instance status failed for request: {}.", req, e);
         }
+    }
+
+    private void onReceiveWorkerLogReportReq(WorkerLogReportReq req) {
+        // 这个效率应该不会拉垮吧...也就是一些判断 + Map#get 吧...
+        SpringUtils.getBean(InstanceLogService.class).submitLogs(req.getWorkerAddress(), req.getInstanceLogContents());
     }
 }

@@ -76,7 +76,7 @@ public class OmsLogHandler {
                     logs.add(logContent);
 
                     if (logs.size() >= BATCH_SIZE) {
-                        WorkerLogReportReq req = new WorkerLogReportReq(logs);
+                        WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), logs);
                         // 不可靠请求，WEB日志不追求极致
                         serverActor.tell(req, null);
                         logs.clear();
@@ -88,7 +88,7 @@ public class OmsLogHandler {
             }
 
             if (!logs.isEmpty()) {
-                WorkerLogReportReq req = new WorkerLogReportReq(logs);
+                WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), logs);
                 serverActor.tell(req, null);
             }
         }

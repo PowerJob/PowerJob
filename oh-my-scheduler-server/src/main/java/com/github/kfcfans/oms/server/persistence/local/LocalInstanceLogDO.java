@@ -27,9 +27,14 @@ public class LocalInstanceLogDO {
     /**
      * 日志时间
      */
-    private Long timestamp;
+    private Long logTime;
     /**
      * 日志内容
      */
-    private String content;
+    private String logContent;
+
+    /**
+     * 机器地址
+     */
+    private String workerAddress;
 }
