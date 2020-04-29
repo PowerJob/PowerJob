@@ -51,9 +51,13 @@ public class InstanceLogService {
     private final Set<Long> instanceIds = Sets.newConcurrentHashSet();
 
     private static final String SPACE = " ";
+    private static final String LINE_SEPARATOR = "\n";
     private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 
     private static final int BATCH_SIZE = 1000;
+    private static final int LOG_AVG_SIZE = 100;
+
+    private static final FastDateFormat dateFormat = FastDateFormat.getInstance(TIME_PATTERN);
 
     /**
      * 提交日志记录，持久化到本地数据库中
@@ -79,6 +83,45 @@ public class InstanceLogService {
     }
 
     /**
+     * 获取任务实例运行日志（默认存在本地数据，需要由生成完成请求的路由与转发）
+     * @param instanceId 任务实例ID
+     * @return 文本字符串
+     */
+    public String fetchInstanceLog(Long instanceId) {
+
+        try {
+
+            long logCount = localInstanceLogRepository.countByInstanceId(instanceId);
+
+            // 本地存在数据，直接返回
+            if (logCount != 0) {
+
+                Stream<LocalInstanceLogDO> logStream = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId);
+                int strSize = (int) Math.min(Integer.MAX_VALUE, LOG_AVG_SIZE * logCount);
+                StringBuilder sb = new StringBuilder(strSize);
+                logStream.forEach(instanceLogDO -> sb.append(convertLog(instanceLogDO)).append(LINE_SEPARATOR));
+                return sb.toString();
+            }
+
+            // 从 MongoDB 获取
+            InstanceLogDO mongoLog = mongoTemplate.findOne(Query.query(Criteria.where("instanceId").is(instanceId)), InstanceLogDO.class);
+            if (mongoLog == null) {
+                return "There is no online log for this task instance";
+            }
+            StringBuilder sb = new StringBuilder(Math.min(Integer.MAX_VALUE, LOG_AVG_SIZE * mongoLog.getLogList().size()));
+            mongoLog.getLogList().forEach(s -> sb.append(s).append(LINE_SEPARATOR));
+            return sb.toString();
+
+        }catch (Exception e) {
+            log.error("[InstanceLogService] fetchInstanceLog for instance(instanceId={}) failed.", instanceId, e);
+            return "unknown error from oms-server";
+        }catch (OutOfMemoryError oe) {
+            log.error("[InstanceLogService] The log for instance(instanceId={}) is too large.", instanceId, oe);
+            return "The log is too large to display directly.";
+        }
+    }
+
+    /**
      * 将本地的任务实例运行日志同步到 mongoDB 存储，在任务执行结束后异步执行
      * @param instanceId 任务实例ID
      */
@@ -92,7 +135,7 @@ public class InstanceLogService {
         }
 
         Stopwatch sw = Stopwatch.createStarted();
-        FastDateFormat dateFormat = FastDateFormat.getInstance(TIME_PATTERN);
+
 
         // 流式操作避免 OOM，至少要扛住 1000W 条日志记录的写入（需要测试时监控内存变化）
         Stream<LocalInstanceLogDO> allLogs = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId);
@@ -105,9 +148,7 @@ public class InstanceLogService {
         allLogs.forEach(instanceLog -> {
             counter.incrementAndGet();
 
-            // 拼接日志 -> 2019-4-21 00:00:00.000 192.168.1.1:2777  INFO XXX
-            String logStr = dateFormat.format(instanceLog.getLogTime()) + SPACE + instanceLog.getWorkerAddress() + SPACE + instanceLog.getLogContent();
-            instanceLogs.add(logStr);
+            instanceLogs.add(convertLog(instanceLog));
 
             if (instanceLogs.size() > BATCH_SIZE) {
                 saveToMongoDB(instanceId, instanceLogs, initialized);
@@ -127,6 +168,15 @@ public class InstanceLogService {
         }catch (Exception e) {
             log.warn("[InstanceLogService] delete local instanceLogs failed.", e);
         }
+    }
+
+    /**
+     * 拼接日志 -> 2019-4-21 00:00:00.000 192.168.1.1:2777  INFO XXX
+     * @param instanceLog 日志对象
+     * @return 字符串
+     */
+    private static String convertLog(LocalInstanceLogDO instanceLog) {
+        return dateFormat.format(instanceLog.getLogTime()) + SPACE + instanceLog.getWorkerAddress() + SPACE + instanceLog.getLogContent();
     }
 
     private void saveToMongoDB(Long instanceId, List<String> logList, AtomicBoolean initialized) {
@@ -181,4 +231,5 @@ public class InstanceLogService {
             });
         }
     }
+
 }

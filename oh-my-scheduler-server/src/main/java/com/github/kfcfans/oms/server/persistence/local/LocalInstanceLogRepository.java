@@ -21,4 +21,5 @@ public interface LocalInstanceLogRepository extends JpaRepository<LocalInstanceL
 
     long deleteByInstanceIdInAndLogTimeLessThan(List<Long> instanceIds, Long t);
 
+    long countByInstanceId(Long instanceId);
 }

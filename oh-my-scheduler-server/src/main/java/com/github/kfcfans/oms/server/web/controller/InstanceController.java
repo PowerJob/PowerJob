@@ -3,22 +3,30 @@ package com.github.kfcfans.oms.server.web.controller;
 import com.github.kfcfans.common.InstanceStatus;
 import com.github.kfcfans.common.response.ResultDTO;
 import com.github.kfcfans.common.model.InstanceDetail;
+import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.PageResult;
+import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.CacheService;
+import com.github.kfcfans.oms.server.service.InstanceLogService;
+import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
 import com.github.kfcfans.oms.server.web.response.InstanceLogVO;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -32,10 +40,18 @@ import java.util.stream.Collectors;
 @RequestMapping("/instance")
 public class InstanceController {
 
+    @Value("${server.port}")
+    private int port;
+
     @Resource
     private InstanceService instanceService;
     @Resource
+    private InstanceLogService instanceLogService;
+
+    @Resource
     private CacheService cacheService;
+    @Resource
+    private AppInfoRepository appInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
@@ -50,6 +66,36 @@ public class InstanceController {
     @GetMapping("/status")
     public ResultDTO<InstanceDetail> getRunningStatus(String instanceId) {
         return ResultDTO.success(instanceService.getInstanceDetail(Long.valueOf(instanceId)));
+    }
+
+    @GetMapping("/log")
+    public ResultDTO<String> getInstanceLog(Long instanceId, HttpServletResponse response) {
+
+        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+        if (instanceInfo == null) {
+            return ResultDTO.failed("invalid instanceId: " + instanceId);
+        }
+
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(instanceInfo.getAppId());
+        if (!appInfoOpt.isPresent()) {
+            return ResultDTO.failed("impossible");
+        }
+
+        String targetServer = appInfoOpt.get().getCurrentServer();
+
+        // 转发HTTP请求
+        if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
+            String ip = targetServer.split(":")[0];
+            String url = "http://" + ip + ":" + port + "/instance/log?instanceId=" + instanceId;
+            try {
+                response.sendRedirect(url);
+                return ResultDTO.success("redirecting...");
+            }catch (Exception e) {
+                return ResultDTO.failed(e);
+            }
+        }
+
+        return ResultDTO.success(instanceLogService.fetchInstanceLog(instanceId));
     }
 
     @PostMapping("/list")
