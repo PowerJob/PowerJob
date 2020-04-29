@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.persistence.local;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -16,5 +18,7 @@ public interface LocalInstanceLogRepository extends JpaRepository<LocalInstanceL
 
     // 删除数据
     long deleteByInstanceId(Long instanceId);
+
+    long deleteByInstanceIdInAndLogTimeLessThan(List<Long> instanceIds, Long t);
 
 }

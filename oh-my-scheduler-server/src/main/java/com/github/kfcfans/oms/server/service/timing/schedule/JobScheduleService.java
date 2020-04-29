@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -62,6 +63,7 @@ public class JobScheduleService {
 
     private static final long SCHEDULE_RATE = 15000;
 
+    @Async("timingTaskExecutor")
     @Scheduled(fixedRate = SCHEDULE_RATE)
     public void timingSchedule() {
 

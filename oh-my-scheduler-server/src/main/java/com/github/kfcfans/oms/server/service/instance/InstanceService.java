@@ -64,6 +64,8 @@ public class InstanceService {
             instanceInfoDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
             instanceInfoRepository.saveAndFlush(instanceInfoDO);
 
+            InstanceManager.processFinishedInstance(instanceId);
+
             /*
             不可靠通知停止 TaskTracker
             假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭

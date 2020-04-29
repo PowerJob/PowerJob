@@ -8,6 +8,7 @@ import com.github.kfcfans.common.utils.CommonUtils;
 import com.github.kfcfans.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.actors.ProcessorTrackerActor;
 import com.github.kfcfans.oms.worker.actors.TaskTrackerActor;
+import com.github.kfcfans.oms.worker.background.OmsLogHandler;
 import com.github.kfcfans.oms.worker.background.ServerDiscoveryService;
 import com.github.kfcfans.oms.worker.background.WorkerHealthReporter;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
@@ -118,9 +119,10 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
             // 初始化定时任务
             ThreadFactory timingPoolFactory = new ThreadFactoryBuilder().setNameFormat("oms-worker-timing-pool-%d").build();
-            timingPool = Executors.newScheduledThreadPool(2, timingPoolFactory);
+            timingPool = Executors.newScheduledThreadPool(3, timingPoolFactory);
             timingPool.scheduleAtFixedRate(new WorkerHealthReporter(), 0, 15, TimeUnit.SECONDS);
             timingPool.scheduleAtFixedRate(() -> currentServer = ServerDiscoveryService.discovery(), 10, 10, TimeUnit.SECONDS);
+            timingPool.scheduleWithFixedDelay(OmsLogHandler.INSTANCE.logSubmitter, 0, 5, TimeUnit.SECONDS);
 
             log.info("[OhMyWorker] OhMyWorker initialized successfully, using time: {}, congratulations!", stopwatch);
         }catch (Exception e) {

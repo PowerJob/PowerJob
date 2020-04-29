@@ -1,12 +1,16 @@
 package com.github.kfcfans.oms.server.service;
 
+import com.github.kfcfans.common.TimeExpressionType;
 import com.github.kfcfans.common.model.InstanceLogContent;
 import com.github.kfcfans.common.utils.CommonUtils;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.local.LocalInstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.local.LocalInstanceLogRepository;
 import com.github.kfcfans.oms.server.persistence.mongodb.InstanceLogDO;
+import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.beans.BeanUtils;
@@ -15,10 +19,14 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -39,6 +47,9 @@ public class InstanceLogService {
     @Resource
     private LocalInstanceLogRepository localInstanceLogRepository;
 
+    // 本地维护了在线日志的任务实例ID
+    private final Set<Long> instanceIds = Sets.newConcurrentHashSet();
+
     private static final String SPACE = " ";
     private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 
@@ -52,6 +63,8 @@ public class InstanceLogService {
     public void submitLogs(String workerAddress, List<InstanceLogContent> logs) {
 
         List<LocalInstanceLogDO> logList = logs.stream().map(x -> {
+            instanceIds.add(x.getInstanceId());
+
             LocalInstanceLogDO y = new LocalInstanceLogDO();
             BeanUtils.copyProperties(x, y);
             y.setWorkerAddress(workerAddress);
@@ -69,8 +82,14 @@ public class InstanceLogService {
      * 将本地的任务实例运行日志同步到 mongoDB 存储，在任务执行结束后异步执行
      * @param instanceId 任务实例ID
      */
-    @Async
+    @Async("commonTaskExecutor")
     public void sync(Long instanceId) {
+
+        // 休眠10秒等待全部数据上报（OmsLogHandler 每隔5秒上报数据）
+        try {
+            TimeUnit.SECONDS.sleep(10);
+        }catch (Exception ignore) {
+        }
 
         Stopwatch sw = Stopwatch.createStarted();
         FastDateFormat dateFormat = FastDateFormat.getInstance(TIME_PATTERN);
@@ -102,11 +121,12 @@ public class InstanceLogService {
         // 删除本地数据
         try {
             CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.deleteByInstanceId(instanceId));
+
+            instanceIds.remove(instanceId);
+            log.debug("[InstanceLogService] sync local instanceLogs to mongoDB succeed, total logs: {},using: {}.", counter.get(), sw.stop());
         }catch (Exception e) {
             log.warn("[InstanceLogService] delete local instanceLogs failed.", e);
         }
-
-        log.debug("[InstanceLogService] sync local instanceLogs to mongoDB succeed, total logs: {},using: {}.", counter.get(), sw.stop());
     }
 
     private void saveToMongoDB(Long instanceId, List<String> logList, AtomicBoolean initialized) {
@@ -129,6 +149,36 @@ public class InstanceLogService {
             });
         }catch (Exception e) {
             log.warn("[InstanceLogService] push instanceLog(instanceId={},logList={}) to mongoDB failed.", instanceId, logList, e);
+        }
+    }
+
+    @Async("timingTaskExecutor")
+    @Scheduled(fixedDelay = 60000)
+    public void timingCheck() {
+
+        // 1. 定时删除秒级任务的日志
+        List<Long> frequentInstanceIds = Lists.newLinkedList();
+        instanceIds.forEach(instanceId -> {
+            JobInfoDO jobInfo = InstanceManager.fetchJobInfo(instanceId);
+            if (jobInfo == null) {
+                return;
+            }
+
+            if (TimeExpressionType.frequentTypes.contains(jobInfo.getTimeExpressionType())) {
+                frequentInstanceIds.add(instanceId);
+            }
+        });
+
+        if (!CollectionUtils.isEmpty(frequentInstanceIds)) {
+            // 只保留最近10分钟的日志
+            long time = System.currentTimeMillis() - 10 * 60 * 1000;
+            Lists.partition(frequentInstanceIds, 100).forEach(p -> {
+                try {
+                    localInstanceLogRepository.deleteByInstanceIdInAndLogTimeLessThan(p, time);
+                }catch (Exception e) {
+                    log.warn("[InstanceLogService] delete expired logs for instance: {} failed.", p, e);
+                }
+            });
         }
     }
 }

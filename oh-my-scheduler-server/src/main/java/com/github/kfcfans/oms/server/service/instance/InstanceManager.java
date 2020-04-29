@@ -9,6 +9,7 @@ import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
+import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class InstanceManager {
 
     // Spring Bean
     private static DispatchService dispatchService;
+    private static InstanceLogService instanceLogService;
     private static InstanceInfoRepository instanceInfoRepository;
     private static JobInfoRepository jobInfoRepository;
 
@@ -133,12 +135,28 @@ public class InstanceManager {
         // 同步状态变更信息到数据库
         getInstanceInfoRepository().saveAndFlush(updateEntity);
 
-        // 清除已完成的实例信息
         if (finished) {
-            instanceId2StatusHolder.remove(instanceId);
-            // 这一步也可能导致后面取不到 JobInfoDO
-            instanceId2JobInfo.remove(instanceId);
+            processFinishedInstance(instanceId);
         }
+    }
+
+    /**
+     * 收尾完成的任务实例
+     * @param instanceId 任务实例ID
+     */
+    public static void processFinishedInstance(Long instanceId) {
+
+        // 清除已完成的实例信息
+        instanceId2StatusHolder.remove(instanceId);
+        // 这一步也可能导致后面取不到 JobInfoDO
+        instanceId2JobInfo.remove(instanceId);
+
+        // 上报日志数据
+        getInstanceLogService().sync(instanceId);
+    }
+
+    public static JobInfoDO fetchJobInfo(Long instanceId) {
+        return instanceId2JobInfo.get(instanceId);
     }
 
     private static InstanceInfoRepository getInstanceInfoRepository() {
@@ -172,5 +190,16 @@ public class InstanceManager {
             dispatchService = SpringUtils.getBean(DispatchService.class);
         }
         return dispatchService;
+    }
+
+    private static InstanceLogService getInstanceLogService() {
+        while (instanceLogService == null) {
+            try {
+                Thread.sleep(100);
+            }catch (Exception ignore) {
+            }
+            instanceLogService = SpringUtils.getBean(InstanceLogService.class);
+        }
+        return instanceLogService;
     }
 }

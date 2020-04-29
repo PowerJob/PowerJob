@@ -12,9 +12,11 @@ import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoReposito
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
+import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -48,6 +50,7 @@ public class InstanceStatusCheckService {
     @Resource
     private JobInfoRepository jobInfoRepository;
 
+    @Async("timingTaskExecutor")
     @Scheduled(fixedRate = 10000)
     public void timingStatusCheck() {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -143,5 +146,7 @@ public class InstanceStatusCheckService {
         instance.setGmtModified(new Date());
         instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
         instanceInfoRepository.saveAndFlush(instance);
+
+        InstanceManager.processFinishedInstance(instance.getInstanceId());
     }
 }
