@@ -7,6 +7,8 @@ import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+
 /**
  * 单机处理器 示例
  * com.github.kfcfans.oms.server.processors.StandaloneProcessorDemo
@@ -28,6 +30,15 @@ public class StandaloneProcessorDemo implements BasicProcessor {
         System.out.println("TaskContext: " + JSONObject.toJSONString(context));
         System.out.println("ProcessSuccess: " + success);
         context.getOmsLogger().info("StandaloneProcessorDemo finished process,success: .", success);
+
+        // 测试异常日志
+        try {
+            Collections.emptyList().add("277");
+        }catch (Exception e) {
+            context.getOmsLogger().error("[StandaloneProcessorDemo] process failed.", e);
+        }
+
+
         return new ProcessResult(success, context + ": " + success);
     }
 }

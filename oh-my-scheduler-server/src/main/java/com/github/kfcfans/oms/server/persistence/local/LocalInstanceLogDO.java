@@ -31,6 +31,8 @@ public class LocalInstanceLogDO {
     /**
      * 日志内容
      */
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String logContent;
 
     /**

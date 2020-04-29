@@ -48,7 +48,7 @@ public class LocalJpaConfig {
 
         HibernateProperties hibernateProperties = new HibernateProperties();
         // 考虑要不要用 create 模式，每次启动都删除数据
-        hibernateProperties.setDdlAuto("update");
+        hibernateProperties.setDdlAuto("create");
         return hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings());
     }
 

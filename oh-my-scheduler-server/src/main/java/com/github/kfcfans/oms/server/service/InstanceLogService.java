@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -108,7 +107,7 @@ public class InstanceLogService {
             // 从 MongoDB 获取
             InstanceLogDO mongoLog = mongoTemplate.findOne(Query.query(Criteria.where("instanceId").is(instanceId)), InstanceLogDO.class);
             if (mongoLog == null) {
-                return "There is no online log for this task instance";
+                return "There is no online log for this task instance now.";
             }
             StringBuilder sb = new StringBuilder(Math.min(Integer.MAX_VALUE, LOG_AVG_SIZE * mongoLog.getLogList().size()));
             mongoLog.getLogList().forEach(s -> sb.append(s).append(LINE_SEPARATOR));
@@ -127,8 +126,8 @@ public class InstanceLogService {
      * 将本地的任务实例运行日志同步到 mongoDB 存储，在任务执行结束后异步执行
      * @param instanceId 任务实例ID
      */
+    @Transactional
     @Async("commonTaskExecutor")
-    @Transactional(readOnly = true)
     public void sync(Long instanceId) {
 
         // 休眠10秒等待全部数据上报（OmsLogHandler 每隔5秒上报数据）
@@ -139,42 +138,43 @@ public class InstanceLogService {
 
         Stopwatch sw = Stopwatch.createStarted();
 
+        // 推送数据到 mongoDB
+        List<String> instanceLogs = Lists.newLinkedList();
 
         // 流式操作避免 OOM，至少要扛住 1000W 条日志记录的写入（需要测试时监控内存变化）
-        Stream<LocalInstanceLogDO> allLogs = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId);
+        try (Stream<LocalInstanceLogDO> allLogs = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
+            AtomicBoolean initialized = new AtomicBoolean(false);
 
-        List<String> instanceLogs = Lists.newLinkedList();
-        AtomicLong counter = new AtomicLong(0);
-        AtomicBoolean initialized = new AtomicBoolean(false);
+            // 将整库数据写入 MongoDB
+            allLogs.forEach(instanceLog -> {
+                instanceLogs.add(convertLog(instanceLog));
+                if (instanceLogs.size() > BATCH_SIZE) {
+                    saveToMongoDB(instanceId, instanceLogs, initialized);
+                }
+            });
 
-        // 将整库数据写入 MongoDB
-        allLogs.forEach(instanceLog -> {
-            counter.incrementAndGet();
-
-            instanceLogs.add(convertLog(instanceLog));
-
-            if (instanceLogs.size() > BATCH_SIZE) {
+            if (!instanceLogs.isEmpty()) {
                 saveToMongoDB(instanceId, instanceLogs, initialized);
             }
-        });
-
-        if (!instanceLogs.isEmpty()) {
-            saveToMongoDB(instanceId, instanceLogs, initialized);
+        }catch (Exception e) {
+            log.warn("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB failed.", instanceId, e);
         }
 
         // 删除本地数据
         try {
-            CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.deleteByInstanceId(instanceId));
+            long total = CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.deleteByInstanceId(instanceId));
 
             instanceIds.remove(instanceId);
-            log.debug("[InstanceLogService] sync local instanceLogs to mongoDB succeed, total logs: {},using: {}.", counter.get(), sw.stop());
+            log.info("[InstanceLogService] sync local instanceLogs(instanceId={}) to mongoDB succeed, total logs: {},using: {}.", instanceId, total, sw.stop());
         }catch (Exception e) {
             log.warn("[InstanceLogService] delete local instanceLogs failed.", e);
         }
     }
 
+
+
     /**
-     * 拼接日志 -> 2019-4-21 00:00:00.000 192.168.1.1:2777  INFO XXX
+     * 拼接日志 -> 2020-04-29 22:07:10.059 192.168.1.1:2777 INFO XXX
      * @param instanceLog 日志对象
      * @return 字符串
      */

@@ -146,6 +146,8 @@ public class InstanceManager {
      */
     public static void processFinishedInstance(Long instanceId) {
 
+        log.info("[InstanceManager] instance(id={}) process finished.", instanceId);
+
         // 清除已完成的实例信息
         instanceId2StatusHolder.remove(instanceId);
         // 这一步也可能导致后面取不到 JobInfoDO

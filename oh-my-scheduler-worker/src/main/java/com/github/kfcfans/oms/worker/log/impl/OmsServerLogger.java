@@ -52,7 +52,7 @@ public class OmsServerLogger implements OmsLogger {
     private static String genLog(String level, String messagePattern, Object... arg) {
 
         String pattern = LOG_PREFIX + messagePattern;
-        Object[] newArgs = new Object[arg.length + 2];
+        Object[] newArgs = new Object[arg.length + 1];
         newArgs[0] = level;
         System.arraycopy(arg, 0, newArgs, 1, arg.length);
 
