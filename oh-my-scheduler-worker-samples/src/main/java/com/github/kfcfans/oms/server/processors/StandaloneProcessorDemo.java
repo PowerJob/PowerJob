@@ -21,11 +21,13 @@ public class StandaloneProcessorDemo implements BasicProcessor {
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
 
+        context.getOmsLogger().info("StandaloneProcessorDemo start process,context is {}.", context);
         System.out.println("================ StandaloneProcessorDemo#process ================");
         // 根据控制台参数判断是否成功
         boolean success = "success".equals(context.getJobParams());
         System.out.println("TaskContext: " + JSONObject.toJSONString(context));
         System.out.println("ProcessSuccess: " + success);
+        context.getOmsLogger().info("StandaloneProcessorDemo finished process,success: .", success);
         return new ProcessResult(success, context + ": " + success);
     }
 }

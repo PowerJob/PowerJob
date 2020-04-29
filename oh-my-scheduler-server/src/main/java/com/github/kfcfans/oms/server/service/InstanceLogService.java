@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -87,6 +88,7 @@ public class InstanceLogService {
      * @param instanceId 任务实例ID
      * @return 文本字符串
      */
+    @Transactional(readOnly = true)
     public String fetchInstanceLog(Long instanceId) {
 
         try {
@@ -126,6 +128,7 @@ public class InstanceLogService {
      * @param instanceId 任务实例ID
      */
     @Async("commonTaskExecutor")
+    @Transactional(readOnly = true)
     public void sync(Long instanceId) {
 
         // 休眠10秒等待全部数据上报（OmsLogHandler 每隔5秒上报数据）

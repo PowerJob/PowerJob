@@ -6,6 +6,7 @@ import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.TaskResult;
 import com.github.kfcfans.oms.worker.core.processor.sdk.MapReduceProcessor;
+import com.github.kfcfans.oms.worker.log.OmsLogger;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,12 +37,15 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
 
+        OmsLogger omsLogger = context.getOmsLogger();
+
         System.out.println("============== TestMapReduceProcessor#process ==============");
         System.out.println("isRootTask:" + isRootTask());
         System.out.println("taskContext:" + JsonUtils.toJSONString(context));
 
         if (isRootTask()) {
             System.out.println("==== MAP ====");
+            omsLogger.info("[DemoMRProcessor] start root task~");
             List<TestSubTask> subTasks = Lists.newLinkedList();
             for (int j = 0; j < batchNum; j++) {
                 for (int i = 0; i < batchSize; i++) {
@@ -52,9 +56,11 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
                 System.out.println("mapResult: " + mapResult);
                 subTasks.clear();
             }
+            omsLogger.info("[DemoMRProcessor] map success~");
             return new ProcessResult(true, "MAP_SUCCESS");
         }else {
             System.out.println("==== NORMAL_PROCESS ====");
+            omsLogger.info("[DemoMRProcessor] normal process~");
             System.out.println("subTask: " + JsonUtils.toJSONString(context.getSubTask()));
             Thread.sleep(1000);
             if (context.getCurrentRetryTimes() == 0) {
@@ -70,6 +76,7 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
         log.info("================ MapReduceProcessorDemo#postProcess ================");
         log.info("TaskContext: {}", JSONObject.toJSONString(context));
         log.info("List<TaskResult>: {}", JSONObject.toJSONString(taskResults));
+        context.getOmsLogger().info("MapReduce job finished, result is {}.", taskResults);
 
         boolean success = ThreadLocalRandom.current().nextBoolean();
         return new ProcessResult(success, context + ": " + success);

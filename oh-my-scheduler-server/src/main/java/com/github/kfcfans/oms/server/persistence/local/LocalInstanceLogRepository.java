@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.persistence.local;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Stream;

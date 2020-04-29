@@ -78,12 +78,12 @@ public class ProcessorTracker {
 
             this.omsLogger = new OmsServerLogger(instanceId);
 
-            // 初始化 线程池
-            initThreadPool();
-            // 初始化 Processor
-            initProcessor();
             // 初始化定时任务
             initTimingJob();
+            // 初始化 Processor
+            initProcessor();
+            // 初始化 线程池，如果处理器创建失败则不执行
+            initThreadPool();
 
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
         }catch (Exception e) {
