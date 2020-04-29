@@ -47,7 +47,7 @@ public class LocalJpaConfig {
         jpaProperties.setShowSql(false);
 
         HibernateProperties hibernateProperties = new HibernateProperties();
-        // 考虑要不要用 create 模式，每次启动都删除数据
+        // 每次启动都删除数据（重启后原来的Instance已经通过故障转移更换了Server，老的日志数据也没什么意义了）
         hibernateProperties.setDdlAuto("create");
         return hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings());
     }

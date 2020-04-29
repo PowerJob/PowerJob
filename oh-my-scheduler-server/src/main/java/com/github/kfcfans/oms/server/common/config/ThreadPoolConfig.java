@@ -18,27 +18,27 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class ThreadPoolConfig {
 
-    @Bean("timingTaskExecutor")
+    @Bean("omsTimingPool")
     public Executor getTimingPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
         executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
         executor.setQueueCapacity(1024);
         executor.setKeepAliveSeconds(60);
-        executor.setThreadNamePrefix("timingTaskExecutor-");
+        executor.setThreadNamePrefix("omsTimingPool-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         return executor;
     }
 
 
-    @Bean("commonTaskExecutor")
+    @Bean("omsCommonPool")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
         executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
         executor.setQueueCapacity(1024);
         executor.setKeepAliveSeconds(60);
-        executor.setThreadNamePrefix("commonTaskExecutor-");
+        executor.setThreadNamePrefix("omsCommonPool-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         return executor;
     }

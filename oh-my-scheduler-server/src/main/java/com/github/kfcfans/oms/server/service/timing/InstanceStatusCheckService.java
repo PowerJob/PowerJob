@@ -50,7 +50,7 @@ public class InstanceStatusCheckService {
     @Resource
     private JobInfoRepository jobInfoRepository;
 
-    @Async("timingTaskExecutor")
+    @Async("omsTimingPool")
     @Scheduled(fixedRate = 10000)
     public void timingStatusCheck() {
         Stopwatch stopwatch = Stopwatch.createStarted();

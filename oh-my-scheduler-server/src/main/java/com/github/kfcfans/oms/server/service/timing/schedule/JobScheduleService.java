@@ -63,7 +63,7 @@ public class JobScheduleService {
 
     private static final long SCHEDULE_RATE = 15000;
 
-    @Async("timingTaskExecutor")
+    @Async("omsTimingPool")
     @Scheduled(fixedRate = SCHEDULE_RATE)
     public void timingSchedule() {
 

@@ -127,7 +127,7 @@ public class InstanceLogService {
      * @param instanceId 任务实例ID
      */
     @Transactional
-    @Async("commonTaskExecutor")
+    @Async("omsCommonPool")
     public void sync(Long instanceId) {
 
         // 休眠10秒等待全部数据上报（OmsLogHandler 每隔5秒上报数据）
@@ -205,7 +205,7 @@ public class InstanceLogService {
         }
     }
 
-    @Async("timingTaskExecutor")
+    @Async("omsTimingPool")
     @Scheduled(fixedDelay = 60000)
     public void timingCheck() {
 
