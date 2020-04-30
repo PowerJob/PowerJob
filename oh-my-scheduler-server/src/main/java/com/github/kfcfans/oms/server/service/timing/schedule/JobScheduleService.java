@@ -153,7 +153,7 @@ public class JobScheduleService {
                     }
 
                     HashedWheelTimerHolder.TIMER.schedule(() -> {
-                        dispatchService.dispatch(jobInfoDO, instanceId, 0);
+                        dispatchService.dispatch(jobInfoDO, instanceId, 0, null);
                     }, delay, TimeUnit.MILLISECONDS);
                 });
 

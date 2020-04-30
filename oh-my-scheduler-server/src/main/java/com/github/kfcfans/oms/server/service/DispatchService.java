@@ -39,8 +39,9 @@ public class DispatchService {
 
     private static final Splitter commaSplitter = Splitter.on(",");
 
-    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
-        dispatch(jobInfo, instanceId, currentRunningTimes, null);
+    public void redispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
+        String instanceParams = instanceInfoRepository.findByInstanceId(instanceId).getInstanceParams();
+        dispatch(jobInfo, instanceId, currentRunningTimes, instanceParams);
     }
 
     /**
@@ -52,7 +53,10 @@ public class DispatchService {
      */
     public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams) {
         Long jobId = jobInfo.getId();
-        log.info("[DispatchService] start to dispatch job: {}.", jobInfo);
+        log.info("[DispatchService] start to dispatch job: {};instancePrams: {}.", jobInfo, instanceParams);
+
+        String dbInstanceParams = instanceParams == null ? "" : instanceParams;
+
         // 查询当前运行的实例数
         long current = System.currentTimeMillis();
         long runningInstanceCount = instanceInfoRepository.countByJobIdAndStatusIn(jobId, generalizedRunningStatus);
@@ -61,7 +65,7 @@ public class DispatchService {
         if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
             String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
             log.warn("[DispatchService] cancel dispatch job(jobId={}) due to too much instance(num={}) is running.", jobId, runningInstanceCount);
-            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result);
+            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams);
             return;
         }
 
@@ -84,7 +88,7 @@ public class DispatchService {
         if (CollectionUtils.isEmpty(finalWorkers)) {
             String clusterStatusDescription = WorkerManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
             log.warn("[DispatchService] cancel dispatch job(jobId={}) due to no worker available, clusterStatus is {}.", jobId, clusterStatusDescription);
-            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE);
+            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE, dbInstanceParams);
             return;
         }
 
@@ -103,7 +107,12 @@ public class DispatchService {
         BeanUtils.copyProperties(jobInfo, req);
         // 传入 JobId
         req.setJobId(jobInfo.getId());
-        req.setInstanceParams(instanceParams);
+        // 传入 InstanceParams
+        if (StringUtils.isEmpty(instanceParams)) {
+            req.setInstanceParams(null);
+        }else {
+            req.setInstanceParams(instanceParams);
+        }
         req.setInstanceId(instanceId);
         req.setAllWorkerAddress(finalWorkers);
 
@@ -122,6 +131,6 @@ public class DispatchService {
         log.debug("[DispatchService] send request({}) to TaskTracker({}) succeed.", req, taskTrackerActor.pathString());
 
         // 修改状态
-        instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress);
+        instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress, dbInstanceParams);
     }
 }

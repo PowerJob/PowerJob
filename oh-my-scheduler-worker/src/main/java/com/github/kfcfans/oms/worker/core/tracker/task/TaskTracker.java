@@ -118,7 +118,7 @@ public abstract class TaskTracker {
     /* *************************** 对外方法区 *************************** */
     /**
      * 更新Task状态
-     * V1.0.0 -> V1.0.1 锁方案变更，从 synchronized (taskId.intern()) 修改为分段锁，能大大减少内存占用，损失的只有理论并发度而已
+     * V1.0.0 -> V1.0.1（e405e283ad7f97b0b4e5d369c7de884c0caf9192） 锁方案变更，从 synchronized (taskId.intern()) 修改为分段锁，能大大减少内存占用，损失的只有理论并发度而已
      * @param taskId task的ID（task为任务实例的执行单位）
      * @param newStatus task的新状态
      * @param reportTime 上报时间

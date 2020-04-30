@@ -89,7 +89,7 @@ public class InstanceStatusCheckService {
 
                     // 重新派发(orElseGet用于消除编译器警告...)
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
-                    dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), 0);
+                    dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), 0);
                 });
             }
 
@@ -101,7 +101,7 @@ public class InstanceStatusCheckService {
                 waitingWorkerReceiveInstances.forEach(instance -> {
                     // 重新派发
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
-                    dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), 0);
+                    dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), 0);
                 });
             }
 
@@ -124,7 +124,7 @@ public class InstanceStatusCheckService {
 
                     // CRON 和 API一样，失败次数 + 1，根据重试配置进行重试
                     if (instance.getRunningTimes() > jobInfoDO.getInstanceRetryNum()) {
-                        dispatchService.dispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
+                        dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
                     }else {
                         updateFailedInstance(instance);
                     }
@@ -147,6 +147,6 @@ public class InstanceStatusCheckService {
         instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
         instanceInfoRepository.saveAndFlush(instance);
 
-        InstanceManager.processFinishedInstance(instance.getInstanceId());
+        InstanceManager.processFinishedInstance(instance.getInstanceId(), InstanceStatus.FAILED.getV());
     }
 }

@@ -30,6 +30,8 @@ public class InstanceInfoDO {
     private Long appId;
     // 任务实例ID
     private Long instanceId;
+    // 任务实例参数
+    private String instanceParams;
     /**
      * 任务状态 {@link com.github.kfcfans.common.InstanceStatus}
      */

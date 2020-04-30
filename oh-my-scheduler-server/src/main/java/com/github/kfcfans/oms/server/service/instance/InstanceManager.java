@@ -108,7 +108,6 @@ public class InstanceManager {
             updateEntity.setFinishedTime(System.currentTimeMillis());
 
             finished = true;
-            log.info("[InstanceManager] instance(instanceId={}) execute succeed.", instanceId);
         }else if (newStatus == InstanceStatus.FAILED) {
 
             // 当前重试次数 <= 最大重试次数，进行重试 （第一次运行，runningTimes为1，重试一次，instanceRetryNum也为1，故需要 =）
@@ -118,7 +117,7 @@ public class InstanceManager {
 
                 // 延迟10S重试（由于重试不改变 instanceId，如果派发到同一台机器，上一个 TaskTracker 还处于资源释放阶段，无法创建新的TaskTracker，任务失败）
                 HashedWheelTimerHolder.TIMER.schedule(() -> {
-                    getDispatchService().dispatch(instanceId2JobInfo.get(instanceId), instanceId, updateEntity.getRunningTimes());
+                    getDispatchService().redispatch(instanceId2JobInfo.get(instanceId), instanceId, updateEntity.getRunningTimes());
                 }, 10, TimeUnit.SECONDS);
 
                 // 修改状态为 等待派发，正式开始重试
@@ -136,25 +135,34 @@ public class InstanceManager {
         getInstanceInfoRepository().saveAndFlush(updateEntity);
 
         if (finished) {
-            processFinishedInstance(instanceId);
+            processFinishedInstance(instanceId, updateEntity.getStatus());
         }
     }
 
     /**
      * 收尾完成的任务实例
      * @param instanceId 任务实例ID
+     * @param status 任务实例状态：成功/失败/手动停止
      */
-    public static void processFinishedInstance(Long instanceId) {
+    public static void processFinishedInstance(Long instanceId, int status) {
 
-        log.info("[InstanceManager] instance(id={}) process finished.", instanceId);
+        InstanceStatus instanceStatus = InstanceStatus.of(status);
+        log.info("[InstanceManager] instance(id={}) process finished, current status is {}.", instanceId, instanceStatus);
 
         // 清除已完成的实例信息
         instanceId2StatusHolder.remove(instanceId);
         // 这一步也可能导致后面取不到 JobInfoDO
-        instanceId2JobInfo.remove(instanceId);
+        JobInfoDO jobInfo = instanceId2JobInfo.remove(instanceId);
 
         // 上报日志数据
         getInstanceLogService().sync(instanceId);
+
+        // 告警
+        if (instanceStatus == InstanceStatus.FAILED) {
+
+            InstanceInfoDO instanceInfo = getInstanceInfoRepository().findByInstanceId(instanceId);
+
+        }
     }
 
     public static JobInfoDO fetchJobInfo(Long instanceId) {
