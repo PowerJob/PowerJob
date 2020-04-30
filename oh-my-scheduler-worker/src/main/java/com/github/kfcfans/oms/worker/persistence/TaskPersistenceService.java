@@ -28,7 +28,7 @@ public class TaskPersistenceService {
 
     // 默认重试参数
     private static final int RETRY_TIMES = 3;
-    private static final long RETRY_INTERVAL_MS = 200;
+    private static final long RETRY_INTERVAL_MS = 100;
 
     private static volatile boolean initialized = false;
     public static TaskPersistenceService INSTANCE = new TaskPersistenceService();
