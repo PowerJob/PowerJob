@@ -1,11 +1,11 @@
 package com.github.kfcfans.oms;
 
-import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.ProcessorType;
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.TimeExpressionType;
-import com.github.kfcfans.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.common.ExecuteType;
+import com.github.kfcfans.oms.common.ProcessorType;
+import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.request.ServerScheduleJobReq;
+import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.google.common.collect.Lists;
 
 /**

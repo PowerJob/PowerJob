@@ -1,9 +1,9 @@
 package com.github.kfcfans.oms.worker.background;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.model.InstanceLogContent;
-import com.github.kfcfans.common.request.WorkerLogReportReq;
+import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.model.InstanceLogContent;
+import com.github.kfcfans.oms.common.request.WorkerLogReportReq;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.google.common.collect.Lists;

@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.UserInfoRepository;
 import com.github.kfcfans.oms.server.web.request.ModifyUserInfoRequest;

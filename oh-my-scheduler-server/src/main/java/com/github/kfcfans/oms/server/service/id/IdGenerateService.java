@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.service.id;
 
-import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.ServerInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.ServerInfoRepository;
 import lombok.extern.slf4j.Slf4j;

@@ -1,9 +1,9 @@
 package com.github.kfcfans.oms.worker.persistence;
 
 
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.utils.CommonUtils;
-import com.github.kfcfans.common.utils.SupplierPlus;
+import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.utils.SupplierPlus;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.core.processor.TaskResult;

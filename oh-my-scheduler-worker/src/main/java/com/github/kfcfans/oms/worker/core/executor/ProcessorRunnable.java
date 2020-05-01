@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.worker.core.executor;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.common.ExecuteType;
+import com.github.kfcfans.oms.common.ExecuteType;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Processor 执行器

@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.processors;
 
-import com.github.kfcfans.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.server.MysteryService;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;

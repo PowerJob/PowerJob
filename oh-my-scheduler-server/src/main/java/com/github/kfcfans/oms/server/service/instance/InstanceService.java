@@ -2,13 +2,13 @@ package com.github.kfcfans.oms.server.service.instance;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.SystemInstanceResult;
-import com.github.kfcfans.common.model.InstanceDetail;
-import com.github.kfcfans.common.request.ServerQueryInstanceStatusReq;
-import com.github.kfcfans.common.request.ServerStopInstanceReq;
-import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.SystemInstanceResult;
+import com.github.kfcfans.oms.common.model.InstanceDetail;
+import com.github.kfcfans.oms.common.request.ServerQueryInstanceStatusReq;
+import com.github.kfcfans.oms.common.request.ServerStopInstanceReq;
+import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
@@ -22,8 +22,8 @@ import java.util.Date;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.kfcfans.common.InstanceStatus.RUNNING;
-import static com.github.kfcfans.common.InstanceStatus.STOPPED;
+import static com.github.kfcfans.oms.common.InstanceStatus.RUNNING;
+import static com.github.kfcfans.oms.common.InstanceStatus.STOPPED;
 
 /**
  * 任务运行实例服务

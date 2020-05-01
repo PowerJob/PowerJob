@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.akka.requests;
 
-import com.github.kfcfans.common.OmsSerializable;
+import com.github.kfcfans.oms.common.OmsSerializable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

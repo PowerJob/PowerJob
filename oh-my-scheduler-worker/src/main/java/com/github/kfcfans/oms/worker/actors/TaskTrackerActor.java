@@ -1,17 +1,17 @@
 package com.github.kfcfans.oms.worker.actors;
 
 import akka.actor.AbstractActor;
-import com.github.kfcfans.common.model.InstanceDetail;
-import com.github.kfcfans.common.request.ServerQueryInstanceStatusReq;
-import com.github.kfcfans.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.common.request.ServerStopInstanceReq;
+import com.github.kfcfans.oms.common.model.InstanceDetail;
+import com.github.kfcfans.oms.common.request.ServerQueryInstanceStatusReq;
+import com.github.kfcfans.oms.common.request.ServerScheduleJobReq;
+import com.github.kfcfans.oms.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.github.kfcfans.oms.worker.persistence.TaskDO;
 import com.github.kfcfans.oms.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorReportTaskStatusReq;
-import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;

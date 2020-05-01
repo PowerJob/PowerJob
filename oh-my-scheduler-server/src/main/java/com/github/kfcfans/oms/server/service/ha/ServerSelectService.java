@@ -2,7 +2,7 @@ package com.github.kfcfans.oms.server.service.ha;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.akka.requests.Ping;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;

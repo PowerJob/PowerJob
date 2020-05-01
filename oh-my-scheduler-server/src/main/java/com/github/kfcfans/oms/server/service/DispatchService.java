@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.service;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.common.*;
-import com.github.kfcfans.common.request.ServerScheduleJobReq;
+import com.github.kfcfans.oms.common.*;
+import com.github.kfcfans.oms.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Set;
 
-import static com.github.kfcfans.common.InstanceStatus.*;
+import static com.github.kfcfans.oms.common.InstanceStatus.*;
 
 
 /**

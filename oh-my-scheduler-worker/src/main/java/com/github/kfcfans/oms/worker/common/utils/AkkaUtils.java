@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.worker.common.utils;
 
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.common.RemoteConstant;
+import com.github.kfcfans.oms.common.RemoteConstant;
 import org.springframework.util.StringUtils;
 
 /**

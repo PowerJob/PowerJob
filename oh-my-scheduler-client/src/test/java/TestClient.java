@@ -1,4 +1,4 @@
-import com.github.kfcfans.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.client.OhMyClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

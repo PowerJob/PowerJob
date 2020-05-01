@@ -1,12 +1,12 @@
 package com.github.kfcfans.oms.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.ProcessorType;
-import com.github.kfcfans.common.TimeExpressionType;
-import com.github.kfcfans.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.ExecuteType;
+import com.github.kfcfans.oms.common.ProcessorType;
+import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.common.RemoteConstant;
+import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
@@ -28,7 +28,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 负责管理 Processor 的执行

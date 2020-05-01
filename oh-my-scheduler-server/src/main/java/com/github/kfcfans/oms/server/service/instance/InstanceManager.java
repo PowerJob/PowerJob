@@ -1,21 +1,26 @@
 package com.github.kfcfans.oms.server.service.instance;
 
-import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
-import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.request.TaskTrackerReportInstanceStatusReq;
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.UserInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.InstanceLogService;
+import com.github.kfcfans.oms.server.service.alarm.AlarmContent;
+import com.github.kfcfans.oms.server.service.alarm.Alarmable;
 import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +44,7 @@ public class InstanceManager {
     private static InstanceLogService instanceLogService;
     private static InstanceInfoRepository instanceInfoRepository;
     private static JobInfoRepository jobInfoRepository;
+    private static Alarmable omsCenterAlarmService;
 
     /**
      * 注册到任务实例管理器
@@ -161,7 +167,15 @@ public class InstanceManager {
         if (instanceStatus == InstanceStatus.FAILED) {
 
             InstanceInfoDO instanceInfo = getInstanceInfoRepository().findByInstanceId(instanceId);
+            AlarmContent content = new AlarmContent();
+            BeanUtils.copyProperties(jobInfo, content);
+            BeanUtils.copyProperties(instanceInfo, content);
 
+            List<Long> userIds = jobInfo.fetchNotifyUserIds();
+            List<UserInfoDO> userList = SpringUtils.getBean(UserInfoRepository.class).findByIdIn(userIds);
+            userList.forEach(x -> x.setPassword(null));
+
+            getAlarmService().alarm(content, userList);
         }
     }
 
@@ -211,5 +225,16 @@ public class InstanceManager {
             instanceLogService = SpringUtils.getBean(InstanceLogService.class);
         }
         return instanceLogService;
+    }
+
+    private static Alarmable getAlarmService() {
+        while (omsCenterAlarmService == null) {
+            try {
+                Thread.sleep(100);
+            }catch (Exception ignore) {
+            }
+            omsCenterAlarmService = (Alarmable) SpringUtils.getBean("omsCenterAlarmService");
+        }
+        return omsCenterAlarmService;
     }
 }

@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.persistence.core.model;
 
+import com.github.kfcfans.oms.common.InstanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,7 +34,7 @@ public class InstanceInfoDO {
     // 任务实例参数
     private String instanceParams;
     /**
-     * 任务状态 {@link com.github.kfcfans.common.InstanceStatus}
+     * 任务状态 {@link InstanceStatus}
      */
     private int status;
     // 执行结果

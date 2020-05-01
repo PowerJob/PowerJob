@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.service.timing.schedule;
 
-import com.github.kfcfans.common.InstanceStatus;
+import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
-import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.akka.OhMyServer;

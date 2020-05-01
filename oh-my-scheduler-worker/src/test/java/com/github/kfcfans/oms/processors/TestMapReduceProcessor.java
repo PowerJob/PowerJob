@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.processors;
 
-import com.github.kfcfans.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.TaskResult;
@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 测试 MapReduce 处理器

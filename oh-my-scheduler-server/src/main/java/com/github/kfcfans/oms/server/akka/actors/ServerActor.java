@@ -1,11 +1,11 @@
 package com.github.kfcfans.oms.server.akka.actors;
 
 import akka.actor.AbstractActor;
-import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.common.request.TaskTrackerReportInstanceStatusReq;
-import com.github.kfcfans.common.request.WorkerHeartbeat;
-import com.github.kfcfans.common.request.WorkerLogReportReq;
-import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.request.TaskTrackerReportInstanceStatusReq;
+import com.github.kfcfans.oms.common.request.WorkerHeartbeat;
+import com.github.kfcfans.oms.common.request.WorkerLogReportReq;
+import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
 import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;

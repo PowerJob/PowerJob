@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.server.service;
 
-import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;

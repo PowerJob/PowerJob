@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.web.response;
 
-import com.github.kfcfans.common.model.SystemMetrics;
+import com.github.kfcfans.oms.common.model.SystemMetrics;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.worker.common.utils;
 
-import com.github.kfcfans.common.model.SystemMetrics;
+import com.github.kfcfans.oms.common.model.SystemMetrics;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;

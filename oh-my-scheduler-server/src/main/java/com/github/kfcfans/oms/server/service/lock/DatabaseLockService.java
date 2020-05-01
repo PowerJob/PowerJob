@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.server.service.lock;
 
-import com.github.kfcfans.common.utils.CommonUtils;
-import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.OmsLockDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.OmsLockRepository;
 import com.google.common.collect.Lists;

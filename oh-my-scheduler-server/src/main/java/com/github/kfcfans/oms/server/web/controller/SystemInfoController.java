@@ -2,12 +2,12 @@ package com.github.kfcfans.oms.server.web.controller;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.model.SystemMetrics;
-import com.github.kfcfans.common.response.AskResponse;
-import com.github.kfcfans.common.response.ResultDTO;
-import com.github.kfcfans.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.model.SystemMetrics;
+import com.github.kfcfans.oms.common.response.AskResponse;
+import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.akka.requests.FriendQueryWorkerClusterStatusReq;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;

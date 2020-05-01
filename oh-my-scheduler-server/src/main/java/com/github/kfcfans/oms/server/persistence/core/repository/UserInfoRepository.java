@@ -15,4 +15,5 @@ public interface UserInfoRepository extends JpaRepository<UserInfoDO, Long> {
 
     List<UserInfoDO> findByUsernameLike(String username);
 
+    List<UserInfoDO> findByIdIn(List<Long> userIds);
 }

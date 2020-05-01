@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.worker.pojo.request;
 
-import com.github.kfcfans.common.OmsSerializable;
+import com.github.kfcfans.oms.common.OmsSerializable;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import lombok.Data;
 import lombok.NoArgsConstructor;

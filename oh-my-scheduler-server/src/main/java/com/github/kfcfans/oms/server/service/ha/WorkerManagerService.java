@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.server.service.ha;
 
-import com.github.kfcfans.common.model.SystemMetrics;
-import com.github.kfcfans.common.request.WorkerHeartbeat;
+import com.github.kfcfans.oms.common.model.SystemMetrics;
+import com.github.kfcfans.oms.common.request.WorkerHeartbeat;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;

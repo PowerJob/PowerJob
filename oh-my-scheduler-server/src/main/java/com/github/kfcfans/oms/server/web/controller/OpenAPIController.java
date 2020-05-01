@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.common.OpenAPIConstant;
-import com.github.kfcfans.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.OpenAPIConstant;
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.service.CacheService;

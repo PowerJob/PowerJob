@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.akka.actors;
 
 import akka.actor.AbstractActor;
-import com.github.kfcfans.common.model.SystemMetrics;
-import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.common.model.SystemMetrics;
+import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.server.akka.requests.FriendQueryWorkerClusterStatusReq;
 import com.github.kfcfans.oms.server.akka.requests.Ping;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;

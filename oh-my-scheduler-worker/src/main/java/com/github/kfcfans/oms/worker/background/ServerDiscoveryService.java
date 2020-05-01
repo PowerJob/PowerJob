@@ -1,10 +1,10 @@
 package com.github.kfcfans.oms.worker.background;
 
-import com.github.kfcfans.common.response.ResultDTO;
-import com.github.kfcfans.common.utils.CommonUtils;
-import com.github.kfcfans.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.common.utils.HttpUtils;
+import com.github.kfcfans.oms.common.utils.HttpUtils;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool;
 import com.google.common.collect.Maps;

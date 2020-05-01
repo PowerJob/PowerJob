@@ -20,6 +20,10 @@ public class SpringUtils implements ApplicationContextAware {
         return context.getBean(clz);
     }
 
+    public static Object getBean(String beanName) {
+        return context.getBean(beanName);
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext ctx) throws BeansException {
         context = ctx;

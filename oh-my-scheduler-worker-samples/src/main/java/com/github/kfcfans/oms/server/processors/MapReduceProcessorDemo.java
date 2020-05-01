@@ -1,7 +1,7 @@
 package com.github.kfcfans.oms.server.processors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.TaskResult;

@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.common.InstanceStatus;
-import com.github.kfcfans.common.response.ResultDTO;
-import com.github.kfcfans.common.model.InstanceDetail;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.model.InstanceDetail;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.PageResult;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
@@ -11,7 +11,6 @@ import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoReposito
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.InstanceLogService;
-import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
 import com.github.kfcfans.oms.server.web.response.InstanceLogVO;

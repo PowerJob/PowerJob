@@ -1,7 +1,8 @@
 package com.github.kfcfans.oms.server.service.alarm;
 
-import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
-import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.UserInfoDO;
+
+import java.util.List;
 
 /**
  * 报警接口
@@ -11,5 +12,5 @@ import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
  */
 public interface Alarmable {
 
-    void alarm(JobInfoDO jobInfo, InstanceInfoDO instanceLog);
+    void alarm(AlarmContent alarmContent, List<UserInfoDO> targetUserList);
 }

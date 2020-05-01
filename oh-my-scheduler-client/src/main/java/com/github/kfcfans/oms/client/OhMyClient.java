@@ -1,9 +1,10 @@
 package com.github.kfcfans.oms.client;
 
-import com.github.kfcfans.common.OpenAPIConstant;
-import com.github.kfcfans.common.response.ResultDTO;
-import com.github.kfcfans.common.utils.HttpUtils;
-import com.github.kfcfans.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.OpenAPIConstant;
+import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.utils.HttpUtils;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
@@ -134,7 +135,7 @@ public class OhMyClient {
     /**
      * 查询应用实例状态
      * @param instanceId 应用实例ID
-     * @return {@link com.github.kfcfans.common.InstanceStatus} 的枚举值
+     * @return {@link InstanceStatus} 的枚举值
      * @throws Exception 异常
      */
     public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) throws Exception {

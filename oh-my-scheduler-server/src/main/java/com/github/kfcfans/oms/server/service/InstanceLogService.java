@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.service;
 
-import com.github.kfcfans.common.TimeExpressionType;
-import com.github.kfcfans.common.model.InstanceLogContent;
-import com.github.kfcfans.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.model.InstanceLogContent;
+import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.local.LocalInstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.local.LocalInstanceLogRepository;
@@ -14,6 +14,7 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -42,7 +43,6 @@ import java.util.stream.Stream;
 @Service
 public class InstanceLogService {
 
-    @Resource
     private MongoTemplate mongoTemplate;
     @Resource
     private LocalInstanceLogRepository localInstanceLogRepository;
@@ -104,6 +104,10 @@ public class InstanceLogService {
                 return sb.toString();
             }
 
+            if (mongoTemplate == null) {
+                return "There is no local log for this task now, you need to use mongoDB to store the logs.";
+            }
+
             // 从 MongoDB 获取
             InstanceLogDO mongoLog = mongoTemplate.findOne(Query.query(Criteria.where("instanceId").is(instanceId)), InstanceLogDO.class);
             if (mongoLog == null) {
@@ -142,22 +146,24 @@ public class InstanceLogService {
         List<String> instanceLogs = Lists.newLinkedList();
 
         // 流式操作避免 OOM，至少要扛住 1000W 条日志记录的写入（需要测试时监控内存变化）
-        try (Stream<LocalInstanceLogDO> allLogs = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
-            AtomicBoolean initialized = new AtomicBoolean(false);
+        if (mongoTemplate != null) {
+            try (Stream<LocalInstanceLogDO> allLogs = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
+                AtomicBoolean initialized = new AtomicBoolean(false);
 
-            // 将整库数据写入 MongoDB
-            allLogs.forEach(instanceLog -> {
-                instanceLogs.add(convertLog(instanceLog));
-                if (instanceLogs.size() > BATCH_SIZE) {
+                // 将整库数据写入 MongoDB
+                allLogs.forEach(instanceLog -> {
+                    instanceLogs.add(convertLog(instanceLog));
+                    if (instanceLogs.size() > BATCH_SIZE) {
+                        saveToMongoDB(instanceId, instanceLogs, initialized);
+                    }
+                });
+
+                if (!instanceLogs.isEmpty()) {
                     saveToMongoDB(instanceId, instanceLogs, initialized);
                 }
-            });
-
-            if (!instanceLogs.isEmpty()) {
-                saveToMongoDB(instanceId, instanceLogs, initialized);
+            }catch (Exception e) {
+                log.warn("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB failed.", instanceId, e);
             }
-        }catch (Exception e) {
-            log.warn("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB failed.", instanceId, e);
         }
 
         // 删除本地数据
@@ -233,6 +239,11 @@ public class InstanceLogService {
                 }
             });
         }
+    }
+
+    @Autowired(required = false)
+    public void setMongoTemplate(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
     }
 
 }

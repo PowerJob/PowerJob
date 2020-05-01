@@ -2,13 +2,13 @@ package com.github.kfcfans.oms;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.ExecuteType;
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
-import com.github.kfcfans.common.utils.NetUtils;
+import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
 import org.junit.jupiter.api.BeforeAll;

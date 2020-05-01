@@ -2,8 +2,8 @@ package com.github.kfcfans.oms.worker.core.processor.sdk;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import com.github.kfcfans.common.RemoteConstant;
-import com.github.kfcfans.common.response.AskResponse;
+import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.ThreadLocalStore;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;

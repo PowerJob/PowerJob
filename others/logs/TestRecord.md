@@ -10,7 +10,7 @@
 2020-04-08 10:09:19 ERROR - [TaskPersistenceService] deleteAllTasks failed, instanceId=1586311659084.
 java.lang.InterruptedException: sleep interrupted
 	at java.lang.Thread.sleep(Native Method)
-	at com.github.kfcfans.common.utils.CommonUtils.executeWithRetry(CommonUtils.java:34)
+	at CommonUtils.executeWithRetry(CommonUtils.java:34)
 	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.execute(TaskPersistenceService.java:297)
 	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.deleteAllTasks(TaskPersistenceService.java:269)
 	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker.destroy(TaskTracker.java:231)
@@ -61,7 +61,7 @@ java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
 	at java.util.LinkedList.checkElementIndex(LinkedList.java:555)
 	at java.util.LinkedList.get(LinkedList.java:476)
 	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.lambda$getTaskStatus$10(TaskPersistenceService.java:214)
-	at com.github.kfcfans.common.utils.CommonUtils.executeWithRetry(CommonUtils.java:37)
+	at CommonUtils.executeWithRetry(CommonUtils.java:37)
 	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.execute(TaskPersistenceService.java:310)
 	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.getTaskStatus(TaskPersistenceService.java:212)
 	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.updateTaskStatus(TaskTracker.java:107)

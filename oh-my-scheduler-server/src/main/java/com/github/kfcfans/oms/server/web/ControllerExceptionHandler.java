@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.web;
 
-import com.github.kfcfans.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

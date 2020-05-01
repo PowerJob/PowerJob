@@ -1,13 +1,13 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.common.ExecuteType;
-import com.github.kfcfans.common.ProcessorType;
-import com.github.kfcfans.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.ExecuteType;
+import com.github.kfcfans.oms.common.ProcessorType;
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.PageResult;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
-import com.github.kfcfans.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
