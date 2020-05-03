@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 日志处理器
@@ -33,10 +34,14 @@ public class OmsLogHandler {
     private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue();
     // 处理线程，需要通过线程池启动
     public final Runnable logSubmitter = new LogSubmitter();
+    // 上报锁，只需要一个线程上报即可
+    private final ReentrantLock reportLock = new ReentrantLock();
 
 
-    private static final int BATCH_SIZE = 10;
-    private static final int MAX_QUEUE_SIZE = 8096;
+    // 每次上报携带的数据条数
+    private static final int BATCH_SIZE = 20;
+    // 本地囤积阈值
+    private static final int REPORT_SIZE = 1024;
 
     /**
      * 提交日志
@@ -44,52 +49,65 @@ public class OmsLogHandler {
      * @param logContent 日志内容
      */
     public void submitLog(long instanceId, String logContent) {
+
+        if (logQueue.size() > REPORT_SIZE) {
+            // 线程的生命周期是个不可循环的过程，一个线程对象结束了不能再次start，只能一直创建和销毁
+            new Thread(logSubmitter).start();
+        }
+
         InstanceLogContent tuple = new InstanceLogContent(instanceId, System.currentTimeMillis(), logContent);
-        logQueue.add(tuple);
+        logQueue.offer(tuple);
     }
+
+
 
     private class LogSubmitter implements Runnable {
 
         @Override
         public void run() {
 
-            String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
-            // 当前无可用 Server
-            if (StringUtils.isEmpty(serverPath)) {
-
-                // 防止长时间无可用Server导致的堆积
-                if (logQueue.size() > MAX_QUEUE_SIZE) {
-                    for (int i = 0; i < 1024; i++) {
-                        logQueue.remove();
-                    }
-                    log.warn("[OmsLogHandler] because there is no available server to report logs which leads to queue accumulation, oms discarded some logs.");
-                }
+            boolean lockResult = reportLock.tryLock();
+            if (!lockResult) {
                 return;
             }
 
-            ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
-            List<InstanceLogContent> logs = Lists.newLinkedList();
+            try {
 
-            while (!logQueue.isEmpty()) {
-                try {
-                    InstanceLogContent logContent = logQueue.poll(100, TimeUnit.MILLISECONDS);
-                    logs.add(logContent);
-
-                    if (logs.size() >= BATCH_SIZE) {
-                        WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), logs);
-                        // 不可靠请求，WEB日志不追求极致
-                        serverActor.tell(req, null);
-                        logs.clear();
-                    }
-
-                }catch (Exception ignore) {
-                    break;
+                String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
+                // 当前无可用 Server
+                if (StringUtils.isEmpty(serverPath)) {
+                    logQueue.clear();
+                    log.warn("[OmsLogHandler] because there is no available server to report logs which leads to queue accumulation, oms discarded all logs.");
+                    return;
                 }
-            }
 
-            if (!logs.isEmpty()) {
-                WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), logs);
-                serverActor.tell(req, null);
+                ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
+                List<InstanceLogContent> logs = Lists.newLinkedList();
+
+                while (!logQueue.isEmpty()) {
+                    try {
+                        InstanceLogContent logContent = logQueue.poll(100, TimeUnit.MILLISECONDS);
+                        logs.add(logContent);
+
+                        if (logs.size() >= BATCH_SIZE) {
+                            WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), Lists.newLinkedList(logs));
+                            // 不可靠请求，WEB日志不追求极致
+                            serverActor.tell(req, null);
+                            logs.clear();
+                        }
+
+                    }catch (Exception ignore) {
+                        break;
+                    }
+                }
+
+                if (!logs.isEmpty()) {
+                    WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), logs);
+                    serverActor.tell(req, null);
+                }
+
+            }finally {
+                reportLock.unlock();
             }
         }
     }

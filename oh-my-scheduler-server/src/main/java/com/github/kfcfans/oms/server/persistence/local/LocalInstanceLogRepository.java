@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.persistence.local;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
@@ -23,6 +24,7 @@ public interface LocalInstanceLogRepository extends JpaRepository<LocalInstanceL
     @Transactional
     long deleteByInstanceId(Long instanceId);
 
+    @CanIgnoreReturnValue
     long deleteByInstanceIdInAndLogTimeLessThan(List<Long> instanceIds, Long t);
 
     long countByInstanceId(Long instanceId);
