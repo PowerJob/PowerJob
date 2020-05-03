@@ -5,6 +5,7 @@ import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.common.model.InstanceDetail;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.PageResult;
+import com.github.kfcfans.oms.server.persistence.StringPage;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
@@ -68,7 +69,7 @@ public class InstanceController {
     }
 
     @GetMapping("/log")
-    public ResultDTO<String> getInstanceLog(Long instanceId, HttpServletResponse response) {
+    public ResultDTO<StringPage> getInstanceLog(Long instanceId, Long index, HttpServletResponse response) {
 
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfo == null) {
@@ -88,13 +89,13 @@ public class InstanceController {
             String url = "http://" + ip + ":" + port + "/instance/log?instanceId=" + instanceId;
             try {
                 response.sendRedirect(url);
-                return ResultDTO.success("redirecting...");
+                return ResultDTO.success(StringPage.simple("redirecting..."));
             }catch (Exception e) {
                 return ResultDTO.failed(e);
             }
         }
 
-        return ResultDTO.success(instanceLogService.fetchInstanceLog(instanceId));
+        return ResultDTO.success(instanceLogService.fetchInstanceLog(instanceId, index));
     }
 
     @PostMapping("/list")
