@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.persistence.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -10,7 +11,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -67,5 +70,13 @@ public class LocalJpaConfig {
     @Bean(name = "localTransactionManager")
     public PlatformTransactionManager initLocalTransactionManager(EntityManagerFactoryBuilder builder) {
         return new JpaTransactionManager(Objects.requireNonNull(initLocalEntityManagerFactory(builder).getObject()));
+    }
+
+    @Bean(name = "localTransactionTemplate")
+    public TransactionTemplate initTransactionTemplate(@Qualifier("localTransactionManager") PlatformTransactionManager ptm) {
+        TransactionTemplate tt =  new TransactionTemplate(ptm);
+        // 设置隔离级别
+        tt.setIsolationLevel(TransactionDefinition.ISOLATION_DEFAULT);
+        return tt;
     }
 }

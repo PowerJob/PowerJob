@@ -31,6 +31,7 @@ public class OmsLogPerformanceTester implements BasicProcessor {
         for (long i = 0; i < times; i++) {
             for (long j = 0; j < BATCH; j++) {
                 long index = i * BATCH + j;
+                System.out.println("send index: " + index);
                 logger.info("[OmsLogPerformanceTester] testing omsLogger performance, current index is {}.", index);
             }
             logger.error("[OmsLogPerformanceTester] Oh, we have an exception to log~", re);

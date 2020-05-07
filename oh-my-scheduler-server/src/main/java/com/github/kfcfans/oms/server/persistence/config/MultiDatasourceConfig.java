@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 @Configuration
 public class MultiDatasourceConfig {
 
-    private static final String H2_JDBC_URL = "jdbc:h2:file:~/oms/h2/oms_server_db";
+    private static final String H2_JDBC_URL = "jdbc:h2:file:~/oms-server/h2/oms_server_db";
 
     @Primary
     @Bean("omsCoreDatasource")
