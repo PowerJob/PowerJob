@@ -95,18 +95,16 @@ public class InstanceController {
         return ResultDTO.success(instanceLogService.fetchInstanceLog(instanceId, index));
     }
 
+    @GetMapping("/downloadLogUrl")
+    public ResultDTO<String> getDownloadUrl(Long instanceId) {
+        String targetServer = getTargetServer(instanceId);
+        String ip = targetServer.split(":")[0];
+        String url = "http://" + ip + ":" + port + "/instance/downloadLog?instanceId=" + instanceId;
+        return ResultDTO.success(url);
+    }
+
     @GetMapping("/downloadLog")
     public void downloadLogFile(Long instanceId , HttpServletResponse response) throws Exception {
-        String targetServer = getTargetServer(instanceId);
-        // 转发HTTP请求（如果使用Akka，则需要传输两次，而转发HTTP请求只需要传输一次"大"数据包）
-        if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
-            String ip = targetServer.split(":")[0];
-            String url = "http://" + ip + ":" + port + "/instance/downloadLog?instanceId=" + instanceId;
-            try {
-                response.sendRedirect(url);
-            }catch (Exception ignore) {
-            }
-        }
 
         File file = instanceLogService.downloadInstanceLog(instanceId);
         response.setContentType("application/octet-stream");

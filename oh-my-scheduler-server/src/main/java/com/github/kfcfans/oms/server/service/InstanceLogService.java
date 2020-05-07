@@ -97,7 +97,7 @@ public class InstanceLogService {
     /**
      * 获取任务实例运行日志（默认存在本地数据，需要由生成完成请求的路由与转发）
      * @param instanceId 任务实例ID
-     * @param index 页码
+     * @param index 页码，从0开始
      * @return 文本字符串
      */
     public StringPage fetchInstanceLog(Long instanceId, long index) {
