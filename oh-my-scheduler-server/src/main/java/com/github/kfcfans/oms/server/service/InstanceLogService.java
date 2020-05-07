@@ -137,6 +137,17 @@ public class InstanceLogService {
     }
 
     /**
+     * 下载全部的任务日志文件
+     * @param instanceId 任务实例ID
+     * @return 日志文件
+     * @throws Exception 异常
+     */
+    public File downloadInstanceLog(long instanceId) throws Exception {
+        Future<File> fileFuture = prepareLogFile(instanceId);
+        return fileFuture.get(1, TimeUnit.MINUTES);
+    }
+
+    /**
      * 异步准备日志文件
      * @param instanceId 任务实例ID
      * @return 异步结果

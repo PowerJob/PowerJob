@@ -18,13 +18,20 @@ import com.github.kfcfans.oms.server.web.response.InstanceLogVO;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -71,17 +78,7 @@ public class InstanceController {
     @GetMapping("/log")
     public ResultDTO<StringPage> getInstanceLog(Long instanceId, Long index, HttpServletResponse response) {
 
-        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-        if (instanceInfo == null) {
-            return ResultDTO.failed("invalid instanceId: " + instanceId);
-        }
-
-        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(instanceInfo.getAppId());
-        if (!appInfoOpt.isPresent()) {
-            return ResultDTO.failed("impossible");
-        }
-
-        String targetServer = appInfoOpt.get().getCurrentServer();
+        String targetServer = getTargetServer(instanceId);
 
         // 转发HTTP请求（如果使用Akka，则需要传输两次，而转发HTTP请求只需要传输一次"大"数据包）
         if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
@@ -96,6 +93,35 @@ public class InstanceController {
         }
 
         return ResultDTO.success(instanceLogService.fetchInstanceLog(instanceId, index));
+    }
+
+    @GetMapping("/downloadLog")
+    public void downloadLogFile(Long instanceId , HttpServletResponse response) throws Exception {
+        String targetServer = getTargetServer(instanceId);
+        // 转发HTTP请求（如果使用Akka，则需要传输两次，而转发HTTP请求只需要传输一次"大"数据包）
+        if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
+            String ip = targetServer.split(":")[0];
+            String url = "http://" + ip + ":" + port + "/instance/downloadLog?instanceId=" + instanceId;
+            try {
+                response.sendRedirect(url);
+            }catch (Exception ignore) {
+            }
+        }
+
+        File file = instanceLogService.downloadInstanceLog(instanceId);
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(file.getName(), "UTF-8"));
+
+        byte[] buffer = new byte[4096];
+        try (BufferedOutputStream bos = new BufferedOutputStream(response.getOutputStream());
+             BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+
+            while (bis.read(buffer) != -1) {
+                bos.write(buffer);
+            }
+        }catch (IOException ignore) {
+
+        }
     }
 
     @PostMapping("/list")
@@ -150,5 +176,20 @@ public class InstanceController {
         PageResult<InstanceLogVO> pageResult = new PageResult<>(page);
         pageResult.setData(content);
         return pageResult;
+    }
+
+    /**
+     * 获取该 instanceId 对应的服务器地址
+     * @param instanceId 任务实例ID
+     * @return 对应服务器地址
+     */
+    private String getTargetServer(Long instanceId) {
+        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+        if (instanceInfo == null) {
+            throw new RuntimeException("invalid instanceId: " + instanceId);
+        }
+
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(instanceInfo.getAppId());
+        return appInfoOpt.orElseThrow(() -> new RuntimeException("impossible")).getCurrentServer();
     }
 }
