@@ -62,7 +62,7 @@ public class InstanceLogService {
     // 用户路径
     private static final String USER_HOME = System.getProperty("user.home", "oms");
     // 每一个展示的行数
-    private static final int MAX_LINE_COUNT = 500;
+    private static final int MAX_LINE_COUNT = 100;
     // 过期时间
     private static final long EXPIRE_INTERVAL_MS = 60000;
 

@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.common.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -14,6 +15,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author tjq
  * @since 2020/4/28
  */
+@Slf4j
 @EnableAsync
 @Configuration
 public class ThreadPoolConfig {
@@ -22,11 +24,16 @@ public class ThreadPoolConfig {
     public Executor getTimingPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
-        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
-        executor.setQueueCapacity(1024);
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);
+        // use SynchronousQueue
+        executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsTimingPool-");
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        executor.setRejectedExecutionHandler((r, e) -> {
+            log.warn("[OmsTimingService] timing pool can't schedule job immediately, maybe some job using too much cpu times.");
+            // 定时任务优先级较高，不惜一些代价都需要继续执行，开线程继续干～
+            new Thread(r).start();
+        });
         return executor;
     }
 

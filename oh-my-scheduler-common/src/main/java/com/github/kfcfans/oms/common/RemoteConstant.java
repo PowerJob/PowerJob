@@ -1,7 +1,5 @@
 package com.github.kfcfans.oms.common;
 
-import java.time.Duration;
-
 /**
  * RemoteConstant
  *
