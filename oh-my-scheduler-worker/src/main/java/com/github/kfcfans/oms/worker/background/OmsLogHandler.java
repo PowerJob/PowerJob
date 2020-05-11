@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -35,8 +36,7 @@ public class OmsLogHandler {
     // 处理线程，需要通过线程池启动
     public final Runnable logSubmitter = new LogSubmitter();
     // 上报锁，只需要一个线程上报即可
-    private final ReentrantLock reportLock = new ReentrantLock();
-
+    private final Lock reportLock = new ReentrantLock();
 
     // 每次上报携带的数据条数
     private static final int BATCH_SIZE = 20;
