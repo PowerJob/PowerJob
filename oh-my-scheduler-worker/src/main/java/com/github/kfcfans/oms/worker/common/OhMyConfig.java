@@ -27,6 +27,7 @@ public class OhMyConfig {
     private StoreStrategy storeStrategy = StoreStrategy.DISK;
     /**
      * 最大返回值长度，超过会被截断
+     * {@link com.github.kfcfans.oms.worker.core.processor.ProcessResult}#msg 的最大长度
      */
     private int maxResultLength = 8096;
 

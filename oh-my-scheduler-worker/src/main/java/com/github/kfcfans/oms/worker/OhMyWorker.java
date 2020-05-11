@@ -15,6 +15,7 @@ import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.common.utils.HttpUtils;
+import com.github.kfcfans.oms.worker.common.OmsBannerPrinter;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.persistence.TaskPersistenceService;
 import com.google.common.base.Stopwatch;
@@ -73,9 +74,8 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyWorker] start to initialize OhMyWorker...");
-
         try {
-
+            OmsBannerPrinter.print();
             // 校验 appName
             if (!config.isEnableTestMode()) {
                 appId = assertAppName();
