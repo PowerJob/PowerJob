@@ -11,7 +11,7 @@ import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRep
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.UserInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
-import com.github.kfcfans.oms.server.service.InstanceLogService;
+import com.github.kfcfans.oms.server.service.log.InstanceLogService;
 import com.github.kfcfans.oms.server.service.alarm.AlarmContent;
 import com.github.kfcfans.oms.server.service.alarm.Alarmable;
 import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;

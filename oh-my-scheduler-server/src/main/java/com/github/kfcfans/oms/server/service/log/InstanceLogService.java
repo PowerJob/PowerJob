@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.service;
+package com.github.kfcfans.oms.server.service.log;
 
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.InstanceLogContent;
@@ -216,6 +216,13 @@ public class InstanceLogService {
                 if (f.exists() && (System.currentTimeMillis() - f.lastModified()) < EXPIRE_INTERVAL_MS) {
                     return f;
                 }
+
+                // 创建父文件夹（文件在开流时自动会被创建）
+                if (!f.getParentFile().exists()) {
+                    if (!f.getParentFile().mkdirs()) {
+                        throw new RuntimeException("create dir failed");
+                    }
+                }
                 // 重新构建文件
                 try (Stream<LocalInstanceLogDO> allLogStream = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
                     stream2File(allLogStream, f);
@@ -232,6 +239,13 @@ public class InstanceLogService {
                 File f = new File(path);
                 if (f.exists()) {
                     return f;
+                }
+
+                // 创建父文件夹（文件在开流时自动会被创建）
+                if (!f.getParentFile().exists()) {
+                    if (!f.getParentFile().mkdirs()) {
+                        throw new RuntimeException("create dir failed");
+                    }
                 }
 
                 // 本地存在数据，从本地持久化（对应 SYNC 的情况）
@@ -266,12 +280,6 @@ public class InstanceLogService {
      * @param logFile 目标日志文件
      */
     private void stream2File(Stream<LocalInstanceLogDO> stream, File logFile) {
-        if (!logFile.getParentFile().exists()) {
-            if (!logFile.getParentFile().mkdirs()) {
-                log.warn("[InstanceLogService] create dir for instanceLog failed, path is {}.", logFile.getPath());
-                return;
-            }
-        }
         try (FileWriter fw = new FileWriter(logFile); BufferedWriter bfw = new BufferedWriter(fw)) {
             stream.forEach(instanceLog -> {
                 try {
@@ -354,12 +362,15 @@ public class InstanceLogService {
         // 2. 删除长时间未 REPORT 的日志
     }
 
+    public static String genLogDirPath() {
+        return USER_HOME + "/oms-server/online_log/";
+    }
 
     private static String genLogFilePath(long instanceId, boolean stable) {
         if (stable) {
-            return USER_HOME + "/oms-server/online_log/" + String.format("%d-stable.log", instanceId);
+            return genLogDirPath() + String.format("%d-stable.log", instanceId);
         }else {
-            return USER_HOME + "/oms-server/online_log/" + String.format("%d-temporary.log", instanceId);
+            return genLogDirPath() + String.format("%d-temporary.log", instanceId);
         }
     }
     private static String genMongoFileName(long instanceId) {

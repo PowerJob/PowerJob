@@ -44,7 +44,6 @@ public class ConnectionFactory {
                 // 池中最大连接数量
                 config.setMaximumPoolSize(32);
                 dataSource = new HikariDataSource(config);
-
             }
         }
         return dataSource;

@@ -76,8 +76,10 @@ public class OmsLogHandler {
                 String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
                 // 当前无可用 Server
                 if (StringUtils.isEmpty(serverPath)) {
-                    logQueue.clear();
-                    log.warn("[OmsLogHandler] because there is no available server to report logs which leads to queue accumulation, oms discarded all logs.");
+                    if (!logQueue.isEmpty()) {
+                        logQueue.clear();
+                        log.warn("[OmsLogHandler] because there is no available server to report logs which leads to queue accumulation, oms discarded all logs.");
+                    }
                     return;
                 }
 

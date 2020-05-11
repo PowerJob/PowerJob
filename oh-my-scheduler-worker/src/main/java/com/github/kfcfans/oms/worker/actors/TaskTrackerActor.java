@@ -48,10 +48,10 @@ public class TaskTrackerActor extends AbstractActor {
     private void onReceiveProcessorReportTaskStatusReq(ProcessorReportTaskStatusReq req) {
 
         TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
+        // 手动停止 TaskTracker 的情况下会出现这种情况
         if (taskTracker == null) {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
         } else {
-
             taskTracker.updateTaskStatus(req.getTaskId(), req.getStatus(), req.getReportTime(), req.getResult());
         }
     }

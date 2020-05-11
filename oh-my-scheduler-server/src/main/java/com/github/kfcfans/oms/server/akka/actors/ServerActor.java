@@ -7,7 +7,7 @@ import com.github.kfcfans.oms.common.request.WorkerHeartbeat;
 import com.github.kfcfans.oms.common.request.WorkerLogReportReq;
 import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
-import com.github.kfcfans.oms.server.service.InstanceLogService;
+import com.github.kfcfans.oms.server.service.log.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import lombok.extern.slf4j.Slf4j;

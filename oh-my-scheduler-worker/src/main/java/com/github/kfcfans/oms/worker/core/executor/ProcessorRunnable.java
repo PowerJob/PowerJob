@@ -43,7 +43,7 @@ public class ProcessorRunnable implements Runnable {
     private final BasicProcessor processor;
     private final OmsLogger omsLogger;
 
-    public void innerRun() {
+    public void innerRun() throws InterruptedException {
 
         String taskId = task.getTaskId();
         Long instanceId = task.getInstanceId();
@@ -176,6 +176,7 @@ public class ProcessorRunnable implements Runnable {
     public void run() {
         try {
             innerRun();
+        }catch (InterruptedException ignore) {
         }catch (Exception e) {
             log.error("[ProcessorRunnable-{}] execute failed, please fix this bug @tjq!", task.getInstanceId(), e);
         }finally {

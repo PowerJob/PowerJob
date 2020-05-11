@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.processors;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
@@ -29,11 +30,6 @@ import java.util.concurrent.ThreadLocalRandom;
 @Component
 public class MapReduceProcessorDemo extends MapReduceProcessor {
 
-    // 每一批发送任务大小
-    private static final int batchSize = 100;
-    // 发送的批次
-    private static final int batchNum = 2;
-
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
 
@@ -42,6 +38,12 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
         System.out.println("============== TestMapReduceProcessor#process ==============");
         System.out.println("isRootTask:" + isRootTask());
         System.out.println("taskContext:" + JsonUtils.toJSONString(context));
+
+        // 根据控制台参数获取MR批次及子任务大小
+        final JSONObject jobParams = JSONObject.parseObject(context.getJobParams());
+
+        Integer batchSize = (Integer) jobParams.getOrDefault("batchSize", 100);
+        Integer batchNum = (Integer) jobParams.getOrDefault("batchNum", 10);
 
         if (isRootTask()) {
             System.out.println("==== MAP ====");
@@ -60,7 +62,7 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
             return new ProcessResult(true, "MAP_SUCCESS");
         }else {
             System.out.println("==== NORMAL_PROCESS ====");
-            omsLogger.info("[DemoMRProcessor] normal process~");
+            omsLogger.info("[DemoMRProcessor] process subTask: {}.", JSON.toJSONString(context.getSubTask()));
             System.out.println("subTask: " + JsonUtils.toJSONString(context.getSubTask()));
             Thread.sleep(1000);
             if (context.getCurrentRetryTimes() == 0) {

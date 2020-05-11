@@ -77,12 +77,12 @@ public class ProcessorTracker {
 
             this.omsLogger = new OmsServerLogger(instanceId);
 
+            // 初始化 线程池，TimingPool 启动的任务会检查 ThreadPool，所以必须先初始化线程池，否则NPE
+            initThreadPool();
             // 初始化定时任务
             initTimingJob();
             // 初始化 Processor
             initProcessor();
-            // 初始化 线程池，如果处理器创建失败则不执行
-            initThreadPool();
 
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
         }catch (Exception e) {
@@ -221,6 +221,7 @@ public class ProcessorTracker {
             long waitingNum = threadPool.getQueue().size();
             ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceId, waitingNum);
             taskTrackerActorRef.tell(req, null);
+            log.debug("[ProcessorTracker-{}] send heartbeat to TaskTracker, current waiting task num is {}.", instanceId, waitingNum);
         }
 
     }
