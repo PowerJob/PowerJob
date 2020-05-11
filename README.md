@@ -2,7 +2,7 @@
 ### 产品介绍
 OhMyScheduler是一个分布式调度平台和分布式计算框架，具有以下特性：
 * 支持CRON、固定频率、固定延迟和API四种调度策略。
-* 支持单机、广播、**MapReduce**三种执行模式。
+* 支持单机、广播、**Map**、**MapReduce**四种执行模式。
 * 支持在线查看任务运行过程中的日志，提供分布式日志解决方案。
 * 支持任意的水平扩展，性能强劲无上限。
 * 具有强大的故障转移与恢复能力，只要保证集群可用节点数足够，任务就能顺利完成。
@@ -10,10 +10,10 @@ OhMyScheduler是一个分布式调度平台和分布式计算框架，具有以�
 * 支持SpringBean、普通Java类（内置/外置）、Shell、Python等处理器。
 
 # 接入流程（文档不要太详细，简单强大兼得说的就是在下～）
-1. [项目部署及初始化](https://github.com/KFCFans/OhMyScheduler/blob/master/others/doc/SystemInitGuide.md)
-2. [处理器开发](https://github.com/KFCFans/OhMyScheduler/blob/master/others/doc/ProcessorDevGuide.md)
-3. [任务配置与在线查看](https://github.com/KFCFans/OhMyScheduler/blob/master/others/doc/ConsoleGuide.md)
-4. [(强大灵活的扩展——OpenAPI)](https://github.com/KFCFans/OhMyScheduler/blob/master/others/doc/OpenApiGuide.md)
+1. [项目部署及初始化](./others/doc/SystemInitGuide.md)
+2. [处理器开发](./others/doc/ProcessorDevGuide.md)
+3. [任务配置与在线查看](./others/doc/ConsoleGuide.md)
+4. [(强大灵活的扩展——OpenAPI)](./others/doc/OpenApiGuide.md)
 
 
 # 开发日志
