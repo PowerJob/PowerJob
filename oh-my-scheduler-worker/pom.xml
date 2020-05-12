@@ -30,7 +30,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
-<!--            <scope>provided</scope>-->
+            <scope>provided</scope>
         </dependency>
 
         <!-- oms-common -->
@@ -73,13 +73,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
-        </dependency>
-
-        <!-- 开发阶段输出日志 -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
         </dependency>
 
     </dependencies>

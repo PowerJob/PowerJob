@@ -12,7 +12,7 @@
   <version>${oms.worker.latest.version}</version>
 </dependency>
 ```
-#### 启动客户端：OhMyScheduler-Worker
+#### 初始化客户端：OhMyScheduler-Worker
 > 客户端启动类为`OhMyWorker`，需要设置配置文件`OhMyConfig`并启动，以下为配置文件说明和配置示例。
 
 OhMyConfig属性说明：
@@ -52,6 +52,42 @@ public class OhMySchedulerConfig {
 ```
 非Spring应用程序在创建`OhMyWorker`对象后手动调用`ohMyWorker.init()`方法完成初始化即可。
 
+### 配置日志
+目前，OhMyScheduler-Worker并没有实现自己的LogFactory（如果有需求的话请提ISSUE，可以考虑实现），原因如下：
+1. OhMyScheduler-Worker的日志基于`Slf4J`输出，即采用了基于门面设计模式的日志框架，宿主应用无论如何都可以搭起Slf4J与实际的日志框架这座桥梁。
+2. 减轻了部分开发工作量，不再需要实现自己的LogFactory（虽然不怎么难就是了...）。
+
+为此，为了顺利且友好地输出日志，请在日志配置文件（logback.xml/log4j2.xml/...）中为`OhMyScheduler-Worker`单独进行日志配置，比如（logback示例）：
+```xml
+<appender name="OMS_WORKER_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/oms-worker.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <FileNamePattern>${LOG_PATH}/oms-worker.%d{yyyy-MM-dd}.log</FileNamePattern>
+        <MaxHistory>7</MaxHistory>
+    </rollingPolicy>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        <charset>UTF-8</charset>
+    </encoder>
+    <append>true</append>
+</appender>
+
+<logger name="com.github.kfcfans.oms.worker" level="INFO" additivity="false">
+    <appender-ref ref="OMS_WORKER_APPENDER" />
+</logger>
+```
+无论如何，OhMyScheduler-Worker启动时都会打印Banner（如下所示），您可以通过Banner来判断日志配置是否成功：
+```text
+   ███████   ██      ████     ████           ████████         ██                   ██          ██
+  ██░░░░░██ ░██     ░██░██   ██░██  ██   ██ ██░░░░░░         ░██                  ░██         ░██               
+ ██     ░░██░██     ░██░░██ ██ ░██ ░░██ ██ ░██         █████ ░██       █████      ░██ ██   ██ ░██  █████  ██████
+░██      ░██░██████ ░██ ░░███  ░██  ░░███  ░█████████ ██░░░██░██████  ██░░░██  ██████░██  ░██ ░██ ██░░░██░░██░░█
+░██      ░██░██░░░██░██  ░░█   ░██   ░██   ░░░░░░░░██░██  ░░ ░██░░░██░███████ ██░░░██░██  ░██ ░██░███████ ░██ ░ 
+░░██     ██ ░██  ░██░██   ░    ░██   ██           ░██░██   ██░██  ░██░██░░░░ ░██  ░██░██  ░██ ░██░██░░░░  ░██   
+ ░░███████  ░██  ░██░██        ░██  ██      ████████ ░░█████ ░██  ░██░░██████░░██████░░██████ ███░░██████░███   
+  ░░░░░░░   ░░   ░░ ░░         ░░  ░░      ░░░░░░░░   ░░░░░  ░░   ░░  ░░░░░░  ░░░░░░  ░░░░░░ ░░░  ░░░░░░ ░░░
+```
+
 ## 处理器开发
 >开发者需要根据实际需求实现`BasicProcessor`接口或继承`BroadcastProcessor`、`MapProcessor`或`MapReduceProcessor`抽象类实现处理器的开发。处理器的核心方法为`ProcessResult process(TaskContext context)`，以下为详细说明：
 
@@ -80,6 +116,9 @@ TaskContext为处理的入参，包含了本次处理的上下文信息，具体
 @Component
 public class BasicProcessorDemo implements BasicProcessor {
 
+    @Resource
+    private MysteryService mysteryService;
+
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
 
@@ -91,6 +130,7 @@ public class BasicProcessorDemo implements BasicProcessor {
         // jobParams（任务参数，在控制台录入），instanceParams（任务实例参数，通过 OpenAPI 触发的任务实例才可能存在该参数）
 
         // 进行实际处理...
+        mysteryService.hasaki();
 
         // 返回结果，该结果会被持久化到数据库，在前端页面直接查看，极为方便
         return new ProcessResult(true, "result is xxx");
@@ -102,6 +142,7 @@ public class BasicProcessorDemo implements BasicProcessor {
 >广播执行的策略下，所有机器都会被调度执行该任务。为了便于资源的准备和释放，广播处理器在`BasicProcessor`的基础上额外增加了`preProcess`和`postProcess`方法，分别在整个集群开始之前/结束之后**选一台机器**执行相关方法。代码示例如下：
 
 ```java
+@Component
 public class BroadcastProcessorDemo extends BroadcastProcessor {
 
     @Override
@@ -132,6 +173,7 @@ public class BroadcastProcessorDemo extends BroadcastProcessor {
 >MapReduce是最复杂也是最强大的一种执行器，它允许开发者完成任务的拆分，将子任务派发到集群中其他Worker执行，是执行大批量处理任务的不二之选！实现MapReduce处理器需要继承`MapReduceProcessor`类，具体用法如下示例代码所示。
 
 ```java
+@Component
 public class MapReduceProcessorDemo extends MapReduceProcessor {
 
     @Override
