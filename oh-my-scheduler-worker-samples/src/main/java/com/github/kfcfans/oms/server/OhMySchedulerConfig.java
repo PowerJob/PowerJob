@@ -17,10 +17,10 @@ import java.util.List;
  */
 @Configuration
 public class OhMySchedulerConfig {
-
     @Bean
     public OhMyWorker initOMS() throws Exception {
 
+        // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）
         List<String> serverAddress = Lists.newArrayList("127.0.0.1:7700", "127.0.0.1:7701");
 
         // 1. 创建配置文件
@@ -36,5 +36,4 @@ public class OhMySchedulerConfig {
         ohMyWorker.setConfig(config);
         return ohMyWorker;
     }
-
 }

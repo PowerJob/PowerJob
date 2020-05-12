@@ -1,6 +1,8 @@
 # STEP2: 处理器开发
->OhMyScheduler支持Python、Shell和Java处理器，前两种处理器为脚本处理器，功能简单，在控制台直接配置即可，本章不再赘述。开发项目内置的Java处理器，宿主应用需要添加`oh-my-scheduler-worker`依赖，并实现指定接口或抽象类的Java类。
+>OhMyScheduler支持Python、Shell和Java处理器，前两种处理器为脚本处理器，功能简单，在控制台直接配置即可，本章主要介绍内置于Java项目的处理器开发。
 
+## 宿主应用接入
+#### 添加依赖
 * 最新依赖版本请参考Maven中央仓库：[推荐地址](https://search.maven.org/search?q=com.github.kfcfans)&[备用地址](https://mvnrepository.com/search?q=com.github.kfcfans)。
 
 ```xml
@@ -10,9 +12,65 @@
   <version>${oms.worker.latest.version}</version>
 </dependency>
 ```
+#### 启动客户端：OhMyScheduler-Worker
+> 客户端启动类为`OhMyWorker`，需要设置配置文件`OhMyConfig`并启动，以下为配置文件说明和配置示例。
 
-## 处理器开发示例
->更多示例代码请见项目：oh-my-scheduler-worker-samples
+OhMyConfig属性说明：
+
+|属性名称|含义|默认值|
+|----|----|----|
+|appName|宿主应用名称，需要提前在控制台完成注册|无，必填项，否则启动报错|
+|serverAddress|服务器（OhMyScheduler-Server）地址列表|无，必填项，否则启动报错|
+|storeStrategy|本地存储策略，枚举值磁盘/内存，大型MapReduce等会产生大量Task的任务推荐使用磁盘降低内存压力，否则建议使用内存加速计算|StoreStrategy.DISK（磁盘）|
+|maxResultLength|每个Task返回结果的默认长度，超长将被截断。过长可能导致网络拥塞|8096|
+|enableTestMode|是否启用测试模式，启用后无需Server也能顺利启动OhMyScheduler-Worker，用于处理器本地的单元测试|false|
+
+OhMyWorker启动配置（Spring/SpringBoot模式）：
+```java
+@Configuration
+public class OhMySchedulerConfig {
+    @Bean
+    public OhMyWorker initOMS() throws Exception {
+
+        // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）
+        List<String> serverAddress = Lists.newArrayList("127.0.0.1:7700", "127.0.0.1:7701");
+
+        // 1. 创建配置文件
+        OhMyConfig config = new OhMyConfig();
+        config.setAppName("oms-test");
+        config.setServerAddress(serverAddress);
+        // 如果没有大型 Map/MapReduce 的需求，建议使用内存来加速计算
+        // 为了本地模拟多个实例，只能使用 MEMORY 启动（文件只能由一个应用占有）
+        config.setStoreStrategy(StoreStrategy.MEMORY);
+
+        // 2. 创建 Worker 对象，设置配置文件
+        OhMyWorker ohMyWorker = new OhMyWorker();
+        ohMyWorker.setConfig(config);
+        return ohMyWorker;
+    }
+}
+```
+非Spring应用程序在创建`OhMyWorker`对象后手动调用`ohMyWorker.init()`方法完成初始化即可。
+
+## 处理器开发
+>开发者需要根据实际需求实现`BasicProcessor`接口或继承`BroadcastProcessor`、`MapProcessor`或`MapReduceProcessor`抽象类实现处理器的开发。处理器的核心方法为`ProcessResult process(TaskContext context)`，以下为详细说明：
+
+ProcessResult为处理返回结果，包含`success`和`msg`两个属性。
+
+TaskContext为处理的入参，包含了本次处理的上下文信息，具体属性如下：
+
+|属性名称|意义/用法|
+|----|----|
+|instanceId|任务实例ID，全局唯一，开发者一般无需关心此参数|
+|subInstanceId|子任务实例ID，秒级任务使用，开发者一般无需关心此参数|
+|taskId|采用链式命名法的ID，在某个任务实例内唯一，开发者一般无需关心此参数|
+|taskName|task名称，Map/MapReduce任务的子任务的值为开发者指定，否则为系统默认值，开发者一般无需关心此参数|
+|jobParams|任务参数，其值等同于控制台录入的**任务参数**，常用！|
+|instanceParams|任务实例参数，其值等同于使用OpenAPI运行任务实例时传递的参数，常用！|
+|maxRetryTimes|Task的最大重试次数|
+|currentRetryTimes|Task的当前重试次数，和maxRetryTimes联合起来可以判断当前是否为该Task的最后一次运行机会|
+|subTask|子Task，Map/MapReduce处理器专属，开发者调用map方法时传递的子任务列表中的某一个|
+|omsLogger|在线日志，用法同Slf4J，记录的日志可以直接通过控制台查看，非常便捷和强大！不过使用过程中需要注意频率，可能对Server造成巨大的压力|
 
 #### 单机处理器
 >单机执行的策略下，server会在所有可用worker中选取健康度最佳的机器进行执行。单机执行任务需要实现接口：`com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor`，代码示例如下：
@@ -63,7 +121,7 @@ public class BroadcastProcessorDemo extends BroadcastProcessor {
 
         // taskResults 存储了所有worker执行的结果（包括preProcess）
 
-        // 收尾，会在所有 worker 执行完毕 process 方法后调用，该结果将作为最终的执行结果在
+        // 收尾，会在所有 worker 执行完毕 process 方法后调用，该结果将作为最终的执行结果
         return new ProcessResult(true, "process success");
     }
 
@@ -117,6 +175,7 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
                 successCnt.incrementAndGet();
             }
         });
+        // 该结果将作为任务最终的执行结果
         return new ProcessResult(true, "success task num:" + successCnt.get());
     }
 
@@ -128,16 +187,5 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
 }
 ```
 
-## 处理器上下文（TaskContext）属性说明
-|属性名称|意义/用法|
-|----|----|
-|instanceId|任务实例ID，全局唯一，开发者一般无需关心此参数|
-|subInstanceId|子任务实例ID，秒级任务使用，开发者一般无需关心此参数|
-|taskId|采用链式命名法的ID，在某个任务实例内唯一，开发者一般无需关心此参数|
-|taskName|task名称，Map/MapReduce任务的子任务的值为开发者指定，否则为系统默认值，开发者一般无需关心此参数|
-|jobParams|任务参数，其值等同于控制台录入的**任务参数**，常用！|
-|instanceParams|任务实例参数，其值等同于使用OpenAPI运行任务实例时传递的参数，常用！|
-|maxRetryTimes|Task的最大重试次数|
-|currentRetryTimes|Task的当前重试次数，和maxRetryTimes联合起来可以判断当前是否为该Task的最后一次运行机会|
-|subTask|子Task，Map/MapReduce处理器专属，开发者调用map方法时传递的子任务列表中的某一个|
-|omsLogger|在线日志，用法同Slf4J，记录的日志可以直接通过控制台查看，非常便捷和强大！不过使用过程中需要注意频率，可能对Server造成巨大的压力|
+更多示例请见：[oh-my-scheduler-worker-samples](../../oh-my-scheduler-worker-samples)
+
