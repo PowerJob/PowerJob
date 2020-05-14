@@ -7,7 +7,7 @@
         大坑记录：`~/logs`不会在用户目录下创建文件夹，而是在项目目录下创建名为~的文件夹
      -->
     <property name="LOG_PATH" value="/home/logs"/>
-    <!--    <property name="LOG_PATH" value="/Users/tjq/logs/oms-server"/>-->
+<!--        <property name="LOG_PATH" value="/Users/tjq/logs/oms-server"/>-->
 
     <!-- 系统所有异常日志（ERROR）双写 start -->
     <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">

@@ -106,8 +106,8 @@
                         <configuration>
                             <archive>
                                 <manifestEntries>
-                                    <Implementation-Title>${artifactId}</Implementation-Title>
-                                    <Implementation-Version>${version}</Implementation-Version>
+                                    <Implementation-Title>${project.artifactId}</Implementation-Title>
+                                    <Implementation-Version>${project.version}</Implementation-Version>
                                 </manifestEntries>
                             </archive>
                         </configuration>
@@ -224,8 +224,8 @@
                         <configuration>
                             <archive>
                                 <manifestEntries>
-                                    <Implementation-Title>${artifactId}</Implementation-Title>
-                                    <Implementation-Version>${version}</Implementation-Version>
+                                    <Implementation-Title>${project.artifactId}</Implementation-Title>
+                                    <Implementation-Version>${project.version}</Implementation-Version>
                                 </manifestEntries>
                             </archive>
                         </configuration>

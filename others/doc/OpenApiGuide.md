@@ -3,7 +3,7 @@
 ## 快速开始
 >OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活，启用OpenAPI需要依赖`oh-my-scheduler-client`库。
 
-最新依赖版本请参考Maven中央仓库：[推荐地址](https://search.maven.org/search?q=com.github.kfcfans)&[备用地址](https://mvnrepository.com/search?q=com.github.kfcfans)。
+最新依赖版本请参考Maven中央仓库：[推荐地址](https://search.maven.org/search?q=oh-my-scheduler-client)&[备用地址](https://mvnrepository.com/search?q=com.github.kfcfans)。
 
 ```xml
 <dependency>
@@ -25,8 +25,10 @@ ohMyClient.stopInstance(1586855173043L)
 ## 功能列表
 #### 创建/修改任务
 接口签名：`ResultDTO<Long> saveJob(ClientJobInfo newJobInfo)`
-入参：任务信息（详细说明见下表）
-返回值：任务ID
+
+入参：任务信息（详细说明见下表，也可以参考[前端任务创建各参数的正确填法](./ConsoleGuide.md)）
+
+返回值：ResultDTO<Long>，根据success判断操作是否成功。若操作成功，data字段返回任务ID
 
 |属性|说明|
 |----|----|
@@ -52,17 +54,58 @@ ohMyClient.stopInstance(1586855173043L)
 |notifyUserIds|接收报警的用户ID列表|
 |enable|是否启用该任务，未启用的任务不会被调度|
 
+#### 查找任务
+接口签名：`ResultDTO<JobInfoDTO> fetchJob(Long jobId)`
+
+入参：任务ID
+
+返回值：根据success判断操作是否成功，若请求成功则返回任务的详细信息
+
 #### 禁用某个任务
 接口签名：`ResultDTO<Void> disableJob(Long jobId)`
+
 入参：任务ID
-返回值：无
+
+返回值：根据success判断操作是否成功
+
+#### 启用某个任务
+接口签名：`ResultDTO<Void> enableJob(Long jobId)`
+
+入参：任务ID
+
+返回值：根据success判断操作是否成功
 
 #### 删除某个任务
 接口签名：`ResultDTO<Void> deleteJob(Long jobId)`
+
 入参：任务ID
-返回值：无
+
+返回值：根据success判断操作是否成功
 
 #### 立即运行某个任务
 接口签名：`ResultDTO<Long> runJob(Long jobId, String instanceParams)`
+
 入参：任务ID + **任务实例参数**（Processor#process方法入参`TaskContext`对象的instanceParams字段）
-返回值：对应的任务实例ID(instanceId)
+
+返回值：根据success判断操作是否成功，操作成功返回对应的任务实例ID(instanceId)
+
+#### 停止某个任务实例
+接口签名：`ResultDTO<Void> stopInstance(Long instanceId)`
+
+入参：任务实例ID
+
+返回值：根据success判断操作是否成功
+
+#### 查询某个任务实例
+接口签名：`ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId)`
+
+入参：任务实例ID
+
+返回值：根据success判断操作是否成功，操作成功返回任务实例的详细信息
+
+#### 查询某个任务实例的状态
+接口签名：`ResultDTO<Integer> fetchInstanceStatus(Long instanceId)`
+
+入参：任务实例ID
+
+返回值：根据success判断操作是否成功，操作成功返回任务实例的状态码，对应的枚举为：InstanceStatus

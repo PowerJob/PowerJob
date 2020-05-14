@@ -12,7 +12,8 @@
     * 注2：手动建表SQL文件：[oms-sql.sql](../oms-sql.sql)
     
 2. 部署调度服务器（OhMyScheduler-Server），需要先修改配置文件（同样为了支持多环境部署，采用了daily、pre和product3套配置文件），之后自行编译部署运行。
-    * 注：OhMyScheduler-Server支持集群部署，具备完全的水平扩展能力。建议部署多个实例以实现高可用&高性能。
+    * 注1：OhMyScheduler-Server支持集群部署，具备完全的水平扩展能力。建议部署多个实例以实现高可用&高性能。
+    * 注2：通过启动参数`--spring.profiles.active=product`来指定使用某套配置文件（默认为daily）
     * application-xxx.properties文件配置说明如下表所示：
     * |配置项|含义|可选|
       |----|----|----|

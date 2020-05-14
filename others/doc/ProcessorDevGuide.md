@@ -3,7 +3,7 @@
 
 ## 宿主应用接入
 #### 添加依赖
-* 最新依赖版本请参考Maven中央仓库：[推荐地址](https://search.maven.org/search?q=com.github.kfcfans)&[备用地址](https://mvnrepository.com/search?q=com.github.kfcfans)。
+* 最新依赖版本请参考Maven中央仓库：[推荐地址](https://search.maven.org/search?q=oh-my-scheduler-worker)&[备用地址](https://mvnrepository.com/search?q=com.github.kfcfans)。
 
 ```xml
 <dependency>
