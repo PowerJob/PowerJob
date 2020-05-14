@@ -1,13 +1,13 @@
 package com.github.kfcfans.oms.client;
 
-import com.github.kfcfans.oms.client.model.ClientJobInfo;
 import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OpenAPIConstant;
-import com.github.kfcfans.oms.common.request.http.JobInfoRequest;
+import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
+import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
+import com.github.kfcfans.oms.common.response.JobInfoDTO;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.common.utils.HttpUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
-import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
@@ -31,7 +31,6 @@ public class OhMyClient {
     private Long appId;
 
     private static final String URL_PATTERN = "http://%s%s%s";
-    private static final Joiner commaJoiner = Joiner.on(",").skipNulls();
 
     /**
      * 初始化 OhMyClient 客户端
@@ -68,48 +67,35 @@ public class OhMyClient {
 
     /**
      * 保存任务（包括创建与修改）
-     * @param newJobInfo 任务详细参数
+     * @param request 任务详细参数
      * @return 创建的任务ID
      * @throws Exception 异常
      */
-    public ResultDTO<Long> saveJob(ClientJobInfo newJobInfo) throws Exception {
+    public ResultDTO<Long> saveJob(SaveJobInfoRequest request) throws Exception {
 
-        String designatedWorkers = null;
-        if (newJobInfo.getDesignatedWorkers() != null && !newJobInfo.getDesignatedWorkers().isEmpty()) {
-            designatedWorkers = commaJoiner.join(newJobInfo.getDesignatedWorkers());
-        }
-
-        JobInfoRequest jobInfoRequest = JobInfoRequest.builder().id(newJobInfo.getJobId())
-                .jobName(newJobInfo.getJobName())
-                .jobDescription(newJobInfo.getJobDescription())
-                .appId(appId)
-                .jobParams(newJobInfo.getJobParams())
-                .timeExpressionType(newJobInfo.getTimeExpressionType().name())
-                .timeExpression(newJobInfo.getTimeExpression())
-                .executeType(newJobInfo.getExecuteType().name())
-                .processorType(newJobInfo.getProcessorType().name())
-                .processorInfo(newJobInfo.getProcessorInfo())
-                .maxInstanceNum(newJobInfo.getMaxInstanceNum())
-                .concurrency(newJobInfo.getConcurrency())
-                .instanceTimeLimit(newJobInfo.getInstanceTimeLimit())
-                .instanceRetryNum(newJobInfo.getInstanceRetryNum())
-                .taskRetryNum(newJobInfo.getTaskRetryNum())
-                .minCpuCores(newJobInfo.getMinCpuCores())
-                .minMemorySpace(newJobInfo.getMinMemorySpace())
-                .minDiskSpace(newJobInfo.getMinDiskSpace())
-                .enable(newJobInfo.isEnable())
-                .designatedWorkers(designatedWorkers)
-                .maxWorkerCount(newJobInfo.getMaxWorkerCount())
-                .notifyUserIds(newJobInfo.getNotifyUserIds())
-                .build();
-
+        request.setAppId(appId);
         String url = getUrl(OpenAPIConstant.SAVE_JOB);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
-        String json = JsonUtils.toJSONStringUnsafe(jobInfoRequest);
+        String json = JsonUtils.toJSONStringUnsafe(request);
         String post = HttpUtils.post(url, RequestBody.create(json, jsonType));
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
+    /**
+     * 根据 jobId 查询任务信息
+     * @param jobId 任务ID
+     * @return 任务详细信息
+     * @throws Exception 异常
+     */
+    public ResultDTO<JobInfoDTO> fetchJob(Long jobId) throws Exception {
+        String url = getUrl(OpenAPIConstant.FETCH_JOB);
+        RequestBody body = new FormBody.Builder()
+                .add("jobId", jobId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = HttpUtils.post(url, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
 
     /**
      * 禁用某个任务
@@ -119,6 +105,22 @@ public class OhMyClient {
      */
     public ResultDTO<Void> disableJob(Long jobId) throws Exception {
         String url = getUrl(OpenAPIConstant.DISABLE_JOB);
+        RequestBody body = new FormBody.Builder()
+                .add("jobId", jobId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = HttpUtils.post(url, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 启用某个任务
+     * @param jobId 任务ID
+     * @return 标准返回对象
+     * @throws Exception 异常
+     */
+    public ResultDTO<Void> enableJob(Long jobId) throws Exception {
+        String url = getUrl(OpenAPIConstant.ENABLE_JOB);
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
@@ -152,7 +154,7 @@ public class OhMyClient {
      */
     public ResultDTO<Long> runJob(Long jobId, String instanceParams) throws Exception {
         String url = getUrl(OpenAPIConstant.RUN_JOB);
-        final FormBody.Builder builder = new FormBody.Builder()
+        FormBody.Builder builder = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString());
 
@@ -184,13 +186,28 @@ public class OhMyClient {
     }
 
     /**
-     * 查询应用实例状态
+     * 查询任务实例状态
      * @param instanceId 应用实例ID
      * @return {@link InstanceStatus} 的枚举值
      * @throws Exception 异常
      */
     public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) throws Exception {
         String url = getUrl(OpenAPIConstant.FETCH_INSTANCE_STATUS);
+        RequestBody body = new FormBody.Builder()
+                .add("instanceId", instanceId.toString())
+                .build();
+        String post = HttpUtils.post(url, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 查询任务实例的信息
+     * @param instanceId 任务实例ID
+     * @return 任务实例信息
+     * @throws Exception 潜在的异常
+     */
+    public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) throws Exception {
+        String url = getUrl(OpenAPIConstant.FETCH_INSTANCE_INFO);
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .build();

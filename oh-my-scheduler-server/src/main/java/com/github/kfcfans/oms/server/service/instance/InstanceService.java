@@ -9,6 +9,7 @@ import com.github.kfcfans.oms.common.model.InstanceDetail;
 import com.github.kfcfans.oms.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.oms.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.oms.common.response.AskResponse;
+import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
@@ -85,7 +86,23 @@ public class InstanceService {
     }
 
     /**
-     * 获取任务实例的壮体啊
+     * 获取任务实例的信息
+     * @param instanceId 任务实例ID
+     * @return 任务实例的信息
+     */
+    public InstanceInfoDTO getInstanceInfo(Long instanceId) {
+        InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
+        if (instanceInfoDO == null) {
+            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            throw new IllegalArgumentException("invalid instanceId: " + instanceId);
+        }
+        InstanceInfoDTO instanceInfoDTO = new InstanceInfoDTO();
+        BeanUtils.copyProperties(instanceInfoDO, instanceInfoDTO);
+        return instanceInfoDTO;
+    }
+
+    /**
+     * 获取任务实例的状态
      * @param instanceId 任务实例ID
      * @return 任务实例的状态
      */

@@ -9,12 +9,18 @@ package com.github.kfcfans.oms.common;
 public class OpenAPIConstant {
 
     public static final String WEB_PATH = "/openApi";
+
     public static final String ASSERT = "/assert";
     public static final String SAVE_JOB = "/saveJob";
-    public static final String DELETE_JOB = "/deleteJob";
+    public static final String FETCH_JOB = "/fetchJob";
     public static final String DISABLE_JOB = "/disableJob";
+    public static final String ENABLE_JOB = "/enableJob";
+    public static final String DELETE_JOB = "/deleteJob";
     public static final String RUN_JOB = "/runJob";
+
+
     public static final String STOP_INSTANCE = "/stopInstance";
     public static final String FETCH_INSTANCE_STATUS = "/fetchInstanceStatus";
+    public static final String FETCH_INSTANCE_INFO = "/fetchInstanceInfo";
 
 }

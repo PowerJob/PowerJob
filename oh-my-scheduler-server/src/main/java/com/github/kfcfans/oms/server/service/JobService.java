@@ -1,10 +1,9 @@
 package com.github.kfcfans.oms.server.service;
 
-import com.github.kfcfans.oms.common.ExecuteType;
 import com.github.kfcfans.oms.common.InstanceStatus;
-import com.github.kfcfans.oms.common.ProcessorType;
 import com.github.kfcfans.oms.common.TimeExpressionType;
-import com.github.kfcfans.oms.common.request.http.JobInfoRequest;
+import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
+import com.github.kfcfans.oms.common.response.JobInfoDTO;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
@@ -54,7 +53,7 @@ public class JobService {
      * @return 创建的任务ID（jobId）
      * @throws Exception 异常
      */
-    public Long saveJob(JobInfoRequest request) throws Exception {
+    public Long saveJob(SaveJobInfoRequest request) throws Exception {
 
         JobInfoDO jobInfoDO;
         if (request.getId() != null) {
@@ -67,10 +66,10 @@ public class JobService {
         BeanUtils.copyProperties(request, jobInfoDO);
 
         // 拷贝枚举值
-        TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(request.getTimeExpressionType());
-        jobInfoDO.setExecuteType(ExecuteType.valueOf(request.getExecuteType()).getV());
-        jobInfoDO.setProcessorType(ProcessorType.valueOf(request.getProcessorType()).getV());
-        jobInfoDO.setTimeExpressionType(timeExpressionType.getV());
+
+        jobInfoDO.setExecuteType(request.getExecuteType().getV());
+        jobInfoDO.setProcessorType(request.getProcessorType().getV());
+        jobInfoDO.setTimeExpressionType(request.getTimeExpressionType().getV());
         jobInfoDO.setStatus(request.isEnable() ? JobStatus.ENABLE.getV() : JobStatus.DISABLE.getV());
 
         if (jobInfoDO.getMaxWorkerCount() == null) {
@@ -82,20 +81,19 @@ public class JobService {
             jobInfoDO.setNotifyUserIds(commaJoiner.join(request.getNotifyUserIds()));
         }
 
-        // 计算下次调度时间
-        Date now = new Date();
-        if (timeExpressionType == TimeExpressionType.CRON) {
-            CronExpression cronExpression = new CronExpression(request.getTimeExpression());
-            Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
-            jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
-        }
-
-        jobInfoDO.setGmtModified(now);
+        refreshJob(jobInfoDO);
         if (request.getId() == null) {
-            jobInfoDO.setGmtCreate(now);
+            jobInfoDO.setGmtCreate(new Date());
         }
         JobInfoDO res = jobInfoRepository.saveAndFlush(jobInfoDO);
         return res.getId();
+    }
+
+    public JobInfoDTO fetchJob(Long jobId) {
+        JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId));
+        JobInfoDTO jobInfoDTO = new JobInfoDTO();
+        BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
+        return jobInfoDTO;
     }
 
     /**
@@ -109,10 +107,7 @@ public class JobService {
         if (!jobInfoOPT.isPresent()) {
             throw new IllegalArgumentException("can't find job by jobId:" + jobId);
         }
-        return runJob(jobInfoOPT.get(), instanceParams);
-    }
-
-    public long runJob(JobInfoDO jobInfo, String instanceParams) {
+        JobInfoDO jobInfo = jobInfoOPT.get();
         long instanceId = idGenerateService.allocate();
 
         InstanceInfoDO executeLog = new InstanceInfoDO();
@@ -129,6 +124,7 @@ public class JobService {
         return instanceId;
     }
 
+
     /**
      * 删除某个任务
      * @param jobId 任务ID
@@ -142,6 +138,20 @@ public class JobService {
      */
     public void disableJob(Long jobId) {
         shutdownOrStopJob(jobId, JobStatus.DISABLE);
+    }
+
+    /**
+     * 启用某个任务
+     * @param jobId 任务ID
+     * @throws Exception 异常（CRON表达式错误）
+     */
+    public void enableJob(Long jobId) throws Exception {
+        JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
+
+        jobInfoDO.setStatus(JobStatus.ENABLE.getV());
+        refreshJob(jobInfoDO);
+
+        jobInfoRepository.saveAndFlush(jobInfoDO);
     }
 
     /**
@@ -179,6 +189,20 @@ public class JobService {
             }catch (Exception ignore) {
             }
         });
+    }
+
+    private void refreshJob(JobInfoDO jobInfoDO) throws Exception {
+        // 计算下次调度时间
+        Date now = new Date();
+        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
+
+        if (timeExpressionType == TimeExpressionType.CRON) {
+            CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
+            Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
+            jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
+        }
+        // 重写最后修改时间
+        jobInfoDO.setGmtModified(now);
     }
 
 }

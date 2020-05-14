@@ -1,11 +1,11 @@
-import com.github.kfcfans.oms.client.model.ClientJobInfo;
 import com.github.kfcfans.oms.common.ExecuteType;
 import com.github.kfcfans.oms.common.ProcessorType;
 import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
+import com.github.kfcfans.oms.common.response.JobInfoDTO;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.client.OhMyClient;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -21,14 +21,14 @@ public class TestClient {
 
     @BeforeAll
     public static void initClient() throws Exception {
-        ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test");
+        ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test2");
     }
 
     @Test
     public void testSaveJob() throws Exception {
 
-        ClientJobInfo newJobInfo = new ClientJobInfo();
-        newJobInfo.setJobId(6L);
+        SaveJobInfoRequest newJobInfo = new SaveJobInfoRequest();
+//        newJobInfo.setId(8L);
         newJobInfo.setJobName("omsOpenAPIJob");
         newJobInfo.setJobDescription("tes OpenAPI");
         newJobInfo.setJobParams("{'aa':'bb'}");
@@ -37,19 +37,54 @@ public class TestClient {
         newJobInfo.setExecuteType(ExecuteType.STANDALONE);
         newJobInfo.setProcessorType(ProcessorType.EMBEDDED_JAVA);
         newJobInfo.setProcessorInfo("com.github.kfcfans.oms.server.tester.OmsLogPerformanceTester");
-        newJobInfo.setDesignatedWorkers(Lists.newArrayList("192.168.1.1:2777"));
+        newJobInfo.setDesignatedWorkers("192.168.1.1:2777");
+
+        newJobInfo.setMinCpuCores(1.1);
+        newJobInfo.setMinMemorySpace(1.2);
+        newJobInfo.setMinDiskSpace(1.3);
 
         ResultDTO<Long> resultDTO = ohMyClient.saveJob(newJobInfo);
         System.out.println(JsonUtils.toJSONString(resultDTO));
     }
 
     @Test
+    public void testFetchJob() throws Exception {
+        ResultDTO<JobInfoDTO> fetchJob = ohMyClient.fetchJob(7L);
+        System.out.println(JsonUtils.toJSONStringUnsafe(fetchJob));
+    }
+
+    @Test
+    public void testDisableJob() throws Exception {
+        System.out.println(ohMyClient.disableJob(7L));
+    }
+
+    @Test
+    public void testEnableJob() throws Exception {
+        System.out.println(ohMyClient.enableJob(7L));
+    }
+
+    @Test
+    public void testDeleteJob() throws Exception {
+        System.out.println(ohMyClient.deleteJob(7L));
+    }
+
+    @Test
+    public void testRunJob() throws Exception {
+        System.out.println(ohMyClient.runJob(8L, "this is instanceParams"));
+    }
+
+    @Test
+    public void testFetchInstanceInfo() throws Exception {
+        System.out.println(ohMyClient.fetchInstanceInfo(141251409466097728L));
+    }
+
+    @Test
     public void testStopInstance() throws Exception {
-        ResultDTO<Void> res = ohMyClient.stopInstance(132522955178508352L);
+        ResultDTO<Void> res = ohMyClient.stopInstance(141251409466097728L);
         System.out.println(res.toString());
     }
     @Test
     public void testFetchInstanceStatus() throws Exception {
-        System.out.println(ohMyClient.fetchInstanceStatus(132522955178508352L));
+        System.out.println(ohMyClient.fetchInstanceStatus(141251409466097728L));
     }
 }

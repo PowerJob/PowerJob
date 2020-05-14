@@ -1,29 +1,18 @@
-package com.github.kfcfans.oms.server.persistence.core.model;
+package com.github.kfcfans.oms.common.response;
 
 import com.github.kfcfans.oms.common.InstanceStatus;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
 import java.util.Date;
 
 /**
- * 任务运行日志表
+ * instanceInfo 对外输出对象
  *
  * @author tjq
- * @since 2020/3/30
+ * @since 2020/5/14
  */
 @Data
-@Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "instance_log", indexes = {@Index(columnList = "jobId"), @Index(columnList = "appId")})
-public class InstanceInfoDO {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class InstanceInfoDTO {
 
     // 任务ID
     private Long jobId;
@@ -53,5 +42,4 @@ public class InstanceInfoDO {
 
     private Date gmtCreate;
     private Date gmtModified;
-
 }
