@@ -18,6 +18,7 @@ import lombok.Setter;
 @Setter
 public class TaskContext {
 
+    private Long jobId;
     private Long instanceId;
     private Long subInstanceId;
     private String taskId;

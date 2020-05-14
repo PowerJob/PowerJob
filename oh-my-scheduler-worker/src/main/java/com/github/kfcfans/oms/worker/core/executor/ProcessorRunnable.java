@@ -53,6 +53,7 @@ public class ProcessorRunnable implements Runnable {
         // 0. 完成执行上下文准备 & 上报执行信息
         TaskContext taskContext = new TaskContext();
         BeanUtils.copyProperties(task, taskContext);
+        taskContext.setJobId(instanceInfo.getJobId());
         taskContext.setMaxRetryTimes(instanceInfo.getTaskRetryNum());
         taskContext.setCurrentRetryTimes(task.getFailedCnt());
         taskContext.setJobParams(instanceInfo.getJobParams());

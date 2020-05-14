@@ -10,13 +10,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>oh-my-scheduler-server</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
-        <oms.common.version>1.1.0</oms.common.version>
+        <oms.common.version>1.1.1</oms.common.version>
         <mysql.version>8.0.19</mysql.version>
         <h2.db.version>1.4.200</h2.db.version>
     </properties>
