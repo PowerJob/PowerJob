@@ -1,8 +1,6 @@
 package com.github.kfcfans.oms.common.utils;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -25,6 +23,10 @@ public class JsonUtils {
         }catch (Exception ignore) {
         }
         return null;
+    }
+
+    public static String toJSONStringUnsafe(Object obj) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(obj);
     }
 
     public static byte[] toBytes(Object obj) {

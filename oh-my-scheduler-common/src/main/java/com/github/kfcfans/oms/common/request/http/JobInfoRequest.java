@@ -1,21 +1,26 @@
-package com.github.kfcfans.oms.server.web.request;
+package com.github.kfcfans.oms.common.request.http;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
 
 /**
  * 创建/修改 JobInfo 请求
- * 测试用例快速复制区域：MAP_REDUCE、EMBEDDED_JAVA、CRON、com.github.kfcfans.oms.processors.TestMapReduceProcessor
  *
  * @author tjq
  * @since 2020/3/30
  */
 @Data
-public class ModifyJobInfoRequest {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class JobInfoRequest {
 
-    // null -> 插入，否则为更新
+    // 任务ID（jobId），null -> 插入，否则为更新
     private Long id;
     /* ************************** 任务基本信息 ************************** */
     // 任务名称
@@ -68,7 +73,6 @@ public class ModifyJobInfoRequest {
     // 1 正常运行，2 停止（不再调度）
     private boolean enable;
 
-    private Date gmtCreate;
 
     /* ************************** 集群配置 ************************** */
     // 指定机器运行，空代表不限，非空则只会使用其中的机器运行（多值逗号分割）

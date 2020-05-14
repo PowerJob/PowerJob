@@ -10,7 +10,7 @@ import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoReposito
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.service.JobService;
-import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
+import com.github.kfcfans.oms.common.request.http.JobInfoRequest;
 import com.github.kfcfans.oms.server.web.request.QueryJobInfoRequest;
 import com.github.kfcfans.oms.server.web.response.JobInfoVO;
 import com.google.common.base.Joiner;
@@ -48,44 +48,10 @@ public class JobController {
     private JobInfoRepository jobInfoRepository;
 
     private static final Splitter commaSplitter = Splitter.on(",");
-    private static final Joiner commaJoiner = Joiner.on(",").skipNulls();
 
     @PostMapping("/save")
-    public ResultDTO<Void> saveJobInfo(@RequestBody ModifyJobInfoRequest request) throws Exception {
-
-        JobInfoDO jobInfoDO = new JobInfoDO();
-        BeanUtils.copyProperties(request, jobInfoDO);
-
-        // 拷贝枚举值
-        TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(request.getTimeExpressionType());
-        jobInfoDO.setExecuteType(ExecuteType.valueOf(request.getExecuteType()).getV());
-        jobInfoDO.setProcessorType(ProcessorType.valueOf(request.getProcessorType()).getV());
-        jobInfoDO.setTimeExpressionType(timeExpressionType.getV());
-        jobInfoDO.setStatus(request.isEnable() ? JobStatus.ENABLE.getV() : JobStatus.DISABLE.getV());
-
-        if (jobInfoDO.getMaxWorkerCount() == null) {
-            jobInfoDO.setMaxInstanceNum(0);
-        }
-
-        // 转化报警用户列表
-        if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
-            jobInfoDO.setNotifyUserIds(commaJoiner.join(request.getNotifyUserIds()));
-        }
-
-        // 计算下次调度时间
-        Date now = new Date();
-        if (timeExpressionType == TimeExpressionType.CRON) {
-            CronExpression cronExpression = new CronExpression(request.getTimeExpression());
-            Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
-            jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
-        }
-
-        if (request.getId() == null) {
-            jobInfoDO.setGmtCreate(now);
-        }
-        jobInfoDO.setGmtModified(now);
-        jobInfoRepository.saveAndFlush(jobInfoDO);
-
+    public ResultDTO<Void> saveJobInfo(@RequestBody JobInfoRequest request) throws Exception {
+        jobService.saveJob(request);
         return ResultDTO.success(null);
     }
 

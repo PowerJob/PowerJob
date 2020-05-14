@@ -8,7 +8,7 @@ import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoReposito
 import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
-import com.github.kfcfans.oms.server.web.request.ModifyJobInfoRequest;
+import com.github.kfcfans.oms.common.request.http.JobInfoRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -45,8 +45,8 @@ public class OpenAPIController {
 
     /* ************* Job 区 ************* */
     @PostMapping(OpenAPIConstant.SAVE_JOB)
-    public ResultDTO<Void> newJob(ModifyJobInfoRequest request) {
-        return null;
+    public ResultDTO<Long> saveJob(@RequestBody JobInfoRequest request) throws Exception {
+        return ResultDTO.success(jobService.saveJob(request));
     }
 
     @GetMapping(OpenAPIConstant.DELETE_JOB)

@@ -1,10 +1,10 @@
-# STEP1: 系统部署 & 初始化
-## 部署
+# STEP1: 调度中心部署 & 初始化
+## 调度中心部署
 #### 要求
 * 运行环境：JDK8+
 * 编译环境：Maven3+
 * 关系数据库：任意Spring Data JPA支持的关系型数据库（MySQL/Oracle/MS SQLServer...）
-* mongoDB：任意支持GridFS的mongoDB版本（4.2.6测试通过，其余未经测试，仅从理论角度分析可用）
+* mongoDB（可选）：任意支持GridFS的mongoDB版本（4.2.6测试通过，其余未经测试，仅从理论角度分析可用）
 
 #### 流程
 1. 部署数据库：由于任务调度中心的数据持久层基于`Spring Data Jpa`实现，**开发者仅需要完成数据库的创建**，即运行SQL`CREATE database if NOT EXISTS oms-product default character set utf8mb4 collate utf8mb4_unicode_ci;`。

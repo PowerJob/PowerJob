@@ -1,12 +1,16 @@
 package com.github.kfcfans.oms.client;
 
+import com.github.kfcfans.oms.client.model.ClientJobInfo;
 import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OpenAPIConstant;
+import com.github.kfcfans.oms.common.request.http.JobInfoRequest;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.common.utils.HttpUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
+import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,6 +31,7 @@ public class OhMyClient {
     private Long appId;
 
     private static final String URL_PATTERN = "http://%s%s%s";
+    private static final Joiner commaJoiner = Joiner.on(",").skipNulls();
 
     /**
      * 初始化 OhMyClient 客户端
@@ -48,7 +53,7 @@ public class OhMyClient {
             if (resultDTO.isSuccess()) {
                 appId = Long.parseLong(resultDTO.getData().toString());
             }else {
-                throw new RuntimeException(resultDTO.getMessage());
+                throw new OmsOpenApiException(resultDTO.getMessage());
             }
         }
         log.info("[OhMyClient] {}'s client bootstrap successfully.", appName);
@@ -60,6 +65,52 @@ public class OhMyClient {
     }
 
     /* ************* Job 区 ************* */
+
+    /**
+     * 保存任务（包括创建与修改）
+     * @param newJobInfo 任务详细参数
+     * @return 创建的任务ID
+     * @throws Exception 异常
+     */
+    public ResultDTO<Long> saveJob(ClientJobInfo newJobInfo) throws Exception {
+
+        String designatedWorkers = null;
+        if (newJobInfo.getDesignatedWorkers() != null && !newJobInfo.getDesignatedWorkers().isEmpty()) {
+            designatedWorkers = commaJoiner.join(newJobInfo.getDesignatedWorkers());
+        }
+
+        JobInfoRequest jobInfoRequest = JobInfoRequest.builder().id(newJobInfo.getJobId())
+                .jobName(newJobInfo.getJobName())
+                .jobDescription(newJobInfo.getJobDescription())
+                .appId(appId)
+                .jobParams(newJobInfo.getJobParams())
+                .timeExpressionType(newJobInfo.getTimeExpressionType().name())
+                .timeExpression(newJobInfo.getTimeExpression())
+                .executeType(newJobInfo.getExecuteType().name())
+                .processorType(newJobInfo.getProcessorType().name())
+                .processorInfo(newJobInfo.getProcessorInfo())
+                .maxInstanceNum(newJobInfo.getMaxInstanceNum())
+                .concurrency(newJobInfo.getConcurrency())
+                .instanceTimeLimit(newJobInfo.getInstanceTimeLimit())
+                .instanceRetryNum(newJobInfo.getInstanceRetryNum())
+                .taskRetryNum(newJobInfo.getTaskRetryNum())
+                .minCpuCores(newJobInfo.getMinCpuCores())
+                .minMemorySpace(newJobInfo.getMinMemorySpace())
+                .minDiskSpace(newJobInfo.getMinDiskSpace())
+                .enable(newJobInfo.isEnable())
+                .designatedWorkers(designatedWorkers)
+                .maxWorkerCount(newJobInfo.getMaxWorkerCount())
+                .notifyUserIds(newJobInfo.getNotifyUserIds())
+                .build();
+
+        String url = getUrl(OpenAPIConstant.SAVE_JOB);
+        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        String json = JsonUtils.toJSONStringUnsafe(jobInfoRequest);
+        String post = HttpUtils.post(url, RequestBody.create(json, jsonType));
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+
     /**
      * 禁用某个任务
      * @param jobId 任务ID
