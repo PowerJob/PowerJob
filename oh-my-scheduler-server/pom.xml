@@ -97,7 +97,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
                 <configuration>
-                    <mainClass>com.github.kfcfans.oms.server.OhMyApplication</mainClass>
+                    <mainClass>com.github.kfcfans.oms.samples.OhMyApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
