@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.service.log;
 
+import com.github.kfcfans.oms.server.common.utils.OmsFilePathUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +53,7 @@ public class InstanceLogCleanService {
         }
 
         Stopwatch stopwatch = Stopwatch.createStarted();
-        String path = InstanceLogService.genLogDirPath();
+        String path = OmsFilePathUtils.genLogDirPath();
         File dir = new File(path);
         if (!dir.exists()) {
             return;

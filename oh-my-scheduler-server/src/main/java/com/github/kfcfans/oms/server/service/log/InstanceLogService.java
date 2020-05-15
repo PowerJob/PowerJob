@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.server.service.log;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.InstanceLogContent;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
+import com.github.kfcfans.oms.server.common.utils.OmsFilePathUtils;
 import com.github.kfcfans.oms.server.persistence.StringPage;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.local.LocalInstanceLogDO;
@@ -59,8 +60,6 @@ public class InstanceLogService {
 
     // 格式化时间戳
     private static final FastDateFormat dateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-    // 用户路径
-    private static final String USER_HOME = System.getProperty("user.home", "oms");
     // 每一个展示的行数
     private static final int MAX_LINE_COUNT = 100;
     // 过期时间
@@ -218,11 +217,8 @@ public class InstanceLogService {
                 }
 
                 // 创建父文件夹（文件在开流时自动会被创建）
-                if (!f.getParentFile().exists()) {
-                    if (!f.getParentFile().mkdirs()) {
-                        throw new RuntimeException("create dir failed");
-                    }
-                }
+                OmsFilePathUtils.forceMkdir(f);
+
                 // 重新构建文件
                 try (Stream<LocalInstanceLogDO> allLogStream = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
                     stream2File(allLogStream, f);
@@ -242,11 +238,7 @@ public class InstanceLogService {
                 }
 
                 // 创建父文件夹（文件在开流时自动会被创建）
-                if (!f.getParentFile().exists()) {
-                    if (!f.getParentFile().mkdirs()) {
-                        throw new RuntimeException("create dir failed");
-                    }
-                }
+                OmsFilePathUtils.forceMkdir(f);
 
                 // 本地存在数据，从本地持久化（对应 SYNC 的情况）
                 if (instanceId2LastReportTime.containsKey(instanceId)) {
@@ -362,15 +354,12 @@ public class InstanceLogService {
         // 2. 删除长时间未 REPORT 的日志
     }
 
-    public static String genLogDirPath() {
-        return USER_HOME + "/oms-server/online_log/";
-    }
 
     private static String genLogFilePath(long instanceId, boolean stable) {
         if (stable) {
-            return genLogDirPath() + String.format("%d-stable.log", instanceId);
+            return OmsFilePathUtils.genLogDirPath() + String.format("%d-stable.log", instanceId);
         }else {
-            return genLogDirPath() + String.format("%d-temporary.log", instanceId);
+            return OmsFilePathUtils.genLogDirPath() + String.format("%d-temporary.log", instanceId);
         }
     }
     private static String genMongoFileName(long instanceId) {
