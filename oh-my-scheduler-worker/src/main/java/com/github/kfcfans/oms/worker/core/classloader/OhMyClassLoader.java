@@ -14,4 +14,12 @@ public class OhMyClassLoader extends URLClassLoader {
     public OhMyClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
     }
+
+    /**
+     * 加载类
+     * @throws Exception 加载异常
+     */
+    public void load() throws Exception {
+        URL[] urLs = getURLs();
+    }
 }
