@@ -2,7 +2,6 @@ package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
-import com.github.kfcfans.oms.server.common.constans.ContainerStatus;
 import com.github.kfcfans.oms.server.common.utils.OmsFilePathUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.ContainerInfoRepository;
@@ -35,7 +34,7 @@ import java.util.stream.Collectors;
  * @since 2020/5/15
  */
 @Slf4j
-@RestController
+@RestController("/container")
 public class ContainerController {
 
     private GridFsTemplate gridFsTemplate;
