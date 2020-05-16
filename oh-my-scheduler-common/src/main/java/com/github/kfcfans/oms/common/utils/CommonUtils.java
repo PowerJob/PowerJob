@@ -3,6 +3,7 @@ package com.github.kfcfans.oms.common.utils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -85,6 +86,13 @@ public class CommonUtils {
     public static void executeIgnoreException(SupplierPlus<?> executor) {
         try {
             executor.get();
+        }catch (Exception ignore) {
+        }
+    }
+
+    public static void executeIgnoreException(Meaningless executor) {
+        try {
+            executor.m();
         }catch (Exception ignore) {
         }
     }

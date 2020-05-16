@@ -15,4 +15,6 @@ public interface ContainerInfoRepository extends JpaRepository<ContainerInfoDO, 
 
     List<ContainerInfoDO> findByAppId(Long appId);
 
+    ContainerInfoDO findByContainerName(String containerName);
+
 }

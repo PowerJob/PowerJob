@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.beans.BeanUtils;
@@ -102,6 +103,7 @@ public class InstanceLogService {
     public StringPage fetchInstanceLog(Long instanceId, long index) {
         try {
             Future<File> fileFuture = prepareLogFile(instanceId);
+            // 超时并不会打断正在执行的任务
             File logFile = fileFuture.get(5, TimeUnit.SECONDS);
 
             // 分页展示数据
@@ -215,15 +217,19 @@ public class InstanceLogService {
                 if (f.exists() && (System.currentTimeMillis() - f.lastModified()) < EXPIRE_INTERVAL_MS) {
                     return f;
                 }
+                try {
+                    // 创建父文件夹（文件在开流时自动会被创建）
+                    FileUtils.forceMkdirParent(f);
 
-                // 创建父文件夹（文件在开流时自动会被创建）
-                OmsFileUtils.forceMkdir4Parent(f);
-
-                // 重新构建文件
-                try (Stream<LocalInstanceLogDO> allLogStream = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
-                    stream2File(allLogStream, f);
+                    // 重新构建文件
+                    try (Stream<LocalInstanceLogDO> allLogStream = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
+                        stream2File(allLogStream, f);
+                    }
+                    return f;
+                }catch (Exception e) {
+                    CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(f));
+                    throw new RuntimeException(e);
                 }
-                return f;
             });
         }
     }
@@ -232,36 +238,42 @@ public class InstanceLogService {
         String path = genLogFilePath(instanceId, true);
         synchronized (("stFileLock-" + instanceId).intern()) {
             return localTransactionTemplate.execute(status -> {
+
                 File f = new File(path);
                 if (f.exists()) {
                     return f;
                 }
 
-                // 创建父文件夹（文件在开流时自动会被创建）
-                OmsFileUtils.forceMkdir4Parent(f);
+                try {
+                    // 创建父文件夹（文件在开流时自动会被创建）
+                    FileUtils.forceMkdirParent(f);
 
-                // 本地存在数据，从本地持久化（对应 SYNC 的情况）
-                if (instanceId2LastReportTime.containsKey(instanceId)) {
-                    try (Stream<LocalInstanceLogDO> allLogStream = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
-                        stream2File(allLogStream, f);
+                    // 本地存在数据，从本地持久化（对应 SYNC 的情况）
+                    if (instanceId2LastReportTime.containsKey(instanceId)) {
+                        try (Stream<LocalInstanceLogDO> allLogStream = localInstanceLogRepository.findByInstanceIdOrderByLogTime(instanceId)) {
+                            stream2File(allLogStream, f);
+                        }
+                    }else {
+
+                        if (gridFsTemplate == null) {
+                            OmsFileUtils.string2File("SYSTEM: There is no local log for this task now, you need to use mongoDB to store the past logs.", f);
+                            return f;
+                        }
+
+                        // 否则从 mongoDB 拉取数据（对应后期查询的情况）
+                        GridFsResource gridFsResource = gridFsTemplate.getResource(genMongoFileName(instanceId));
+
+                        if (!gridFsResource.exists()) {
+                            OmsFileUtils.string2File("SYSTEM: There is no online log for this job instance.", f);
+                            return f;
+                        }
+                        OmsFileUtils.gridFs2File(gridFsResource, f);
                     }
-                }else {
-
-                    if (gridFsTemplate == null) {
-                        OmsFileUtils.string2File("SYSTEM: There is no local log for this task now, you need to use mongoDB to store the past logs.", f);
-                        return f;
-                    }
-
-                    // 否则从 mongoDB 拉取数据（对应后期查询的情况）
-                    GridFsResource gridFsResource = gridFsTemplate.getResource(genMongoFileName(instanceId));
-
-                    if (!gridFsResource.exists()) {
-                        OmsFileUtils.string2File("SYSTEM: There is no online log for this job instance.", f);
-                        return f;
-                    }
-                    gridFs2File(gridFsResource, f);
+                    return f;
+                }catch (Exception e) {
+                    CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(f));
+                    throw new RuntimeException(e);
                 }
-                return f;
             });
         }
     }
@@ -284,24 +296,6 @@ public class InstanceLogService {
         }
     }
 
-    /**
-     * 将MongoDB中存储的日志持久化为磁盘日志
-     * @param gridFsResource mongoDB 文件资源
-     * @param logFile 本地文件资源
-     */
-    private void gridFs2File(GridFsResource gridFsResource, File logFile) {
-        byte[] buffer = new byte[1024];
-        try (BufferedInputStream gis = new BufferedInputStream(gridFsResource.getInputStream());
-             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(logFile))
-        ) {
-            while (gis.read(buffer) != -1) {
-                bos.write(buffer);
-            }
-            bos.flush();
-        }catch (IOException ie) {
-            ExceptionUtils.rethrow(ie);
-        }
-    }
 
 
     /**

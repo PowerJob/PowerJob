@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.core.processor.built;
 
+import com.github.kfcfans.oms.worker.common.utils.OmsWorkerFileUtils;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
@@ -30,13 +31,12 @@ public abstract class ScriptProcessor implements BasicProcessor {
     private final long timeout;
     private final ExecutorService threadPool;
 
-    private static final String USER_HOME = System.getProperty("user.home", "oms");
     private static final Set<String> DOWNLOAD_PROTOCOL = Sets.newHashSet("http", "https", "ftp");
 
     public ScriptProcessor(Long instanceId, String processorInfo, long timeout, ExecutorService pool) throws Exception {
 
         this.instanceId = instanceId;
-        this.scriptPath = USER_HOME + "/oms/script/" + genScriptName(instanceId);
+        this.scriptPath = OmsWorkerFileUtils.getScriptDir() + genScriptName(instanceId);
         this.timeout = timeout;
         this.threadPool = pool;
 

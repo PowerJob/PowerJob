@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.server.common.utils;
 
 import com.github.kfcfans.oms.common.ContainerConstant;
 import net.lingala.zip4j.ZipFile;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
@@ -72,7 +73,7 @@ public class ContainerTemplateGenerator {
         // 2. 新建目录
         String packagePath = StringUtils.replace(packageName, ".", "/");
         String absPath = rootPath + "/src/main/java/" + packagePath;
-        OmsFileUtils.forceMkdir(new File(absPath));
+        FileUtils.forceMkdir(new File(absPath));
 
         // 3. 修改 Spring 配置文件
         String resourcePath = rootPath + "/src/main/resources/";

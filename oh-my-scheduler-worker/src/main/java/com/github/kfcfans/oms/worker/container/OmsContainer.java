@@ -16,4 +16,12 @@ public interface OmsContainer extends LifeCycle {
      * @return 处理器（可以是 MR、BD等处理器）
      */
     BasicProcessor getProcessor(String className);
+
+    String getName();
+    String getMd5();
+
+    /**
+     * 尝试释放容器资源
+     */
+    void tryRelease();
 }

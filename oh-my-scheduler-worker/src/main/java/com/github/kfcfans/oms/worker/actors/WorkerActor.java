@@ -1,10 +1,12 @@
 package com.github.kfcfans.oms.worker.actors;
 
 import akka.actor.AbstractActor;
+import com.github.kfcfans.oms.common.request.ServerDeployContainerRequest;
+import com.github.kfcfans.oms.worker.container.OmsContainerFactory;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Worker节点Actor，主要用于和服务器保持心跳
+ * Worker节点Actor，接受服务器请求
  *
  * @author tjq
  * @since 2020/3/24
@@ -15,7 +17,12 @@ public class WorkerActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
+                .match(ServerDeployContainerRequest.class, this::onReceiveServerDeployContainerRequest)
                 .matchAny(obj -> log.warn("[WorkerActor] receive unknown request: {}.", obj))
                 .build();
+    }
+
+    private void onReceiveServerDeployContainerRequest(ServerDeployContainerRequest request) {
+        OmsContainerFactory.deployContainer(request);
     }
 }

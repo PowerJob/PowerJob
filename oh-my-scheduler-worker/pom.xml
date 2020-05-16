@@ -20,17 +20,15 @@
         <hikaricp.version>3.4.2</hikaricp.version>
         <junit.version>5.6.1</junit.version>
         <kryo.version>5.0.0-RC5</kryo.version>
-        <commons.io.version>2.6</commons.io.version>
     </properties>
 
     <dependencies>
 
-        <!-- Spring 编译期依赖 -->
+        <!-- Spring 依赖 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- oms-common -->
@@ -68,12 +66,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- commons-io -->
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons.io.version}</version>
-        </dependency>
+
 
     </dependencies>
 

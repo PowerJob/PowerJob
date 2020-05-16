@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.server.common.utils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -45,38 +46,6 @@ public class OmsFileUtils {
     }
 
     /**
-     * 为目标文件创建父文件夹
-     * @param file 目标文件
-     */
-    public static void forceMkdir4Parent(File file) {
-        File directory = file.getParentFile();
-        forceMkdir(directory);
-    }
-
-    public static void forceMkdir(File directory) {
-        if (directory.exists()) {
-            if (!directory.isDirectory()) {
-                final String message =
-                        "File "
-                                + directory
-                                + " exists and is "
-                                + "not a directory. Unable to create directory.";
-                throw new RuntimeException(message);
-            }
-        } else {
-            if (!directory.mkdirs()) {
-                // Double-check that some other thread or process hasn't made
-                // the directory in the background
-                if (!directory.isDirectory()) {
-                    final String message =
-                            "Unable to create directory " + directory;
-                    throw new RuntimeException(message);
-                }
-            }
-        }
-    }
-
-    /**
      * 将文本写入文件
      * @param content 文本内容
      * @param file 文件
@@ -89,6 +58,12 @@ public class OmsFileUtils {
         }
     }
 
+    /**
+     * 输出文件（对外下载功能）
+     * @param file 文件
+     * @param response HTTP响应
+     * @throws IOException 异常
+     */
     public static void file2HttpResponse(File file, HttpServletResponse response) throws IOException {
 
         response.setContentType("application/octet-stream");
@@ -101,6 +76,26 @@ public class OmsFileUtils {
             while (bis.read(buffer) != -1) {
                 bos.write(buffer);
             }
+        }
+    }
+
+    /**
+     * 将 mongoDB 中的数据转存到本地文件中
+     * @param gridFsResource mongoDB 文件资源
+     * @param targetFile 本地文件资源
+     */
+    public static void gridFs2File(GridFsResource gridFsResource, File targetFile) {
+
+        byte[] buffer = new byte[1024];
+        try (BufferedInputStream gis = new BufferedInputStream(gridFsResource.getInputStream());
+             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile))
+        ) {
+            while (gis.read(buffer) != -1) {
+                bos.write(buffer);
+            }
+            bos.flush();
+        }catch (IOException ie) {
+            ExceptionUtils.rethrow(ie);
         }
     }
 }

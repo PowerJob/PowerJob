@@ -6,11 +6,13 @@ import com.github.kfcfans.oms.server.common.utils.ContainerTemplateGenerator;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.ContainerInfoRepository;
+import com.github.kfcfans.oms.server.service.ContainerService;
 import com.github.kfcfans.oms.server.web.request.GenerateContainerTemplateRequest;
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
 import com.github.kfcfans.oms.server.web.response.ContainerInfoVO;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +45,19 @@ public class ContainerController {
     @Resource
     private ContainerInfoRepository containerInfoRepository;
 
-    @PostMapping("/downloadContainerTemplate")
-    public void downloadContainerTemplate(@RequestBody GenerateContainerTemplateRequest req, HttpServletResponse response) throws Exception {
+    @Resource
+    private ContainerService containerService;
 
+    @GetMapping("/downloadJar")
+    public void downloadJar(String md5, HttpServletResponse response) throws IOException {
+        File file = containerService.fetchContainerJarFile(md5);
+        if (file.exists()) {
+            OmsFileUtils.file2HttpResponse(file, response);
+        }
+    }
+
+    @PostMapping("/downloadContainerTemplate")
+    public void downloadContainerTemplate(@RequestBody GenerateContainerTemplateRequest req, HttpServletResponse response) throws IOException {
         File zipFile = ContainerTemplateGenerator.generate(req.getGroup(), req.getArtifact(), req.getName(), req.getPackageName(), req.getJavaVersion());
         OmsFileUtils.file2HttpResponse(zipFile, response);
     }
@@ -61,7 +73,7 @@ public class ContainerController {
         String tmpFileName = UUID.randomUUID().toString() + ".jar";
         tmpFileName = StringUtils.replace(tmpFileName, "-", "");
         File jarFile = new File(path + tmpFileName);
-        OmsFileUtils.forceMkdir4Parent(jarFile);
+        FileUtils.forceMkdirParent(jarFile);
 
         file.transferTo(jarFile);
         log.debug("[ContainerController] upload jarFile({}) to local disk success.", tmpFileName);
@@ -69,16 +81,16 @@ public class ContainerController {
         // 2. 检查是否符合标准（是否为Jar，是否符合 template）
 
         // 3. 生成MD5
-        String realFileName;
+        String md5;
         try(FileInputStream fis = new FileInputStream(jarFile)) {
-            realFileName = DigestUtils.md5DigestAsHex(fis);
+            md5 = DigestUtils.md5DigestAsHex(fis);
         }
 
         // 3. 推送到 mongoDB
         if (gridFsTemplate != null) {
         }
 
-        return ResultDTO.success(realFileName);
+        return ResultDTO.success(md5);
     }
 
     @PostMapping("/save")
@@ -101,7 +113,7 @@ public class ContainerController {
         if (request.getSourceType() == ContainerSourceType.Git) {
 
         }else {
-            containerInfoDO.setFileName(request.getSourceInfo());
+            containerInfoDO.setMd5(request.getSourceInfo());
         }
 
         containerInfoRepository.saveAndFlush(containerInfoDO);

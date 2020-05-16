@@ -10,6 +10,8 @@ import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
+import com.github.kfcfans.oms.worker.container.OmsContainer;
+import com.github.kfcfans.oms.worker.container.OmsContainerFactory;
 import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
 import com.github.kfcfans.oms.worker.core.processor.built.PythonProcessor;
@@ -47,6 +49,8 @@ public class ProcessorTracker {
 
     // 任务执行器
     private BasicProcessor processor;
+    // 容器（可能为空）
+    private OmsContainer omsContainer;
     // 在线日志
     private OmsLogger omsLogger;
 
@@ -148,13 +152,17 @@ public class ProcessorTracker {
      */
     public void destroy() {
 
+        // 0. 移除Container引用
+        if (omsContainer != null) {
+            omsContainer.tryRelease();
+        }
+
         // 1. 关闭执行执行线程池
         CommonUtils.executeIgnoreException(() -> {
             List<Runnable> tasks = threadPool.shutdownNow();
             if (!CollectionUtils.isEmpty(tasks)) {
                 log.warn("[ProcessorTracker-{}] shutdown threadPool now and stop {} tasks.", instanceId, tasks.size());
             }
-            return null;
         });
 
         // 2. 去除顶层引用，送入GC世界
@@ -254,6 +262,13 @@ public class ProcessorTracker {
                 break;
             case PYTHON:
                 processor = new PythonProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS(), threadPool);
+                break;
+            case JAVA_CONTAINER:
+                String[] split = processorInfo.split("#");
+                omsContainer = OmsContainerFactory.getContainer(split[0]);
+                if (omsContainer != null) {
+                    processor = omsContainer.getProcessor(split[1]);
+                }
                 break;
             default:
                 log.warn("[ProcessorRunnable-{}] unknown processor type: {}.", instanceId, processorType);
