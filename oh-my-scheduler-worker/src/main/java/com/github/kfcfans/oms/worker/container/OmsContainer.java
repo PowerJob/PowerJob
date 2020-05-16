@@ -1,7 +1,6 @@
 package com.github.kfcfans.oms.worker.container;
 
-import com.github.kfcfans.oms.worker.core.classloader.OhMyClassLoader;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 
 /**
  * OhMyScheduler 容器规范
@@ -9,12 +8,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author tjq
  * @since 2020/5/15
  */
-public interface OmsContainer {
+public interface OmsContainer extends LifeCycle {
 
-    Long getContainerId();
-    String getContainerName();
-    String getLocalJarPath();
-
-    OhMyClassLoader getContainerClassLoader();
-    ClassPathXmlApplicationContext getContainer();
+    /**
+     * 获取处理器
+     * @param className 全限定类名
+     * @return 处理器（可以是 MR、BD等处理器）
+     */
+    BasicProcessor getProcessor(String className);
 }
