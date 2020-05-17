@@ -120,9 +120,9 @@ public class OmsFileUtils {
      * 计算文件的 MD5
      * @param f 文件
      * @return md5
-     * @throws Exception 异常
+     * @throws IOException 异常
      */
-    public static String md5(File f) throws Exception {
+    public static String md5(File f) throws IOException {
         String md5;
         try(FileInputStream fis = new FileInputStream(f)) {
             md5 = DigestUtils.md5DigestAsHex(fis);

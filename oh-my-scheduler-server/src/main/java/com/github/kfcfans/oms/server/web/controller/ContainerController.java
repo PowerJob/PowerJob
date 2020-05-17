@@ -1,7 +1,6 @@
 package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.oms.common.response.ResultDTO;
-import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.oms.server.common.utils.ContainerTemplateGenerator;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
@@ -12,21 +11,14 @@ import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
 import com.github.kfcfans.oms.server.web.response.ContainerInfoVO;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -39,8 +31,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/container")
 public class ContainerController {
-
-    private GridFsTemplate gridFsTemplate;
 
     @Resource
     private ContainerInfoRepository containerInfoRepository;
@@ -63,57 +53,16 @@ public class ContainerController {
     }
 
     @PostMapping("/jarUpload")
-    public ResultDTO<String> fileUpload(@RequestParam("file")MultipartFile file) throws Exception {
+    public ResultDTO<String> fileUpload(@RequestParam("file") MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) {
             return ResultDTO.failed("empty file");
         }
-
-        // 1. 本地持久化
-        String path = OmsFileUtils.genContainerJarPath();
-        String tmpFileName = UUID.randomUUID().toString() + ".jar";
-        tmpFileName = StringUtils.replace(tmpFileName, "-", "");
-        File jarFile = new File(path + tmpFileName);
-        FileUtils.forceMkdirParent(jarFile);
-
-        file.transferTo(jarFile);
-        log.debug("[ContainerController] upload jarFile({}) to local disk success.", tmpFileName);
-
-        // 2. 检查是否符合标准（是否为Jar，是否符合 template）
-
-        // 3. 生成MD5
-        String md5 = OmsFileUtils.md5(jarFile);
-
-        // 3. 推送到 mongoDB
-        if (gridFsTemplate != null) {
-        }
-
-        return ResultDTO.success(md5);
+        return ResultDTO.success(containerService.uploadContainerJarFile(file));
     }
 
     @PostMapping("/save")
     public ResultDTO<Void> saveContainer(@RequestBody SaveContainerInfoRequest request) {
-
-        ContainerInfoDO containerInfoDO;
-        if (request.getId() == null) {
-            containerInfoDO = new ContainerInfoDO();
-            containerInfoDO.setGmtModified(new Date());
-        }else {
-            containerInfoDO = containerInfoRepository.findById(request.getId()).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + request.getId()));
-        }
-        BeanUtils.copyProperties(request, containerInfoDO);
-
-        containerInfoDO.setSourceType(request.getSourceType().getV());
-        containerInfoDO.setStatus(request.getStatus().getV());
-        containerInfoDO.setGmtCreate(new Date());
-
-        // git clone -> mvn clean package -> md5 生成文件名称
-        if (request.getSourceType() == ContainerSourceType.Git) {
-
-        }else {
-            containerInfoDO.setMd5(request.getSourceInfo());
-        }
-
-        containerInfoRepository.saveAndFlush(containerInfoDO);
+        containerService.save(request);
         return ResultDTO.success(null);
     }
 
@@ -142,10 +91,5 @@ public class ContainerController {
         ContainerInfoVO vo = new ContainerInfoVO();
         BeanUtils.copyProperties(containerInfoDO, vo);
         return vo;
-    }
-
-    @Autowired(required = false)
-    public void setGridFsTemplate(GridFsTemplate gridFsTemplate) {
-        this.gridFsTemplate = gridFsTemplate;
     }
 }
