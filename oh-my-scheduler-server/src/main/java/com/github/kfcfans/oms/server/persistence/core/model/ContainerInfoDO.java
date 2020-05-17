@@ -36,6 +36,9 @@ public class ContainerInfoDO {
     // 状态，枚举值为 ContainerStatus
     private Integer status;
 
+    // 上一次部署时间
+    private Date lastDeployTime;
+
     private Date gmtCreate;
     private Date gmtModified;
 }

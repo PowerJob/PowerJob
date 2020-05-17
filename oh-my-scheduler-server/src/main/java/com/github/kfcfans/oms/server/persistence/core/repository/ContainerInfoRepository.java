@@ -4,6 +4,7 @@ import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 容器信息 数据操作层
@@ -15,6 +16,6 @@ public interface ContainerInfoRepository extends JpaRepository<ContainerInfoDO, 
 
     List<ContainerInfoDO> findByAppId(Long appId);
 
-    ContainerInfoDO findByContainerName(String containerName);
+    Optional<ContainerInfoDO> findByContainerName(String containerName);
 
 }

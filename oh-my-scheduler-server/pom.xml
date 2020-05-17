@@ -20,6 +20,8 @@
         <mysql.version>8.0.19</mysql.version>
         <h2.db.version>1.4.200</h2.db.version>
         <zip4j.version>2.5.2</zip4j.version>
+        <jgit.version>5.7.0.202003110725-r</jgit.version>
+        <mvn.invoker.version>3.0.1</mvn.invoker.version>
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -75,12 +77,27 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- zip4j -->
+        <!-- zip4j（Zip操作） -->
         <dependency>
             <groupId>net.lingala.zip4j</groupId>
             <artifactId>zip4j</artifactId>
             <version>${zip4j.version}</version>
         </dependency>
+
+        <!-- jGit（Git操作） -->
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>${jgit.version}</version>
+        </dependency>
+
+        <!-- Maven Invoker（编译 maven 项目） -->
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-invoker</artifactId>
+            <version>${mvn.invoker.version}</version>
+        </dependency>
+
 
         <!-- swagger2 -->
         <dependency>

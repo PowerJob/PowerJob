@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 
+import java.util.Optional;
+
 /**
  * 处理 Worker 请求
  *
@@ -85,10 +87,11 @@ public class ServerActor extends AbstractActor {
         Environment environment = SpringUtils.getBean(Environment.class);
         String port = environment.getProperty("local.server.port");
 
-        ContainerInfoDO containerInfo = containerInfoRepository.findByContainerName(req.getContainerName());
+        Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findByContainerName(req.getContainerName());
         AskResponse askResponse = new AskResponse();
         askResponse.setSuccess(false);
-        if (containerInfo != null) {
+        if (containerInfoOpt.isPresent()) {
+            ContainerInfoDO containerInfo = containerInfoOpt.get();
             askResponse.setSuccess(true);
 
             ServerDeployContainerRequest dpReq = new ServerDeployContainerRequest();
