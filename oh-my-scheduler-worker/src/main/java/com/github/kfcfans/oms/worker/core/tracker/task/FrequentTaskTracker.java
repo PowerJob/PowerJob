@@ -50,7 +50,7 @@ public class FrequentTaskTracker extends TaskTracker {
     // 最大同时运行实例数
     private int maxInstanceNum;
 
-    // 总运行次数（正常情况不会出现锁竞争，直接用 Atomic 系列，锁竞争验证推荐 LongAdder）
+    // 总运行次数（正常情况不会出现锁竞争，直接用 Atomic 系列，锁竞争严重推荐 LongAdder）
     private AtomicLong triggerTimes;
     private AtomicLong succeedTimes;
     private AtomicLong failedTimes;
@@ -64,6 +64,7 @@ public class FrequentTaskTracker extends TaskTracker {
 
     private static final int HISTORY_SIZE = 10;
     private static final String LAST_TASK_ID_PREFIX = "L";
+    private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     protected FrequentTaskTracker(ServerScheduleJobReq req) {
         super(req);
@@ -120,9 +121,9 @@ public class FrequentTaskTracker extends TaskTracker {
             subDetail.setSubInstanceId(subId);
 
             // 设置时间
-            subDetail.setStartTime(DateFormatUtils.format(subInstanceInfo.getStartTime(), "yyyy-MM-dd HH:mm:ss"));
+            subDetail.setStartTime(DateFormatUtils.format(subInstanceInfo.getStartTime(), TIME_PATTERN));
             if (status == InstanceStatus.SUCCEED || status == InstanceStatus.FAILED) {
-                subDetail.setFinishedTime(DateFormatUtils.format(subInstanceInfo.getFinishedTime(), "yyyy-MM-dd HH:mm:ss"));
+                subDetail.setFinishedTime(DateFormatUtils.format(subInstanceInfo.getFinishedTime(), TIME_PATTERN));
             }else {
                 subDetail.setFinishedTime("N/A");
             }
@@ -140,6 +141,10 @@ public class FrequentTaskTracker extends TaskTracker {
     private class Launcher implements Runnable {
 
         public void innerRun() {
+
+            if (finished.get()) {
+                return;
+            }
 
             // 子任务实例ID
             Long subInstanceId = triggerTimes.incrementAndGet();

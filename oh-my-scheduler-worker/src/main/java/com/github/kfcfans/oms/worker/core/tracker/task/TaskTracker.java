@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -63,7 +64,7 @@ public abstract class TaskTracker {
     // 上报时间缓存
     private Cache<String, Long> taskId2LastReportTime;
     // 分段锁
-    private ReentrantLock[] locks = new ReentrantLock[UPDATE_CONCURRENCY];
+    private Lock[] locks = new ReentrantLock[UPDATE_CONCURRENCY];
 
     private static final int UPDATE_CONCURRENCY = 8;
     private static final int UPDATE_LOCK_MASK = UPDATE_CONCURRENCY - 1;
@@ -98,7 +99,7 @@ public abstract class TaskTracker {
         // 子类自定义初始化操作
         initTaskTracker(req);
 
-        log.info("[TaskTracker-{}] create TaskTracker from request({}) successfully.", req.getInstanceId(), req);
+        log.info("[TaskTracker-{}] create TaskTracker from request({}) successfully.", instanceId, req);
     }
 
     /**
@@ -126,13 +127,17 @@ public abstract class TaskTracker {
      */
     public void updateTaskStatus(String taskId, int newStatus, long reportTime, @Nullable String result) {
 
-        ReentrantLock lock = locks[taskId.hashCode() & UPDATE_LOCK_MASK];
+        if (finished.get()) {
+            return;
+        }
+
+        Lock lock = locks[taskId.hashCode() & UPDATE_LOCK_MASK];
 
         TaskStatus nTaskStatus = TaskStatus.of(newStatus);
         try {
 
             // 阻塞获取锁
-            lock.lock();
+            lock.lockInterruptibly();
 
             Long lastReportTime = taskId2LastReportTime.getIfPresent(taskId);
 
@@ -207,7 +212,8 @@ public abstract class TaskTracker {
                 log.warn("[TaskTracker-{}] update task status failed, this task(taskId={}) may be processed repeatedly!", instanceId, taskId);
             }
 
-        }finally {
+        } catch (InterruptedException ignore) {
+        } finally {
             lock.unlock();
         }
     }
@@ -217,6 +223,9 @@ public abstract class TaskTracker {
      * @param newTaskList 新增的子任务列表
      */
     public boolean submitTask(List<TaskDO> newTaskList) {
+        if (finished.get()) {
+            return true;
+        }
         if (CollectionUtils.isEmpty(newTaskList)) {
             return true;
         }
@@ -253,6 +262,10 @@ public abstract class TaskTracker {
      */
     public void broadcast(boolean preExecuteSuccess, long subInstanceId, String preTaskId, long reportTime, String result) {
 
+        if (finished.get()) {
+            return;
+        }
+
         log.info("[TaskTracker-{}] finished broadcast's preProcess.", instanceId);
 
         // 1. 生成集群子任务
@@ -281,6 +294,8 @@ public abstract class TaskTracker {
      */
     public void destroy() {
 
+        finished.set(true);
+
         Stopwatch sw = Stopwatch.createStarted();
         // 0. 开始关闭线程池，不能使用 shutdownNow()，因为 destroy 方法本身就在 scheduledPool 的线程中执行，强行关闭会打断 destroy 的执行。
         scheduledPool.shutdown();
@@ -299,8 +314,7 @@ public abstract class TaskTracker {
         // 2. 删除所有数据库数据
         boolean dbSuccess = taskPersistenceService.deleteAllTasks(instanceId);
         if (!dbSuccess) {
-            log.error("[TaskTracker-{}] delete tasks from database failed, shutdown TaskTracker failed.", instanceId);
-            return;
+            log.error("[TaskTracker-{}] delete tasks from database failed.", instanceId);
         }else {
             log.debug("[TaskTracker-{}] delete all tasks from database successfully.", instanceId);
         }
@@ -422,12 +436,11 @@ public abstract class TaskTracker {
 
                 // 数量不足 或 查询失败，则终止循环
                 if (needDispatchTasks.size() < dbQueryLimit) {
-                    log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch);
-                    return;
+                    break;
                 }
             }
 
-            log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch);
+            log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch.stop());
         }
     }
 

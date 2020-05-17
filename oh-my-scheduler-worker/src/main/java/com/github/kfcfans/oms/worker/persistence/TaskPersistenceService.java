@@ -203,7 +203,7 @@ public class TaskPersistenceService {
     }
 
     /**
-     * 查询 taskId -> taskResult，reduce阶段或postProcess 阶段使用
+     * 查询所有Task执行结果，reduce阶段 或 postProcess阶段 使用
      */
     public List<TaskResult> getAllTaskResult(Long instanceId, Long subInstanceId) {
         try {

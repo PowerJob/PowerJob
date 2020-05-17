@@ -54,7 +54,7 @@ public class CommonTaskTracker extends TaskTracker {
         persistenceRootTask();
 
         // 启动定时任务（任务派发 & 状态检查）
-        scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 0, 1, TimeUnit.SECONDS);
+        scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 0, 5, TimeUnit.SECONDS);
         scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 10, 10, TimeUnit.SECONDS);
     }
 
@@ -116,7 +116,7 @@ public class CommonTaskTracker extends TaskTracker {
      */
     private class StatusCheckRunnable implements Runnable {
 
-        private static final long TIME_OUT_MS = 5000;
+        private static final long DISPATCH_TIME_OUT_MS = 15000;
 
         private void innerRun() {
 
@@ -218,11 +218,11 @@ public class CommonTaskTracker extends TaskTracker {
                 req.setResult(result);
                 req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
 
-                CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(TIME_OUT_MS));
+                CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
 
                 boolean serverAccepted = false;
                 try {
-                    AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(TIME_OUT_MS, TimeUnit.MILLISECONDS);
+                    AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                     serverAccepted = askResponse.isSuccess();
                 }catch (Exception e) {
                     log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, result);
@@ -250,7 +250,7 @@ public class CommonTaskTracker extends TaskTracker {
                 taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 100).forEach(uncheckTask -> {
 
                     long elapsedTime = currentMS - uncheckTask.getLastModifiedTime();
-                    if (elapsedTime > TIME_OUT_MS) {
+                    if (elapsedTime > DISPATCH_TIME_OUT_MS) {
 
                         TaskDO updateEntity = new TaskDO();
                         updateEntity.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
