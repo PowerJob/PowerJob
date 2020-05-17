@@ -32,22 +32,9 @@ public class ServiceTest {
     public void testLockService() {
         String lockName = "myLock";
 
-        lockService.lock(lockName);
-        lockService.lock(lockName);
+        lockService.lock(lockName, 10000);
+        lockService.lock(lockName, 10000);
         lockService.unlock(lockName);
-    }
-
-    @Test
-    public void testBatchLock() {
-        List<String> lockNames = Lists.newArrayList("a", "b", "C", "d", "e");
-        System.out.println(lockService.batchLock(lockNames));
-        System.out.println(lockService.batchLock(lockNames));
-    }
-
-    @Test
-    public void testBatchUnLock() {
-        List<String> lockNames = Lists.newArrayList("a", "b", "C", "d", "e");
-        lockService.batchUnLock(lockNames);
     }
 
     @Test

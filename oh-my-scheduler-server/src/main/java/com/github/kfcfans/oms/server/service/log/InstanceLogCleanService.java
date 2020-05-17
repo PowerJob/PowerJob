@@ -94,6 +94,7 @@ public class InstanceLogCleanService {
         try {
             // 计算时间
             Date date = DateUtils.addDays(new Date(), -remoteRetentionDay);
+            // TODO：破坏性太强，会波及所有的文件
             Query mongoQuery = Query.query(Criteria.where("uploadDate").lt(date));
             gridFsTemplate.delete(mongoQuery);
         }catch (Exception e) {

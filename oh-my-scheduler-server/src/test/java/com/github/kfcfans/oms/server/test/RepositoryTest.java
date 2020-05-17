@@ -45,7 +45,7 @@ public class RepositoryTest {
 
         List<OmsLockDO> locks = Lists.newArrayList();
         for (int i = 0; i < 10; i++) {
-            OmsLockDO lockDO = new OmsLockDO("lock" + i, NetUtils.getLocalHost());
+            OmsLockDO lockDO = new OmsLockDO("lock" + i, NetUtils.getLocalHost(), 10000L);
             locks.add(lockDO);
         }
         omsLockRepository.saveAll(locks);

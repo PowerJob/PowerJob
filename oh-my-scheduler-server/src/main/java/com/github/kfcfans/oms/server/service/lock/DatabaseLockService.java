@@ -30,14 +30,12 @@ public class DatabaseLockService implements LockService {
 
     private Map<String, AtomicInteger> lockName2FailedTimes = Maps.newConcurrentMap();
     private static final int MAX_FAILED_NUM = 5;
-    // 最长持有锁30秒
-    private static final long LOCK_TIMEOUT_MS = 30000;
 
     @Override
-    public boolean lock(String name) {
+    public boolean lock(String name, long maxLockTime) {
 
         AtomicInteger failedCount = lockName2FailedTimes.computeIfAbsent(name, ignore -> new AtomicInteger(0));
-        OmsLockDO newLock = new OmsLockDO(name, NetUtils.getLocalHost());
+        OmsLockDO newLock = new OmsLockDO(name, NetUtils.getLocalHost(), maxLockTime);
         try {
             omsLockRepository.saveAndFlush(newLock);
             failedCount.set(0);
@@ -52,7 +50,7 @@ public class DatabaseLockService implements LockService {
 
             OmsLockDO omsLockDO = omsLockRepository.findByLockName(name);
             long lockedMillions = System.currentTimeMillis() - omsLockDO.getGmtCreate().getTime();
-            if (lockedMillions > LOCK_TIMEOUT_MS) {
+            if (lockedMillions > omsLockDO.getMaxLockTime()) {
 
                 log.warn("[DatabaseLockService] The lock({}) already timeout, will be deleted now.", omsLockDO);
                 unlock(name);
@@ -73,27 +71,4 @@ public class DatabaseLockService implements LockService {
         }
     }
 
-    @Override
-    public boolean batchLock(List<String> names) {
-        List<OmsLockDO> locks = Lists.newLinkedList();
-        names.forEach(name -> locks.add(new OmsLockDO(name, NetUtils.getLocalHost())));
-        try {
-            omsLockRepository.saveAll(locks);
-            omsLockRepository.flush();
-            return true;
-        }catch (DataIntegrityViolationException ignore) {
-        }catch (Exception e) {
-            log.warn("[DatabaseLockService] write locks to database failed, lockNames = {}.", names, e);
-        }
-        return false;
-    }
-
-    @Override
-    public void batchUnLock(List<String> names) {
-        try {
-            CommonUtils.executeWithRetry0(() -> omsLockRepository.deleteByLockNames(names));
-        }catch (Exception e) {
-            log.error("[DatabaseLockService] unlocks {} failed.", names, e);
-        }
-    }
 }

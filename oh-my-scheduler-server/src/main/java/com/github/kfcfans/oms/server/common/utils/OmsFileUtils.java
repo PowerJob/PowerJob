@@ -1,8 +1,11 @@
 package com.github.kfcfans.oms.server.common.utils;
 
+import com.github.kfcfans.oms.server.persistence.mongodb.InstanceLogMetadata;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -97,5 +100,33 @@ public class OmsFileUtils {
         }catch (IOException ie) {
             ExceptionUtils.rethrow(ie);
         }
+    }
+
+    /**
+     * 将文件保存到 GridFS
+     * @param gridFsTemplate gridFS操作模版
+     * @param localFile 本地文件
+     * @param remoteName 存储名称
+     * @param metadata 元数据
+     * @throws IOException 异常
+     */
+    public static void storeFile2GridFS(GridFsTemplate gridFsTemplate, File localFile, String remoteName, Object metadata) throws IOException {
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(localFile))) {
+            gridFsTemplate.store(bis, remoteName, metadata);
+        }
+    }
+
+    /**
+     * 计算文件的 MD5
+     * @param f 文件
+     * @return md5
+     * @throws Exception 异常
+     */
+    public static String md5(File f) throws Exception {
+        String md5;
+        try(FileInputStream fis = new FileInputStream(f)) {
+            md5 = DigestUtils.md5DigestAsHex(fis);
+        }
+        return md5;
     }
 }

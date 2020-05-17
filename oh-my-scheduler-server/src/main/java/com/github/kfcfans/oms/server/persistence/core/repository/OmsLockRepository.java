@@ -21,10 +21,5 @@ public interface OmsLockRepository extends JpaRepository<OmsLockDO, Long> {
     @Query(value = "delete from oms_lock where lock_name = ?1", nativeQuery = true)
     int deleteByLockName(String lockName);
 
-    @Modifying
-    @Transactional
-    @Query(value = "delete from oms_lock where lock_name in ?1", nativeQuery = true)
-    int deleteByLockNames(List<String> lockNames);
-
     OmsLockDO findByLockName(String lockName);
 }

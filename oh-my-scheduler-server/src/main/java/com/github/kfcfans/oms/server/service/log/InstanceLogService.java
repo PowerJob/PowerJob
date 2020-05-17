@@ -182,13 +182,13 @@ public class InstanceLogService {
             File stableLogFile = genStableLogFile(instanceId);
             // 将文件推送到 MongoDB
             if (gridFsTemplate != null) {
-                try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(stableLogFile))) {
-
+                try {
                     InstanceLogMetadata metadata = new InstanceLogMetadata();
                     metadata.setInstanceId(instanceId);
                     metadata.setFileSize(stableLogFile.length());
                     metadata.setCreatedTime(System.currentTimeMillis());
-                    gridFsTemplate.store(bis, genMongoFileName(instanceId), metadata);
+
+                    OmsFileUtils.storeFile2GridFS(gridFsTemplate, stableLogFile, genMongoFileName(instanceId), metadata);
                     log.info("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB succeed, using: {}.", instanceId, sw.stop());
                 }catch (Exception e) {
                     log.warn("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB failed.", instanceId, e);

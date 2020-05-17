@@ -3,8 +3,10 @@ package com.github.kfcfans.oms.server.common.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -48,6 +50,16 @@ public class ThreadPoolConfig {
         executor.setThreadNamePrefix("omsCommonPool-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         return executor;
+    }
+
+    // 引入 WebSocket 支持后需要手动初始化调度线程池
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(Runtime.getRuntime().availableProcessors());
+        scheduler.setThreadNamePrefix("omsSchedulerPool-");
+        scheduler.setDaemon(true);
+        return scheduler;
     }
 
 }

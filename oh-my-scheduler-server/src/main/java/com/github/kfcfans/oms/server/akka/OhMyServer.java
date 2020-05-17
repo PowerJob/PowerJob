@@ -68,4 +68,9 @@ public class OhMyServer {
         String path = String.format(AKKA_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, RemoteConstant.Task_TRACKER_ACTOR_NAME);
         return actorSystem.actorSelection(path);
     }
+
+    public static ActorSelection getWorkerActor(String address) {
+        String path = String.format(AKKA_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, RemoteConstant.WORKER_ACTOR_NAME);
+        return actorSystem.actorSelection(path);
+    }
 }

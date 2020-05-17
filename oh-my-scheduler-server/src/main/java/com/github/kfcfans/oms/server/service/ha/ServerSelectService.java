@@ -65,7 +65,7 @@ public class ServerSelectService {
 
             // 无可用Server，重新进行Server选举，需要加锁
             String lockName = String.format(SERVER_ELECT_LOCK, appId);
-            boolean lockStatus = lockService.lock(lockName);
+            boolean lockStatus = lockService.lock(lockName, 30000);
             if (!lockStatus) {
                 try {
                     Thread.sleep(500);

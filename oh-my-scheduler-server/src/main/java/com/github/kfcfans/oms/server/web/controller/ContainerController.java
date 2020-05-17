@@ -49,8 +49,8 @@ public class ContainerController {
     private ContainerService containerService;
 
     @GetMapping("/downloadJar")
-    public void downloadJar(String md5, HttpServletResponse response) throws IOException {
-        File file = containerService.fetchContainerJarFile(md5);
+    public void downloadJar(String filename, HttpServletResponse response) throws IOException {
+        File file = containerService.fetchContainerJarFile(filename);
         if (file.exists()) {
             OmsFileUtils.file2HttpResponse(file, response);
         }
@@ -81,10 +81,7 @@ public class ContainerController {
         // 2. 检查是否符合标准（是否为Jar，是否符合 template）
 
         // 3. 生成MD5
-        String md5;
-        try(FileInputStream fis = new FileInputStream(jarFile)) {
-            md5 = DigestUtils.md5DigestAsHex(fis);
-        }
+        String md5 = OmsFileUtils.md5(jarFile);
 
         // 3. 推送到 mongoDB
         if (gridFsTemplate != null) {
@@ -124,12 +121,6 @@ public class ContainerController {
     public ResultDTO<List<ContainerInfoVO>> listContainers(Long appId) {
         List<ContainerInfoVO> res = containerInfoRepository.findByAppId(appId).stream().map(ContainerController::convert).collect(Collectors.toList());
         return ResultDTO.success(res);
-    }
-
-    @GetMapping("/deploy")
-    public ResultDTO<Void> deploy(Long containerId) {
-        // TODO：最好支持显示阶段，需要问问FN怎么搞
-        return ResultDTO.success(null);
     }
 
     @GetMapping("/listDeployedWorker")
