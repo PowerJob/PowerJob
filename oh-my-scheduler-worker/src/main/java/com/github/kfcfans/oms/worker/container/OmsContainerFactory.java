@@ -76,29 +76,32 @@ public class OmsContainerFactory {
     public static synchronized void deployContainer(ServerDeployContainerRequest request) {
 
         String containerName = request.getContainerName();
-        String md5 = request.getMd5();
+        String version = request.getVersion();
 
         OmsContainer oldContainer = CARGO.get(containerName);
-        if (oldContainer != null && md5.equals(oldContainer.getMd5())) {
-            log.info("[OmsContainerFactory] container(name={},md5={}) already deployed.", containerName, md5);
+        if (oldContainer != null && version.equals(oldContainer.getVersion())) {
+            log.info("[OmsContainerFactory] container(name={},version={}) already deployed.", containerName, version);
             return;
         }
 
         try {
 
             // 下载Container到本地
-            String filePath = OmsWorkerFileUtils.getContainerDir() + containerName + "/" + md5 + ".jar";
+            String filePath = OmsWorkerFileUtils.getContainerDir() + containerName + "/" + version + ".jar";
             File jarFile = new File(filePath);
-            FileUtils.forceMkdirParent(jarFile);
-            FileUtils.copyURLToFile(new URL(request.getDownloadURL()), jarFile, 5000, 300000);
+            if (!jarFile.exists()) {
+                FileUtils.forceMkdirParent(jarFile);
+                FileUtils.copyURLToFile(new URL(request.getDownloadURL()), jarFile, 5000, 300000);
+                log.info("[OmsContainerFactory] download Jar for container({}) successfully.", containerName);
+            }
 
             // 创建新容器
-            OmsContainer newContainer = new OmsJarContainer(containerName, md5, jarFile);
+            OmsContainer newContainer = new OmsJarContainer(containerName, version, jarFile);
             newContainer.init();
 
             // 替换容器
             CARGO.put(containerName, newContainer);
-            log.info("[OmsContainerFactory] container(name={},md5={}) deployed successfully.", containerName, md5);
+            log.info("[OmsContainerFactory] container(name={},version={}) deployed successfully.", containerName, version);
 
             if (oldContainer != null) {
                 // 销毁旧容器
@@ -106,7 +109,7 @@ public class OmsContainerFactory {
             }
 
         }catch (Exception e) {
-            log.error("[OmsContainerFactory] deploy container(name={},md5={}) failed.", containerName, md5, e);
+            log.error("[OmsContainerFactory] deploy container(name={},version={}) failed.", containerName, version, e);
         }
     }
 }

@@ -83,6 +83,8 @@ public abstract class TaskTracker {
         }
         // 赋予时间表达式类型
         instanceInfo.setTimeExpressionType(TimeExpressionType.valueOf(req.getTimeExpressionType()).getV());
+        // 保护性操作
+        instanceInfo.setThreadConcurrency(Math.max(1, instanceInfo.getThreadConcurrency()));
 
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;

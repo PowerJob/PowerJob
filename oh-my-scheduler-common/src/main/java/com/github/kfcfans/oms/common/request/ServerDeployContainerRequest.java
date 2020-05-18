@@ -23,7 +23,7 @@ public class ServerDeployContainerRequest implements OmsSerializable {
     /**
      * 文件名（MD5值），用于做版本校验和文件下载
      */
-    private String md5;
+    private String version;
     /**
      * 下载地址
      */

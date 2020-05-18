@@ -1,12 +1,11 @@
 package com.github.kfcfans.oms.worker.container;
 
 import com.github.kfcfans.oms.common.ContainerConstant;
-import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.common.OmsWorkerException;
-import com.github.kfcfans.oms.worker.core.classloader.OhMyClassLoader;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.StringUtils;
@@ -28,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class OmsJarContainer implements OmsContainer {
 
     private final String name;
-    private final String md5;
+    private final String version;
     private final File localJarFile;
 
     // 引用计数器
@@ -39,9 +38,9 @@ public class OmsJarContainer implements OmsContainer {
 
     private Map<String, BasicProcessor> processorCache = Maps.newConcurrentMap();
 
-    public OmsJarContainer(String name, String md5, File localJarFile) {
+    public OmsJarContainer(String name, String version, File localJarFile) {
         this.name = name;
-        this.md5 = md5;
+        this.version = version;
         this.localJarFile = localJarFile;
     }
 
@@ -127,8 +126,8 @@ public class OmsJarContainer implements OmsContainer {
         // 加载用户类
         containerClassLoader.load(packageName);
 
-        // 创建 Spring IOC 容器
-        this.container = new ClassPathXmlApplicationContext(new String[]{springXmlURL.getPath()}, false);
+        // 创建 Spring IOC 容器（Spring配置文件需要填相对路径）
+        this.container = new ClassPathXmlApplicationContext(new String[]{ContainerConstant.SPRING_CONTEXT_FILE_NAME}, false);
         this.container.setClassLoader(containerClassLoader);
         this.container.refresh();
 
@@ -140,6 +139,13 @@ public class OmsJarContainer implements OmsContainer {
 
         // 没有其余引用时，才允许执行 destroy
         if (referenceCount.get() <= 0) {
+            try {
+                if (localJarFile.exists()) {
+                    FileUtils.forceDelete(localJarFile);
+                }
+            }catch (Exception e) {
+                log.warn("[OmsJarContainer-{}] delete jarFile({}) failed.", name, localJarFile.getPath(), e);
+            }
             try {
                 processorCache.clear();
                 container.close();
@@ -159,8 +165,8 @@ public class OmsJarContainer implements OmsContainer {
         return name;
     }
     @Override
-    public String getMd5() {
-        return md5;
+    public String getVersion() {
+        return version;
     }
 
     @Override

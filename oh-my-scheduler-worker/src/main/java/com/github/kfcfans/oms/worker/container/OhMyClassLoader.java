@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.worker.core.classloader;
+package com.github.kfcfans.oms.worker.container;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
@@ -12,6 +12,10 @@ import java.util.jar.JarFile;
 
 /**
  * 类加载器
+ * 未破坏双亲委派模型，可能带来相同类ClassNotFoundException的后果（比如不同版本互不兼容的工具类）
+ * 为什么不破坏？
+ *     1. 破坏以后，容器需要加载更多的类，meta space说不定就要爆了...
+ *     2. 公共类与Worker保持一致即可解决问题，且目测CNF概率不会很高。
  *
  * @author tjq
  * @since 2020/3/23
@@ -49,7 +53,7 @@ public class OhMyClassLoader extends URLClassLoader {
 
                 if (res.startsWith(packageName)) {
                     loadClass(res);
-                    log.info("[OhMyClassLoader] load {} successfully.", res);
+                    log.info("[OhMyClassLoader] load class({}) successfully.", res);
                 }
             }
         }

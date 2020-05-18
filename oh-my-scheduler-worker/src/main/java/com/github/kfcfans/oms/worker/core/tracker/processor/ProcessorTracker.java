@@ -12,7 +12,7 @@ import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
 import com.github.kfcfans.oms.worker.container.OmsContainer;
 import com.github.kfcfans.oms.worker.container.OmsContainerFactory;
-import com.github.kfcfans.oms.worker.core.classloader.ProcessorBeanFactory;
+import com.github.kfcfans.oms.worker.core.ProcessorBeanFactory;
 import com.github.kfcfans.oms.worker.core.executor.ProcessorRunnable;
 import com.github.kfcfans.oms.worker.core.processor.built.PythonProcessor;
 import com.github.kfcfans.oms.worker.core.processor.built.ShellProcessor;
@@ -258,10 +258,10 @@ public class ProcessorTracker {
                 }
                 break;
             case SHELL:
-                processor = new ShellProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS(), threadPool);
+                processor = new ShellProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS());
                 break;
             case PYTHON:
-                processor = new PythonProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS(), threadPool);
+                processor = new PythonProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS());
                 break;
             case JAVA_CONTAINER:
                 String[] split = processorInfo.split("#");
@@ -291,12 +291,10 @@ public class ProcessorTracker {
         if (executeType == ExecuteType.MAP_REDUCE) {
             return instanceInfo.getThreadConcurrency();
         }
-
-        // 脚本类需要三个线程（执行线程、输入流、错误流），分配 N + 1个线程给线程池
+        // 脚本类自带线程池，不过为了少一点逻辑判断，还是象征性分配一个线程
         if (processorType == ProcessorType.PYTHON || processorType == ProcessorType.SHELL) {
-            return 4;
+            return 1;
         }
-
         return 2;
     }
 

@@ -30,6 +30,7 @@ public interface BasicProcessor {
      * 销毁 Processor 时的回调方法，暂时未被使用
      * @throws Exception 异常
      */
+    @Deprecated
     default void destroy() throws Exception {
     }
 

@@ -12,8 +12,8 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,12 +33,12 @@ public abstract class ScriptProcessor implements BasicProcessor {
 
     private static final Set<String> DOWNLOAD_PROTOCOL = Sets.newHashSet("http", "https", "ftp");
 
-    public ScriptProcessor(Long instanceId, String processorInfo, long timeout, ExecutorService pool) throws Exception {
+    public ScriptProcessor(Long instanceId, String processorInfo, long timeout) throws Exception {
 
         this.instanceId = instanceId;
         this.scriptPath = OmsWorkerFileUtils.getScriptDir() + genScriptName(instanceId);
         this.timeout = timeout;
-        this.threadPool = pool;
+        this.threadPool = Executors.newFixedThreadPool(2);
 
         File script = new File(scriptPath);
         if (script.exists()) {
@@ -95,6 +95,8 @@ public abstract class ScriptProcessor implements BasicProcessor {
             return new ProcessResult(true, result);
         }catch (InterruptedException ie) {
             return new ProcessResult(false, "Interrupted");
+        }finally {
+            threadPool.shutdownNow();
         }
     }
 
