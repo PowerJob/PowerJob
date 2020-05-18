@@ -5,11 +5,9 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.util.Objects;
 
 /**
  * oms-worker container 生成器
@@ -33,14 +31,17 @@ public class ContainerTemplateGenerator {
      */
     public static File generate(String group, String artifact, String name, String packageName, Integer javaVersion) throws IOException {
 
-        URL resource = ContainerTemplateGenerator.class.getClassLoader().getResource(ORIGIN_FILE_NAME + ".zip");
-        if (resource == null) {
-            throw new RuntimeException("generate container template failed, can't find zip file in classpath.");
+        String workerDir = OmsFileUtils.genTemporaryPath();
+        File originJar = new File(workerDir + "tmp.jar");
+        String tmpPath = workerDir + "/unzip/";
+
+        // CentOS 7 上 getResource 会报 FileNotFoundException，原因不详...
+        try (InputStream is = ContainerTemplateGenerator.class.getClassLoader().getResourceAsStream(ORIGIN_FILE_NAME + ".zip")) {
+            Objects.requireNonNull(is, "generate container template failed, can't find zip file in classpath.");
+            FileUtils.copyInputStreamToFile(is, originJar);
         }
 
-        ZipFile zipFile = new ZipFile(resource.getFile());
-
-        String tmpPath = OmsFileUtils.genTemporaryPath();
+        ZipFile zipFile = new ZipFile(originJar);
         zipFile.extractAll(tmpPath);
         String rootPath = tmpPath + ORIGIN_FILE_NAME;
 
@@ -102,6 +103,9 @@ public class ContainerTemplateGenerator {
         String finPath = tmpPath + "template.zip";
         ZipFile finZip = new ZipFile(finPath);
         finZip.addFolder(new File(rootPath));
+
+        // 6. 删除源文件
+        FileUtils.forceDelete(originJar);
 
         return finZip.getFile();
     }
