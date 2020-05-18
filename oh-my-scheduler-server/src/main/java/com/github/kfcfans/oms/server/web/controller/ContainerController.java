@@ -66,6 +66,12 @@ public class ContainerController {
         return ResultDTO.success(null);
     }
 
+    @GetMapping("/delete")
+    public ResultDTO<Void> deleteContainer(Long appId, Long containerId) {
+        containerService.delete(appId, containerId);
+        return ResultDTO.success(null);
+    }
+
     @GetMapping("/list")
     public ResultDTO<List<ContainerInfoVO>> listContainers(Long appId) {
         List<ContainerInfoVO> res = containerInfoRepository.findByAppId(appId).stream().map(ContainerController::convert).collect(Collectors.toList());
@@ -78,14 +84,6 @@ public class ContainerController {
         List<String> mock = Lists.newArrayList("192.168.1.1:9900", "192.168.1.1:9901");
         return ResultDTO.success(mock);
     }
-
-    @GetMapping("/delete")
-    public ResultDTO<Void> deleteContainer(Long appId, Long containerId) {
-        // TODO: 先停止各个Worker的容器实例
-        containerInfoRepository.deleteById(containerId);
-        return ResultDTO.success(null);
-    }
-
 
     private static ContainerInfoVO convert(ContainerInfoDO containerInfoDO) {
         ContainerInfoVO vo = new ContainerInfoVO();

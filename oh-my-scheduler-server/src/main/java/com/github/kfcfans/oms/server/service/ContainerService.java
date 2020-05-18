@@ -2,13 +2,16 @@ package com.github.kfcfans.oms.server.service;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.oms.common.model.GitRepoInfo;
+import com.github.kfcfans.oms.common.model.SystemMetrics;
 import com.github.kfcfans.oms.common.request.ServerDeployContainerRequest;
+import com.github.kfcfans.oms.common.request.ServerDestroyContainerRequest;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.akka.actors.ServerActor;
 import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
+import com.github.kfcfans.oms.server.common.constans.ContainerStatus;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.ContainerInfoRepository;
@@ -101,6 +104,30 @@ public class ContainerService {
             container.setVersion("init");
         }
         containerInfoRepository.saveAndFlush(container);
+    }
+
+    /**
+     * 删除容器（通知 Worker 销毁容器 & 删除数据库）
+     * @param appId 应用ID，用于保护性判断
+     * @param containerId 容器ID
+     */
+    public void delete(Long appId, Long containerId) {
+
+        ContainerInfoDO container = containerInfoRepository.findById(containerId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + containerId));
+
+        if (!Objects.equals(appId, container.getAppId())) {
+            throw new RuntimeException("Permission Denied!");
+        }
+
+        ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getContainerName());
+        WorkerManagerService.getActiveWorkerInfo(container.getAppId()).keySet().forEach(akkaAddress -> {
+            ActorSelection workerActor = OhMyServer.getWorkerActor(akkaAddress);
+            workerActor.tell(destroyRequest, null);
+        });
+
+        log.info("[ContainerService] delete container: {}.", container);
+        // 硬删除算了...留着好像也没什么用
+        containerInfoRepository.deleteById(containerId);
     }
 
     /**

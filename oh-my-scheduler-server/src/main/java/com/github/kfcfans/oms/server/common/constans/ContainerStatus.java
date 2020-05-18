@@ -15,7 +15,8 @@ import lombok.Getter;
 public enum ContainerStatus {
 
     ENABLE(1),
-    DISABLE(2);
+    DISABLE(2),
+    DELETED(99);
 
     private int v;
 

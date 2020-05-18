@@ -14,8 +14,6 @@ import java.util.Date;
 public class ContainerInfoVO {
 
     private Long id;
-    // 所属的应用ID
-    private Long appId;
 
     private String containerName;
 
@@ -24,11 +22,14 @@ public class ContainerInfoVO {
     // 由 sourceType 决定，JarFile -> String，存储文件名称；Git -> JSON，包括 URL，branch，username，password
     private String sourceInfo;
 
-    // jar的MD5，唯一，作为 GridFS 的文件名
-    private String md5;
+    // 版本 （Jar包使用md5，Git使用commitId，前者32位，后者40位，不会产生碰撞）
+    private String version;
 
     // 状态，枚举值为 ContainerStatus
     private Integer status;
+
+    // 上一次部署时间
+    private Date lastDeployTime;
 
     private Date gmtCreate;
     private Date gmtModified;

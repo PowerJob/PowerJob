@@ -8,6 +8,7 @@ import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.worker.actors.ProcessorTrackerActor;
 import com.github.kfcfans.oms.worker.actors.TaskTrackerActor;
+import com.github.kfcfans.oms.worker.actors.WorkerActor;
 import com.github.kfcfans.oms.worker.background.OmsLogHandler;
 import com.github.kfcfans.oms.worker.background.ServerDiscoveryService;
 import com.github.kfcfans.oms.worker.background.WorkerHealthReporter;
@@ -97,6 +98,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
                     actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
                     actorSystem.actorOf(Props.create(TaskTrackerActor.class), RemoteConstant.Task_TRACKER_ACTOR_NAME);
                     actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+                    actorSystem.actorOf(Props.create(WorkerActor.class), RemoteConstant.WORKER_ACTOR_NAME);
 
                     log.info("[OhMyWorker] akka-remote listening address: {}", workerAddress);
                     log.info("[OhMyWorker] akka ActorSystem({}) initialized successfully.", actorSystem);
