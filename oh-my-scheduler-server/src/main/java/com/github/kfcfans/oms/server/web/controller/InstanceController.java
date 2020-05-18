@@ -12,7 +12,7 @@ import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.CacheService;
-import com.github.kfcfans.oms.server.service.log.InstanceLogService;
+import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
 import com.github.kfcfans.oms.server.web.response.InstanceLogVO;

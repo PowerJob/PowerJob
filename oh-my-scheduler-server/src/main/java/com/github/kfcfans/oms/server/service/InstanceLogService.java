@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.server.service.log;
+package com.github.kfcfans.oms.server.service;
 
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.InstanceLogContent;

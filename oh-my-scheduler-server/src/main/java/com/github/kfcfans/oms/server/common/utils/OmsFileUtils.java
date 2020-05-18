@@ -33,7 +33,7 @@ public class OmsFileUtils {
      * @return 路径
      */
     public static String genContainerJarPath() {
-        return COMMON_PATH + "container/jar/";
+        return COMMON_PATH + "container/";
     }
 
     /**

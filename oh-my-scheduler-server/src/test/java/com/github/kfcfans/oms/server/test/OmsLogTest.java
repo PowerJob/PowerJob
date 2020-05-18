@@ -1,11 +1,12 @@
 package com.github.kfcfans.oms.server.test;
 
-import com.github.kfcfans.oms.server.service.log.InstanceLogCleanService;
+import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
+import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
+import com.github.kfcfans.oms.server.service.timing.CleanService;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
@@ -29,20 +30,18 @@ import java.util.function.Consumer;
 public class OmsLogTest {
 
     @Resource
-    private MongoTemplate mongoTemplate;
+    private CleanService cleanService;
     @Resource
     private GridFsTemplate gridFsTemplate;
-    @Resource
-    private InstanceLogCleanService instanceLogCleanService;
 
     @Test
     public void testLocalLogCleaner() {
-        instanceLogCleanService.cleanLocal();
+        cleanService.cleanLocal(OmsFileUtils.genLogDirPath(), 0);
     }
 
     @Test
     public void testRemoteLogCleaner() {
-        instanceLogCleanService.cleanRemote();
+        cleanService.cleanRemote(GridFsManager.LOG_BUCKET, 0);
     }
 
     @Test

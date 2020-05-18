@@ -13,7 +13,7 @@ import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.ContainerInfoRepository;
-import com.github.kfcfans.oms.server.service.log.InstanceLogService;
+import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import lombok.extern.slf4j.Slf4j;
