@@ -182,40 +182,6 @@
                             <testTarget>${java.version}</testTarget>
                         </configuration>
                     </plugin>
-                    <!-- 打包源码 -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>${maven-source-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Java Doc -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>${maven-javadoc-plugin.version}</version>
-                        <configuration>
-                            <!-- JavaDoc 编译错误不影响正常构建 -->
-                            <failOnError>false</failOnError>
-                            <!-- 非严格模式...以后要好好按格式写注释啊... -->
-                            <additionalJOption>-Xdoclint:none</additionalJOption>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <!-- 编辑 MANIFEST.MF -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
