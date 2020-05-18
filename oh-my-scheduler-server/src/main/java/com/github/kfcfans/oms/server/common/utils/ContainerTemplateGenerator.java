@@ -37,8 +37,8 @@ public class ContainerTemplateGenerator {
         if (resource == null) {
             throw new RuntimeException("generate container template failed, can't find zip file in classpath.");
         }
-        String originTemplate = resource.getPath();
-        ZipFile zipFile = new ZipFile(originTemplate);
+
+        ZipFile zipFile = new ZipFile(resource.getFile());
 
         String tmpPath = OmsFileUtils.genTemporaryPath();
         zipFile.extractAll(tmpPath);
