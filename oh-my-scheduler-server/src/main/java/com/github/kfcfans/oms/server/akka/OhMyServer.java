@@ -7,6 +7,7 @@ import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.akka.actors.FriendActor;
 import com.github.kfcfans.oms.server.akka.actors.ServerActor;
+import com.github.kfcfans.oms.server.common.utils.PropertyUtils;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * 服务端 ActorSystem 启动器
@@ -35,10 +37,15 @@ public class OhMyServer {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyServer] OhMyServer's akka system start to bootstrap...");
+
+        // 1. 解析配置文件
+        PropertyUtils.init();
+        Properties properties = PropertyUtils.getProperties();
+        int port = Integer.parseInt(properties.getProperty("oms.akka.port", "10086"));
+
         // 1. 启动 ActorSystem
         Map<String, Object> overrideConfig = Maps.newHashMap();
         String localIP = NetUtils.getLocalHost();
-        int port = NetUtils.getAvailablePort();
         overrideConfig.put("akka.remote.artery.canonical.hostname", localIP);
         overrideConfig.put("akka.remote.artery.canonical.port", port);
         actorSystemAddress = localIP + ":" + port;
