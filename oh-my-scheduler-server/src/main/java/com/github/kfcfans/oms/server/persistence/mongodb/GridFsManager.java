@@ -6,8 +6,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
+import com.mongodb.client.gridfs.GridFSFindIterable;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
@@ -30,14 +30,26 @@ import java.util.function.Consumer;
  */
 @Slf4j
 @Service
-public class GridFsHelper {
+public class GridFsManager {
 
     private MongoDatabase db;
+
     private Map<String, GridFSBucket> bucketCache = Maps.newConcurrentMap();
+
+    public static final String LOG_BUCKET = "log";
+    public static final String CONTAINER_BUCKET = "container";
 
     @Autowired(required = false)
     public void setMongoTemplate(MongoTemplate mongoTemplate) {
         this.db = mongoTemplate.getDb();
+    }
+
+    /**
+     * 是否可用
+     * @return true：可用；false：不可用
+     */
+    public boolean available() {
+        return db != null;
     }
 
     /**
@@ -104,6 +116,17 @@ public class GridFsHelper {
             }
         });
         log.info("[GridFsHelper] clean bucket({}) successfully, delete all files before {}, using {}.", bucketName, date, sw.stop());
+    }
+
+    public boolean exists(String bucketName, String fileName) {
+        GridFSBucket bucket = getBucket(bucketName);
+        GridFSFindIterable files = bucket.find(Filters.eq("filename", fileName));
+        try {
+            GridFSFile first = files.first();
+            return first != null;
+        }catch (Exception ignore) {
+        }
+        return false;
     }
 
     private GridFSBucket getBucket(String bucketName) {

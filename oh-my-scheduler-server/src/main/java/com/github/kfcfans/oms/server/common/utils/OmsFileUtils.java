@@ -1,10 +1,7 @@
 package com.github.kfcfans.oms.server.common.utils;
 
-import com.github.kfcfans.oms.server.persistence.mongodb.InstanceLogMetadata;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletResponse;
@@ -79,40 +76,6 @@ public class OmsFileUtils {
             while (bis.read(buffer) != -1) {
                 bos.write(buffer);
             }
-        }
-    }
-
-    /**
-     * 将 mongoDB 中的数据转存到本地文件中
-     * @param gridFsResource mongoDB 文件资源
-     * @param targetFile 本地文件资源
-     */
-    public static void gridFs2File(GridFsResource gridFsResource, File targetFile) {
-
-        byte[] buffer = new byte[1024];
-        try (BufferedInputStream gis = new BufferedInputStream(gridFsResource.getInputStream());
-             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile))
-        ) {
-            while (gis.read(buffer) != -1) {
-                bos.write(buffer);
-            }
-            bos.flush();
-        }catch (IOException ie) {
-            ExceptionUtils.rethrow(ie);
-        }
-    }
-
-    /**
-     * 将文件保存到 GridFS
-     * @param gridFsTemplate gridFS操作模版
-     * @param localFile 本地文件
-     * @param remoteName 存储名称
-     * @param metadata 元数据
-     * @throws IOException 异常
-     */
-    public static void storeFile2GridFS(GridFsTemplate gridFsTemplate, File localFile, String remoteName, Object metadata) throws IOException {
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(localFile))) {
-            gridFsTemplate.store(bis, remoteName, metadata);
         }
     }
 

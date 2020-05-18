@@ -8,7 +8,7 @@ import com.github.kfcfans.oms.server.persistence.StringPage;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.local.LocalInstanceLogDO;
 import com.github.kfcfans.oms.server.persistence.local.LocalInstanceLogRepository;
-import com.github.kfcfans.oms.server.persistence.mongodb.InstanceLogMetadata;
+import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -19,9 +19,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -46,9 +43,8 @@ import java.util.stream.Stream;
 @Service
 public class InstanceLogService {
 
-    // 直接操作 mongoDB 文件系统
-    private GridFsTemplate gridFsTemplate;
-
+    @Resource
+    private GridFsManager gridFsManager;
     // 本地数据库操作bean
     @Resource(name = "localTransactionTemplate")
     private TransactionTemplate localTransactionTemplate;
@@ -181,14 +177,9 @@ public class InstanceLogService {
             // 先持久化到本地文件
             File stableLogFile = genStableLogFile(instanceId);
             // 将文件推送到 MongoDB
-            if (gridFsTemplate != null) {
+            if (gridFsManager.available()) {
                 try {
-                    InstanceLogMetadata metadata = new InstanceLogMetadata();
-                    metadata.setInstanceId(instanceId);
-                    metadata.setFileSize(stableLogFile.length());
-                    metadata.setCreatedTime(System.currentTimeMillis());
-
-                    OmsFileUtils.storeFile2GridFS(gridFsTemplate, stableLogFile, genMongoFileName(instanceId), metadata);
+                    gridFsManager.store(stableLogFile, GridFsManager.LOG_BUCKET, genMongoFileName(instanceId));
                     log.info("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB succeed, using: {}.", instanceId, sw.stop());
                 }catch (Exception e) {
                     log.warn("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB failed.", instanceId, e);
@@ -255,19 +246,17 @@ public class InstanceLogService {
                         }
                     }else {
 
-                        if (gridFsTemplate == null) {
+                        if (!gridFsManager.available()) {
                             OmsFileUtils.string2File("SYSTEM: There is no local log for this task now, you need to use mongoDB to store the past logs.", f);
                             return f;
                         }
 
                         // 否则从 mongoDB 拉取数据（对应后期查询的情况）
-                        GridFsResource gridFsResource = gridFsTemplate.getResource(genMongoFileName(instanceId));
-
-                        if (!gridFsResource.exists()) {
+                        if (!gridFsManager.exists(GridFsManager.LOG_BUCKET, genMongoFileName(instanceId))) {
                             OmsFileUtils.string2File("SYSTEM: There is no online log for this job instance.", f);
                             return f;
                         }
-                        OmsFileUtils.gridFs2File(gridFsResource, f);
+                        gridFsManager.download(f, GridFsManager.LOG_BUCKET, genMongoFileName(instanceId));
                     }
                     return f;
                 }catch (Exception e) {
@@ -352,8 +341,4 @@ public class InstanceLogService {
         return String.format("oms-%d.log", instanceId);
     }
 
-    @Autowired(required = false)
-    public void setGridFsTemplate(GridFsTemplate gridFsTemplate) {
-        this.gridFsTemplate = gridFsTemplate;
-    }
 }

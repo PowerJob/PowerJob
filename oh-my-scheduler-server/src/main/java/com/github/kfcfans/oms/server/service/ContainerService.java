@@ -2,20 +2,17 @@ package com.github.kfcfans.oms.server.service;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.oms.common.model.GitRepoInfo;
-import com.github.kfcfans.oms.common.model.SystemMetrics;
 import com.github.kfcfans.oms.common.request.ServerDeployContainerRequest;
 import com.github.kfcfans.oms.common.request.ServerDestroyContainerRequest;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.akka.actors.ServerActor;
 import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
-import com.github.kfcfans.oms.server.common.constans.ContainerStatus;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.ContainerInfoRepository;
-import com.github.kfcfans.oms.server.service.ha.ClusterStatusHolder;
+import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.oms.server.service.lock.LockService;
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
@@ -24,22 +21,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.maven.shared.invoker.*;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.AnyObjectId;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.data.mongodb.gridfs.GridFsResource;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -69,8 +61,8 @@ public class ContainerService {
     private LockService lockService;
     @Resource
     private ContainerInfoRepository containerInfoRepository;
-
-    private GridFsTemplate gridFsTemplate;
+    @Resource
+    private GridFsManager gridFsManager;
 
     // 并发部署的机器数量
     private static final int DEPLOY_BATCH_NUM = 50;
@@ -154,9 +146,7 @@ public class ContainerService {
             String fileName = genContainerJarName(md5);
 
             // 上传到 mongoDB
-            if (gridFsTemplate != null) {
-                OmsFileUtils.storeFile2GridFS(gridFsTemplate, tmpFile, fileName, null);
-            }
+            gridFsManager.store(tmpFile, GridFsManager.CONTAINER_BUCKET, fileName);
 
             // 将文件拷贝到正确的路径
             String finalFileStr = OmsFileUtils.genContainerJarPath() + fileName;
@@ -185,7 +175,7 @@ public class ContainerService {
         if (localFile.exists()) {
             return localFile;
         }
-        if (gridFsTemplate != null) {
+        if (gridFsManager.available()) {
             downloadJarFromGridFS(fileName, localFile);
         }
         return localFile;
@@ -336,11 +326,10 @@ public class ContainerService {
                 File jarWithDependency = jarFile.iterator().next();
 
                 String jarFileName = genContainerJarName(container.getVersion());
-                GridFsResource resource = gridFsTemplate.getResource(jarFileName);
 
-                if (!resource.exists()) {
+                if (!gridFsManager.exists(GridFsManager.CONTAINER_BUCKET, jarFileName)) {
                     remote.sendText("SYSTEM: can't find the jar resource in remote, maybe this is a new version, start to upload new version.");
-                    OmsFileUtils.storeFile2GridFS(gridFsTemplate, jarWithDependency, jarFileName, null);
+                    gridFsManager.download(jarWithDependency, GridFsManager.CONTAINER_BUCKET, jarFileName);
                     remote.sendText("SYSTEM: upload to GridFS successfully~");
                 }
 
@@ -369,32 +358,26 @@ public class ContainerService {
         }
 
         // 从 MongoDB 下载
-        GridFsResource resource = gridFsTemplate.getResource(jarFileName);
-        if (!resource.exists()) {
-            remote.sendText(String.format("SYSTEM: can't find %s in local disk and GridFS, deploy failed!", jarFileName));
-            return null;
-        }
-        remote.sendText("SYSTEM: start to download jar file from GridFS......");
-        OmsFileUtils.gridFs2File(resource, localFile);
+        remote.sendText(String.format("SYSTEM: try to find the jarFile(%s) in GridFS", jarFileName));
+        downloadJarFromGridFS(jarFileName, localFile);
         remote.sendText("SYSTEM: download jar file from GridFS successfully~");
         return localFile;
     }
 
     private void downloadJarFromGridFS(String mongoFileName, File targetFile) {
-        synchronized (mongoFileName.intern()) {
+        synchronized (("dlLock-" + mongoFileName).intern()) {
             if (targetFile.exists()) {
                 return;
             }
-            GridFsResource gridFsResource = gridFsTemplate.getResource(mongoFileName);
-            if (!gridFsResource.exists()) {
+            if (!gridFsManager.exists(GridFsManager.CONTAINER_BUCKET, mongoFileName)) {
                 log.warn("[ContainerService] can't find container's jar file({}) in gridFS.", mongoFileName);
                 return;
             }
             try {
-                OmsFileUtils.gridFs2File(gridFsResource, targetFile);
+                gridFsManager.download(targetFile, GridFsManager.CONTAINER_BUCKET, mongoFileName);
             }catch (Exception e) {
                 CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(targetFile));
-                throw e;
+                ExceptionUtils.rethrow(e);
             }
         }
     }
@@ -412,9 +395,4 @@ public class ContainerService {
         return (fileLength / FileUtils.ONE_MB / 10 + 1) * 1000;
     }
 
-
-    @Autowired(required = false)
-    public void setGridFsTemplate(GridFsTemplate gridFsTemplate) {
-        this.gridFsTemplate = gridFsTemplate;
-    }
 }

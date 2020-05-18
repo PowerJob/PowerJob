@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.server.test;
 
-import com.github.kfcfans.oms.server.persistence.mongodb.GridFsHelper;
+import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,22 +23,28 @@ import java.io.IOException;
 public class GridFsTest {
 
     @Resource
-    private GridFsHelper gridFsHelper;
+    private GridFsManager gridFsManager;
 
     @Test
     public void testStore() throws IOException {
         File file = new File("/Users/tjq/Desktop/DistributeCompute/oms-template-origin.zip");
-        gridFsHelper.store(file, "test", "test.zip");
+        gridFsManager.store(file, "test", "test.zip");
     }
 
     @Test
     public void testDownload() throws IOException {
         File file = new File("/Users/tjq/Desktop/tmp/test-download.zip");
-        gridFsHelper.download(file, "test", "test.zip");
+        gridFsManager.download(file, "test", "test.zip");
     }
 
     @Test
     public void testDelete() {
-        gridFsHelper.deleteBefore("fs", 0);
+        gridFsManager.deleteBefore("fs", 0);
+    }
+
+    @Test
+    public void testExists() {
+        System.out.println(gridFsManager.exists("test", "test.zip"));
+        System.out.println(gridFsManager.exists("test", "oms-sql.sql"));
     }
 }
