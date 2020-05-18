@@ -38,12 +38,12 @@ public class OhMyServer {
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyServer] OhMyServer's akka system start to bootstrap...");
 
-        // 1. 解析配置文件
+        // 解析配置文件
         PropertyUtils.init();
         Properties properties = PropertyUtils.getProperties();
         int port = Integer.parseInt(properties.getProperty("oms.akka.port", "10086"));
 
-        // 1. 启动 ActorSystem
+        // 启动 ActorSystem
         Map<String, Object> overrideConfig = Maps.newHashMap();
         String localIP = NetUtils.getLocalHost();
         overrideConfig.put("akka.remote.artery.canonical.hostname", localIP);
