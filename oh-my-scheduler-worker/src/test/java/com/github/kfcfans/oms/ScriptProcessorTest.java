@@ -16,26 +16,25 @@ import java.util.concurrent.Executors;
 public class ScriptProcessorTest {
 
     private static final long timeout = 10000;
-    private static final ExecutorService pool = Executors.newFixedThreadPool(3);
 
     @Test
     public void testLocalShellProcessor() throws Exception {
-        ShellProcessor sp = new ShellProcessor(1L, "ls -a", timeout, pool);
+        ShellProcessor sp = new ShellProcessor(1L, "ls -a", timeout);
         sp.process(null);
 
-        ShellProcessor sp2 = new ShellProcessor(2777L, "pwd", timeout, pool);
+        ShellProcessor sp2 = new ShellProcessor(2777L, "pwd", timeout);
         sp2.process(null);
     }
 
     @Test
     public void testLocalPythonProcessor() throws Exception {
-        PythonProcessor pp = new PythonProcessor(2L, "print 'Hello World!'", timeout, pool);
+        PythonProcessor pp = new PythonProcessor(2L, "print 'Hello World!'", timeout);
         pp.process(null);
     }
 
     @Test
     public void testNetShellProcessor() throws Exception {
-        ShellProcessor sp = new ShellProcessor(18L, "http://localhost:8080/test/test.sh", timeout, pool);
+        ShellProcessor sp = new ShellProcessor(18L, "http://localhost:8080/test/test.sh", timeout);
         sp.process(null);
     }
 

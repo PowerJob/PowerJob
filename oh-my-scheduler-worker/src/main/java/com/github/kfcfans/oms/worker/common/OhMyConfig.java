@@ -18,7 +18,7 @@ public class OhMyConfig {
      */
     private String appName;
     /**
-     * 调度服务器地址，ip:port
+     * 调度服务器地址，ip:port 或 域名
      */
     private List<String> serverAddress;
     /**
