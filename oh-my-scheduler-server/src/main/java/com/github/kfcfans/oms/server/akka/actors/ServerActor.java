@@ -96,7 +96,7 @@ public class ServerActor extends AbstractActor {
 
             ServerDeployContainerRequest dpReq = new ServerDeployContainerRequest();
             BeanUtils.copyProperties(containerInfo, dpReq);
-            String downloadURL = String.format("http://%s:%s/container/downloadJar?md5=%s", NetUtils.getLocalHost(), port, containerInfo.getMd5());
+            String downloadURL = String.format("http://%s:%s/container/downloadJar?version=%s", NetUtils.getLocalHost(), port, containerInfo.getVersion());
             dpReq.setDownloadURL(downloadURL);
 
             askResponse.setData(JsonUtils.toBytes(dpReq));

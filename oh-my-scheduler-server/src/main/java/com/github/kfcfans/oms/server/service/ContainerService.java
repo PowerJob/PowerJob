@@ -26,6 +26,10 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.maven.shared.invoker.*;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.AnyObjectId;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.beans.BeanUtils;
@@ -43,10 +47,7 @@ import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -95,7 +96,9 @@ public class ContainerService {
 
         // 文件上传形式的 sourceInfo 为该文件的 md5 值，Git形式的 md5 在部署阶段生成
         if (request.getSourceType() == ContainerSourceType.JarFile) {
-            container.setMd5(request.getSourceInfo());
+            container.setVersion(request.getSourceInfo());
+        }else {
+            container.setVersion("init");
         }
         containerInfoRepository.saveAndFlush(container);
     }
@@ -118,8 +121,6 @@ public class ContainerService {
             // 下载到本地
             FileUtils.forceMkdirParent(tmpFile);
             file.transferTo(tmpFile);
-
-            // TODO：检验 jar 是否合法
 
             // 生成MD5
             String md5 = OmsFileUtils.md5(tmpFile);
@@ -145,21 +146,22 @@ public class ContainerService {
 
     /**
      * 获取构建容器所需要的 Jar 文件
-     * @param filename 文件名称
+     * @param version 版本
      * @return 本地Jar文件
      */
-    public File fetchContainerJarFile(String filename) {
+    public File fetchContainerJarFile(String version) {
 
-        String jarFileName = OmsFileUtils.genContainerJarPath() + filename;
-        File jarFile = new File(jarFileName);
+        String fileName = genContainerJarName(version);
+        String filePath = OmsFileUtils.genContainerJarPath() + fileName;
+        File localFile = new File(filePath);
 
-        if (jarFile.exists()) {
-            return jarFile;
+        if (localFile.exists()) {
+            return localFile;
         }
         if (gridFsTemplate != null) {
-            downloadJarFromGridFS(filename, jarFile);
+            downloadJarFromGridFS(fileName, localFile);
         }
-        return jarFile;
+        return localFile;
     }
 
     /**
@@ -198,7 +200,6 @@ public class ContainerService {
             // 准备文件
             File jarFile = prepareJarFile(container, session);
             if (jarFile == null) {
-                remote.sendText("SYSTEM: prepare jarFile failed!");
                 return;
             }
 
@@ -219,8 +220,8 @@ public class ContainerService {
             }
 
             String port = environment.getProperty("local.server.port");
-            String downloadURL = String.format("http://%s:%s/container/downloadJar?filename=%s", NetUtils.getLocalHost(), port, jarFile.getName());
-            ServerDeployContainerRequest req = new ServerDeployContainerRequest(containerName, container.getMd5(), downloadURL);
+            String downloadURL = String.format("http://%s:%s/container/downloadJar?version=%s", NetUtils.getLocalHost(), port, container.getVersion());
+            ServerDeployContainerRequest req = new ServerDeployContainerRequest(containerName, container.getVersion(), downloadURL);
             long sleepTime = calculateSleepTime(jarFile.length());
 
             AtomicInteger count = new AtomicInteger();
@@ -268,13 +269,30 @@ public class ContainerService {
                 }
                 cloneCommand.call();
 
+                // 获取最新的 commitId 作为版本
+                String oldVersion = container.getVersion();
+                try (Repository repository = Git.open(workerDir).getRepository()) {
+                    Ref head = repository.getRefDatabase().findRef("HEAD");
+                    container.setVersion(head.getObjectId().getName());
+                }
+
+                if (container.getVersion().equals(oldVersion)) {
+                    remote.sendText(String.format("SYSTEM: this commitId(%s) is the same as the last.", oldVersion));
+                }else {
+                    remote.sendText(String.format("SYSTEM: new version detected, from %s to %s.", oldVersion, container.getVersion()));
+                }
+
                 // mvn clean package -DskipTests -U
                 remote.sendText("SYSTEM: git clone successfully, star to compile the project.");
                 Invoker mvnInvoker = new DefaultInvoker();
                 InvocationRequest ivkReq = new DefaultInvocationRequest();
-                ivkReq.setGoals(Lists.newArrayList("clean", "package", "-DskipTests", "-U"));
+                // -U：强制让Maven检查所有SNAPSHOT依赖更新，确保集成基于最新的状态
+                // -e：如果构建出现异常，该参数能让Maven打印完整的stack trace
+                // -B：让Maven使用批处理模式构建项目，能够避免一些需要人工参与交互而造成的挂起状态
+                ivkReq.setGoals(Lists.newArrayList("clean", "package", "-DskipTests", "-U", "-e", "-B"));
                 ivkReq.setBaseDirectory(workerDir);
                 ivkReq.setOutputHandler(remote::sendText);
+                ivkReq.setBatchMode(true);
 
                 mvnInvoker.execute(ivkReq);
 
@@ -289,11 +307,8 @@ public class ContainerService {
                 }
 
                 File jarWithDependency = jarFile.iterator().next();
-                String md5 = OmsFileUtils.md5(jarWithDependency);
-                // 更新 MD5
-                container.setMd5(md5);
 
-                String jarFileName = genContainerJarName(md5);
+                String jarFileName = genContainerJarName(container.getVersion());
                 GridFsResource resource = gridFsTemplate.getResource(jarFileName);
 
                 if (!resource.exists()) {
@@ -318,7 +333,7 @@ public class ContainerService {
         }
 
         // 先查询本地是否存在目标 Jar 文件
-        String jarFileName = genContainerJarName(container.getMd5());
+        String jarFileName = genContainerJarName(container.getVersion());
         String localFileStr = OmsFileUtils.genContainerJarPath() + jarFileName;
         File localFile = new File(localFileStr);
         if (localFile.exists()) {
@@ -357,13 +372,8 @@ public class ContainerService {
         }
     }
 
-    private static String genContainerJarName(String md5) {
-        return String.format("oms-container-%s.jar", md5);
-    }
-
-    @Autowired(required = false)
-    public void setGridFsTemplate(GridFsTemplate gridFsTemplate) {
-        this.gridFsTemplate = gridFsTemplate;
+    private static String genContainerJarName(String version) {
+        return String.format("oms-container-%s.jar", version);
     }
 
     /**
@@ -373,5 +383,11 @@ public class ContainerService {
      */
     private long calculateSleepTime(long fileLength) {
         return (fileLength / FileUtils.ONE_MB / 10 + 1) * 1000;
+    }
+
+
+    @Autowired(required = false)
+    public void setGridFsTemplate(GridFsTemplate gridFsTemplate) {
+        this.gridFsTemplate = gridFsTemplate;
     }
 }

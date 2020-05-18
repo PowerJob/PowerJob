@@ -39,8 +39,8 @@ public class ContainerController {
     private ContainerService containerService;
 
     @GetMapping("/downloadJar")
-    public void downloadJar(String filename, HttpServletResponse response) throws IOException {
-        File file = containerService.fetchContainerJarFile(filename);
+    public void downloadJar(String version, HttpServletResponse response) throws IOException {
+        File file = containerService.fetchContainerJarFile(version);
         if (file.exists()) {
             OmsFileUtils.file2HttpResponse(file, response);
         }
