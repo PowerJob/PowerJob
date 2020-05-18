@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 报警服务
@@ -21,13 +22,14 @@ import java.util.List;
  */
 @Slf4j
 @Service("omsCenterAlarmService")
-public class OmsCenterAlarmService implements Alarmable, InitializingBean {
+public class OmsCenterAlarmService implements Alarmable {
 
     @Setter
     @Value("${oms.alarm.bean.names}")
     private String beanNames;
 
     private List<Alarmable> alarmableList;
+    private volatile boolean initialized = false;
 
     public OmsCenterAlarmService() {
     }
@@ -35,6 +37,7 @@ public class OmsCenterAlarmService implements Alarmable, InitializingBean {
     @Async("omsCommonPool")
     @Override
     public void alarm(AlarmContent alarmContent, List<UserInfoDO> targetUserList) {
+        init();
         alarmableList.forEach(alarmable -> {
             try {
                 alarmable.alarm(alarmContent, targetUserList);
@@ -44,18 +47,32 @@ public class OmsCenterAlarmService implements Alarmable, InitializingBean {
         });
     }
 
+    /**
+     * 初始化
+     * 使用 InitializingBean 进行初始化会导致 NPE，因为没办法控制Bean（开发者自己实现的Bean）的加载顺序
+     */
+    private void init() {
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        alarmableList = Lists.newLinkedList();
-        Splitter.on(",").split(beanNames).forEach(beanName -> {
-            try {
-                Alarmable bean = (Alarmable) SpringUtils.getBean(beanName);
-                alarmableList.add(bean);
-                log.info("[OmsCenterAlarmService] load Alarmable for bean: {} successfully.", beanName);
-            }catch (Exception e) {
-                log.warn("[OmsCenterAlarmService] initialize Alarmable for bean: {} failed.", beanName, e);
+        if (initialized) {
+            return;
+        }
+        synchronized (this) {
+            if (initialized) {
+                return;
             }
-        });
+
+            alarmableList = Lists.newLinkedList();
+            Splitter.on(",").split(beanNames).forEach(beanName -> {
+                try {
+                    Alarmable bean = (Alarmable) SpringUtils.getBean(beanName);
+                    alarmableList.add(bean);
+                    log.info("[OmsCenterAlarmService] load Alarmable for bean: {} successfully.", beanName);
+                }catch (Exception e) {
+                    log.warn("[OmsCenterAlarmService] initialize Alarmable for bean: {} failed.", beanName, e);
+                }
+            });
+
+            initialized = true;
+        }
     }
 }
