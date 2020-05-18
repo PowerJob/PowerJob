@@ -22,6 +22,7 @@
         <url>https://github.com/KFCFans/OhMyScheduler</url>
         <connection>https://github.com/KFCFans/OhMyScheduler.git</connection>
     </scm>
+
     <developers>
         <developer>
             <name>tengjiqi</name>
