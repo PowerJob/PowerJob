@@ -1,17 +1,22 @@
 package com.github.kfcfans.oms.server.web.controller;
 
+import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.common.utils.ContainerTemplateGenerator;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
+import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.ContainerInfoRepository;
 import com.github.kfcfans.oms.server.service.ContainerService;
+import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.oms.server.web.request.GenerateContainerTemplateRequest;
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
 import com.github.kfcfans.oms.server.web.response.ContainerInfoVO;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,11 +37,15 @@ import java.util.stream.Collectors;
 @RequestMapping("/container")
 public class ContainerController {
 
-    @Resource
-    private ContainerInfoRepository containerInfoRepository;
+    @Value("${server.port}")
+    private int port;
 
     @Resource
     private ContainerService containerService;
+    @Resource
+    private AppInfoRepository appInfoRepository;
+    @Resource
+    private ContainerInfoRepository containerInfoRepository;
 
     @GetMapping("/downloadJar")
     public void downloadJar(String version, HttpServletResponse response) throws IOException {
@@ -79,10 +88,22 @@ public class ContainerController {
     }
 
     @GetMapping("/listDeployedWorker")
-    public ResultDTO<List<String>> listDeployedWorker(Long appId, Long containerId) {
-        // TODO：本地 ContainerManager 直接返回
-        List<String> mock = Lists.newArrayList("192.168.1.1:9900", "192.168.1.1:9901");
-        return ResultDTO.success(mock);
+    public ResultDTO<List<DeployedContainerInfo>> listDeployedWorker(Long appId, Long containerId, HttpServletResponse response) {
+        AppInfoDO appInfoDO = appInfoRepository.findById(appId).orElseThrow(() -> new IllegalArgumentException("can't find app by id:" + appId));
+        String targetServer = appInfoDO.getCurrentServer();
+
+        // 转发 HTTP 请求
+        if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
+            String targetIp = targetServer.split(":")[0];
+            String url = String.format("http://%s:%d/container/listDeployedWorker?appId=%d&containerId=%d", targetIp, port, appId, containerId);
+            try {
+                response.sendRedirect(url);
+                return ResultDTO.success(null);
+            }catch (Exception e) {
+                return ResultDTO.failed(e);
+            }
+        }
+        return ResultDTO.success(WorkerManagerService.getDeployedContainerInfos(appId, containerId));
     }
 
     private static ContainerInfoVO convert(ContainerInfoDO containerInfoDO) {

@@ -6,7 +6,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -31,7 +30,7 @@ public class ContainerTemplateGenerator {
      */
     public static File generate(String group, String artifact, String name, String packageName, Integer javaVersion) throws IOException {
 
-        String workerDir = OmsFileUtils.genTemporaryPath();
+        String workerDir = OmsFileUtils.genTemporaryWorkePath();
         File originJar = new File(workerDir + "tmp.jar");
         String tmpPath = workerDir + "/unzip/";
 

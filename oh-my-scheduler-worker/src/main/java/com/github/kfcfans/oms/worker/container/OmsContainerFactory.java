@@ -3,12 +3,14 @@ package com.github.kfcfans.oms.worker.container;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.oms.common.RemoteConstant;
+import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.request.ServerDeployContainerRequest;
 import com.github.kfcfans.oms.common.request.http.WorkerNeedDeployContainerRequest;
 import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.OmsWorkerFileUtils;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -17,6 +19,7 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -96,7 +99,7 @@ public class OmsContainerFactory {
             }
 
             // 创建新容器
-            OmsContainer newContainer = new OmsJarContainer(containerName, version, jarFile);
+            OmsContainer newContainer = new OmsJarContainer(request.getContainerId(), containerName, version, jarFile);
             newContainer.init();
 
             // 替换容器
@@ -111,5 +114,15 @@ public class OmsContainerFactory {
         }catch (Exception e) {
             log.error("[OmsContainerFactory] deploy container(name={},version={}) failed.", containerName, version, e);
         }
+    }
+
+    /**
+     * 获取该Worker已部署容器的信息
+     * @return 已部署容器信息
+     */
+    public static List<DeployedContainerInfo> getDeployedContainerInfos() {
+        List<DeployedContainerInfo> info = Lists.newLinkedList();
+        CARGO.forEach((name, container) -> info.add(new DeployedContainerInfo(container.getContainerId(), container.getVersion(), container.getDeployedTime(), null)));
+        return info;
     }
 }

@@ -13,6 +13,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 公用线程池配置
+ * omsTimingPool：用于执行定时任务的线程池
+ * omsCommonPool：用于执行普通任务的线程池
+ * taskScheduler：用于定时调度的线程池
  *
  * @author tjq
  * @since 2020/4/28

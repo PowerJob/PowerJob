@@ -17,6 +17,10 @@ import lombok.NoArgsConstructor;
 public class ServerDeployContainerRequest implements OmsSerializable {
 
     /**
+     * 容器ID
+     */
+    private Long containerId;
+    /**
      * 容器名称
      */
     private String containerName;

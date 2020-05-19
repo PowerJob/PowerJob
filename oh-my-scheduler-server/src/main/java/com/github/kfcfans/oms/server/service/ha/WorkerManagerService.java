@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.service.ha;
 
+import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.model.SystemMetrics;
 import com.github.kfcfans.oms.common.request.WorkerHeartbeat;
 import com.google.common.collect.Maps;
@@ -76,6 +77,20 @@ public class WorkerManagerService {
             return Collections.emptyMap();
         }
         return clusterStatusHolder.getActiveWorkerInfo();
+    }
+ 
+    /**
+     * 获取某个应用容器的部署情况
+     * @param appId 应用ID
+     * @param containerId 容器ID
+     * @return 部署情况
+     */
+    public static List<DeployedContainerInfo> getDeployedContainerInfos(Long appId, Long containerId) {
+        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
+        if (clusterStatusHolder == null) {
+            return Collections.emptyList();
+        }
+        return clusterStatusHolder.getDeployedContainerInfos(containerId);
     }
 
 }

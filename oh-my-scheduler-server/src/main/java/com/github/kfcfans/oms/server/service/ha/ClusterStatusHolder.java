@@ -1,10 +1,12 @@
 package com.github.kfcfans.oms.server.service.ha;
 
+import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.model.SystemMetrics;
 import com.github.kfcfans.oms.common.request.WorkerHeartbeat;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,8 @@ public class ClusterStatusHolder {
     private String appName;
     // 集群中所有机器的健康状态
     private Map<String, SystemMetrics> address2Metrics;
+    // 集群中所有机器的容器部署状态
+    private Map<Long, List<DeployedContainerInfo>> containerId2Infos;
     // 集群中所有机器的最后心跳时间
     private Map<String, Long> address2ActiveTime;
 
@@ -31,6 +35,7 @@ public class ClusterStatusHolder {
         this.appName = appName;
         address2Metrics = Maps.newConcurrentMap();
         address2ActiveTime = Maps.newConcurrentMap();
+        containerId2Infos = Maps.newConcurrentMap();
     }
 
     /**
@@ -41,10 +46,23 @@ public class ClusterStatusHolder {
         String workerAddress = heartbeat.getWorkerAddress();
         long heartbeatTime = heartbeat.getHeartbeatTime();
 
-        address2Metrics.put(workerAddress, heartbeat.getSystemMetrics());
         Long oldTime = address2ActiveTime.getOrDefault(workerAddress, -1L);
-        if (heartbeatTime > oldTime) {
-            address2ActiveTime.put(workerAddress, heartbeatTime);
+        if (heartbeatTime < oldTime) {
+            log.warn("[ClusterStatusHolder] receive the old heartbeat: {}.", heartbeat);
+            return;
+        }
+
+        address2ActiveTime.put(workerAddress, heartbeatTime);
+        address2Metrics.put(workerAddress, heartbeat.getSystemMetrics());
+
+        List<DeployedContainerInfo> containerInfos = heartbeat.getContainerInfos();
+        if (!CollectionUtils.isEmpty(containerInfos)) {
+            containerInfos.forEach(containerInfo -> {
+                List<DeployedContainerInfo> infos = containerId2Infos.computeIfAbsent(containerInfo.getContainerId(), ignore -> Lists.newLinkedList());
+                // 设置机器地址
+                containerInfo.setWorkerAddress(heartbeat.getWorkerAddress());
+                infos.add(containerInfo);
+            });
         }
     }
 
@@ -95,6 +113,15 @@ public class ClusterStatusHolder {
             }
         });
         return res;
+    }
+
+    /**
+     * 获取当前该Worker集群容器的部署情况
+     * @param containerId 容器ID
+     * @return 该容器的部署情况
+     */
+    public List<DeployedContainerInfo> getDeployedContainerInfos(Long containerId) {
+        return containerId2Infos.getOrDefault(containerId, Lists.newLinkedList());
     }
 
     private boolean timeout(String address) {

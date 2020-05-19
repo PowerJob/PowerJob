@@ -1,8 +1,11 @@
 package com.github.kfcfans.oms.common.request;
 
 import com.github.kfcfans.oms.common.OmsSerializable;
+import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.model.SystemMetrics;
 import lombok.Data;
+
+import java.util.List;
 
 
 /**
@@ -22,6 +25,8 @@ public class WorkerHeartbeat implements OmsSerializable {
     private Long appId;
     // 当前时间
     private long heartbeatTime;
+    // 当前加载的容器（容器名称 -> 容器版本）
+    private List<DeployedContainerInfo> containerInfos;
 
     private SystemMetrics systemMetrics;
 }

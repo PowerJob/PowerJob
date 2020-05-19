@@ -17,6 +17,8 @@ public interface OmsContainer extends LifeCycle {
      */
     BasicProcessor getProcessor(String className);
 
+    Long getContainerId();
+    Long getDeployedTime();
     String getName();
     String getVersion();
 

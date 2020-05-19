@@ -7,6 +7,7 @@ import com.github.kfcfans.oms.common.request.WorkerHeartbeat;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SystemInfoUtils;
+import com.github.kfcfans.oms.worker.container.OmsContainerFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
@@ -38,6 +39,9 @@ public class WorkerHealthReporter implements Runnable {
         heartbeat.setAppName(OhMyWorker.getConfig().getAppName());
         heartbeat.setAppId(OhMyWorker.getAppId());
         heartbeat.setHeartbeatTime(System.currentTimeMillis());
+
+        // 获取当前加载的容器列表
+        heartbeat.setContainerInfos(OmsContainerFactory.getDeployedContainerInfos());
 
         // 发送请求
         String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);

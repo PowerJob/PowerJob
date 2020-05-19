@@ -130,7 +130,7 @@ public class ContainerService {
      */
     public String uploadContainerJarFile(MultipartFile file) throws IOException {
 
-        String workerDirStr = OmsFileUtils.genTemporaryPath();
+        String workerDirStr = OmsFileUtils.genTemporaryWorkePath();
         String tmpFileStr = workerDirStr + "tmp.jar";
 
         File workerDir = new File(workerDirStr);
@@ -238,7 +238,7 @@ public class ContainerService {
 
             String port = environment.getProperty("local.server.port");
             String downloadURL = String.format("http://%s:%s/container/downloadJar?version=%s", NetUtils.getLocalHost(), port, container.getVersion());
-            ServerDeployContainerRequest req = new ServerDeployContainerRequest(containerName, container.getVersion(), downloadURL);
+            ServerDeployContainerRequest req = new ServerDeployContainerRequest(container.getId(), containerName, container.getVersion(), downloadURL);
             long sleepTime = calculateSleepTime(jarFile.length());
 
             AtomicInteger count = new AtomicInteger();
@@ -267,7 +267,7 @@ public class ContainerService {
         ContainerSourceType sourceType = ContainerSourceType.of(container.getSourceType());
         if (sourceType == ContainerSourceType.Git) {
 
-            String workerDirStr = OmsFileUtils.genTemporaryPath();
+            String workerDirStr = OmsFileUtils.genTemporaryWorkePath();
             File workerDir = new File(workerDirStr);
             FileUtils.forceMkdir(workerDir);
 

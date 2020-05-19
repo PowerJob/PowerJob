@@ -26,9 +26,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class OmsJarContainer implements OmsContainer {
 
+    private final Long containerId;
     private final String name;
     private final String version;
     private final File localJarFile;
+    private final Long deployedTime;
 
     // 引用计数器
     private final AtomicInteger referenceCount = new AtomicInteger(0);
@@ -38,10 +40,12 @@ public class OmsJarContainer implements OmsContainer {
 
     private Map<String, BasicProcessor> processorCache = Maps.newConcurrentMap();
 
-    public OmsJarContainer(String name, String version, File localJarFile) {
+    public OmsJarContainer(Long containerId, String name, String version, File localJarFile) {
+        this.containerId = containerId;
         this.name = name;
         this.version = version;
         this.localJarFile = localJarFile;
+        this.deployedTime = System.currentTimeMillis();
     }
 
     @Override
@@ -167,6 +171,14 @@ public class OmsJarContainer implements OmsContainer {
     @Override
     public String getVersion() {
         return version;
+    }
+    @Override
+    public Long getContainerId() {
+        return containerId;
+    }
+    @Override
+    public Long getDeployedTime() {
+        return deployedTime;
     }
 
     @Override

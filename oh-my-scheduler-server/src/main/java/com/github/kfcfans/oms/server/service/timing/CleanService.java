@@ -35,6 +35,8 @@ public class CleanService {
     @Value("${oms.container.retention.remote}")
     private int remoteContainerRetentionDay;
 
+    private static final int TEMPORARY_RETENTION_DAY = 3;
+
     // 每天凌晨3点定时清理
     private static final String CLEAN_TIME_EXPRESSION = "0 0 3 * * ?";
 
@@ -44,6 +46,7 @@ public class CleanService {
     public void timingClean() {
         cleanLocal(OmsFileUtils.genLogDirPath(), localLogRetentionDay);
         cleanLocal(OmsFileUtils.genContainerJarPath(), localContainerRetentionDay);
+        cleanLocal(OmsFileUtils.genTemporaryPath(), TEMPORARY_RETENTION_DAY);
 
         cleanRemote(GridFsManager.LOG_BUCKET, remoteLogRetentionDay);
         cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
