@@ -42,6 +42,8 @@ public class ProcessorRunnable implements Runnable {
     private final TaskDO task;
     private final BasicProcessor processor;
     private final OmsLogger omsLogger;
+    // 类加载器
+    private final ClassLoader classLoader;
 
     public void innerRun() throws InterruptedException {
 
@@ -175,6 +177,8 @@ public class ProcessorRunnable implements Runnable {
 
     @Override
     public void run() {
+        // 切换线程上下文类加载器（否则用的是 Worker 类加载器，不存在容器类，在序列化/反序列化时会报 ClassNotFoundException）
+        Thread.currentThread().setContextClassLoader(classLoader);
         try {
             innerRun();
         }catch (InterruptedException ignore) {

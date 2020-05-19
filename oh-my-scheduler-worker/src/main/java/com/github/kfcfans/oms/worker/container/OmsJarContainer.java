@@ -99,7 +99,7 @@ public class OmsJarContainer implements OmsContainer {
 
         URL jarURL = localJarFile.toURI().toURL();
 
-        // 创建类加载器
+        // 创建类加载器（父类加载为 Worker 的类加载）
         this.containerClassLoader = new OhMyClassLoader(new URL[]{jarURL}, this.getClass().getClassLoader());
 
         // 获取资源文件
@@ -179,6 +179,10 @@ public class OmsJarContainer implements OmsContainer {
     @Override
     public Long getDeployedTime() {
         return deployedTime;
+    }
+    @Override
+    public OhMyClassLoader getContainerClassLoader() {
+        return containerClassLoader;
     }
 
     @Override

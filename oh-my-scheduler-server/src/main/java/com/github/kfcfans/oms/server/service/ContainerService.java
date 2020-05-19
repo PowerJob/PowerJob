@@ -329,8 +329,10 @@ public class ContainerService {
 
                 if (!gridFsManager.exists(GridFsManager.CONTAINER_BUCKET, jarFileName)) {
                     remote.sendText("SYSTEM: can't find the jar resource in remote, maybe this is a new version, start to upload new version.");
-                    gridFsManager.download(jarWithDependency, GridFsManager.CONTAINER_BUCKET, jarFileName);
+                    gridFsManager.store(jarWithDependency, GridFsManager.CONTAINER_BUCKET, jarFileName);
                     remote.sendText("SYSTEM: upload to GridFS successfully~");
+                }else {
+                    remote.sendText("SYSTEM: find the jar resource in remote successfully, so it's no need to upload anymore.");
                 }
 
                 // 将文件从临时工作目录移动到正式目录

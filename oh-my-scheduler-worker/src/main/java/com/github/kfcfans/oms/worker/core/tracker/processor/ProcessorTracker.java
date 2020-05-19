@@ -121,7 +121,8 @@ public class ProcessorTracker {
         newTask.setInstanceId(instanceInfo.getInstanceId());
         newTask.setAddress(taskTrackerAddress);
 
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger);
+        ClassLoader classLoader = omsContainer == null ? getClass().getClassLoader() : omsContainer.getContainerClassLoader();
+        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader);
         try {
             threadPool.submit(processorRunnable);
             success = true;

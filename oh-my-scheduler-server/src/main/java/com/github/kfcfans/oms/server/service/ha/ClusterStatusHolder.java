@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public class ClusterStatusHolder {
     // 集群中所有机器的健康状态
     private Map<String, SystemMetrics> address2Metrics;
     // 集群中所有机器的容器部署状态
-    private Map<Long, List<DeployedContainerInfo>> containerId2Infos;
+    private Map<Long, Map<String, DeployedContainerInfo>> containerId2Infos;
     // 集群中所有机器的最后心跳时间
     private Map<String, Long> address2ActiveTime;
 
@@ -58,10 +59,8 @@ public class ClusterStatusHolder {
         List<DeployedContainerInfo> containerInfos = heartbeat.getContainerInfos();
         if (!CollectionUtils.isEmpty(containerInfos)) {
             containerInfos.forEach(containerInfo -> {
-                List<DeployedContainerInfo> infos = containerId2Infos.computeIfAbsent(containerInfo.getContainerId(), ignore -> Lists.newLinkedList());
-                // 设置机器地址
-                containerInfo.setWorkerAddress(heartbeat.getWorkerAddress());
-                infos.add(containerInfo);
+                Map<String, DeployedContainerInfo> infos = containerId2Infos.computeIfAbsent(containerInfo.getContainerId(), ignore -> Maps.newConcurrentMap());
+                infos.put(workerAddress, containerInfo);
             });
         }
     }
@@ -121,7 +120,12 @@ public class ClusterStatusHolder {
      * @return 该容器的部署情况
      */
     public List<DeployedContainerInfo> getDeployedContainerInfos(Long containerId) {
-        return containerId2Infos.getOrDefault(containerId, Lists.newLinkedList());
+        List<DeployedContainerInfo> res = Lists.newLinkedList();
+        containerId2Infos.getOrDefault(containerId, Collections.emptyMap()).forEach((address, info) -> {
+            info.setWorkerAddress(address);
+            res.add(info);
+        });
+        return res;
     }
 
     private boolean timeout(String address) {
