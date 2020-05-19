@@ -4,7 +4,6 @@ package com.github.kfcfans.oms.worker.common.utils;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.Pool;
 
 /**
  * 序列化器

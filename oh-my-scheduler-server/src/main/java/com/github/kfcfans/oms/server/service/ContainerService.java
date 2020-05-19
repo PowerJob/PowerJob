@@ -151,7 +151,9 @@ public class ContainerService {
             // 将文件拷贝到正确的路径
             String finalFileStr = OmsFileUtils.genContainerJarPath() + fileName;
             File finalFile = new File(finalFileStr);
-            FileUtils.forceDelete(finalFile);
+            if (finalFile.exists()) {
+                FileUtils.forceDelete(finalFile);
+            }
             FileUtils.moveFile(tmpFile, finalFile);
 
             return md5;
