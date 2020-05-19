@@ -70,8 +70,4 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
         private int age;
     }
 
-    @Override
-    public void init() throws Exception {
-        System.out.println("============== TestMapReduceProcessor#init ==============");
-    }
 }

@@ -166,6 +166,14 @@ public class InstanceManager {
         // 告警
         if (instanceStatus == InstanceStatus.FAILED) {
 
+            if (jobInfo == null) {
+                jobInfo = fetchJobInfo(instanceId);
+            }
+            if (jobInfo == null) {
+                log.warn("[InstanceManager] can't find jobInfo by instanceId({}), alarm failed.", instanceId);
+                return;
+            }
+
             InstanceInfoDO instanceInfo = getInstanceInfoRepository().findByInstanceId(instanceId);
             AlarmContent content = new AlarmContent();
             BeanUtils.copyProperties(jobInfo, content);
@@ -180,7 +188,15 @@ public class InstanceManager {
     }
 
     public static JobInfoDO fetchJobInfo(Long instanceId) {
-        return instanceId2JobInfo.get(instanceId);
+        JobInfoDO jobInfo = instanceId2JobInfo.get(instanceId);
+        if (jobInfo != null) {
+            return jobInfo;
+        }
+        InstanceInfoDO instanceInfo = getInstanceInfoRepository().findByInstanceId(instanceId);
+        if (instanceInfo != null) {
+            return getJobInfoRepository().findById(instanceInfo.getJobId()).orElse(null);
+        }
+        return null;
     }
 
     private static InstanceInfoRepository getInstanceInfoRepository() {

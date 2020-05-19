@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -77,4 +78,8 @@ public class UtilsTest {
         System.out.println(s.length());
     }
 
+    @Test
+    public void testTZ() {
+        System.out.println(TimeZone.getDefault());
+    }
 }

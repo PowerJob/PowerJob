@@ -34,10 +34,7 @@ public class ProcessorBeanFactory {
             try {
 
                 Class<?> clz = Class.forName(className);
-                BasicProcessor processor = (BasicProcessor) clz.getDeclaredConstructor().newInstance();
-                processor.init();
-
-                return processor;
+                return (BasicProcessor) clz.getDeclaredConstructor().newInstance();
 
             }catch (Exception e) {
                 log.error("[ProcessorBeanFactory] load local Processor(className = {}) failed.", className, e);

@@ -38,6 +38,8 @@ public class DefaultMailAlarmService implements Alarmable {
     @Override
     public void alarm(AlarmContent alarmContent, List<UserInfoDO> targetUserList) {
 
+        log.debug("[DefaultMailAlarmService] content: {}, user: {}", alarmContent, targetUserList);
+
         if (CollectionUtils.isEmpty(targetUserList)) {
             return;
         }

@@ -48,7 +48,7 @@ public class OmsFileUtils {
      * 获取临时目录（随机目录，不会重复），用完记得删除
      * @return 临时目录
      */
-    public static String genTemporaryWorkePath() {
+    public static String genTemporaryWorkPath() {
         String uuid = StringUtils.replace(UUID.randomUUID().toString(), "-", "");
         return genTemporaryPath() + uuid + "/";
     }

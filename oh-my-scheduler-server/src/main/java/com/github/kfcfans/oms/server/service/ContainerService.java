@@ -130,7 +130,7 @@ public class ContainerService {
      */
     public String uploadContainerJarFile(MultipartFile file) throws IOException {
 
-        String workerDirStr = OmsFileUtils.genTemporaryWorkePath();
+        String workerDirStr = OmsFileUtils.genTemporaryWorkPath();
         String tmpFileStr = workerDirStr + "tmp.jar";
 
         File workerDir = new File(workerDirStr);
@@ -141,11 +141,11 @@ public class ContainerService {
             FileUtils.forceMkdirParent(tmpFile);
             file.transferTo(tmpFile);
 
-            // 生成MD5
+            // 生成MD5，这兄弟耗时有点小严重
             String md5 = OmsFileUtils.md5(tmpFile);
             String fileName = genContainerJarName(md5);
 
-            // 上传到 mongoDB
+            // 上传到 mongoDB，这兄弟耗时也有点小严重，导致这个接口整体比较慢...不过也没必要开线程去处理
             gridFsManager.store(tmpFile, GridFsManager.CONTAINER_BUCKET, fileName);
 
             // 将文件拷贝到正确的路径
@@ -269,7 +269,7 @@ public class ContainerService {
         ContainerSourceType sourceType = ContainerSourceType.of(container.getSourceType());
         if (sourceType == ContainerSourceType.Git) {
 
-            String workerDirStr = OmsFileUtils.genTemporaryWorkePath();
+            String workerDirStr = OmsFileUtils.genTemporaryWorkPath();
             File workerDir = new File(workerDirStr);
             FileUtils.forceMkdir(workerDir);
 

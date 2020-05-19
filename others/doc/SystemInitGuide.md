@@ -7,9 +7,12 @@
 * mongoDB（可选）：任意支持GridFS的mongoDB版本（4.2.6测试通过，其余未经测试，仅从理论角度分析可用）
 
 #### 流程
+>注意，由于调度系统的特殊性，请务必**确保数据库和调度服务器处于同一个时区**。
+
 1. 部署数据库：由于任务调度中心的数据持久层基于`Spring Data Jpa`实现，**开发者仅需要完成数据库的创建**，即运行SQL`CREATE database if NOT EXISTS oms-product default character set utf8mb4 collate utf8mb4_unicode_ci;`。
     * 注1：任务调度中心支持多环境部署（日常、预发、线上），其分别对应三个数据库：oms-daily、oms-pre和oms-product。
     * 注2：手动建表SQL文件：[oms-sql.sql](../oms-sql.sql)
+    * 注3：部署完成后建议查看时区信息：`show variables like "%time_zone%";`，务必使`time_zone`代表的时区与JDBC连接URL中`serverTimezone`字段代表的时区一致！
     
 2. 部署调度服务器（OhMyScheduler-Server），需要先修改配置文件（同样为了支持多环境部署，采用了daily、pre和product3套配置文件），之后自行编译部署运行。
     * 注1：OhMyScheduler-Server支持集群部署，具备完全的水平扩展能力。建议部署多个实例以实现高可用&高性能。

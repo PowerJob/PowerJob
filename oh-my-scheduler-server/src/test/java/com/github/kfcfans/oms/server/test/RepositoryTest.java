@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.test;
 
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.common.constans.JobStatus;
-import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.OmsLockDO;
@@ -13,10 +13,10 @@ import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,7 +25,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/5
  */
-@ActiveProfiles("daily")
+//@ActiveProfiles("daily")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RepositoryTest {
@@ -71,6 +71,14 @@ public class RepositoryTest {
     public void testExecuteLogUpdate() {
         instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL", "");
         instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200);
+    }
+
+    @Test
+    public void testCheckQuery() {
+        Date time = new Date();
+        System.out.println(time);
+        final List<InstanceInfoDO> res = instanceInfoRepository.findByAppIdInAndStatusAndGmtModifiedBefore(Lists.newArrayList(1L), 3, time);
+        System.out.println(res);
     }
 
 }

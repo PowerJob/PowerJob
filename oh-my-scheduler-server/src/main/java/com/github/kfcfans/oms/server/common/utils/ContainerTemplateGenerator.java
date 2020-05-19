@@ -30,7 +30,7 @@ public class ContainerTemplateGenerator {
      */
     public static File generate(String group, String artifact, String name, String packageName, Integer javaVersion) throws IOException {
 
-        String workerDir = OmsFileUtils.genTemporaryWorkePath();
+        String workerDir = OmsFileUtils.genTemporaryWorkPath();
         File originJar = new File(workerDir + "tmp.jar");
         String tmpPath = workerDir + "/unzip/";
 

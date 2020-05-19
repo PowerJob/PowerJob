@@ -39,19 +39,19 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     @Transactional
     @Modifying
     @CanIgnoreReturnValue
-    @Query(value = "update instance_log set status = ?2, running_times = ?3, actual_trigger_time = ?4, finished_time = ?5, task_tracker_address = ?6, result = ?7, instance_params = ?8, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
+    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, finished_time = ?5, task_tracker_address = ?6, result = ?7, instance_params = ?8, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
     int update4TriggerFailed(long instanceId, int status, long runningTimes, long actualTriggerTime, long finishedTime, String taskTrackerAddress, String result, String instanceParams);
 
     @Transactional
     @Modifying
     @CanIgnoreReturnValue
-    @Query(value = "update instance_log set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, instance_params = ?6, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
+    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, instance_params = ?6, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
     int update4TriggerSucceed(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress, String instanceParams);
 
     @Modifying
     @Transactional
     @CanIgnoreReturnValue
-    @Query(value = "update instance_log set status = ?2, running_times = ?3, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
+    @Query(value = "update instance_info set status = ?2, running_times = ?3, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
     int update4FrequentJob(long instanceId, int status, long runningTimes);
 
     // 状态检查三兄弟，对应 WAITING_DISPATCH 、 WAITING_WORKER_RECEIVE 和 RUNNING 三阶段
@@ -71,7 +71,7 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     long countByAppIdAndStatus(long appId, int status);
     long countByAppIdAndStatusAndGmtCreateAfter(long appId, int status, Date time);
 
-    @Query(value = "select job_id from instance_log where job_id in ?1 and status in ?2", nativeQuery = true)
+    @Query(value = "select job_id from instance_info where job_id in ?1 and status in ?2", nativeQuery = true)
     List<Long> findByJobIdInAndStatusIn(List<Long> jobIds, List<Integer> status);
 
 }

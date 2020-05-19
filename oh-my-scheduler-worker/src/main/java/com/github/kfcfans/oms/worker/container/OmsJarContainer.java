@@ -76,9 +76,7 @@ public class OmsJarContainer implements OmsContainer {
             // 直接实例化
             try {
                 Object obj = targetClass.getDeclaredConstructor().newInstance();
-                BasicProcessor processor = (BasicProcessor) obj;
-                processor.init();
-                return processor;
+                return (BasicProcessor) obj;
             } catch (Exception e) {
                 log.error("[OmsJarContainer-{}] load {} failed", name, className, e);
             }

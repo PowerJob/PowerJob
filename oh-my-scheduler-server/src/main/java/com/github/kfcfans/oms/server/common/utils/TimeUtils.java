@@ -27,37 +27,37 @@ public class TimeUtils {
     public static void check() throws TimeCheckException {
 
         NTPUDPClient timeClient = new NTPUDPClient();
-        timeClient.setDefaultTimeout((int) RemoteConstant.DEFAULT_TIMEOUT_MS);
 
-        for (String address : NTP_SERVER_LIST) {
-            try {
-                TimeInfo t = timeClient.getTime(InetAddress.getByName(address));
-                NtpV3Packet ntpV3Packet = t.getMessage();
-                log.info("[TimeUtils] use ntp server: {}, request result: {}", address, ntpV3Packet);
-                // RFC-1305标准：https://tools.ietf.org/html/rfc1305
-                // 忽略传输误差吧...也就几十毫秒的事（阿里云给力啊！）
-                long local = System.currentTimeMillis();
-                long ntp = ntpV3Packet.getTransmitTimeStamp().getTime();
-                long offset =  local - ntp;
-                if (Math.abs(offset) > MAX_OFFSET) {
-                    String msg = String.format("inaccurate server time(local:%d, ntp:%d), please use ntp update to calibration time", local, ntp);
-                    throw new TimeCheckException(msg);
+        try {
+            timeClient.setDefaultTimeout((int) RemoteConstant.DEFAULT_TIMEOUT_MS);
+            for (String address : NTP_SERVER_LIST) {
+                try {
+                    TimeInfo t = timeClient.getTime(InetAddress.getByName(address));
+                    NtpV3Packet ntpV3Packet = t.getMessage();
+                    log.info("[TimeUtils] use ntp server: {}, request result: {}", address, ntpV3Packet);
+                    // RFC-1305标准：https://tools.ietf.org/html/rfc1305
+                    // 忽略传输误差吧...也就几十毫秒的事（阿里云给力啊！）
+                    long local = System.currentTimeMillis();
+                    long ntp = ntpV3Packet.getTransmitTimeStamp().getTime();
+                    long offset =  local - ntp;
+                    if (Math.abs(offset) > MAX_OFFSET) {
+                        String msg = String.format("inaccurate server time(local:%d, ntp:%d), please use ntp update to calibration time", local, ntp);
+                        throw new TimeCheckException(msg);
+                    }
+                    return;
+                }catch (Exception ignore) {
+                    log.warn("[TimeUtils] ntp server: {} may down!", address);
                 }
-                return;
-            }catch (Exception ignore) {
-                log.warn("[TimeUtils] ntp server: {} may down!", address);
             }
+            throw new TimeCheckException("no available ntp server, maybe alibaba, sjtu and apple are both collapse");
+        }finally {
+            timeClient.close();
         }
-
-        throw new TimeCheckException("no available ntp server, maybe alibaba, sjtu and apple are both collapse");
     }
 
     public static final class TimeCheckException extends RuntimeException {
         public TimeCheckException(String message) {
             super(message);
-        }
-        public TimeCheckException(Throwable cause) {
-            super(cause);
         }
     }
 }

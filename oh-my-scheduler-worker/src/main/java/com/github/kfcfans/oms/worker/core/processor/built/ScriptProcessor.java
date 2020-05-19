@@ -12,8 +12,6 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,7 +27,6 @@ public abstract class ScriptProcessor implements BasicProcessor {
     // 脚本绝对路径
     private final String scriptPath;
     private final long timeout;
-    private final ExecutorService threadPool;
 
     private static final Set<String> DOWNLOAD_PROTOCOL = Sets.newHashSet("http", "https", "ftp");
 
@@ -38,7 +35,6 @@ public abstract class ScriptProcessor implements BasicProcessor {
         this.instanceId = instanceId;
         this.scriptPath = OmsWorkerFileUtils.getScriptDir() + genScriptName(instanceId);
         this.timeout = timeout;
-        this.threadPool = Executors.newFixedThreadPool(2);
 
         File script = new File(scriptPath);
         if (script.exists()) {
@@ -82,8 +78,10 @@ public abstract class ScriptProcessor implements BasicProcessor {
         StringBuilder inputSB = new StringBuilder();
         StringBuilder errorSB = new StringBuilder();
 
-        threadPool.submit(() -> copyStream(process.getInputStream(), inputSB));
-        threadPool.submit(() -> copyStream(process.getErrorStream(), errorSB));
+        // 为了代码优雅而牺牲那么一点点点点点点点点性能
+        // 从外部传入线程池总感觉怪怪的...内部创建嘛又要考虑考虑资源释放问题，想来想去还是直接创建算了。
+        new Thread(() -> copyStream(process.getInputStream(), inputSB)).start();
+        new Thread(() -> copyStream(process.getErrorStream(), errorSB)).start();
 
         try {
             boolean s = process.waitFor(timeout, TimeUnit.MILLISECONDS);
@@ -95,8 +93,6 @@ public abstract class ScriptProcessor implements BasicProcessor {
             return new ProcessResult(true, result);
         }catch (InterruptedException ie) {
             return new ProcessResult(false, "Interrupted");
-        }finally {
-            threadPool.shutdownNow();
         }
     }
 
