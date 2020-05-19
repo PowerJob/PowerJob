@@ -18,7 +18,7 @@ public class ContainerInfoVO {
     private String containerName;
 
     // 容器类型，枚举值为 ContainerSourceType
-    private Integer sourceType;
+    private String sourceType;
     // 由 sourceType 决定，JarFile -> String，存储文件名称；Git -> JSON，包括 URL，branch，username，password
     private String sourceInfo;
 
@@ -26,10 +26,10 @@ public class ContainerInfoVO {
     private String version;
 
     // 状态，枚举值为 ContainerStatus
-    private Integer status;
+    private String status;
 
     // 上一次部署时间
-    private Date lastDeployTime;
+    private String lastDeployTime;
 
     private Date gmtCreate;
     private Date gmtModified;

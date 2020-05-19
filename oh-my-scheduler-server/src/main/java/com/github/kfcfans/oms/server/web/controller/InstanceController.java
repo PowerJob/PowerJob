@@ -78,7 +78,7 @@ public class InstanceController {
         // 转发HTTP请求（如果使用Akka，则需要传输两次，而转发HTTP请求只需要传输一次"大"数据包）
         if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
             String ip = targetServer.split(":")[0];
-            String url = "http://" + ip + ":" + port + "/instance/log?instanceId=" + instanceId;
+            String url = String.format("http://%s:%s/instance/log?instanceId=%d&index=%d", ip, port, instanceId, index);
             try {
                 response.sendRedirect(url);
                 return ResultDTO.success(StringPage.simple("redirecting..."));

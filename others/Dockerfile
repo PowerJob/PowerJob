@@ -1,5 +1,5 @@
-# 基础镜像
-FROM openjdk:8
+# 基础镜像（由于OhMyScheduler-Server的运行需要Maven和Git环境，就自己打包了一个镜像）
+FROM tjqq/jdk-maven-git:8
 # 维护者
 MAINTAINER tengjiqi@gmail.com
 # 设置环境变量
@@ -8,8 +8,8 @@ ENV APP_NAME=oh-my-scheduler-server
 ENV PARAMS=""
 # 将应用 jar 包拷入 docker
 COPY oms-server.jar /oms-server.jar
-# 暴露端口（HTTP + AKKA）
-EXPOSE 7700 10086
+# 暴露端口（HTTP + AKKA-Server + AKKA-Client）
+EXPOSE 7700 10086 27777
 # 创建 docker 文件目录（盲猜这是用户目录）
 RUN mkdir -p /root/oms-server
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）

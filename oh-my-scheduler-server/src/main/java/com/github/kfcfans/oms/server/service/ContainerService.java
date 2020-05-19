@@ -90,7 +90,7 @@ public class ContainerService {
         container.setStatus(request.getStatus().getV());
 
         // 文件上传形式的 sourceInfo 为该文件的 md5 值，Git形式的 md5 在部署阶段生成
-        if (request.getSourceType() == ContainerSourceType.JarFile) {
+        if (request.getSourceType() == ContainerSourceType.FatJar) {
             container.setVersion(request.getSourceInfo());
         }else {
             container.setVersion("init");

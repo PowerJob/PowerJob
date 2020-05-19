@@ -8,7 +8,6 @@ import com.github.kfcfans.oms.common.utils.NetUtils;
 import com.github.kfcfans.oms.server.akka.actors.FriendActor;
 import com.github.kfcfans.oms.server.akka.actors.ServerActor;
 import com.github.kfcfans.oms.server.common.utils.PropertyUtils;
-import com.github.kfcfans.oms.server.common.utils.TimeUtils;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
@@ -39,7 +38,8 @@ public class OhMyServer {
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyServer] OhMyServer's akka system start to bootstrap...");
 
-        TimeUtils.check();
+        // 忽略了一个问题，机器是没办法访问外网的，除非架设自己的NTP服务器
+        // TimeUtils.check();
 
         // 解析配置文件
         PropertyUtils.init();

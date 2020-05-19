@@ -3,6 +3,8 @@ package com.github.kfcfans.oms.server.web.controller;
 import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
+import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
+import com.github.kfcfans.oms.server.common.constans.ContainerStatus;
 import com.github.kfcfans.oms.server.common.utils.ContainerTemplateGenerator;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
@@ -15,6 +17,7 @@ import com.github.kfcfans.oms.server.web.request.GenerateContainerTemplateReques
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
 import com.github.kfcfans.oms.server.web.response.ContainerInfoVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -109,6 +112,15 @@ public class ContainerController {
     private static ContainerInfoVO convert(ContainerInfoDO containerInfoDO) {
         ContainerInfoVO vo = new ContainerInfoVO();
         BeanUtils.copyProperties(containerInfoDO, vo);
+        if (containerInfoDO.getLastDeployTime() == null) {
+            vo.setLastDeployTime("N/A");
+        }else {
+            vo.setLastDeployTime(DateFormatUtils.format(containerInfoDO.getLastDeployTime(), "yyyy-MM-dd HH:mm:ss"));
+        }
+        ContainerStatus status = ContainerStatus.of(containerInfoDO.getStatus());
+        vo.setStatus(status.name());
+        ContainerSourceType sourceType = ContainerSourceType.of(containerInfoDO.getSourceType());
+        vo.setSourceType(sourceType.name());
         return vo;
     }
 }

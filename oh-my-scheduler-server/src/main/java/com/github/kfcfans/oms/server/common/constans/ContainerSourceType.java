@@ -13,7 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ContainerSourceType {
 
-    JarFile(1, "Jar文件"),
+    FatJar(1, "Jar文件"),
     Git(2, "Git代码库");
 
     private final int v;
