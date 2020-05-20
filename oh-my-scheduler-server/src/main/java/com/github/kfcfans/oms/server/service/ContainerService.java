@@ -185,13 +185,13 @@ public class ContainerService {
 
     /**
      * 部署容器
-     * @param containerName 容器名称
+     * @param containerId 容器ID
      * @param session WebSocket Session
      * @throws Exception 异常
      */
-    public void deploy(String containerName, Session session) throws Exception {
+    public void deploy(Long containerId, Session session) throws Exception {
 
-        String deployLock = "containerDeployLock-" + containerName;
+        String deployLock = "containerDeployLock-" + containerId;
         RemoteEndpoint.Async remote = session.getAsyncRemote();
         // 最长部署时间：10分钟
         boolean lock = lockService.lock(deployLock, 10 * 60 * 1000);
@@ -202,9 +202,9 @@ public class ContainerService {
 
         try {
 
-            Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findByContainerName(containerName);
+            Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findById(containerId);
             if (!containerInfoOpt.isPresent()) {
-                remote.sendText("SYSTEM: can't find container by name: " + containerName);
+                remote.sendText("SYSTEM: can't find container by id: " + containerId);
                 return;
             }
             ContainerInfoDO container = containerInfoOpt.get();
@@ -240,7 +240,7 @@ public class ContainerService {
 
             String port = environment.getProperty("local.server.port");
             String downloadURL = String.format("http://%s:%s/container/downloadJar?version=%s", NetUtils.getLocalHost(), port, container.getVersion());
-            ServerDeployContainerRequest req = new ServerDeployContainerRequest(container.getId(), containerName, container.getVersion(), downloadURL);
+            ServerDeployContainerRequest req = new ServerDeployContainerRequest(containerId, container.getContainerName(), container.getVersion(), downloadURL);
             long sleepTime = calculateSleepTime(jarFile.length());
 
             AtomicInteger count = new AtomicInteger();

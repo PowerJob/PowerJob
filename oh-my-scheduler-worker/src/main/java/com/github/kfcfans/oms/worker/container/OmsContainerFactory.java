@@ -33,22 +33,22 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class OmsContainerFactory {
 
-    private static final Map<String, OmsContainer> CARGO = Maps.newConcurrentMap();
+    private static final Map<Long, OmsContainer> CARGO = Maps.newConcurrentMap();
 
     /**
      * 获取容器
-     * @param name 容器名称
+     * @param containerId 容器ID
      * @return 容器示例，可能为 null
      */
-    public static OmsContainer getContainer(String name) {
+    public static OmsContainer getContainer(Long containerId) {
 
-        OmsContainer omsContainer = CARGO.get(name);
+        OmsContainer omsContainer = CARGO.get(containerId);
         if (omsContainer != null) {
             return omsContainer;
         }
 
         // 尝试下载
-        WorkerNeedDeployContainerRequest request = new WorkerNeedDeployContainerRequest(name);
+        WorkerNeedDeployContainerRequest request = new WorkerNeedDeployContainerRequest(containerId);
 
         String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
         if (StringUtils.isEmpty(serverPath)) {
@@ -65,10 +65,10 @@ public class OmsContainerFactory {
                 deployContainer(deployRequest);
             }
         }catch (Exception e) {
-            log.error("[OmsContainer] get container(name={}) failed.", name, e);
+            log.error("[OmsContainerFactory] get container(id={}) failed.", containerId, e);
         }
 
-        return CARGO.get(name);
+        return CARGO.get(containerId);
     }
 
 
@@ -78,33 +78,34 @@ public class OmsContainerFactory {
      */
     public static synchronized void deployContainer(ServerDeployContainerRequest request) {
 
+        Long containerId = request.getContainerId();
         String containerName = request.getContainerName();
         String version = request.getVersion();
 
-        OmsContainer oldContainer = CARGO.get(containerName);
+        OmsContainer oldContainer = CARGO.get(containerId);
         if (oldContainer != null && version.equals(oldContainer.getVersion())) {
-            log.info("[OmsContainerFactory] container(name={},version={}) already deployed.", containerName, version);
+            log.info("[OmsContainerFactory] container(id={},version={}) already deployed.", containerId, version);
             return;
         }
 
         try {
 
             // 下载Container到本地
-            String filePath = OmsWorkerFileUtils.getContainerDir() + containerName + "/" + version + ".jar";
+            String filePath = OmsWorkerFileUtils.getContainerDir() + containerId + "/" + version + ".jar";
             File jarFile = new File(filePath);
             if (!jarFile.exists()) {
                 FileUtils.forceMkdirParent(jarFile);
                 FileUtils.copyURLToFile(new URL(request.getDownloadURL()), jarFile, 5000, 300000);
-                log.info("[OmsContainerFactory] download Jar for container({}) successfully.", containerName);
+                log.info("[OmsContainerFactory] download Jar for container(id={}) successfully.", containerId);
             }
 
             // 创建新容器
-            OmsContainer newContainer = new OmsJarContainer(request.getContainerId(), containerName, version, jarFile);
+            OmsContainer newContainer = new OmsJarContainer(containerId, containerName, version, jarFile);
             newContainer.init();
 
             // 替换容器
-            CARGO.put(containerName, newContainer);
-            log.info("[OmsContainerFactory] container(name={},version={}) deployed successfully.", containerName, version);
+            CARGO.put(containerId, newContainer);
+            log.info("[OmsContainerFactory] container(id={},name={},version={}) deployed successfully.", containerId, containerName, version);
 
             if (oldContainer != null) {
                 // 销毁旧容器

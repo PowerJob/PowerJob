@@ -266,7 +266,7 @@ public class ProcessorTracker {
                 break;
             case JAVA_CONTAINER:
                 String[] split = processorInfo.split("#");
-                omsContainer = OmsContainerFactory.getContainer(split[0]);
+                omsContainer = OmsContainerFactory.getContainer(Long.valueOf(split[0]));
                 if (omsContainer != null) {
                     processor = omsContainer.getProcessor(split[1]);
                 }

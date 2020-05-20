@@ -21,21 +21,21 @@ import java.io.IOException;
  */
 @Slf4j
 @Component
-@ServerEndpoint(value = "/container/deploy/{name}", configurator = OmsEndpointConfigure.class)
+@ServerEndpoint(value = "/container/deploy/{id}", configurator = OmsEndpointConfigure.class)
 public class ContainerDeployServerEndpoint {
 
     @Resource
     private ContainerService containerService;
 
     @OnOpen
-    public void onOpen(@PathParam("name") String name, Session session) {
+    public void onOpen(@PathParam("id") Long id, Session session) {
 
         RemoteEndpoint.Async remote = session.getAsyncRemote();
-        remote.sendText("SYSTEM: connected successfully, start to deploy container: " + name);
+        remote.sendText("SYSTEM: connected successfully, start to deploy container: " + id);
         try {
-            containerService.deploy(name, session);
+            containerService.deploy(id, session);
         }catch (Exception e) {
-            log.error("[ContainerDeployServerEndpoint] deploy container {} failed.", name, e);
+            log.error("[ContainerDeployServerEndpoint] deploy container {} failed.", id, e);
 
             remote.sendText("SYSTEM: deploy failed because of the exception");
             remote.sendText(ExceptionUtils.getStackTrace(e));
@@ -43,7 +43,7 @@ public class ContainerDeployServerEndpoint {
         try {
             session.close();
         }catch (Exception e) {
-            log.error("[ContainerDeployServerEndpoint] close session for {} failed.", name, e);
+            log.error("[ContainerDeployServerEndpoint] close session for {} failed.", id, e);
         }
     }
 

@@ -87,7 +87,7 @@ public class ServerActor extends AbstractActor {
         Environment environment = SpringUtils.getBean(Environment.class);
         String port = environment.getProperty("local.server.port");
 
-        Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findByContainerName(req.getContainerName());
+        Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findById(req.getContainerId());
         AskResponse askResponse = new AskResponse();
         askResponse.setSuccess(false);
         if (containerInfoOpt.isPresent()) {

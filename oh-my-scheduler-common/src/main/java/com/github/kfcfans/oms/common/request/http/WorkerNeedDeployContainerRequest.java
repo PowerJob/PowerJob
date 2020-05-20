@@ -15,5 +15,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkerNeedDeployContainerRequest implements OmsSerializable {
-    private String containerName;
+    private Long containerId;
 }

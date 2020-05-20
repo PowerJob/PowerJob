@@ -56,7 +56,7 @@ public class OmsJarContainer implements OmsContainer {
             try {
                 targetClass = containerClassLoader.loadClass(className);
             } catch (ClassNotFoundException cnf) {
-                log.error("[OmsJarContainer-{}] can't find class: {} in container.", name, className);
+                log.error("[OmsJarContainer-{}] can't find class: {} in container.", containerId, className);
                 return null;
             }
 
@@ -64,12 +64,12 @@ public class OmsJarContainer implements OmsContainer {
             try {
                 return (BasicProcessor) container.getBean(targetClass);
             } catch (BeansException be) {
-                log.warn("[OmsJarContainer-{}] load instance from spring container failed, try to build instance directly.", name);
+                log.warn("[OmsJarContainer-{}] load instance from spring container failed, try to build instance directly.", containerId);
             } catch (ClassCastException cce) {
-                log.error("[OmsJarContainer-{}] {} should implements the Processor interface!", name, className);
+                log.error("[OmsJarContainer-{}] {} should implements the Processor interface!", containerId, className);
                 return null;
             } catch (Exception e) {
-                log.error("[OmsJarContainer-{}] get bean failed for {}.", name, className, e);
+                log.error("[OmsJarContainer-{}] get bean failed for {}.", containerId, className, e);
                 return null;
             }
 
@@ -78,7 +78,7 @@ public class OmsJarContainer implements OmsContainer {
                 Object obj = targetClass.getDeclaredConstructor().newInstance();
                 return (BasicProcessor) obj;
             } catch (Exception e) {
-                log.error("[OmsJarContainer-{}] load {} failed", name, className, e);
+                log.error("[OmsJarContainer-{}] load {} failed", containerId, className, e);
             }
             return null;
         });
@@ -93,7 +93,7 @@ public class OmsJarContainer implements OmsContainer {
     @Override
     public void init() throws Exception {
 
-        log.info("[OmsJarContainer] start to init container(name={},jarPath={})", name, localJarFile.getPath());
+        log.info("[OmsJarContainer-{}] start to init container(name={},jarPath={})", containerId, name, localJarFile.getPath());
 
         URL jarURL = localJarFile.toURI().toURL();
 
@@ -105,11 +105,11 @@ public class OmsJarContainer implements OmsContainer {
         URL springXmlURL = containerClassLoader.getResource(ContainerConstant.SPRING_CONTEXT_FILE_NAME);
 
         if (propertiesURL == null) {
-            log.error("[OmsJarContainer] can't find {} in jar {}.", ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME, localJarFile.getPath());
+            log.error("[OmsJarContainer-{}] can't find {} in jar {}.", containerId, ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME, localJarFile.getPath());
             throw new OmsWorkerException("invalid jar file");
         }
         if (springXmlURL == null) {
-            log.error("[OmsJarContainer] can't find {} in jar {}.", ContainerConstant.SPRING_CONTEXT_FILE_NAME, localJarFile.getPath());
+            log.error("[OmsJarContainer-{}] can't find {} in jar {}.", containerId, ContainerConstant.SPRING_CONTEXT_FILE_NAME, localJarFile.getPath());
             throw new OmsWorkerException("invalid jar file");
         }
 
@@ -117,11 +117,11 @@ public class OmsJarContainer implements OmsContainer {
         Properties properties = new Properties();
         try (InputStream is = propertiesURL.openStream()) {
             properties.load(is);
-            log.info("[OmsJarContainer] load container properties successfully: {}", properties);
+            log.info("[OmsJarContainer-{}] load container properties successfully: {}", containerId, properties);
         }
         String packageName = properties.getProperty(ContainerConstant.CONTAINER_PACKAGE_NAME_KEY);
         if (StringUtils.isEmpty(packageName)) {
-            log.error("[OmsJarContainer] get package name failed, developer should't modify the properties file!");
+            log.error("[OmsJarContainer-{}] get package name failed, developer should't modify the properties file!", containerId);
             throw new OmsWorkerException("invalid jar file");
         }
 
@@ -133,7 +133,7 @@ public class OmsJarContainer implements OmsContainer {
         this.container.setClassLoader(containerClassLoader);
         this.container.refresh();
 
-        log.info("[OmsJarContainer] init container(name={},jarPath={}) successfully", name, localJarFile.getPath());
+        log.info("[OmsJarContainer] init container(name={},jarPath={}) successfully", containerId, localJarFile.getPath());
     }
 
     @Override
@@ -146,20 +146,20 @@ public class OmsJarContainer implements OmsContainer {
                     FileUtils.forceDelete(localJarFile);
                 }
             }catch (Exception e) {
-                log.warn("[OmsJarContainer-{}] delete jarFile({}) failed.", name, localJarFile.getPath(), e);
+                log.warn("[OmsJarContainer-{}] delete jarFile({}) failed.", containerId, localJarFile.getPath(), e);
             }
             try {
                 processorCache.clear();
                 container.close();
                 containerClassLoader.close();
-                log.info("[OmsJarContainer-{}] container destroyed successfully", name);
+                log.info("[OmsJarContainer-{}] container destroyed successfully", containerId);
             }catch (Exception e) {
-                log.error("[OmsJarContainer-{}] container destroyed failed", name, e);
+                log.error("[OmsJarContainer-{}] container destroyed failed", containerId, e);
             }
             return;
         }
 
-        log.warn("[OmsJarContainer-{}] container's reference count is {}, won't destroy now!", name, referenceCount.get());
+        log.warn("[OmsJarContainer-{}] container's reference count is {}, won't destroy now!", containerId, referenceCount.get());
     }
 
     @Override
@@ -186,11 +186,11 @@ public class OmsJarContainer implements OmsContainer {
     @Override
     public void tryRelease() {
 
-        log.debug("[OmsJarContainer-{}] tryRelease, current reference is {}.", name, referenceCount.get());
+        log.debug("[OmsJarContainer-{}] tryRelease, current reference is {}.", containerId, referenceCount.get());
         // 需要满足的条件：引用计数器减为0 & 有更新的容器出现
         if (referenceCount.decrementAndGet() <= 0) {
 
-            OmsContainer container = OmsContainerFactory.getContainer(name);
+            OmsContainer container = OmsContainerFactory.getContainer(containerId);
             if (container != this) {
                 try {
                     destroy();
