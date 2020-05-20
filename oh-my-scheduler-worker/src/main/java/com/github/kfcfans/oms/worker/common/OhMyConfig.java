@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker.common;
 
+import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.StoreStrategy;
 import lombok.Data;
 
@@ -17,6 +18,10 @@ public class OhMyConfig {
      * 应用名称
      */
     private String appName;
+    /**
+     * 启动端口
+     */
+    private int port = RemoteConstant.DEFAULT_WORKER_PORT;
     /**
      * 调度服务器地址，ip:port 或 域名
      */

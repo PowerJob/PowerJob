@@ -25,6 +25,7 @@ public class OhMySchedulerConfig {
 
         // 1. 创建配置文件
         OhMyConfig config = new OhMyConfig();
+        config.setPort(27777);
         config.setAppName("oms-test");
         config.setServerAddress(serverAddress);
         // 如果没有大型 Map/MapReduce 的需求，建议使用内存来加速计算
