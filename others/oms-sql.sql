@@ -1,3 +1,16 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server Type    : MySQL
+ Source Server Version : 50724
+ Source Schema         : oms-product
+
+ Target Server Type    : MySQL
+ Target Server Version : 50724
+ File Encoding         : 65001
+
+ Date: 20/05/2020 16:28:20
+*/
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -14,13 +27,32 @@ CREATE TABLE `app_info` (
   `gmt_modified` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `appNameUK` (`app_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for instance_log
+-- Table structure for container_info
 -- ----------------------------
-DROP TABLE IF EXISTS `instance_log`;
-CREATE TABLE `instance_log` (
+DROP TABLE IF EXISTS `container_info`;
+CREATE TABLE `container_info` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `app_id` bigint(20) DEFAULT NULL,
+  `container_name` varchar(255) DEFAULT NULL,
+  `gmt_create` datetime(6) DEFAULT NULL,
+  `gmt_modified` datetime(6) DEFAULT NULL,
+  `last_deploy_time` datetime(6) DEFAULT NULL,
+  `source_info` varchar(255) DEFAULT NULL,
+  `source_type` int(11) DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  `version` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `containerNameUK` (`container_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
+-- Table structure for instance_info
+-- ----------------------------
+DROP TABLE IF EXISTS `instance_info`;
+CREATE TABLE `instance_info` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `actual_trigger_time` bigint(20) DEFAULT NULL,
   `app_id` bigint(20) DEFAULT NULL,
@@ -36,9 +68,10 @@ CREATE TABLE `instance_log` (
   `status` int(11) NOT NULL,
   `task_tracker_address` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `IDX1ha9qjdw952k1c22gkht50unp` (`job_id`),
-  KEY `IDXckliwovavlr2s0uh14n94yfmc` (`app_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4;
+  KEY `IDX5b1nhpe5je7gc5s1ur200njr7` (`job_id`),
+  KEY `IDXjnji5lrr195kswk6f7mfhinrs` (`app_id`),
+  KEY `IDXa98hq3yu0l863wuotdjl7noum` (`instance_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for job_info
@@ -72,7 +105,7 @@ CREATE TABLE `job_info` (
   `time_expression_type` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDXk2xprmn3lldmlcb52i36udll1` (`app_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for oms_lock
@@ -83,10 +116,11 @@ CREATE TABLE `oms_lock` (
   `gmt_create` datetime(6) DEFAULT NULL,
   `gmt_modified` datetime(6) DEFAULT NULL,
   `lock_name` varchar(255) DEFAULT NULL,
+  `max_lock_time` bigint(20) DEFAULT NULL,
   `ownerip` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `lockNameUK` (`lock_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for server_info
@@ -99,7 +133,7 @@ CREATE TABLE `server_info` (
   `ip` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UKtk8ytgpl7mpukhnvhbl82kgvy` (`ip`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for user_info

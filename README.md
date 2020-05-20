@@ -16,6 +16,21 @@ OhMyScheduler是基于Akka架构的一款分布式调度平台与分布式计算
 * 有需要全部机器一同执行的业务场景：如日志清理。
 * 有需要分布式处理的业务场景：比如需要更新一大批数据，单机执行耗时非常长，可以使用Map/MapReduce处理器完成任务的分发，调动整个集群加速计算。
 
+### 同类产品对比
+||QuartZ|xxl-job|SchedulerX 2.0|OhMyScheduler|
+|----|----|----|----|----|
+|定时类型|CRON|CRON|CRON、固定频率、固定延迟、OpenAPI|CRON、固定频率、固定延迟、OpenAPI|
+|任务类型|内置Java|内置Java、GLUE Java、Shell、Python等脚本|内置Java、外置Java（FatJar）、Shell、Python等脚本|内置Java、外置Java（容器）、Shell、Python等脚本|
+|分布式任务|无|静态分片|MapReduce动态分片|MapReduce动态分片|
+|在线任务治理|不支持|支持|支持|支持|
+|日志白屏化|不支持|支持|不支持|支持|
+|调度方式及性能|基于数据库锁，有性能瓶颈|基于数据库锁，有性能瓶颈|不详|无锁化设计，性能强劲无上限|
+|报警监控|无|邮件|短信|邮件，提供接口允许开发者自定义开发|
+|系统依赖|MySQL|MySQL|人民币（公测期间免费，哎，帮打个广告吧）|任意Spring Data Jpa支持的关系型数据库（MySQL、Oracle...）|
+|DAG工作流|不支持|不支持|支持|暂不支持，有明确开发计划|
+
+
+
 # 接入流程（文档不要太详细，简单强大兼得说的就是在下～）
 1. [项目部署及初始化](./others/doc/SystemInitGuide.md)
 2. [处理器开发](./others/doc/ProcessorDevGuide.md)
