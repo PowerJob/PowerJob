@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="环境要求   Open JDK 8&#43;
+  Apache Maven 3&#43;
+  任意 Spring Data Jpa 支持的关系型数据库（MySQL/Oracle/MS SQLServer&hellip;）
+  MongoDB（可选），任意支持GridFS的mongoDB版本（4.2.6测试通过，其余未经测试，仅从理论角度分析可用），缺失该组件的情况下将无法使用在线日志、容器部署等扩展功能
+  初始化关系数据库  调度服务器（oh-my-scheduler-server）的持久化层基于Spring Boot Jpa实现，对于能够直连数据库的应用，开发者仅需完成数据库的创建，即运行SQL：CREATE database if NOT EXISTS oms-product default character set utf8mb4 collate utf8mb4_unicode_ci;`
+  OhMyScheduler支持环境隔离，提供日常（daily）、预发（pre）和线上（product）三套环境，请根据使用的环境分别部署对应的数据库：oms-daily、oms-pre和oms-product。 调度服务器属于时间敏感应用，强烈建议检查当前数据库所使用的时区信息（show variables like &quot;%time_zone%&quot;;），务必确保time_zone代表的时区与JDBC URL中serverTimezone字段代表的时区一致！ 手动建表表SQL文件：下载地址  部署调度服务器—源码编译  调度服务器（oh-my-scheduler-server）支持任意的水平扩展，即多实例集群部署仅需要在同一个局域网内启动新的服务器实例，性能强劲无上限！
+ 调度服务器（oh-my-scheduler-server）为了支持环境隔离，分别采用了日常（application-daily.properties）、预发（application-pre.properties）和线上（application-product.properties）三套配置文件，请根据实际需求进行修改，以下为配置文件详解。
+   配置项 含义 可选     server.port SpringBoot配置，HTTP端口号，默认7700 否   oms.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="调度中心（Server）部署" />
+<meta property="og:description" content="环境要求   Open JDK 8&#43;
+  Apache Maven 3&#43;
+  任意 Spring Data Jpa 支持的关系型数据库（MySQL/Oracle/MS SQLServer&hellip;）
+  MongoDB（可选），任意支持GridFS的mongoDB版本（4.2.6测试通过，其余未经测试，仅从理论角度分析可用），缺失该组件的情况下将无法使用在线日志、容器部署等扩展功能
+  初始化关系数据库  调度服务器（oh-my-scheduler-server）的持久化层基于Spring Boot Jpa实现，对于能够直连数据库的应用，开发者仅需完成数据库的创建，即运行SQL：CREATE database if NOT EXISTS oms-product default character set utf8mb4 collate utf8mb4_unicode_ci;`
+  OhMyScheduler支持环境隔离，提供日常（daily）、预发（pre）和线上（product）三套环境，请根据使用的环境分别部署对应的数据库：oms-daily、oms-pre和oms-product。 调度服务器属于时间敏感应用，强烈建议检查当前数据库所使用的时区信息（show variables like &quot;%time_zone%&quot;;），务必确保time_zone代表的时区与JDBC URL中serverTimezone字段代表的时区一致！ 手动建表表SQL文件：下载地址  部署调度服务器—源码编译  调度服务器（oh-my-scheduler-server）支持任意的水平扩展，即多实例集群部署仅需要在同一个局域网内启动新的服务器实例，性能强劲无上限！
+ 调度服务器（oh-my-scheduler-server）为了支持环境隔离，分别采用了日常（application-daily.properties）、预发（application-pre.properties）和线上（application-product.properties）三套配置文件，请根据实际需求进行修改，以下为配置文件详解。
+   配置项 含义 可选     server.port SpringBoot配置，HTTP端口号，默认7700 否   oms." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/startup/1-server-startup/" />
+
+<title>调度中心（Server）部署 | OhMyScheduler</title>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.1272dfb3df2a3f60e11485e0a1158d434da32177db3be3e28aae8e28aa7e9a15.js" integrity="sha256-EnLfs98qP2DhFIXgoRWNQ02jIXfbO&#43;Piiq6OKKp&#43;mhU="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <span>快速开始</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="active">调度中心（Server）部署</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器编写</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+      
+        <li class="book-section-flat" >
+          
+  
+    <span>Shortcodes</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/columns/" class="">Columns</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/details/" class="">Details</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/expand/" class="">Expand</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/hints/" class="">Hints</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/katex/" class="">Katex</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/mermaid/" class="">Mermaid</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/tabs/" class="">Tabs</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>调度中心（Server）部署</strong>
+
+  <label for="toc-control">
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#环境要求">环境要求</a></li>
+    <li><a href="#初始化关系数据库">初始化关系数据库</a></li>
+    <li><a href="#部署调度服务器源码编译">部署调度服务器—源码编译</a></li>
+    <li><a href="#部署调度服务器docker">部署调度服务器—Docker</a></li>
+    <li><a href="#单独部署前端页面可选">单独部署前端页面（可选）</a></li>
+    <li><a href="#初始化应用分组">初始化应用分组</a></li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h2 id="环境要求">环境要求</h2>
+<ul>
+<li>
+<p>Open JDK 8+</p>
+</li>
+<li>
+<p>Apache Maven 3+</p>
+</li>
+<li>
+<p>任意 Spring Data Jpa 支持的关系型数据库（MySQL/Oracle/MS SQLServer&hellip;）</p>
+</li>
+<li>
+<p>MongoDB（可选），任意支持GridFS的mongoDB版本（4.2.6测试通过，其余未经测试，仅从理论角度分析可用），缺失该组件的情况下将无法使用在线日志、容器部署等扩展功能</p>
+</li>
+</ul>
+<h2 id="初始化关系数据库">初始化关系数据库</h2>
+<blockquote>
+<p>调度服务器（oh-my-scheduler-server）的持久化层基于<code>Spring Boot Jpa</code>实现，对于能够直连数据库的应用，开发者<strong>仅需完成数据库的创建</strong>，即运行SQL：CREATE database if NOT EXISTS oms-product default character set utf8mb4 collate utf8mb4_unicode_ci;`</p>
+</blockquote>
+<ul>
+<li>OhMyScheduler支持<strong>环境隔离</strong>，提供日常（daily）、预发（pre）和线上（product）三套环境，请根据使用的环境分别部署对应的数据库：<code>oms-daily</code>、<code>oms-pre</code>和<code>oms-product</code>。</li>
+<li>调度服务器属于<strong>时间敏感</strong>应用，强烈建议检查当前数据库所使用的时区信息（<code>show variables like &quot;%time_zone%&quot;;</code>），务必确保<code>time_zone</code>代表的时区与JDBC URL中<code>serverTimezone</code>字段代表的时区一致！</li>
+<li>手动建表表SQL文件：<a href="https://github.com/KFCFans/OhMyScheduler/blob/master/others/oms-sql.sql">下载地址</a></li>
+</ul>
+<h2 id="部署调度服务器源码编译">部署调度服务器—源码编译</h2>
+<blockquote>
+<p>调度服务器（oh-my-scheduler-server）支持任意的水平扩展，即多实例集群部署仅需要在同一个局域网内启动新的服务器实例，性能强劲无上限！</p>
+</blockquote>
+<p>调度服务器（oh-my-scheduler-server）为了支持环境隔离，分别采用了日常（<code>application-daily.properties</code>）、预发（<code>application-pre.properties</code>）和线上（<code>application-product.properties</code>）三套配置文件，请根据实际需求进行修改，以下为配置文件详解。</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>含义</th>
+<th>可选</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>server.port</td>
+<td>SpringBoot配置，HTTP端口号，默认7700</td>
+<td>否</td>
+</tr>
+<tr>
+<td>oms.akka.port</td>
+<td>OhMyScheduler配置，Akka端口号，默认10086</td>
+<td>否</td>
+</tr>
+<tr>
+<td>oms.alarm.bean.names</td>
+<td>OhMyScheduler报警服务Bean名称，多值逗号分隔</td>
+<td>是</td>
+</tr>
+<tr>
+<td>spring.datasource.core.xxx</td>
+<td>关系型数据库连接配置</td>
+<td>否</td>
+</tr>
+<tr>
+<td>spring.mail.xxx</td>
+<td>邮件配置</td>
+<td>是，未配置情况下将无法使用邮件报警功能</td>
+</tr>
+<tr>
+<td>spring.data.mongodb.xxx</td>
+<td>MongoDB连接配置</td>
+<td>是，未配置情况下将无法使用在线日志功能</td>
+</tr>
+<tr>
+<td>oms.log.retention.local</td>
+<td>本地日志保留天数，负数代表永久保留</td>
+<td>否</td>
+</tr>
+<tr>
+<td>oms.log.retention.remote</td>
+<td>远程日志保留天数，负数代表永久保留</td>
+<td>否</td>
+</tr>
+<tr>
+<td>oms.container.retention.local</td>
+<td>扩展的报警服务Bean，多值逗号分割，默认为邮件报警</td>
+<td>否</td>
+</tr>
+<tr>
+<td>oms.container.retention.remote</td>
+<td>远程容器保留天数，负数代表永久保留</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<p>完成配置文件修改后，即可正式开始部署：</p>
+<ul>
+<li>打包：运行<code>mvn clean package -U -Pdev -DskipTests</code>，构建调度中心Jar文件。</li>
+<li>运行：运行<code>java -jar oms-server.jar --spring.profiles.active=product</code>，指定生效的配置文件。</li>
+<li>验证：访问<code>http://ip:port</code>查看是否出现OhMyScheduler的欢迎页面。</li>
+</ul>
+<h2 id="部署调度服务器docker">部署调度服务器—Docker</h2>
+<blockquote>
+<p><strong>建议自己根据项目中的Dockerfile稍作修改，制作自己的Docker镜像，而不是直接使用官方镜像</strong>！原因在于：容器功能需要用到Git和Maven来编译代码库，而公司内部往往都会搭建自己的私有仓库，所以Git容器功能没办法正常运行（即，<strong>官方镜像中的调度服务器不支持Git容器的部署</strong>）。</p>
+</blockquote>
+<p><a href="https://hub.docker.com/r/tjqq/oms-server">Docker Hub地址</a></p>
+<p>部署流程：</p>
+<ol>
+<li>下载镜像：<code>docker pull tjqq/oms-server</code></li>
+<li>创建容器并运行（所有SpringBoot的启动参数都可通过<code>-e Params=&quot;&quot;</code>传入）</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">docker run -d 
+-e PARAMS<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;--spring.profiles.active=product&#34;</span> 
+-p 7700:7700 -p 10086:10086 -p 27777:27777 
+--name oms-server 
+-v ~/docker/oms-server:/root/oms-server tjqq/oms-server:$version
+</code></pre></div><h2 id="单独部署前端页面可选">单独部署前端页面（可选）</h2>
+<blockquote>
+<p>每一个oh-my-scheduler-server都自带了前端页面，不过<del><del>Tomcat</del></del>（为了完善的WebSocket支持，现已切换到Undertow）做Web服务器的性能就<del><del>呵呵了</del></del>（看评测好像还行，不过有追求的用户还是建议单独使用源码部署）～</p>
+</blockquote>
+<ol>
+<li>源码克隆：<a href="https://github.com/KFCFans/OhMyScheduler-Console">OhMyScheduler-Console</a></li>
+<li>替换地址：修改<code>main.js</code>中的<code>axios.defaults.baseURL</code>为服务器地址</li>
+<li>npm run build -&gt; nginx config</li>
+</ol>
+<hr>
+<p><strong>特别鸣谢</strong>：感谢<a href="https://github.com/fengnan0929">某知名上市电商公司前端</a>对本项目的大力支持！</p>
+<h2 id="初始化应用分组">初始化应用分组</h2>
+<blockquote>
+<p>每一个业务系统初次接入OhMyScheduler时，都需要<strong>先完成应用注册</strong>。</p>
+</blockquote>
+<p><img src="/oms-console-welcome.png" alt="WelcomePage" /></p>
+<ul>
+<li>应用注册，用于进行业务分组：
+<ul>
+<li>应用名称：关键参数，一般填入接入的业务应用名称即可，需要保证唯一。<strong>同一个应用名称的所有worker视为一个集群被调度中心调度。</strong></li>
+<li>应用描述：可选参数，便于记忆，无实际用处。</li>
+</ul>
+</li>
+<li>用户注册，用于收集报警信息，用户注册录入个人信息后，即可通过报警配置进行通知。</li>
+</ul>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#环境要求">环境要求</a></li>
+    <li><a href="#初始化关系数据库">初始化关系数据库</a></li>
+    <li><a href="#部署调度服务器源码编译">部署调度服务器—源码编译</a></li>
+    <li><a href="#部署调度服务器docker">部署调度服务器—Docker</a></li>
+    <li><a href="#单独部署前端页面可选">单独部署前端页面（可选）</a></li>
+    <li><a href="#初始化应用分组">初始化应用分组</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/1-server-startup/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/2-worker-startup/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/3-processor-develop/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/columns/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/details/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/expand/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/hints/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/katex/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/mermaid/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/tabs/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/categories/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/tags/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/</loc>
+  </url>
+  
+</urlset>

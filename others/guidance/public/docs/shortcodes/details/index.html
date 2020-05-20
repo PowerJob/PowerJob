@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Details Details shortcode is a helper for details html5 element. It is going to replace expand shortcode.
+Example {{&lt; details &#34;Title&#34; [open] &gt;}} ## Markdown content Lorem markdownum insigne... {{&lt; /details &gt;}} {{&lt; details title=&#34;Title&#34; open=true &gt;}} ## Markdown content Lorem markdownum insigne... {{&lt; /details &gt;}} Title Markdown content Lorem markdownum insigne&hellip;   ">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="" />
+<meta property="og:description" content="Details Details shortcode is a helper for details html5 element. It is going to replace expand shortcode.
+Example {{&lt; details &#34;Title&#34; [open] &gt;}} ## Markdown content Lorem markdownum insigne... {{&lt; /details &gt;}} {{&lt; details title=&#34;Title&#34; open=true &gt;}} ## Markdown content Lorem markdownum insigne... {{&lt; /details &gt;}} Title Markdown content Lorem markdownum insigne&hellip;   " />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/shortcodes/details/" />
+
+<title>Details | OhMyScheduler</title>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.1272dfb3df2a3f60e11485e0a1158d434da32177db3be3e28aae8e28aa7e9a15.js" integrity="sha256-EnLfs98qP2DhFIXgoRWNQ02jIXfbO&#43;Piiq6OKKp&#43;mhU="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <span>快速开始</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器编写</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+      
+        <li class="book-section-flat" >
+          
+  
+    <span>Shortcodes</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/columns/" class="">Columns</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/details/" class="active">Details</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/expand/" class="">Expand</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/hints/" class="">Hints</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/katex/" class="">Katex</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/mermaid/" class="">Mermaid</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/shortcodes/tabs/" class="">Tabs</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>Details</strong>
+
+  <label for="toc-control">
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#example">Example</a></li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h1 id="details">Details</h1>
+<p>Details shortcode is a helper for <code>details</code> html5 element. It is going to replace <code>expand</code> shortcode.</p>
+<h2 id="example">Example</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-tpl" data-lang="tpl"><span style="color:#75715e">{{</span><span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">details</span> <span style="color:#e6db74">&#34;Title&#34;</span> <span style="color:#f92672">[</span><span style="color:#a6e22e">open</span><span style="color:#f92672">]</span> <span style="color:#f92672">&gt;</span><span style="color:#75715e">}}</span>
+## Markdown content
+Lorem markdownum insigne...
+<span style="color:#75715e">{{</span><span style="color:#f92672">&lt;</span> <span style="color:#f92672">/</span><span style="color:#a6e22e">details</span> <span style="color:#f92672">&gt;</span><span style="color:#75715e">}}</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-tpl" data-lang="tpl"><span style="color:#75715e">{{</span><span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">details</span> <span style="color:#a6e22e">title</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Title&#34;</span> <span style="color:#a6e22e">open</span><span style="color:#f92672">=</span><span style="color:#66d9ef">true</span> <span style="color:#f92672">&gt;</span><span style="color:#75715e">}}</span>
+## Markdown content
+Lorem markdownum insigne...
+<span style="color:#75715e">{{</span><span style="color:#f92672">&lt;</span> <span style="color:#f92672">/</span><span style="color:#a6e22e">details</span> <span style="color:#f92672">&gt;</span><span style="color:#75715e">}}</span>
+</code></pre></div><details open>
+  <summary>Title</summary>
+  <div class="markdown-inner">
+    <h2 id="markdown-content">Markdown content</h2>
+<p>Lorem markdownum insigne&hellip;
+  </div>
+</details>
+
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#example">Example</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
