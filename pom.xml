@@ -40,6 +40,7 @@
         <module>oh-my-scheduler-common</module>
         <module>oh-my-scheduler-client</module>
         <module>oh-my-scheduler-worker-samples</module>
+        <module>oh-my-scheduler-worker-agent</module>
     </modules>
 
     <properties>

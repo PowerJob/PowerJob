@@ -1,5 +1,5 @@
-# 基础镜像（由于OhMyScheduler-Server的运行需要Maven和Git环境，就自己打包了一个镜像）
-FROM tjqq/jdk-maven-git:8
+# 基础镜像
+FROM openjdk:8
 # 维护者
 MAINTAINER tengjiqi@gmail.com
 # 设置环境变量
@@ -15,5 +15,4 @@ RUN mkdir -p /root/oms-server
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
 VOLUME /root/oms-server
 # 启动应用
-ENTRYPOINT ["sh","-c","java $PARAMS -jar /oms-server.jar"]
-
+ENTRYPOINT ["sh","-c","java -jar /oms-server.jar $PARAMS"]
