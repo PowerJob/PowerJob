@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>高级特性 on OhMyScheduler</title>
+    <link>https://kfcfans.gitee.io/docs/super/</link>
+    <description>Recent content in 高级特性 on OhMyScheduler</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://kfcfans.gitee.io/docs/super/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>容器</title>
+      <link>https://kfcfans.gitee.io/docs/super/container/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://kfcfans.gitee.io/docs/super/container/</guid>
+      <description>什么是容器？ 介绍 OhMyScheduler的容器技术允许开发者开发独立于Worker项目之外Java处理器，简单来说，就是以Maven工程项目的维度去组织一堆Java文件（开发者开发的众多脚本处理器），进而兼具开发效率和可维护性。
+用途举例  比如，突然出现了某个数据库数据清理任务，与主业务无关，写进原本的项目工程中不太优雅，这时候就可以单独创建一个用于数据操作的容器，在里面完成处理器的开发，通过OhMyScheduler的容器部署技术在Worker集群上被加载执行。 比如，常见的日志清理啊，机器状态上报啊，对于广大Java程序员来说，也许并不是很会写shell脚本，此时也可以借用agent+容器技术，利用Java完成各项原本需要通过脚本进行的操作。  （感觉例子举的都不是很好&amp;hellip;这个东西嘛，只可意会不可言传，大家努力理解一下吧～超好用哦～）
+生成容器模版 为了方便开发者使用，最新版本的前端页面已经支持容器工程模版的自动生成，开发者仅需要填入相关信息即可下载容器模版开始开发。   Group：对应Maven的&amp;lt;groupId&amp;gt;标签，一般填入倒写的公司域名。 Artifact：对于Maven的&amp;lt;artifactId&amp;gt;标签，填入代表该容器的唯一标示。 Name：对应Maven的&amp;lt;name&amp;gt;标签，填入该容器名称。 Package Name：包名，代表了的容器工程内部所使用的包名，警告：包名一旦生成后，请勿更改！否则会导致运行时容器加载错误（当然，如有必须修改包名的需求，可以尝试替换/resource下以oms-worker-container开头的所有文件相关的值）。 Java Version：容器工程的Java版本，请务必与容器目标部署Worker平台的Java版本保持一致。  开发容器工程 完成容器模版创建后，下载，解压，会得到如下结构的Java工程：
+oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └── src ├── main │ ├── java │ │ └── cn │ │ └── edu │ │ └── zju │ │ └── tjq │ │ └── container │ │ └── samples // 所有处理器代码必须位于该目录下，其余类随意 │ └── resources // 严禁随意更改以下两个配置文件（允许添加，不允许更改现有内容） │ ├── oms-worker-container-spring-context.xml │ └── oms-worker-container.</description>
+    </item>
+    
+    <item>
+      <title>OpenAPI</title>
+      <link>https://kfcfans.gitee.io/docs/super/openapi/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://kfcfans.gitee.io/docs/super/openapi/</guid>
+      <description>OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活。开发者可以基于API便捷地扩展OhMyScheduler原有的功能。  依赖 最新依赖版本请参考Maven中央仓库：推荐地址&amp;amp;备用地址。
+&amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;com.github.kfcfans&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;oh-my-scheduler-client&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;1.2.0&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; 简单示例 // 初始化 client，需要server地址和应用名称作为参数 OhMyClient ohMyClient = new OhMyClient(&amp;#34;127.0.0.1:7700&amp;#34;, &amp;#34;oms-test&amp;#34;); // 调用相关的API ohMyClient.stopInstance(1586855173043L) API列表 创建/修改任务 接口签名：ResultDTO&amp;lt;Long&amp;gt; saveJob(ClientJobInfo newJobInfo)
+入参：任务信息（详细说明见下表，也可以参考前端任务创建各参数的正确填法）
+返回值：ResultDTO，根据success判断操作是否成功。若操作成功，data字段返回任务ID
+   属性 说明     jobId 任务ID，可选，null代表创建任务，否则填写需要修改的任务ID   jobName 任务名称   jobDescription 任务描述   jobParams 任务参数，Processor#process方法入参TaskContext对象的jobParams字段   timeExpressionType 时间表达式类型，枚举值   timeExpression 时间表达式，填写类型由timeExpressionType决定，比如CRON需要填写CRON表达式   executeType 执行类型，枚举值   processorType 处理器类型，枚举值   processorInfo 处理器参数，填写类型由processorType决定，如Java处理器需要填写全限定类名，如：com.</description>
+    </item>
+    
+  </channel>
+</rss>
