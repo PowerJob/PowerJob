@@ -23,6 +23,7 @@ import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -192,6 +193,9 @@ public class ProcessorRunnable implements Runnable {
     // 裁剪返回结果到合适的大小
     private String suit(String result) {
 
+        if (StringUtils.isEmpty(result)) {
+            return "";
+        }
         final int maxLength = OhMyWorker.getConfig().getMaxResultLength();
         if (result.length() <= maxLength) {
             return result;

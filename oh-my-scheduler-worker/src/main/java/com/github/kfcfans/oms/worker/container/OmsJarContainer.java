@@ -100,23 +100,16 @@ public class OmsJarContainer implements OmsContainer {
         // 创建类加载器（父类加载为 Worker 的类加载）
         this.containerClassLoader = new OhMyClassLoader(new URL[]{jarURL}, this.getClass().getClassLoader());
 
-        // 获取资源文件
-        URL propertiesURL = containerClassLoader.getResource(ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME);
-        URL springXmlURL = containerClassLoader.getResource(ContainerConstant.SPRING_CONTEXT_FILE_NAME);
-
-        if (propertiesURL == null) {
-            log.error("[OmsJarContainer-{}] can't find {} in jar {}.", containerId, ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME, localJarFile.getPath());
-            throw new OmsWorkerException("invalid jar file");
-        }
-        if (springXmlURL == null) {
-            log.error("[OmsJarContainer-{}] can't find {} in jar {}.", containerId, ContainerConstant.SPRING_CONTEXT_FILE_NAME, localJarFile.getPath());
-            throw new OmsWorkerException("invalid jar file");
-        }
-
         // 解析 Properties
         Properties properties = new Properties();
-        try (InputStream is = propertiesURL.openStream()) {
-            properties.load(is);
+        try (InputStream propertiesURLStream = containerClassLoader.getResourceAsStream(ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME)) {
+
+            if (propertiesURLStream == null) {
+                log.error("[OmsJarContainer-{}] can't find {} in jar {}.", containerId, ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME, localJarFile.getPath());
+                throw new OmsWorkerException("invalid jar file because of no " + ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME);
+            }
+
+            properties.load(propertiesURLStream);
             log.info("[OmsJarContainer-{}] load container properties successfully: {}", containerId, properties);
         }
         String packageName = properties.getProperty(ContainerConstant.CONTAINER_PACKAGE_NAME_KEY);
@@ -129,9 +122,16 @@ public class OmsJarContainer implements OmsContainer {
         containerClassLoader.load(packageName);
 
         // 创建 Spring IOC 容器（Spring配置文件需要填相对路径）
-        this.container = new ClassPathXmlApplicationContext(new String[]{ContainerConstant.SPRING_CONTEXT_FILE_NAME}, false);
-        this.container.setClassLoader(containerClassLoader);
-        this.container.refresh();
+        // 需要切换线程上下文类加载器以加载 JDBC 类驱动（SPI）
+        ClassLoader oldCL = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(containerClassLoader);
+        try {
+            this.container = new ClassPathXmlApplicationContext(new String[]{ContainerConstant.SPRING_CONTEXT_FILE_NAME}, false);
+            this.container.setClassLoader(containerClassLoader);
+            this.container.refresh();
+        }finally {
+            Thread.currentThread().setContextClassLoader(oldCL);
+        }
 
         log.info("[OmsJarContainer] init container(name={},jarPath={}) successfully", containerId, localJarFile.getPath());
     }
