@@ -30,7 +30,7 @@ public class MainApplication implements Runnable {
     private String storeStrategy = "DISK";
 
     @Option(names = {"-s", "--server"}, description = "调度中心地址，多值英文逗号分隔，格式 IP:Port OR domain")
-    private String server = "127.0.0.1:7700";
+    private String server = "localhost:7700";
 
     @Option(names = {"-l", "--length"}, description = "返回值最大长度")
     private int length = 1024;

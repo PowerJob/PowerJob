@@ -15,6 +15,7 @@ import com.github.kfcfans.oms.server.web.request.GenerateContainerTemplateReques
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
 import com.github.kfcfans.oms.server.web.response.ContainerInfoVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,6 +94,10 @@ public class ContainerController {
     public ResultDTO<String> listDeployedWorker(Long appId, Long containerId, HttpServletResponse response) {
         AppInfoDO appInfoDO = appInfoRepository.findById(appId).orElseThrow(() -> new IllegalArgumentException("can't find app by id:" + appId));
         String targetServer = appInfoDO.getCurrentServer();
+
+        if (StringUtils.isEmpty(targetServer)) {
+            return ResultDTO.failed("No workers have even registered！");
+        }
 
         // 转发 HTTP 请求
         if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {

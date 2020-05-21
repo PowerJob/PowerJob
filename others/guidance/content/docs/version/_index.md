@@ -1,6 +1,6 @@
 ---
-weight: 1000
+weight: 3
 bookFlatSection: false
-title: "更新日志"
+title: "版本与升级"
 ---
 

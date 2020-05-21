@@ -26,7 +26,7 @@
 
     <!-- 系统所有异常日志（ERROR）双写 start -->
     <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/oms-server-error.log</file>
+        <file>${LOG_PATH}/oms-agent-error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>${LOG_PATH}/oms-agent-error.%d{yyyy-MM-dd}.log</FileNamePattern>
             <MaxHistory>7</MaxHistory>
@@ -46,7 +46,7 @@
 
     <!-- 系统主日志 start -->
     <appender name="DEFAULT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/oms-server-application.log</file>
+        <file>${LOG_PATH}/oms-agent-application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>${LOG_PATH}/oms-agent-application.%d{yyyy-MM-dd}.log</FileNamePattern>
             <MaxHistory>7</MaxHistory>

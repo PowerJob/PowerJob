@@ -106,6 +106,22 @@ public class OhMySchedulerConfig {
 
 > agent是一个没有任何业务逻辑的执行器（其实就是为worker加了一个main方法）。
 
+{{< hint info >}}
+**推荐直接使用Docker部署：[oms-agent](https://hub.docker.com/r/tjqq/oms-agent/tags)**
+
+{{< /hint >}}
+
+与server一样，启动参数通过环境变量`-e PARAMS`传入，全部参数请见底部。
+
+```shell
+docker run -d 
+-e PARAMS="--app oms-agent-test --server 192.168.1.1:7700,192.168.1.2:7700"
+-p 27777:27777 --name my-oms-agent
+-v ~/docker/my-oms-agent:/root tjqq/oms-agent:$version
+```
+
+***
+
 代码编译方式启动示例：`java -jar oh-my-scheduler-worker-agent-1.2.0.jar -a my-agent`：
 
 ```
@@ -123,4 +139,3 @@ OhMyScheduler-Worker代理
 
 ```
 
-Docker镜像：[Docker Hub](https://hub.docker.com/r/tjqq/oms-agent)

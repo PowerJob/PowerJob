@@ -52,7 +52,7 @@ weight: 1
 
 {{< /hint >}}
 
-[Docker Hub地址](https://hub.docker.com/r/tjqq/oms-server)
+[Docker Hub地址](https://hub.docker.com/r/tjqq/oms-server/tags)
 
 部署流程：
 
