@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.server.service.timing;
 
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
+import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,9 @@ public class CleanService {
     @Async("omsTimingPool")
     @Scheduled(cron = CLEAN_TIME_EXPRESSION)
     public void timingClean() {
+
+        WorkerManagerService.releaseContainerInfos();
+
         cleanLocal(OmsFileUtils.genLogDirPath(), localLogRetentionDay);
         cleanLocal(OmsFileUtils.genContainerJarPath(), localContainerRetentionDay);
         cleanLocal(OmsFileUtils.genTemporaryPath(), TEMPORARY_RETENTION_DAY);

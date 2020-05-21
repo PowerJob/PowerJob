@@ -83,7 +83,7 @@ docker run -d
 
 > 每一个业务系统初次接入OhMyScheduler时，都需要**先完成应用注册**。
 
-![WelcomePage](/oms-console-welcome.png)
+![WelcomePage](/ohmyscheduler/oms-console-welcome.png)
 
 * 应用注册，用于进行业务分组：
   * 应用名称：关键参数，一般填入接入的业务应用名称即可，需要保证唯一。**同一个应用名称的所有worker视为一个集群被调度中心调度。**

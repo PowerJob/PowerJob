@@ -93,4 +93,10 @@ public class WorkerManagerService {
         return clusterStatusHolder.getDeployedContainerInfos(containerId);
     }
 
+    /**
+     * 释放所有本地存储的容器信息（该操作会导致短暂的 listDeployedContainer 服务不可用）
+     */
+    public static void releaseContainerInfos() {
+        appId2ClusterStatus.values().forEach(ClusterStatusHolder::releaseContainerInfos);
+    }
 }

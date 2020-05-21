@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.service;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.model.GitRepoInfo;
 import com.github.kfcfans.oms.common.request.ServerDeployContainerRequest;
 import com.github.kfcfans.oms.common.request.ServerDestroyContainerRequest;
@@ -16,7 +17,7 @@ import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.oms.server.service.lock.LockService;
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -260,6 +261,57 @@ public class ContainerService {
         }finally {
             lockService.unlock(deployLock);
         }
+    }
+
+    /**
+     * 获取部署信息
+     * @param appId 容器所属应用ID
+     * @param containerId 容器ID
+     * @return 拼接好的可阅读字符串
+     */
+    public String fetchDeployedInfo(Long appId, Long containerId) {
+        List<DeployedContainerInfo> infoList = WorkerManagerService.getDeployedContainerInfos(appId, containerId);
+
+        Set<String> aliveWorkers = WorkerManagerService.getActiveWorkerInfo(appId).keySet();
+
+        Set<String> deployedList = Sets.newLinkedHashSet();
+        List<String> unDeployedList = Lists.newLinkedList();
+        Multimap<String, String> version2Address = ArrayListMultimap.create();
+        infoList.forEach(info -> {
+            String targetWorkerAddress = info.getWorkerAddress();
+            if (aliveWorkers.contains(targetWorkerAddress)) {
+                deployedList.add(targetWorkerAddress);
+                version2Address.put(targetWorkerAddress, info.getVersion());
+            }else {
+                unDeployedList.add(targetWorkerAddress);
+            }
+        });
+
+        StringBuilder sb = new StringBuilder("========== DeployedInfo ==========").append(System.lineSeparator());
+        // 集群分裂，各worker版本不统一，问题很大
+        if (version2Address.keySet().size() > 1) {
+            sb.append("WARN: there exists multi version container now, please redeploy to fix this problem").append(System.lineSeparator());
+            sb.append("divisive version ==> ").append(System.lineSeparator());
+            version2Address.forEach((v, addressList) -> {
+                sb.append("version: ").append(v).append(System.lineSeparator());
+                sb.append(addressList);
+            });
+            sb.append(System.lineSeparator());
+        }
+        // 当前在线未部署机器
+        if (!CollectionUtils.isEmpty(unDeployedList)) {
+            sb.append("WARN: there exists unDeployed worker(OhMyScheduler will auto fix when some job need to process)").append(System.lineSeparator());
+            sb.append("unDeployed worker list ==> ").append(System.lineSeparator());
+        }
+        // 当前部署机器
+        sb.append("deployed worker list ==> ").append(System.lineSeparator());
+        if (CollectionUtils.isEmpty(deployedList)) {
+            sb.append("no worker deployed now~");
+        }else {
+            sb.append(deployedList);
+        }
+
+        return sb.toString();
     }
 
     private File prepareJarFile(ContainerInfoDO container, Session session) throws Exception {

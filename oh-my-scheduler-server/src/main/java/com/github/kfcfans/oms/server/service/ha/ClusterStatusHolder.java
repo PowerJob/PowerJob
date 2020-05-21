@@ -49,7 +49,7 @@ public class ClusterStatusHolder {
 
         Long oldTime = address2ActiveTime.getOrDefault(workerAddress, -1L);
         if (heartbeatTime < oldTime) {
-            log.warn("[ClusterStatusHolder] receive the old heartbeat: {}.", heartbeat);
+            log.warn("[ClusterStatusHolder-{}] receive the old heartbeat: {}.", appName, heartbeat);
             return;
         }
 
@@ -126,6 +126,15 @@ public class ClusterStatusHolder {
             res.add(info);
         });
         return res;
+    }
+
+    /**
+     * 释放所有本地存储的容器信息（该操作会导致短暂的 listDeployedContainer 服务不可用）
+     */
+    public void releaseContainerInfos() {
+        log.info("[ClusterStatusHolder-{}] clean the containerInfos, listDeployedContainer service may down about 1min~", appName);
+        // 丢弃原来的所有数据，准备重建
+        containerId2Infos = Maps.newConcurrentMap();
     }
 
     private boolean timeout(String address) {

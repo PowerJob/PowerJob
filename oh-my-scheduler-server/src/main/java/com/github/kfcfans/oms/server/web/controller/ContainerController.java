@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
@@ -12,7 +11,6 @@ import com.github.kfcfans.oms.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.ContainerInfoRepository;
 import com.github.kfcfans.oms.server.service.ContainerService;
-import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.oms.server.web.request.GenerateContainerTemplateRequest;
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
 import com.github.kfcfans.oms.server.web.response.ContainerInfoVO;
@@ -25,7 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,7 +90,7 @@ public class ContainerController {
     }
 
     @GetMapping("/listDeployedWorker")
-    public ResultDTO<List<DeployedContainerInfo>> listDeployedWorker(Long appId, Long containerId, HttpServletResponse response) {
+    public ResultDTO<String> listDeployedWorker(Long appId, Long containerId, HttpServletResponse response) {
         AppInfoDO appInfoDO = appInfoRepository.findById(appId).orElseThrow(() -> new IllegalArgumentException("can't find app by id:" + appId));
         String targetServer = appInfoDO.getCurrentServer();
 
@@ -106,7 +105,7 @@ public class ContainerController {
                 return ResultDTO.failed(e);
             }
         }
-        return ResultDTO.success(WorkerManagerService.getDeployedContainerInfos(appId, containerId));
+        return ResultDTO.success(containerService.fetchDeployedInfo(appId, containerId));
     }
 
     private static ContainerInfoVO convert(ContainerInfoDO containerInfoDO) {
