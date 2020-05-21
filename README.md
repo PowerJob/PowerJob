@@ -31,7 +31,7 @@
 
 
 # 文档
-**[主地址](http://kfcfans.gitee.io/ohmyscheduler/)** OR **[备用地址](https://kfcfans.gitee.io/ohmyscheduler/)**
+**[主地址](https://kfcfans.gitee.io/ohmyscheduler/)** OR **[备用地址](https://kfcfans.gitee.io/ohmyscheduler/)**
 
 # 参考
 >Alibaba SchedulerX 2.0
