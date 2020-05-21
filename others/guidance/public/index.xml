@@ -23,6 +23,18 @@ oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └�
     </item>
     
     <item>
+      <title>更新日志</title>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/version/update/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/version/update/</guid>
+      <description>规范：语义化版本 为了避免后期维护困难，本框架需要时刻遵守如下准则：  版本格式：主版本号.次版本号.修订号
+递增规则：
+ 主版本号：当做了不兼容的 API 修改 次版本号：当你做了向下兼容的功能性新增 修订号：当你做了向下兼容的问题修正  更新记录 v1.2.0 [2020.5.21]  新增容器扩展能力，极大提升系统的灵活性和扩展性。 新增OhMyAgent代理worker，与容器技术相结合可提供巨大的灵活可定制性。 新增“垃圾回收机制”，定期清理工作区产生的垃圾，降低磁盘占用。 新增OhMyClient高可用特性，允许开发者填入多个IP进行容错。 切换Web容器，为了获得更好的websocket支持，OhMyScheduler当前使用undertow取代Tomcat作为Web容器。 移除Worker自动寻找可用端口功能，目前仅使用配置文件制定的端口。 更改了worker序列化框架复用技术，从对象池切换到了ThreadLocal（为了容器技术而作出的微小性能牺牲）。 美化了前端页面（再次感谢某知名上市电商公司前端工程师对本项目的大力支持）！ 修复在线日志在部分情况下无法正确显示的BUG。 修复了若干（我想不起来了但是确实修复了的）BUG～  v1.1.0 [2020.5.11]  新增在线日志功能，可在控制台直接查看任务运行时日志，高效便捷！ 美化了部分前端页面（T_T） 修复若干BUG～  v1.0.0 [2020.4.20] 第一个正式版本，发布了以下特性：
+ 支持CRON、固定频率、固定延迟和API四种调度策略。 支持单机、广播、MapReduce三种执行模式。 支持任意的水平扩展，性能强劲无上限。 具有强大的故障转移与恢复能力，只要保证集群可用节点数足够，任务就能顺利完成。 仅依赖数据库，部署简单，上手容易，开发高效，仅需几行代码即可获得整个集群的分布式计算能力。 支持SpringBean、普通Java类（内置/外置）、Shell、Python等处理器。  </description>
+    </item>
+    
+    <item>
       <title>调度中心（Server）部署</title>
       <link>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/1-server-startup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -65,6 +77,15 @@ oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └�
     </item>
     
     <item>
+      <title>迁移指南</title>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/version/migrate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/version/migrate/</guid>
+      <description>记录当发生不兼容的版本变更时，开发者需要做出的升级和迁移。  暂无</description>
+    </item>
+    
+    <item>
       <title>处理器开发</title>
       <link>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/3-processor-develop/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -92,6 +113,33 @@ ProcessResult process(TaskContext context) throws Exception; 方法入参TaskCon
  内置Java处理器 -&amp;gt; 填写该处理器的全限定类名（eg, com.github.kfcfans.oms.processors.demo.MapReduceProcessorDemo） Java容器 -&amp;gt; 填写容器ID#处理器全限定类名（eg，1#com.github.kfcfans.oms.container.DemoProcessor） SHELL -&amp;gt; 填写需要处理的脚本（直接复制文件内容）或脚本下载连接（http://xxx） PYTHON -&amp;gt; 填写完整的python脚本或下载连接（http://xxx）    运行配置
  最大实例数：该任务同时执行的数量（任务和实例就像是类和对象的关系，任务被调度执行后被称为实例） 单机线程并发数：该实例执行过程中每个Worker使用的线程数量（MapReduce任务生效，其余无论填什么，都只会使用1个线程或3个线程&amp;hellip;） 运行时间限制：限定任务的最大运行时间，超时则视为失败，单位毫秒，0代表不限制超时时间。    重试配置：
  任务重试次数：实例级别，失败了整个任务实例重试，会更换TaskTracker（本次任务实例的Master节点），代价较大，大型Map/MapReduce慎用。 子任务重试次数：Task级别，每个子Task失败后单独重试，会更换ProcessorTracker（本次任务实际执行的Worker节点），代价较小，推荐使用。 注：对于单机任务来说，假如任务重试次数和子任务重试次数都配置了1且都执行失败，实际执行次数会变成4次！推荐任务实例重试配置为0，子任务重试次数根据实际情况配置。    机器配置：用来标明允许执行任务的机器状态，避开那些摇摇欲坠的机器，0代表无任何限制。</description>
+    </item>
+    
+    <item>
+      <title>开发计划</title>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/todo/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/todo/</guid>
+      <description>截止目前（v1.2.0），框架的基本功能（调度和分布式计算）已经趋于稳定，大家可以放心接入使用。不过为了使框架更为成熟易用，仍有需要不断改进和开发的地方。  下阶段规划  支持DAG工作流 任务的优先级系统，需要可抢占式实现，而不是SchedulerX那种傻等式 在线日志的限流 &amp;amp; 本地数据库分表提升在线日志最大吞吐量 保护性判断（优先级较低，太繁琐了且意义不大，毕竟面向开发者，大家不会乱填参数对不对～）  共同建设邀请 (❁´◡`❁)✲ﾟ 都看到这里了，相比您对本项目产生了浓厚的兴趣，欢迎加入开源社区，为框架贡献自己的力量～
+（PR、Issue求求了～）
+如果有什么想法、建议或意见，都欢迎联系作者：tengjiqi@gmail.com。</description>
+    </item>
+    
+    <item>
+      <title>FAQ</title>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/faq/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/faq/</guid>
+      <description>这里记录一些好问题和高频问题。  Q：生成环境能用吗？ A：可以。框架从发布到现在已经趋于稳定，且开发者@KFCFans当前有充足的时间维护框架，一旦发现bug，可以联系我，保证第一时间修复！
+Q：请问，有没有通过API增删改查执行的操作？ A：OpenAPI就是为此而生的。OpenAPI在Http的基础上进行了封装，提供规范的接口完成任务的管理与运维。
+Q：Ignite也支持分布式计算，请问这个项目有什么优势？ A：从本质上讲，OhMyScheduler是一个具有分布式计算能力的调度平台，而Ignite是一个分布式计算平台，前者立足于调度（虽然本项目的亮点是分布式计算没错啦…），后者立足于大数据计算，两者立足点不同。
+从分布式计算的角度来讲，Ignite确实具备全部OhMyScheduler的功能（毕竟人家是Apache顶级项目&amp;hellip;），OhMyScheduler-Worker集群可以看成嵌入式的Ignite集群，整体对外提供服务。两者虽然表面上功能有所重合，但背后的设计理念是截然不同的。
+Ignite本质上是由分布式内存SQL数据库发展而来的分布式计算平台，它解决的问题更偏向于大数据处理（Spark、Hadoop之类），因此对于传统的Java项目并不是非常友好，比如官方推荐的部署模式是建立独立的Ignite集群负责计算，业务应用只负责提交代码。再比如获取各种资源（Spring Bean）都需要先注入Ignite中，这对于依赖繁杂的业务来说是非常痛苦的。
+而OhMyScheduler就是面向业务应用设计的，从示例代码中也能看出，开发OhMyScheduler的处理器是没有任何额外的成本的，想要某个SpringBean，直接注入即可。想要分发任务，调用map方法即可，开发者的学习和使用成本会低很多。
+一句话总结就是：Ignite的分布式计算偏向于数据侧，适用于大数据处理。而OhMyScheduler的分布式计算偏向于业务侧，适用于传统Java应用的业务处理。
+此外，高效开发一直是OhMyScheduler的设计理念，像在线查看任务运行情况、在线查看任务运行日志等功能，在实际开发中将会非常实用。</description>
     </item>
     
   </channel>

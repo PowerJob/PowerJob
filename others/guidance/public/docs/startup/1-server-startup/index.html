@@ -28,7 +28,7 @@
 <link rel="manifest" href="/ohmyscheduler/manifest.json">
 <link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
 <link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
-<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
+<script defer src="/ohmyscheduler/en.search.min.8c0739389d262fcac555a16288129e832618f93ba193658e88e4cfeb51a71475.js" integrity="sha256-jAc5OJ0mL8rFVaFiiBKegyYY&#43;Tuhk2WOiOTP61GnFHU="></script>
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -183,7 +183,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <span>更新日志</span>
+    <span>版本与升级</span>
   
 
           
@@ -194,7 +194,47 @@ https://github.com/alex-shpak/hugo-book
   
   <ul>
     
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/version/update/" class="">更新日志</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/version/migrate/" class="">迁移指南</a>
+  
+
+        </li>
+      
+    
   </ul>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/todo/" class="">开发计划</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/faq/" class="">FAQ</a>
   
 
         </li>
@@ -368,7 +408,7 @@ https://github.com/alex-shpak/hugo-book
   <strong>建议自己根据项目中的Dockerfile稍作修改，制作自己的Docker镜像，而不是直接使用官方镜像</strong>！原因在于：容器功能需要用到Git和Maven来编译代码库，而公司内部往往都会搭建自己的私有仓库，所以Git容器功能没办法正常运行（即，<strong>官方镜像中的调度服务器不支持Git容器的部署</strong>）。
 </blockquote>
 
-<p><a href="https://hub.docker.com/r/tjqq/oms-server">Docker Hub地址</a></p>
+<p><a href="https://hub.docker.com/r/tjqq/oms-server/tags">Docker Hub地址</a></p>
 <p>部署流程：</p>
 <ol>
 <li>下载镜像：<code>docker pull tjqq/oms-server</code></li>
@@ -394,7 +434,7 @@ https://github.com/alex-shpak/hugo-book
 <blockquote>
 <p>每一个业务系统初次接入OhMyScheduler时，都需要<strong>先完成应用注册</strong>。</p>
 </blockquote>
-<p><img src="/oms-console-welcome.png" alt="WelcomePage" /></p>
+<p><img src="/ohmyscheduler/oms-console-welcome.png" alt="WelcomePage" /></p>
 <ul>
 <li>应用注册，用于进行业务分组：
 <ul>

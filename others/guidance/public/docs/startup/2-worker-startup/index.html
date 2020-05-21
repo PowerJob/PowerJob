@@ -22,7 +22,7 @@
 <link rel="manifest" href="/ohmyscheduler/manifest.json">
 <link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
 <link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
-<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
+<script defer src="/ohmyscheduler/en.search.min.8c0739389d262fcac555a16288129e832618f93ba193658e88e4cfeb51a71475.js" integrity="sha256-jAc5OJ0mL8rFVaFiiBKegyYY&#43;Tuhk2WOiOTP61GnFHU="></script>
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -177,7 +177,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <span>更新日志</span>
+    <span>版本与升级</span>
   
 
           
@@ -188,7 +188,47 @@ https://github.com/alex-shpak/hugo-book
   
   <ul>
     
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/version/update/" class="">更新日志</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/version/migrate/" class="">迁移指南</a>
+  
+
+        </li>
+      
+    
   </ul>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/todo/" class="">开发计划</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/faq/" class="">FAQ</a>
   
 
         </li>
@@ -371,6 +411,16 @@ https://github.com/alex-shpak/hugo-book
 <blockquote>
 <p>agent是一个没有任何业务逻辑的执行器（其实就是为worker加了一个main方法）。</p>
 </blockquote>
+<blockquote class="book-hint info">
+  <strong>推荐直接使用Docker部署：<a href="https://hub.docker.com/r/tjqq/oms-agent/tags">oms-agent</a></strong>
+</blockquote>
+
+<p>与server一样，启动参数通过环境变量<code>-e PARAMS</code>传入，全部参数请见底部。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">docker run -d 
+-e PARAMS<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;--app oms-agent-test --server 192.168.1.1:7700,192.168.1.2:7700&#34;</span>
+-p 27777:27777 --name my-oms-agent
+-v ~/docker/my-oms-agent:/root tjqq/oms-agent:$version
+</code></pre></div><hr>
 <p>代码编译方式启动示例：<code>java -jar oh-my-scheduler-worker-agent-1.2.0.jar -a my-agent</code>：</p>
 <pre><code>Usage: OhMyAgent [-hV] -a=&lt;appName&gt; [-e=&lt;storeStrategy&gt;] [-l=&lt;length&gt;]
                  [-p=&lt;port&gt;] [-s=&lt;server&gt;]
@@ -384,8 +434,7 @@ OhMyScheduler-Worker代理
   -s, --server=&lt;server&gt;   调度中心地址，多值英文逗号分隔，格式 IP:Port OR domain
   -V, --version           Print version information and exit.
 
-</code></pre><p>Docker镜像：<a href="https://hub.docker.com/r/tjqq/oms-agent">Docker Hub</a></p>
-</article>
+</code></pre></article>
  
       
 

@@ -11,6 +11,10 @@
   </url>
   
   <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/version/update/</loc>
+  </url>
+  
+  <url>
     <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/1-server-startup/</loc>
   </url>
   
@@ -23,6 +27,10 @@
   </url>
   
   <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/version/migrate/</loc>
+  </url>
+  
+  <url>
     <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/super/</loc>
   </url>
   
@@ -31,11 +39,19 @@
   </url>
   
   <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/version/</loc>
+  </url>
+  
+  <url>
     <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/4-console-guide/</loc>
   </url>
   
   <url>
-    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/version/</loc>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/todo/</loc>
+  </url>
+  
+  <url>
+    <loc>https://kfcfans.gitee.io/ohmyscheduler/docs/faq/</loc>
   </url>
   
   <url>
