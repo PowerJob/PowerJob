@@ -26,13 +26,13 @@
  最大实例数：该任务同时执行的数量（任务和实例就像是类和对象的关系，任务被调度执行后被称为实例） 单机线程并发数：该实例执行过程中每个Worker使用的线程数量（MapReduce任务生效，其余无论填什么，都只会使用1个线程或3个线程&hellip;） 运行时间限制：限定任务的最大运行时间，超时则视为失败，单位毫秒，0代表不限制超时时间。    重试配置：
  任务重试次数：实例级别，失败了整个任务实例重试，会更换TaskTracker（本次任务实例的Master节点），代价较大，大型Map/MapReduce慎用。 子任务重试次数：Task级别，每个子Task失败后单独重试，会更换ProcessorTracker（本次任务实际执行的Worker节点），代价较小，推荐使用。 注：对于单机任务来说，假如任务重试次数和子任务重试次数都配置了1且都执行失败，实际执行次数会变成4次！推荐任务实例重试配置为0，子任务重试次数根据实际情况配置。    机器配置：用来标明允许执行任务的机器状态，避开那些摇摇欲坠的机器，0代表无任何限制。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://kfcfans.gitee.io/docs/startup/4-console-guide/" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/startup/4-console-guide/" />
 
 <title>任务管理与在线运维 | OhMyScheduler</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon.png" type="image/x-icon">
-<link rel="stylesheet" href="/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
-<script defer src="/en.search.min.c80848d3c77260233d9a08502d528e5cb516bb11e5df300ef34c5507c61f37fd.js" integrity="sha256-yAhI08dyYCM9mghQLVKOXLUWuxHl3zAO80xVB8YfN/0="></script>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -48,7 +48,7 @@ https://github.com/alex-shpak/hugo-book
       
   <nav>
 <h2 class="book-brand">
-  <a href="/"><span>OhMyScheduler</span>
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
   </a>
 </h2>
 
@@ -100,7 +100,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
   
 
         </li>
@@ -110,7 +110,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
   
 
         </li>
@@ -120,7 +120,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/3-processor-develop/" class="">处理器开发</a>
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器开发</a>
   
 
         </li>
@@ -130,7 +130,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/4-console-guide/" class="active">任务管理与在线运维</a>
+    <a href="/ohmyscheduler/docs/startup/4-console-guide/" class="active">任务管理与在线运维</a>
   
 
         </li>
@@ -161,7 +161,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/container/" class="">容器</a>
+    <a href="/ohmyscheduler/docs/super/container/" class="">容器</a>
   
 
         </li>
@@ -171,7 +171,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/openapi/" class="">OpenAPI</a>
+    <a href="/ohmyscheduler/docs/super/openapi/" class="">OpenAPI</a>
   
 
         </li>
@@ -237,13 +237,13 @@ https://github.com/alex-shpak/hugo-book
         
   <div class="flex align-center justify-between">
   <label for="menu-control">
-    <img src="/svg/menu.svg" class="book-icon" alt="Menu" />
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
   <strong>任务管理与在线运维</strong>
 
   <label for="toc-control">
-    <img src="/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
   </label>
 </div>
 

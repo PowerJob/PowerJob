@@ -14,13 +14,13 @@ oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └�
 生成容器模版 为了方便开发者使用，最新版本的前端页面已经支持容器工程模版的自动生成，开发者仅需要填入相关信息即可下载容器模版开始开发。   Group：对应Maven的&lt;groupId&gt;标签，一般填入倒写的公司域名。 Artifact：对于Maven的&lt;artifactId&gt;标签，填入代表该容器的唯一标示。 Name：对应Maven的&lt;name&gt;标签，填入该容器名称。 Package Name：包名，代表了的容器工程内部所使用的包名，警告：包名一旦生成后，请勿更改！否则会导致运行时容器加载错误（当然，如有必须修改包名的需求，可以尝试替换/resource下以oms-worker-container开头的所有文件相关的值）。 Java Version：容器工程的Java版本，请务必与容器目标部署Worker平台的Java版本保持一致。  开发容器工程 完成容器模版创建后，下载，解压，会得到如下结构的Java工程：
 oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └── src ├── main │ ├── java │ │ └── cn │ │ └── edu │ │ └── zju │ │ └── tjq │ │ └── container │ │ └── samples // 所有处理器代码必须位于该目录下，其余类随意 │ └── resources // 严禁随意更改以下两个配置文件（允许添加，不允许更改现有内容） │ ├── oms-worker-container-spring-context.xml │ └── oms-worker-container." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://kfcfans.gitee.io/docs/super/container/" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/super/container/" />
 
 <title>容器 | OhMyScheduler</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon.png" type="image/x-icon">
-<link rel="stylesheet" href="/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
-<script defer src="/en.search.min.c80848d3c77260233d9a08502d528e5cb516bb11e5df300ef34c5507c61f37fd.js" integrity="sha256-yAhI08dyYCM9mghQLVKOXLUWuxHl3zAO80xVB8YfN/0="></script>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -36,7 +36,7 @@ https://github.com/alex-shpak/hugo-book
       
   <nav>
 <h2 class="book-brand">
-  <a href="/"><span>OhMyScheduler</span>
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
   </a>
 </h2>
 
@@ -88,7 +88,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
   
 
         </li>
@@ -98,7 +98,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
   
 
         </li>
@@ -108,7 +108,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/3-processor-develop/" class="">处理器开发</a>
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器开发</a>
   
 
         </li>
@@ -118,7 +118,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
+    <a href="/ohmyscheduler/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
   
 
         </li>
@@ -149,7 +149,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/container/" class="active">容器</a>
+    <a href="/ohmyscheduler/docs/super/container/" class="active">容器</a>
   
 
         </li>
@@ -159,7 +159,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/openapi/" class="">OpenAPI</a>
+    <a href="/ohmyscheduler/docs/super/openapi/" class="">OpenAPI</a>
   
 
         </li>
@@ -225,13 +225,13 @@ https://github.com/alex-shpak/hugo-book
         
   <div class="flex align-center justify-between">
   <label for="menu-control">
-    <img src="/svg/menu.svg" class="book-icon" alt="Menu" />
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
   <strong>容器</strong>
 
   <label for="toc-control">
-    <img src="/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
   </label>
 </div>
 

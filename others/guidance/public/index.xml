@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>介绍 on OhMyScheduler</title>
-    <link>https://kfcfans.gitee.io/</link>
+    <link>https://kfcfans.gitee.io/ohmyscheduler/</link>
     <description>Recent content in 介绍 on OhMyScheduler</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     
-	<atom:link href="https://kfcfans.gitee.io/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://kfcfans.gitee.io/ohmyscheduler/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>容器</title>
-      <link>https://kfcfans.gitee.io/docs/super/container/</link>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/super/container/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://kfcfans.gitee.io/docs/super/container/</guid>
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/super/container/</guid>
       <description>什么是容器？ 介绍 OhMyScheduler的容器技术允许开发者开发独立于Worker项目之外Java处理器，简单来说，就是以Maven工程项目的维度去组织一堆Java文件（开发者开发的众多脚本处理器），进而兼具开发效率和可维护性。
 用途举例  比如，突然出现了某个数据库数据清理任务，与主业务无关，写进原本的项目工程中不太优雅，这时候就可以单独创建一个用于数据操作的容器，在里面完成处理器的开发，通过OhMyScheduler的容器部署技术在Worker集群上被加载执行。 比如，常见的日志清理啊，机器状态上报啊，对于广大Java程序员来说，也许并不是很会写shell脚本，此时也可以借用agent+容器技术，利用Java完成各项原本需要通过脚本进行的操作。  （感觉例子举的都不是很好&amp;hellip;这个东西嘛，只可意会不可言传，大家努力理解一下吧～超好用哦～）
 生成容器模版 为了方便开发者使用，最新版本的前端页面已经支持容器工程模版的自动生成，开发者仅需要填入相关信息即可下载容器模版开始开发。   Group：对应Maven的&amp;lt;groupId&amp;gt;标签，一般填入倒写的公司域名。 Artifact：对于Maven的&amp;lt;artifactId&amp;gt;标签，填入代表该容器的唯一标示。 Name：对应Maven的&amp;lt;name&amp;gt;标签，填入该容器名称。 Package Name：包名，代表了的容器工程内部所使用的包名，警告：包名一旦生成后，请勿更改！否则会导致运行时容器加载错误（当然，如有必须修改包名的需求，可以尝试替换/resource下以oms-worker-container开头的所有文件相关的值）。 Java Version：容器工程的Java版本，请务必与容器目标部署Worker平台的Java版本保持一致。  开发容器工程 完成容器模版创建后，下载，解压，会得到如下结构的Java工程：
@@ -24,10 +24,10 @@ oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └�
     
     <item>
       <title>调度中心（Server）部署</title>
-      <link>https://kfcfans.gitee.io/docs/startup/1-server-startup/</link>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/1-server-startup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://kfcfans.gitee.io/docs/startup/1-server-startup/</guid>
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/1-server-startup/</guid>
       <description>环境要求   Open JDK 8+
   Apache Maven 3+
   任意 Spring Data Jpa 支持的关系型数据库（MySQL/Oracle/MS SQLServer&amp;hellip;）
@@ -40,10 +40,10 @@ oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └�
     
     <item>
       <title>OpenAPI</title>
-      <link>https://kfcfans.gitee.io/docs/super/openapi/</link>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/super/openapi/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://kfcfans.gitee.io/docs/super/openapi/</guid>
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/super/openapi/</guid>
       <description>OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活。开发者可以基于API便捷地扩展OhMyScheduler原有的功能。  依赖 最新依赖版本请参考Maven中央仓库：推荐地址&amp;amp;备用地址。
 &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;com.github.kfcfans&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;oh-my-scheduler-client&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;1.2.0&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; 简单示例 // 初始化 client，需要server地址和应用名称作为参数 OhMyClient ohMyClient = new OhMyClient(&amp;#34;127.0.0.1:7700&amp;#34;, &amp;#34;oms-test&amp;#34;); // 调用相关的API ohMyClient.stopInstance(1586855173043L) API列表 创建/修改任务 接口签名：ResultDTO&amp;lt;Long&amp;gt; saveJob(ClientJobInfo newJobInfo)
 入参：任务信息（详细说明见下表，也可以参考前端任务创建各参数的正确填法）
@@ -53,10 +53,10 @@ oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └�
     
     <item>
       <title>执行器（Worker）初始化</title>
-      <link>https://kfcfans.gitee.io/docs/startup/2-worker-startup/</link>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/2-worker-startup/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://kfcfans.gitee.io/docs/startup/2-worker-startup/</guid>
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/2-worker-startup/</guid>
       <description>基于宿主应用的执行器初始化  宿主应用即原有的业务应用，假如需要调度执行的任务与当前业务有较为紧密的联系，建议采取该方式。
  首先，添加相关的jar包依赖，最新依赖版本请参考maven中央仓库：推荐地址&amp;amp;备用地址
 &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;com.github.kfcfans&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;oh-my-scheduler-worker&amp;lt;/artifactId&amp;gt; &amp;lt;version&amp;gt;1.2.0&amp;lt;/version&amp;gt; &amp;lt;/dependency&amp;gt; 其次，填写执行器客户端配置文件OhMyConfig，各参数说明如下表所示：
@@ -66,10 +66,10 @@ oms-template-origin // 工程名称，可以自由更改 ├── pom.xml └�
     
     <item>
       <title>处理器开发</title>
-      <link>https://kfcfans.gitee.io/docs/startup/3-processor-develop/</link>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/3-processor-develop/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://kfcfans.gitee.io/docs/startup/3-processor-develop/</guid>
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/3-processor-develop/</guid>
       <description>处理器概述  OhMyScheduler当前支持Shell、Python等脚本处理器和Java处理器。脚本处理器只需要开发者完成脚本的编写（xxx.sh / xxx.py），在控制台填入脚本内容即可，本章不再赘述。本章将重点阐述Java处理器开发方法与使用技巧。
   Java处理器可根据代码所处位置划分为内置Java处理器和容器Java处理器，前者直接集成在宿主应用（也就是接入本系统的业务应用）中，一般用来处理业务需求；后者可以在一个独立的轻量级的Java工程中开发，通过容器技术（详见容器章节）被worker集群热加载，提供Java的“脚本能力”，一般用于处理灵活多变的需求。 Java处理器可根据对象创建者划分为SpringBean处理器和普通Java对象处理器，前者由Spring IOC容器完成处理器的创建和初始化，后者则有OhMyScheduler维护其状态。如果宿主应用支持Spring，强烈建议使用SpringBean处理器，开发者仅需要将Processor注册进Spring IOC容器（一个@Component注解或一句bean配置）。 Java处理器可根据功能划分为单机处理器、广播处理器、Map处理器和MapReduce处理器。  单机处理器（BasicProcessor）对应了单机任务，即某个任务的某次运行只会有某一台机器的某一个线程参与运算。 广播处理器（BroadcastProcessor）对应了广播任务，即某个任务的某次运行会调动集群内所有机器参与运算。 Map处理器（MapProcessor）对应了Map任务，即某个任务在运行过程中，允许产生子任务并分发到其他机器进行运算。 MapReduce处理器（MapReduceProcessor）对应了MapReduce任务，在Map任务的基础上，增加了所有任务结束后的汇总统计。    核心方法：process 任意Java处理器都需要实现处理的核心方法，其接口签名如下：
 ProcessResult process(TaskContext context) throws Exception; 方法入参TaskContext，包含了本次处理的上下文信息，具体属性如下：
@@ -78,10 +78,10 @@ ProcessResult process(TaskContext context) throws Exception; 方法入参TaskCon
     
     <item>
       <title>任务管理与在线运维</title>
-      <link>https://kfcfans.gitee.io/docs/startup/4-console-guide/</link>
+      <link>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/4-console-guide/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://kfcfans.gitee.io/docs/startup/4-console-guide/</guid>
+      <guid>https://kfcfans.gitee.io/ohmyscheduler/docs/startup/4-console-guide/</guid>
       <description>前端控制台允许开发者可视化地进行任务增、删、改、查等管理操作，同时也能直观地看到任务的运行数据，包括运行状态、详情和在线日志等。以下为对控制台的详细介绍：  主页 展示了系统整体的概览和集群Worker列表。
 任务创建 创建需要被调度执行的任务，入口为主页 -&amp;gt; 任务管理 -&amp;gt; 新建任务。
   任务名称：名称，便于记忆与搜索，无特殊用途，请尽量简短（占用数据库字段空间）

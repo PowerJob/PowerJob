@@ -16,13 +16,13 @@
    属性名称 含义 默认值     appName 宿主应用名称，需要提前在控制台完成注册 无，必填项，否则启动报错   port Worker工作端口 27777   serverAddress 调度中心（oh-my-scheduler-server）地址列表 无，必填项，否则启动报错   storeStrategy 本地存储策略，枚举值磁盘/内存，大型MapReduce等会产生大量Task的任务推荐使用磁盘降低内存压力，否则建议使用内存加速计算 StoreStrategy.DISK（磁盘）   maxResultLength 每个Task返回结果的默认长度，超长将被截断。过长可能导致网络拥塞 8096   enableTestMode 是否启用测试模式，启用后无需Server也能顺利启动OhMyScheduler-Worker，用于处理器本地的单元测试 false    最后，初始化客户端，完成执行器的启动，代码示例如下：
 @Configuration public class OhMySchedulerConfig { @Bean public OhMyWorker initOMS() throws Exception { // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）  List&lt;String&gt; serverAddress = Lists." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://kfcfans.gitee.io/docs/startup/2-worker-startup/" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/startup/2-worker-startup/" />
 
 <title>执行器（Worker）初始化 | OhMyScheduler</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon.png" type="image/x-icon">
-<link rel="stylesheet" href="/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
-<script defer src="/en.search.min.c80848d3c77260233d9a08502d528e5cb516bb11e5df300ef34c5507c61f37fd.js" integrity="sha256-yAhI08dyYCM9mghQLVKOXLUWuxHl3zAO80xVB8YfN/0="></script>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -38,7 +38,7 @@ https://github.com/alex-shpak/hugo-book
       
   <nav>
 <h2 class="book-brand">
-  <a href="/"><span>OhMyScheduler</span>
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
   </a>
 </h2>
 
@@ -90,7 +90,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
   
 
         </li>
@@ -100,7 +100,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/2-worker-startup/" class="active">执行器（Worker）初始化</a>
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="active">执行器（Worker）初始化</a>
   
 
         </li>
@@ -110,7 +110,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/3-processor-develop/" class="">处理器开发</a>
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器开发</a>
   
 
         </li>
@@ -120,7 +120,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
+    <a href="/ohmyscheduler/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
   
 
         </li>
@@ -151,7 +151,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/container/" class="">容器</a>
+    <a href="/ohmyscheduler/docs/super/container/" class="">容器</a>
   
 
         </li>
@@ -161,7 +161,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/openapi/" class="">OpenAPI</a>
+    <a href="/ohmyscheduler/docs/super/openapi/" class="">OpenAPI</a>
   
 
         </li>
@@ -227,13 +227,13 @@ https://github.com/alex-shpak/hugo-book
         
   <div class="flex align-center justify-between">
   <label for="menu-control">
-    <img src="/svg/menu.svg" class="book-icon" alt="Menu" />
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
   <strong>执行器（Worker）初始化</strong>
 
   <label for="toc-control">
-    <img src="/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
   </label>
 </div>
 

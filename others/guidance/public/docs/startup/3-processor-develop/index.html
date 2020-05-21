@@ -14,13 +14,13 @@ ProcessResult process(TaskContext context) throws Exception; 方法入参TaskCon
 ProcessResult process(TaskContext context) throws Exception; 方法入参TaskContext，包含了本次处理的上下文信息，具体属性如下：
    属性名称 意义/用法     jobId 任务ID，开发者一般无需关心此参数   instanceId 任务实例ID，全局唯一，开发者一般无需关心此参数   subInstanceId 子任务实例ID，秒级任务使用，开发者一般无需关心此参数   taskId 采用链式命名法的ID，在某个任务实例内唯一，开发者一般无需关心此参数   taskName task名称，Map/MapReduce任务的子任务的值为开发者指定，否则为系统默认值，开发者一般无需关心此参数   jobParams 任务参数，其值等同于控制台录入的任务参数，常用！   instanceParams 任务实例参数，其值等同于使用OpenAPI运行任务实例时传递的参数，常用！   maxRetryTimes Task的最大重试次数   currentRetryTimes Task的当前重试次数，和maxRetryTimes联合起来可以判断当前是否为该Task的最后一次运行机会   subTask 子Task，Map/MapReduce处理器专属，开发者调用map方法时传递的子任务列表中的某一个   omsLogger 在线日志，用法同Slf4J，记录的日志可以直接通过控制台查看，非常便捷和强大！不过使用过程中需要注意频率，可能对Server造成巨大的压力    方法的返回值为ProcessResult，代表了本次Task执行的结果，包含success和msg两个属性，分别用于传递Task是否执行成功和Task需要返回的信息。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://kfcfans.gitee.io/docs/startup/3-processor-develop/" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/startup/3-processor-develop/" />
 
 <title>处理器开发 | OhMyScheduler</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon.png" type="image/x-icon">
-<link rel="stylesheet" href="/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
-<script defer src="/en.search.min.c80848d3c77260233d9a08502d528e5cb516bb11e5df300ef34c5507c61f37fd.js" integrity="sha256-yAhI08dyYCM9mghQLVKOXLUWuxHl3zAO80xVB8YfN/0="></script>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -36,7 +36,7 @@ https://github.com/alex-shpak/hugo-book
       
   <nav>
 <h2 class="book-brand">
-  <a href="/"><span>OhMyScheduler</span>
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
   </a>
 </h2>
 
@@ -88,7 +88,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
   
 
         </li>
@@ -98,7 +98,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
   
 
         </li>
@@ -108,7 +108,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/3-processor-develop/" class="active">处理器开发</a>
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="active">处理器开发</a>
   
 
         </li>
@@ -118,7 +118,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
+    <a href="/ohmyscheduler/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
   
 
         </li>
@@ -149,7 +149,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/container/" class="">容器</a>
+    <a href="/ohmyscheduler/docs/super/container/" class="">容器</a>
   
 
         </li>
@@ -159,7 +159,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/docs/super/openapi/" class="">OpenAPI</a>
+    <a href="/ohmyscheduler/docs/super/openapi/" class="">OpenAPI</a>
   
 
         </li>
@@ -225,13 +225,13 @@ https://github.com/alex-shpak/hugo-book
         
   <div class="flex align-center justify-between">
   <label for="menu-control">
-    <img src="/svg/menu.svg" class="book-icon" alt="Menu" />
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
   <strong>处理器开发</strong>
 
   <label for="toc-control">
-    <img src="/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
   </label>
 </div>
 
