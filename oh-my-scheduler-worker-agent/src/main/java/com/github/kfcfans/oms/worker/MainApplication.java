@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.worker;
 
+import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.OhMyConfig;
 import com.github.kfcfans.oms.worker.common.constants.StoreStrategy;
 import com.google.common.base.Splitter;
@@ -22,7 +23,10 @@ public class MainApplication implements Runnable {
     @Option(names = {"-a", "--app"}, description = "worker-agent名称，可通过调度中心控制台创建", required = true)
     private String appName;
 
-    @Option(names = {"-p", "--persistence"}, description = "存储策略，枚举值，DISK 或 MEMORY")
+    @Option(names = {"-p", "--port"}, description = "worker-agent的ActorSystem监听端口，不建议更改")
+    private Integer port = RemoteConstant.DEFAULT_WORKER_PORT;
+
+    @Option(names = {"-e", "--persistence"}, description = "存储策略，枚举值，DISK 或 MEMORY")
     private String storeStrategy = "DISK";
 
     @Option(names = {"-s", "--server"}, description = "调度中心地址，多值英文逗号分隔，格式 IP:Port OR domain")
@@ -43,6 +47,7 @@ public class MainApplication implements Runnable {
         try {
 
             cfg.setAppName(appName);
+            cfg.setPort(port);
             cfg.setServerAddress(Splitter.on(",").splitToList(server));
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);

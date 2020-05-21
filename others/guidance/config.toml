@@ -1,4 +1,4 @@
-baseURL = "https://kfcfans.gitee.io/ohmyscheduler"
+baseURL = "https://kfcfans.gitee.io"
 languageCode = "en-us"
 title = "OhMyScheduler"
 theme = "book"

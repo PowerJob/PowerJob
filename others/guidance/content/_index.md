@@ -4,7 +4,7 @@ type: docs
 bookToc: false
 ---
 
-![logo](/oms-logo.png)
+![logo](oms-logo.png)
 
 ## 项目地址
 
