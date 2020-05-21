@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="基于宿主应用的执行器初始化  宿主应用即原有的业务应用，假如需要调度执行的任务与当前业务有较为紧密的联系，建议采取该方式。
+ 首先，添加相关的jar包依赖，最新依赖版本请参考maven中央仓库：推荐地址&amp;备用地址
+&lt;dependency&gt; &lt;groupId&gt;com.github.kfcfans&lt;/groupId&gt; &lt;artifactId&gt;oh-my-scheduler-worker&lt;/artifactId&gt; &lt;version&gt;1.2.0&lt;/version&gt; &lt;/dependency&gt; 其次，填写执行器客户端配置文件OhMyConfig，各参数说明如下表所示：
+   属性名称 含义 默认值     appName 宿主应用名称，需要提前在控制台完成注册 无，必填项，否则启动报错   port Worker工作端口 27777   serverAddress 调度中心（oh-my-scheduler-server）地址列表 无，必填项，否则启动报错   storeStrategy 本地存储策略，枚举值磁盘/内存，大型MapReduce等会产生大量Task的任务推荐使用磁盘降低内存压力，否则建议使用内存加速计算 StoreStrategy.DISK（磁盘）   maxResultLength 每个Task返回结果的默认长度，超长将被截断。过长可能导致网络拥塞 8096   enableTestMode 是否启用测试模式，启用后无需Server也能顺利启动OhMyScheduler-Worker，用于处理器本地的单元测试 false    最后，初始化客户端，完成执行器的启动，代码示例如下：
+@Configuration public class OhMySchedulerConfig { @Bean public OhMyWorker initOMS() throws Exception { // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）  List&lt;String&gt; serverAddress = Lists.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="执行器（Worker）初始化" />
+<meta property="og:description" content="基于宿主应用的执行器初始化  宿主应用即原有的业务应用，假如需要调度执行的任务与当前业务有较为紧密的联系，建议采取该方式。
+ 首先，添加相关的jar包依赖，最新依赖版本请参考maven中央仓库：推荐地址&amp;备用地址
+&lt;dependency&gt; &lt;groupId&gt;com.github.kfcfans&lt;/groupId&gt; &lt;artifactId&gt;oh-my-scheduler-worker&lt;/artifactId&gt; &lt;version&gt;1.2.0&lt;/version&gt; &lt;/dependency&gt; 其次，填写执行器客户端配置文件OhMyConfig，各参数说明如下表所示：
+   属性名称 含义 默认值     appName 宿主应用名称，需要提前在控制台完成注册 无，必填项，否则启动报错   port Worker工作端口 27777   serverAddress 调度中心（oh-my-scheduler-server）地址列表 无，必填项，否则启动报错   storeStrategy 本地存储策略，枚举值磁盘/内存，大型MapReduce等会产生大量Task的任务推荐使用磁盘降低内存压力，否则建议使用内存加速计算 StoreStrategy.DISK（磁盘）   maxResultLength 每个Task返回结果的默认长度，超长将被截断。过长可能导致网络拥塞 8096   enableTestMode 是否启用测试模式，启用后无需Server也能顺利启动OhMyScheduler-Worker，用于处理器本地的单元测试 false    最后，初始化客户端，完成执行器的启动，代码示例如下：
+@Configuration public class OhMySchedulerConfig { @Bean public OhMyWorker initOMS() throws Exception { // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）  List&lt;String&gt; serverAddress = Lists." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/startup/2-worker-startup/" />
+
+<title>执行器（Worker）初始化 | OhMyScheduler</title>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <span>快速开始</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="active">执行器（Worker）初始化</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器开发</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <span>高级特性</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/super/container/" class="">容器</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/super/openapi/" class="">OpenAPI</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <span>更新日志</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+  </ul>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>执行器（Worker）初始化</strong>
+
+  <label for="toc-control">
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#基于宿主应用的执行器初始化">基于宿主应用的执行器初始化</a></li>
+    <li><a href="#基于agent的执行器初始化">基于agent的执行器初始化</a></li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><h2 id="基于宿主应用的执行器初始化">基于宿主应用的执行器初始化</h2>
+<blockquote>
+<p>宿主应用即原有的业务应用，假如需要调度执行的任务与当前业务有较为紧密的联系，建议采取该方式。</p>
+</blockquote>
+<p>首先，添加相关的jar包依赖，最新依赖版本请参考maven中央仓库：<a href="https://search.maven.org/search?q=oh-my-scheduler-worker">推荐地址</a>&amp;<a href="https://mvnrepository.com/search?q=com.github.kfcfans">备用地址</a></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;dependency&gt;</span>
+  <span style="color:#f92672">&lt;groupId&gt;</span>com.github.kfcfans<span style="color:#f92672">&lt;/groupId&gt;</span>
+  <span style="color:#f92672">&lt;artifactId&gt;</span>oh-my-scheduler-worker<span style="color:#f92672">&lt;/artifactId&gt;</span>
+  <span style="color:#f92672">&lt;version&gt;</span>1.2.0<span style="color:#f92672">&lt;/version&gt;</span>
+<span style="color:#f92672">&lt;/dependency&gt;</span>
+</code></pre></div><p>其次，填写执行器客户端配置文件<code>OhMyConfig</code>，各参数说明如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>含义</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>appName</td>
+<td>宿主应用名称，需要提前在控制台完成注册</td>
+<td>无，必填项，否则启动报错</td>
+</tr>
+<tr>
+<td>port</td>
+<td>Worker工作端口</td>
+<td>27777</td>
+</tr>
+<tr>
+<td>serverAddress</td>
+<td>调度中心（oh-my-scheduler-server）地址列表</td>
+<td>无，必填项，否则启动报错</td>
+</tr>
+<tr>
+<td>storeStrategy</td>
+<td>本地存储策略，枚举值磁盘/内存，大型MapReduce等会产生大量Task的任务推荐使用磁盘降低内存压力，否则建议使用内存加速计算</td>
+<td>StoreStrategy.DISK（磁盘）</td>
+</tr>
+<tr>
+<td>maxResultLength</td>
+<td>每个Task返回结果的默认长度，超长将被截断。过长可能导致网络拥塞</td>
+<td>8096</td>
+</tr>
+<tr>
+<td>enableTestMode</td>
+<td>是否启用测试模式，启用后无需Server也能顺利启动OhMyScheduler-Worker，用于处理器本地的单元测试</td>
+<td>false</td>
+</tr>
+</tbody>
+</table>
+<p>最后，初始化客户端，完成执行器的启动，代码示例如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#a6e22e">@Configuration</span>
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">OhMySchedulerConfig</span> <span style="color:#f92672">{</span>
+    <span style="color:#a6e22e">@Bean</span>
+    <span style="color:#66d9ef">public</span> OhMyWorker <span style="color:#a6e22e">initOMS</span><span style="color:#f92672">()</span> <span style="color:#66d9ef">throws</span> Exception <span style="color:#f92672">{</span>
+
+        <span style="color:#75715e">// 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）
+</span><span style="color:#75715e"></span>        List<span style="color:#f92672">&lt;</span>String<span style="color:#f92672">&gt;</span> serverAddress <span style="color:#f92672">=</span> Lists<span style="color:#f92672">.</span><span style="color:#a6e22e">newArrayList</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;127.0.0.1:7700&#34;</span><span style="color:#f92672">,</span> <span style="color:#e6db74">&#34;127.0.0.1:7701&#34;</span><span style="color:#f92672">);</span>
+
+        <span style="color:#75715e">// 1. 创建配置文件
+</span><span style="color:#75715e"></span>        OhMyConfig config <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> OhMyConfig<span style="color:#f92672">();</span>
+        config<span style="color:#f92672">.</span><span style="color:#a6e22e">setPort</span><span style="color:#f92672">(</span>27777<span style="color:#f92672">);</span>
+        config<span style="color:#f92672">.</span><span style="color:#a6e22e">setAppName</span><span style="color:#f92672">(</span><span style="color:#e6db74">&#34;oms-test&#34;</span><span style="color:#f92672">);</span>
+        config<span style="color:#f92672">.</span><span style="color:#a6e22e">setServerAddress</span><span style="color:#f92672">(</span>serverAddress<span style="color:#f92672">);</span>
+        <span style="color:#75715e">// 如果没有大型 Map/MapReduce 的需求，建议使用内存来加速计算
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// 为了本地模拟多个实例，只能使用 MEMORY 启动（文件只能由一个应用占有）
+</span><span style="color:#75715e"></span>        config<span style="color:#f92672">.</span><span style="color:#a6e22e">setStoreStrategy</span><span style="color:#f92672">(</span>StoreStrategy<span style="color:#f92672">.</span><span style="color:#a6e22e">MEMORY</span><span style="color:#f92672">);</span>
+
+        <span style="color:#75715e">// 2. 创建 Worker 对象，设置配置文件
+</span><span style="color:#75715e"></span>        OhMyWorker ohMyWorker <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> OhMyWorker<span style="color:#f92672">();</span>
+        ohMyWorker<span style="color:#f92672">.</span><span style="color:#a6e22e">setConfig</span><span style="color:#f92672">(</span>config<span style="color:#f92672">);</span>
+        <span style="color:#66d9ef">return</span> ohMyWorker<span style="color:#f92672">;</span>
+    <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>非Spring应用程序在创建<code>OhMyWorker</code>对象后手动调用<code>ohMyWorker.init()</code>方法完成初始化即可。</p>
+<hr>
+<p><strong>OhMyScheduler日志单独配置</strong></p>
+<p>目前，OhMyScheduler-Worker并没有实现自己的LogFactory（如果有需求的话请提ISSUE，可以考虑实现），原因如下：</p>
+<ol>
+<li>OhMyScheduler-Worker的日志基于<code>Slf4J</code>输出，即采用了基于门面设计模式的日志框架，宿主应用无论如何都可以搭起Slf4J与实际的日志框架这座桥梁。</li>
+<li>减轻了部分开发工作量，不再需要实现自己的LogFactory（虽然不怎么难就是了&hellip;）。</li>
+</ol>
+<p>为此，为了顺利且友好地输出日志，请在日志配置文件（logback.xml/log4j2.xml/&hellip;）中为<code>OhMyScheduler-Worker</code>单独进行日志配置，比如（logback示例）：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;appender</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;OMS_WORKER_APPENDER&#34;</span> <span style="color:#a6e22e">class=</span><span style="color:#e6db74">&#34;ch.qos.logback.core.rolling.RollingFileAppender&#34;</span><span style="color:#f92672">&gt;</span>
+    <span style="color:#f92672">&lt;file&gt;</span>${LOG_PATH}/oms-worker.log<span style="color:#f92672">&lt;/file&gt;</span>
+    <span style="color:#f92672">&lt;rollingPolicy</span> <span style="color:#a6e22e">class=</span><span style="color:#e6db74">&#34;ch.qos.logback.core.rolling.TimeBasedRollingPolicy&#34;</span><span style="color:#f92672">&gt;</span>
+        <span style="color:#f92672">&lt;FileNamePattern&gt;</span>${LOG_PATH}/oms-worker.%d{yyyy-MM-dd}.log<span style="color:#f92672">&lt;/FileNamePattern&gt;</span>
+        <span style="color:#f92672">&lt;MaxHistory&gt;</span>7<span style="color:#f92672">&lt;/MaxHistory&gt;</span>
+    <span style="color:#f92672">&lt;/rollingPolicy&gt;</span>
+    <span style="color:#f92672">&lt;encoder</span> <span style="color:#a6e22e">class=</span><span style="color:#e6db74">&#34;ch.qos.logback.classic.encoder.PatternLayoutEncoder&#34;</span><span style="color:#f92672">&gt;</span>
+        <span style="color:#f92672">&lt;pattern&gt;</span>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n<span style="color:#f92672">&lt;/pattern&gt;</span>
+        <span style="color:#f92672">&lt;charset&gt;</span>UTF-8<span style="color:#f92672">&lt;/charset&gt;</span>
+    <span style="color:#f92672">&lt;/encoder&gt;</span>
+    <span style="color:#f92672">&lt;append&gt;</span>true<span style="color:#f92672">&lt;/append&gt;</span>
+<span style="color:#f92672">&lt;/appender&gt;</span>
+
+<span style="color:#f92672">&lt;logger</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;com.github.kfcfans.oms.worker&#34;</span> <span style="color:#a6e22e">level=</span><span style="color:#e6db74">&#34;INFO&#34;</span> <span style="color:#a6e22e">additivity=</span><span style="color:#e6db74">&#34;false&#34;</span><span style="color:#f92672">&gt;</span>
+    <span style="color:#f92672">&lt;appender-ref</span> <span style="color:#a6e22e">ref=</span><span style="color:#e6db74">&#34;OMS_WORKER_APPENDER&#34;</span> <span style="color:#f92672">/&gt;</span>
+<span style="color:#f92672">&lt;/logger&gt;</span>
+</code></pre></div><p>无论如何，OhMyScheduler-Worker启动时都会打印Banner（如下所示），您可以通过Banner来判断日志配置是否成功（emmm&hellip;Markdown显示似乎有点丑，实际上超帅的呢～）：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">   ███████   ██      ████     ████           ████████         ██                   ██          ██
+  ██░░░░░██ ░██     ░██░██   ██░██  ██   ██ ██░░░░░░         ░██                  ░██         ░██               
+ ██     ░░██░██     ░██░░██ ██ ░██ ░░██ ██ ░██         █████ ░██       █████      ░██ ██   ██ ░██  █████  ██████
+░██      ░██░██████ ░██ ░░███  ░██  ░░███  ░█████████ ██░░░██░██████  ██░░░██  ██████░██  ░██ ░██ ██░░░██░░██░░█
+░██      ░██░██░░░██░██  ░░█   ░██   ░██   ░░░░░░░░██░██  ░░ ░██░░░██░███████ ██░░░██░██  ░██ ░██░███████ ░██ ░ 
+░░██     ██ ░██  ░██░██   ░    ░██   ██           ░██░██   ██░██  ░██░██░░░░ ░██  ░██░██  ░██ ░██░██░░░░  ░██   
+ ░░███████  ░██  ░██░██        ░██  ██      ████████ ░░█████ ░██  ░██░░██████░░██████░░██████ ███░░██████░███   
+  ░░░░░░░   ░░   ░░ ░░         ░░  ░░      ░░░░░░░░   ░░░░░  ░░   ░░  ░░░░░░  ░░░░░░  ░░░░░░ ░░░  ░░░░░░ ░░░
+</code></pre></div><h2 id="基于agent的执行器初始化">基于agent的执行器初始化</h2>
+<blockquote>
+<p>agent是一个没有任何业务逻辑的执行器（其实就是为worker加了一个main方法）。</p>
+</blockquote>
+<p>代码编译方式启动示例：<code>java -jar oh-my-scheduler-worker-agent-1.2.0.jar -a my-agent</code>：</p>
+<pre><code>Usage: OhMyAgent [-hV] -a=&lt;appName&gt; [-e=&lt;storeStrategy&gt;] [-l=&lt;length&gt;]
+                 [-p=&lt;port&gt;] [-s=&lt;server&gt;]
+OhMyScheduler-Worker代理
+  -a, --app=&lt;appName&gt;     worker-agent名称，可通过调度中心控制台创建
+  -e, --persistence=&lt;storeStrategy&gt;
+                          存储策略，枚举值，DISK 或 MEMORY
+  -h, --help              Show this help message and exit.
+  -l, --length=&lt;length&gt;   返回值最大长度
+  -p, --port=&lt;port&gt;       worker-agent的ActorSystem监听端口，不建议更改
+  -s, --server=&lt;server&gt;   调度中心地址，多值英文逗号分隔，格式 IP:Port OR domain
+  -V, --version           Print version information and exit.
+
+</code></pre><p>Docker镜像：<a href="https://hub.docker.com/r/tjqq/oms-agent">Docker Hub</a></p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#基于宿主应用的执行器初始化">基于宿主应用的执行器初始化</a></li>
+    <li><a href="#基于agent的执行器初始化">基于agent的执行器初始化</a></li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

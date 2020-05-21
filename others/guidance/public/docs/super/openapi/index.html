@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" dir=>
+
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活。开发者可以基于API便捷地扩展OhMyScheduler原有的功能。  依赖 最新依赖版本请参考Maven中央仓库：推荐地址&amp;备用地址。
+&lt;dependency&gt; &lt;groupId&gt;com.github.kfcfans&lt;/groupId&gt; &lt;artifactId&gt;oh-my-scheduler-client&lt;/artifactId&gt; &lt;version&gt;1.2.0&lt;/version&gt; &lt;/dependency&gt; 简单示例 // 初始化 client，需要server地址和应用名称作为参数 OhMyClient ohMyClient = new OhMyClient(&#34;127.0.0.1:7700&#34;, &#34;oms-test&#34;); // 调用相关的API ohMyClient.stopInstance(1586855173043L) API列表 创建/修改任务 接口签名：ResultDTO&lt;Long&gt; saveJob(ClientJobInfo newJobInfo)
+入参：任务信息（详细说明见下表，也可以参考前端任务创建各参数的正确填法）
+返回值：ResultDTO，根据success判断操作是否成功。若操作成功，data字段返回任务ID
+   属性 说明     jobId 任务ID，可选，null代表创建任务，否则填写需要修改的任务ID   jobName 任务名称   jobDescription 任务描述   jobParams 任务参数，Processor#process方法入参TaskContext对象的jobParams字段   timeExpressionType 时间表达式类型，枚举值   timeExpression 时间表达式，填写类型由timeExpressionType决定，比如CRON需要填写CRON表达式   executeType 执行类型，枚举值   processorType 处理器类型，枚举值   processorInfo 处理器参数，填写类型由processorType决定，如Java处理器需要填写全限定类名，如：com.">
+<meta name="theme-color" content="#FFFFFF"><meta property="og:title" content="OpenAPI" />
+<meta property="og:description" content="OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活。开发者可以基于API便捷地扩展OhMyScheduler原有的功能。  依赖 最新依赖版本请参考Maven中央仓库：推荐地址&amp;备用地址。
+&lt;dependency&gt; &lt;groupId&gt;com.github.kfcfans&lt;/groupId&gt; &lt;artifactId&gt;oh-my-scheduler-client&lt;/artifactId&gt; &lt;version&gt;1.2.0&lt;/version&gt; &lt;/dependency&gt; 简单示例 // 初始化 client，需要server地址和应用名称作为参数 OhMyClient ohMyClient = new OhMyClient(&#34;127.0.0.1:7700&#34;, &#34;oms-test&#34;); // 调用相关的API ohMyClient.stopInstance(1586855173043L) API列表 创建/修改任务 接口签名：ResultDTO&lt;Long&gt; saveJob(ClientJobInfo newJobInfo)
+入参：任务信息（详细说明见下表，也可以参考前端任务创建各参数的正确填法）
+返回值：ResultDTO，根据success判断操作是否成功。若操作成功，data字段返回任务ID
+   属性 说明     jobId 任务ID，可选，null代表创建任务，否则填写需要修改的任务ID   jobName 任务名称   jobDescription 任务描述   jobParams 任务参数，Processor#process方法入参TaskContext对象的jobParams字段   timeExpressionType 时间表达式类型，枚举值   timeExpression 时间表达式，填写类型由timeExpressionType决定，比如CRON需要填写CRON表达式   executeType 执行类型，枚举值   processorType 处理器类型，枚举值   processorInfo 处理器参数，填写类型由processorType决定，如Java处理器需要填写全限定类名，如：com." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/super/openapi/" />
+
+<title>OpenAPI | OhMyScheduler</title>
+<link rel="manifest" href="/ohmyscheduler/manifest.json">
+<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/ohmyscheduler/en.search.min.e2f9b2f3cf3fad006da31fc1558075ea0493c82e60c3b707d1745af9a528b273.js" integrity="sha256-4vmy888/rQBtox/BVYB16gSTyC5gw7cH0XRa&#43;aUosnM="></script>
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+
+  
+</head>
+
+<body dir=>
+  <input type="checkbox" class="hidden" id="menu-control" />
+  <main class="container flex">
+    <aside class="book-menu">
+      
+  <nav>
+<h2 class="book-brand">
+  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
+  </a>
+</h2>
+
+
+<div class="book-search">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <span>快速开始</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="">调度中心（Server）部署</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器开发</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <span>高级特性</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/super/container/" class="">容器</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/ohmyscheduler/docs/super/openapi/" class="active">OpenAPI</a>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <span>更新日志</span>
+  
+
+          
+  
+  
+  
+
+  
+  <ul>
+    
+  </ul>
+  
+
+        </li>
+      
+    
+  </ul>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script>
+
+
+ 
+    </aside>
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <strong>OpenAPI</strong>
+
+  <label for="toc-control">
+    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+  </label>
+</div>
+
+
+  
+    <input type="checkbox" class="hidden" id="toc-control" />
+    <aside class="hidden clearfix">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#依赖">依赖</a></li>
+    <li><a href="#简单示例">简单示例</a></li>
+    <li><a href="#api列表">API列表</a>
+      <ul>
+        <li><a href="#创建修改任务">创建/修改任务</a></li>
+        <li><a href="#查找任务">查找任务</a></li>
+        <li><a href="#禁用某个任务">禁用某个任务</a></li>
+        <li><a href="#启用某个任务">启用某个任务</a></li>
+        <li><a href="#删除某个任务">删除某个任务</a></li>
+        <li><a href="#立即运行某个任务">立即运行某个任务</a></li>
+        <li><a href="#停止某个任务实例">停止某个任务实例</a></li>
+        <li><a href="#查询某个任务实例">查询某个任务实例</a></li>
+        <li><a href="#查询某个任务实例的状态">查询某个任务实例的状态</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+    </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown"><blockquote class="book-hint info">
+  OpenAPI允许开发者通过接口来完成手工的操作，让系统整体变得更加灵活。开发者可以基于API便捷地扩展OhMyScheduler原有的功能。
+</blockquote>
+
+<h2 id="依赖">依赖</h2>
+<p>最新依赖版本请参考Maven中央仓库：<a href="https://search.maven.org/search?q=oh-my-scheduler-client">推荐地址</a>&amp;<a href="https://mvnrepository.com/search?q=com.github.kfcfans">备用地址</a>。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#f92672">&lt;dependency&gt;</span>
+  <span style="color:#f92672">&lt;groupId&gt;</span>com.github.kfcfans<span style="color:#f92672">&lt;/groupId&gt;</span>
+  <span style="color:#f92672">&lt;artifactId&gt;</span>oh-my-scheduler-client<span style="color:#f92672">&lt;/artifactId&gt;</span>
+  <span style="color:#f92672">&lt;version&gt;</span>1.2.0<span style="color:#f92672">&lt;/version&gt;</span>
+<span style="color:#f92672">&lt;/dependency&gt;</span>
+</code></pre></div><h2 id="简单示例">简单示例</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">// 初始化 client，需要server地址和应用名称作为参数
+OhMyClient ohMyClient = new OhMyClient(&#34;127.0.0.1:7700&#34;, &#34;oms-test&#34;);
+// 调用相关的API
+ohMyClient.stopInstance(1586855173043L)
+</code></pre></div><h2 id="api列表">API列表</h2>
+<h3 id="创建修改任务">创建/修改任务</h3>
+<p>接口签名：<code>ResultDTO&lt;Long&gt; saveJob(ClientJobInfo newJobInfo)</code></p>
+<p>入参：任务信息（详细说明见下表，也可以参考<a href="./ConsoleGuide.md">前端任务创建各参数的正确填法</a>）</p>
+<p>返回值：ResultDTO<!-- raw HTML omitted -->，根据success判断操作是否成功。若操作成功，data字段返回任务ID</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>jobId</td>
+<td>任务ID，可选，null代表创建任务，否则填写需要修改的任务ID</td>
+</tr>
+<tr>
+<td>jobName</td>
+<td>任务名称</td>
+</tr>
+<tr>
+<td>jobDescription</td>
+<td>任务描述</td>
+</tr>
+<tr>
+<td>jobParams</td>
+<td>任务参数，Processor#process方法入参<code>TaskContext</code>对象的jobParams字段</td>
+</tr>
+<tr>
+<td>timeExpressionType</td>
+<td>时间表达式类型，枚举值</td>
+</tr>
+<tr>
+<td>timeExpression</td>
+<td>时间表达式，填写类型由timeExpressionType决定，比如CRON需要填写CRON表达式</td>
+</tr>
+<tr>
+<td>executeType</td>
+<td>执行类型，枚举值</td>
+</tr>
+<tr>
+<td>processorType</td>
+<td>处理器类型，枚举值</td>
+</tr>
+<tr>
+<td>processorInfo</td>
+<td>处理器参数，填写类型由processorType决定，如Java处理器需要填写全限定类名，如：com.github.kfcfans.oms.processors.demo.MapReduceProcessorDemo</td>
+</tr>
+<tr>
+<td>maxInstanceNum</td>
+<td>最大实例数，该任务同时执行的数量（任务和实例就像是类和对象的关系，任务被调度执行后被称为实例）</td>
+</tr>
+<tr>
+<td>concurrency</td>
+<td>单机线程并发数，表示该实例执行过程中每个Worker使用的线程数量</td>
+</tr>
+<tr>
+<td>instanceTimeLimit</td>
+<td>任务实例运行时间限制，0代表无任何限制，超时会被打断并判定为执行失败</td>
+</tr>
+<tr>
+<td>instanceRetryNum</td>
+<td>任务实例重试次数，整个任务失败时重试，代价大，不推荐使用</td>
+</tr>
+<tr>
+<td>taskRetryNum</td>
+<td>Task重试次数，每个子Task失败后单独重试，代价小，推荐使用</td>
+</tr>
+<tr>
+<td>minCpuCores</td>
+<td>最小可用CPU核心数，CPU可用核心数小于该值的Worker将不会执行该任务，0代表无任何限制</td>
+</tr>
+<tr>
+<td>minMemorySpace</td>
+<td>最小内存大小（GB），可用内存小于该值的Worker将不会执行该任务，0代表无任何限制</td>
+</tr>
+<tr>
+<td>minDiskSpace</td>
+<td>最小磁盘大小（GB），可用磁盘空间小于该值的Worker将不会执行该任务，0代表无任何限制</td>
+</tr>
+<tr>
+<td>designatedWorkers</td>
+<td>指定机器执行，设置该参数后只有列表中的机器允许执行该任务，0代表无任何限制</td>
+</tr>
+<tr>
+<td>maxWorkerCount</td>
+<td>最大执行机器数量，限定调动执行的机器数量，空代表无限制</td>
+</tr>
+<tr>
+<td>notifyUserIds</td>
+<td>接收报警的用户ID列表</td>
+</tr>
+<tr>
+<td>enable</td>
+<td>是否启用该任务，未启用的任务不会被调度</td>
+</tr>
+</tbody>
+</table>
+<h3 id="查找任务">查找任务</h3>
+<p>接口签名：<code>ResultDTO&lt;JobInfoDTO&gt; fetchJob(Long jobId)</code></p>
+<p>入参：任务ID</p>
+<p>返回值：根据success判断操作是否成功，若请求成功则返回任务的详细信息</p>
+<h3 id="禁用某个任务">禁用某个任务</h3>
+<p>接口签名：<code>ResultDTO&lt;Void&gt; disableJob(Long jobId)</code></p>
+<p>入参：任务ID</p>
+<p>返回值：根据success判断操作是否成功</p>
+<h3 id="启用某个任务">启用某个任务</h3>
+<p>接口签名：<code>ResultDTO&lt;Void&gt; enableJob(Long jobId)</code></p>
+<p>入参：任务ID</p>
+<p>返回值：根据success判断操作是否成功</p>
+<h3 id="删除某个任务">删除某个任务</h3>
+<p>接口签名：<code>ResultDTO&lt;Void&gt; deleteJob(Long jobId)</code></p>
+<p>入参：任务ID</p>
+<p>返回值：根据success判断操作是否成功</p>
+<h3 id="立即运行某个任务">立即运行某个任务</h3>
+<p>接口签名：<code>ResultDTO&lt;Long&gt; runJob(Long jobId, String instanceParams)</code></p>
+<p>入参：任务ID + <strong>任务实例参数</strong>（Processor#process方法入参<code>TaskContext</code>对象的instanceParams字段）</p>
+<p>返回值：根据success判断操作是否成功，操作成功返回对应的任务实例ID(instanceId)</p>
+<h3 id="停止某个任务实例">停止某个任务实例</h3>
+<p>接口签名：<code>ResultDTO&lt;Void&gt; stopInstance(Long instanceId)</code></p>
+<p>入参：任务实例ID</p>
+<p>返回值：根据success判断操作是否成功</p>
+<h3 id="查询某个任务实例">查询某个任务实例</h3>
+<p>接口签名：<code>ResultDTO&lt;InstanceInfoDTO&gt; fetchInstanceInfo(Long instanceId)</code></p>
+<p>入参：任务实例ID</p>
+<p>返回值：根据success判断操作是否成功，操作成功返回任务实例的详细信息</p>
+<h3 id="查询某个任务实例的状态">查询某个任务实例的状态</h3>
+<p>接口签名：<code>ResultDTO&lt;Integer&gt; fetchInstanceStatus(Long instanceId)</code></p>
+<p>入参：任务实例ID</p>
+<p>返回值：根据success判断操作是否成功，操作成功返回任务实例的状态码，对应的枚举为：InstanceStatus</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+    <aside class="book-toc">
+      
+  <nav id="TableOfContents">
+  <ul>
+    <li><a href="#依赖">依赖</a></li>
+    <li><a href="#简单示例">简单示例</a></li>
+    <li><a href="#api列表">API列表</a>
+      <ul>
+        <li><a href="#创建修改任务">创建/修改任务</a></li>
+        <li><a href="#查找任务">查找任务</a></li>
+        <li><a href="#禁用某个任务">禁用某个任务</a></li>
+        <li><a href="#启用某个任务">启用某个任务</a></li>
+        <li><a href="#删除某个任务">删除某个任务</a></li>
+        <li><a href="#立即运行某个任务">立即运行某个任务</a></li>
+        <li><a href="#停止某个任务实例">停止某个任务实例</a></li>
+        <li><a href="#查询某个任务实例">查询某个任务实例</a></li>
+        <li><a href="#查询某个任务实例的状态">查询某个任务实例的状态</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+ 
+    </aside>
+    
+  </main>
+
+  
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
