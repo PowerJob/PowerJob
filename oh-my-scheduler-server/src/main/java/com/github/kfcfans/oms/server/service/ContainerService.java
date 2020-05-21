@@ -281,7 +281,7 @@ public class ContainerService {
             String targetWorkerAddress = info.getWorkerAddress();
             if (aliveWorkers.contains(targetWorkerAddress)) {
                 deployedList.add(targetWorkerAddress);
-                version2Address.put(targetWorkerAddress, info.getVersion());
+                version2Address.put(info.getVersion(), targetWorkerAddress);
             }else {
                 unDeployedList.add(targetWorkerAddress);
             }

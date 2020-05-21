@@ -168,7 +168,7 @@ public class InstanceLogService {
 
         // 休眠10秒等待全部数据上报（OmsLogHandler 每隔5秒上报数据）
         try {
-            TimeUnit.SECONDS.sleep(10);
+            TimeUnit.SECONDS.sleep(15);
         }catch (Exception ignore) {
         }
 

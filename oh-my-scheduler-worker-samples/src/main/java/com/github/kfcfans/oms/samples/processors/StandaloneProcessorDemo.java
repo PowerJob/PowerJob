@@ -35,10 +35,10 @@ public class StandaloneProcessorDemo implements BasicProcessor {
         try {
             Collections.emptyList().add("277");
         }catch (Exception e) {
-            context.getOmsLogger().error("[StandaloneProcessorDemo] test exception log.", e);
+            context.getOmsLogger().error("oh~it seems that we have an exception~", e);
         }
 
-
+        context.getOmsLogger().info("anyway, we finished the job successfully~Congratulations!");
         return new ProcessResult(success, context + ": " + success);
     }
 }
