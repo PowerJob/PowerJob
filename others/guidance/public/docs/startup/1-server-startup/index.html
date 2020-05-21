@@ -22,13 +22,13 @@
  调度服务器（oh-my-scheduler-server）为了支持环境隔离，分别采用了日常（application-daily.properties）、预发（application-pre.properties）和线上（application-product.properties）三套配置文件，请根据实际需求进行修改，以下为配置文件详解。
    配置项 含义 可选     server.port SpringBoot配置，HTTP端口号，默认7700 否   oms." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://kfcfans.gitee.io/ohmyscheduler/docs/startup/1-server-startup/" />
+<meta property="og:url" content="https://kfcfans.gitee.io/docs/startup/1-server-startup/" />
 
 <title>调度中心（Server）部署 | OhMyScheduler</title>
-<link rel="manifest" href="/ohmyscheduler/manifest.json">
-<link rel="icon" href="/ohmyscheduler/favicon.png" type="image/x-icon">
-<link rel="stylesheet" href="/ohmyscheduler/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
-<script defer src="/ohmyscheduler/en.search.min.1272dfb3df2a3f60e11485e0a1158d434da32177db3be3e28aae8e28aa7e9a15.js" integrity="sha256-EnLfs98qP2DhFIXgoRWNQ02jIXfbO&#43;Piiq6OKKp&#43;mhU="></script>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon.png" type="image/x-icon">
+<link rel="stylesheet" href="/book.min.e161f1fe2b283b6a43c29a52fde96e2387fade573e78efa6701d44c8499da76b.css" integrity="sha256-4WHx/isoO2pDwppS/eluI4f63lc&#43;eO&#43;mcB1EyEmdp2s=">
+<script defer src="/en.search.min.c80848d3c77260233d9a08502d528e5cb516bb11e5df300ef34c5507c61f37fd.js" integrity="sha256-yAhI08dyYCM9mghQLVKOXLUWuxHl3zAO80xVB8YfN/0="></script>
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -44,7 +44,7 @@ https://github.com/alex-shpak/hugo-book
       
   <nav>
 <h2 class="book-brand">
-  <a href="/ohmyscheduler"><span>OhMyScheduler</span>
+  <a href="/"><span>OhMyScheduler</span>
   </a>
 </h2>
 
@@ -96,7 +96,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/ohmyscheduler/docs/startup/1-server-startup/" class="active">调度中心（Server）部署</a>
+    <a href="/docs/startup/1-server-startup/" class="active">调度中心（Server）部署</a>
   
 
         </li>
@@ -106,7 +106,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/ohmyscheduler/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
+    <a href="/docs/startup/2-worker-startup/" class="">执行器（Worker）初始化</a>
   
 
         </li>
@@ -116,7 +116,17 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/ohmyscheduler/docs/startup/3-processor-develop/" class="">处理器编写</a>
+    <a href="/docs/startup/3-processor-develop/" class="">处理器开发</a>
+  
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+    <a href="/docs/startup/4-console-guide/" class="">任务管理与在线运维</a>
   
 
         </li>
@@ -129,10 +139,10 @@ https://github.com/alex-shpak/hugo-book
       
     
       
-        <li class="book-section-flat" >
+        <li>
           
   
-    <span>Shortcodes</span>
+    <span>高级特性</span>
   
 
           
@@ -147,7 +157,7 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/ohmyscheduler/docs/shortcodes/columns/" class="">Columns</a>
+    <a href="/docs/super/container/" class="">容器</a>
   
 
         </li>
@@ -157,7 +167,13 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/ohmyscheduler/docs/shortcodes/details/" class="">Details</a>
+    <a href="/docs/super/openapi/" class="">OpenAPI</a>
+  
+
+        </li>
+      
+    
+  </ul>
   
 
         </li>
@@ -167,51 +183,16 @@ https://github.com/alex-shpak/hugo-book
         <li>
           
   
-    <a href="/ohmyscheduler/docs/shortcodes/expand/" class="">Expand</a>
+    <span>更新日志</span>
   
 
-        </li>
-      
-    
-      
-        <li>
           
   
-    <a href="/ohmyscheduler/docs/shortcodes/hints/" class="">Hints</a>
+  
   
 
-        </li>
-      
-    
-      
-        <li>
-          
   
-    <a href="/ohmyscheduler/docs/shortcodes/katex/" class="">Katex</a>
-  
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-    <a href="/ohmyscheduler/docs/shortcodes/mermaid/" class="">Mermaid</a>
-  
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-    <a href="/ohmyscheduler/docs/shortcodes/tabs/" class="">Tabs</a>
-  
-
-        </li>
-      
+  <ul>
     
   </ul>
   
@@ -252,13 +233,13 @@ https://github.com/alex-shpak/hugo-book
         
   <div class="flex align-center justify-between">
   <label for="menu-control">
-    <img src="/ohmyscheduler/svg/menu.svg" class="book-icon" alt="Menu" />
+    <img src="/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
   <strong>调度中心（Server）部署</strong>
 
   <label for="toc-control">
-    <img src="/ohmyscheduler/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    <img src="/svg/toc.svg" class="book-icon" alt="Table of Contents" />
   </label>
 </div>
 
@@ -383,9 +364,10 @@ https://github.com/alex-shpak/hugo-book
 <li>验证：访问<code>http://ip:port</code>查看是否出现OhMyScheduler的欢迎页面。</li>
 </ul>
 <h2 id="部署调度服务器docker">部署调度服务器—Docker</h2>
-<blockquote>
-<p><strong>建议自己根据项目中的Dockerfile稍作修改，制作自己的Docker镜像，而不是直接使用官方镜像</strong>！原因在于：容器功能需要用到Git和Maven来编译代码库，而公司内部往往都会搭建自己的私有仓库，所以Git容器功能没办法正常运行（即，<strong>官方镜像中的调度服务器不支持Git容器的部署</strong>）。</p>
+<blockquote class="book-hint warning">
+  <strong>建议自己根据项目中的Dockerfile稍作修改，制作自己的Docker镜像，而不是直接使用官方镜像</strong>！原因在于：容器功能需要用到Git和Maven来编译代码库，而公司内部往往都会搭建自己的私有仓库，所以Git容器功能没办法正常运行（即，<strong>官方镜像中的调度服务器不支持Git容器的部署</strong>）。
 </blockquote>
+
 <p><a href="https://hub.docker.com/r/tjqq/oms-server">Docker Hub地址</a></p>
 <p>部署流程：</p>
 <ol>
@@ -407,7 +389,7 @@ https://github.com/alex-shpak/hugo-book
 <li>npm run build -&gt; nginx config</li>
 </ol>
 <hr>
-<p><strong>特别鸣谢</strong>：感谢<a href="https://github.com/fengnan0929">某知名上市电商公司前端</a>对本项目的大力支持！</p>
+<p><strong>特别鸣谢</strong>：感谢<a href="https://github.com/fengnan0929">某知名上市电商公司前端开发者</a>对本项目的大力支持！</p>
 <h2 id="初始化应用分组">初始化应用分组</h2>
 <blockquote>
 <p>每一个业务系统初次接入OhMyScheduler时，都需要<strong>先完成应用注册</strong>。</p>

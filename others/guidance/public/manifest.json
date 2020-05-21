@@ -1,14 +1,14 @@
 {
   "name": "OhMyScheduler",
   "short_name": "OhMyScheduler",
-  "start_url": "/ohmyscheduler/",
-  "scope": "/ohmyscheduler/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "/ohmyscheduler/favicon.svg",
+      "src": "/favicon.svg",
       "sizes": "512x512"
     }
   ]
