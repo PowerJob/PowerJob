@@ -13,7 +13,7 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table(name = "container_info", uniqueConstraints = {@UniqueConstraint(name = "containerNameUK", columnNames = {"containerName"})})
+@Table(name = "container_info", indexes = {@Index(columnList = "appId")})
 public class ContainerInfoDO {
 
     @Id
