@@ -8,6 +8,8 @@ package com.github.kfcfans.oms.common;
  */
 public class SystemInstanceResult {
 
+    /* *********** 普通instance 专用 *********** */
+
     // 同时运行的任务实例数过多
     public static final String TOO_MUCH_INSTANCE = "too much instance(%d>%d)";
     // 无可用worker
@@ -21,6 +23,9 @@ public class SystemInstanceResult {
     // TaskTracker 长时间未上报
     public static final String REPORT_TIMEOUT = "worker report timeout, maybe TaskTracker down";
 
+    /* *********** workflow 专用 *********** */
+    public static final String JOB_NOT_FOUNT = "can't find job";
+    public static final String ONE_JOB_FAILED = "one job failure";
 
     // 被用户手动停止
     public static final String STOPPED_BY_USER = "stopped by user";

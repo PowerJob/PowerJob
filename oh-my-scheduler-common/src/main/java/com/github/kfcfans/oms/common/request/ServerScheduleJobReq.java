@@ -23,6 +23,8 @@ public class ServerScheduleJobReq implements OmsSerializable {
      * 任务ID，当更换Server后需要根据 JobId 重新查询任务元数据
      */
     private Long jobId;
+
+    private Long wfInstanceId;
     /**
      * 基础信息
      */

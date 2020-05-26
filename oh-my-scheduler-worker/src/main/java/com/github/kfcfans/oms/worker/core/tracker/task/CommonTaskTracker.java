@@ -130,6 +130,8 @@ public class CommonTaskTracker extends TaskTracker {
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
+            req.setWfInstanceId(instanceInfo.getWfInstanceId());
+
             req.setTotalTaskNum(finishedNum + unfinishedNum);
             req.setSucceedTaskNum(holder.succeedNum);
             req.setFailedTaskNum(holder.failedNum);

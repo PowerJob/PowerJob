@@ -4,6 +4,7 @@ import akka.actor.ActorSelection;
 import com.github.kfcfans.oms.common.*;
 import com.github.kfcfans.oms.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
@@ -40,8 +41,8 @@ public class DispatchService {
     private static final Splitter commaSplitter = Splitter.on(",");
 
     public void redispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
-        String instanceParams = instanceInfoRepository.findByInstanceId(instanceId).getInstanceParams();
-        dispatch(jobInfo, instanceId, currentRunningTimes, instanceParams);
+        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+        dispatch(jobInfo, instanceId, currentRunningTimes, instanceInfo.getInstanceParams(), instanceInfo.getWorkflowId());
     }
 
     /**
@@ -50,8 +51,9 @@ public class DispatchService {
      * @param instanceId 任务实例ID
      * @param currentRunningTimes 当前运行的次数
      * @param instanceParams 实例的运行参数，API触发方式专用
+     * @param wfInstanceId 工作流任务实例ID，workflow 任务专用
      */
-    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams) {
+    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams, Long wfInstanceId) {
         Long jobId = jobInfo.getId();
         log.info("[DispatchService] start to dispatch job: {};instancePrams: {}.", jobInfo, instanceParams);
 
@@ -115,6 +117,9 @@ public class DispatchService {
         }
         req.setInstanceId(instanceId);
         req.setAllWorkerAddress(finalWorkers);
+
+        // 设置工作流ID
+        req.setWfInstanceId(wfInstanceId);
 
         req.setExecuteType(ExecuteType.of(jobInfo.getExecuteType()).name());
         req.setProcessorType(ProcessorType.of(jobInfo.getProcessorType()).name());

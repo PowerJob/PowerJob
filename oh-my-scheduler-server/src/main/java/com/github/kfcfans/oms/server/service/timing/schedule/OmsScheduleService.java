@@ -17,6 +17,7 @@ import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
+import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -53,6 +54,9 @@ public class OmsScheduleService {
     private DispatchService dispatchService;
     @Resource
     private IdGenerateService idGenerateService;
+    @Resource
+    private WorkflowInstanceManager workflowInstanceManager;
+
     @Resource
     private AppInfoRepository appInfoRepository;
     @Resource
@@ -92,13 +96,23 @@ public class OmsScheduleService {
         String cronTime = stopwatch.toString();
         stopwatch.reset().start();
 
+        // 调度 workflow 任务
+        try {
+            scheduleWorkflow(allAppIds);
+        }catch (Exception e) {
+            log.error("[JobScheduleService] schedule workflow job failed.", e);
+        }
+        String wfTime = stopwatch.toString();
+        stopwatch.reset().start();
+
         // 调度 秒级任务
         try {
             scheduleFrequentJob(allAppIds);
         }catch (Exception e) {
             log.error("[JobScheduleService] schedule frequent job failed.", e);
         }
-        log.info("[JobScheduleService] cron schedule: {}, frequent schedule: {}.", cronTime, stopwatch.stop());
+
+        log.info("[JobScheduleService] cron schedule: {}, workflow schedule: {}, frequent schedule: {}.", cronTime, wfTime, stopwatch.stop());
     }
 
     /**
@@ -157,7 +171,7 @@ public class OmsScheduleService {
                     }
 
                     HashedWheelTimerHolder.TIMER.schedule(() -> {
-                        dispatchService.dispatch(jobInfoDO, instanceId, 0, null);
+                        dispatchService.dispatch(jobInfoDO, instanceId, 0, null, null);
                     }, delay, TimeUnit.MILLISECONDS);
                 });
 
@@ -202,6 +216,8 @@ public class OmsScheduleService {
             if (CollectionUtils.isEmpty(wfInfos)) {
                 return;
             }
+
+            wfInfos.forEach(wfInfo -> workflowInstanceManager.submit(wfInfo));
         });
     }
 

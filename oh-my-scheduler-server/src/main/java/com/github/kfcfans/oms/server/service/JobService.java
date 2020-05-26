@@ -120,7 +120,7 @@ public class JobService {
         executeLog.setGmtModified(executeLog.getGmtCreate());
 
         instanceInfoRepository.saveAndFlush(executeLog);
-        dispatchService.dispatch(jobInfo, executeLog.getInstanceId(), 0, instanceParams);
+        dispatchService.dispatch(jobInfo, executeLog.getInstanceId(), 0, instanceParams, null);
         return instanceId;
     }
 
