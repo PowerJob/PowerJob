@@ -1,20 +1,22 @@
 package com.github.kfcfans.oms.server.service.timing.schedule;
 
 import com.github.kfcfans.oms.common.InstanceStatus;
-import com.github.kfcfans.oms.server.common.constans.JobStatus;
 import com.github.kfcfans.oms.common.TimeExpressionType;
-import com.github.kfcfans.oms.server.common.utils.CronExpression;
-import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
+import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
-import com.github.kfcfans.oms.server.service.id.IdGenerateService;
+import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -43,7 +45,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class JobScheduleService {
+public class OmsScheduleService {
 
     private static final int MAX_BATCH_NUM = 10;
 
@@ -55,6 +57,8 @@ public class JobScheduleService {
     private AppInfoRepository appInfoRepository;
     @Resource
     private JobInfoRepository jobInfoRepository;
+    @Resource
+    private WorkflowInfoRepository workflowInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
@@ -188,6 +192,19 @@ public class JobScheduleService {
         });
     }
 
+    private void scheduleWorkflow(List<Long> appIds) {
+
+        long nowTime = System.currentTimeMillis();
+        long timeThreshold = nowTime + 2 * SCHEDULE_RATE;
+        Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
+            List<WorkflowInfoDO> wfInfos = workflowInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
+
+            if (CollectionUtils.isEmpty(wfInfos)) {
+                return;
+            }
+        });
+    }
+
     private void scheduleFrequentJob(List<Long> appIds) {
 
         Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
@@ -216,4 +233,5 @@ public class JobScheduleService {
             }
         });
     }
+
 }

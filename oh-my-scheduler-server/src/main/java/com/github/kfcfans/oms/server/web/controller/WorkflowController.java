@@ -24,7 +24,7 @@ public class WorkflowController {
     private WorkflowService workflowService;
 
     @PostMapping("/save")
-    public ResultDTO<Long> save(@RequestBody SaveWorkflowRequest req) {
+    public ResultDTO<Long> save(@RequestBody SaveWorkflowRequest req) throws Exception {
         return ResultDTO.success(workflowService.saveWorkflow(req));
     }
 

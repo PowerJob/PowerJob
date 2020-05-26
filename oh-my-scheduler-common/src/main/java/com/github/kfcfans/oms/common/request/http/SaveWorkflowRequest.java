@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.common.request.http;
 
-import com.github.kfcfans.oms.common.model.PLWorkflowDAG;
+import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import lombok.Data;
 
 /**
@@ -21,7 +21,7 @@ public class SaveWorkflowRequest {
     private Long appId;
 
     // 点线表示法
-    private PLWorkflowDAG plWorkflowDAG;
+    private PEWorkflowDAG pEWorkflowDAG;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）

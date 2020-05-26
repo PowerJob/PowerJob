@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.common.model;
 
+import com.github.kfcfans.oms.common.InstanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,5 +29,10 @@ public class WorkflowDAG {
         private List<Node> successors;
         private Long jobId;
         private String jobName;
+
+        // 运行时参数
+        private Long instanceId;
+        private InstanceStatus status;
+        private String result;
     }
 }

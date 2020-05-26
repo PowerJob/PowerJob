@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * Point & Line DAG 表示法
+ * Point & Edge DAG 表示法
  * 点 + 线，易于表达和传播
  *
  * @author tjq
@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PLWorkflowDAG {
+public class PEWorkflowDAG {
 
     // DAG 图（点线表示法）
     private List<Node> nodes;

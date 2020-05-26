@@ -31,7 +31,7 @@ public class WorkflowInfoDO {
     private Long appId;
 
     // 工作流的DAG图信息（点线式DAG的json）
-    private String plDAG;
+    private String peDAG;
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）

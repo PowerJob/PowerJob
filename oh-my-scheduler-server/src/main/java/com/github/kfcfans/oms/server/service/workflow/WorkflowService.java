@@ -1,8 +1,10 @@
 package com.github.kfcfans.oms.server.service.workflow;
 
+import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInfoRepository;
@@ -32,6 +34,10 @@ public class WorkflowService {
      */
     public Long saveWorkflow(SaveWorkflowRequest req) throws Exception {
 
+        if (!WorkflowDAGUtils.valid(req.getPEWorkflowDAG())) {
+            throw new OmsException("illegal DAG");
+        }
+
         Long wfId = req.getId();
         WorkflowInfoDO wf;
         if (wfId == null) {
@@ -43,7 +49,7 @@ public class WorkflowService {
 
         BeanUtils.copyProperties(req, wf);
         wf.setGmtModified(new Date());
-        wf.setPlDAG(JsonUtils.toJSONString(req.getPlWorkflowDAG()));
+        wf.setPeDAG(JsonUtils.toJSONString(req.getPEWorkflowDAG()));
 
         // 计算 NextTriggerTime
         TimeExpressionType timeExpressionType = TimeExpressionType.of(req.getTimeExpressionType());
