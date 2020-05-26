@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.client;
 
 import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.OpenAPIConstant;
 import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
@@ -72,7 +73,7 @@ public class OhMyClient {
         }
 
         if (StringUtils.isEmpty(currentAddress)) {
-            throw new OmsOpenApiException("no server available");
+            throw new OmsException("no server available");
         }
         log.info("[OhMyClient] {}'s oms-client bootstrap successfully.", appName);
     }
@@ -250,6 +251,6 @@ public class OhMyClient {
         }
 
         log.error("[OhMyClient] no server available in {}.", allAddress);
-        throw new OmsOpenApiException("no server available");
+        throw new OmsException("no server available");
     }
 }
