@@ -39,7 +39,9 @@ public class InstanceInfoDO {
      * 任务状态 {@link InstanceStatus}
      */
     private int status;
-    // 执行结果
+    // 执行结果（允许存储稍大的结果）
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String result;
     // 预计触发时间
     private Long expectedTriggerTime;

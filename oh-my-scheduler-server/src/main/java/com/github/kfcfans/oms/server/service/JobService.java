@@ -98,26 +98,16 @@ public class JobService {
      * 手动立即运行某个任务
      * @param jobId 任务ID
      * @param instanceParams 任务实例参数（仅 OpenAPI 存在）
-     * @param wfInstanceId 工作流任务实例ID（仅工作流触发的任务实例存在）
      * @return 任务实例ID
      */
-    public long runJob(Long jobId, String instanceParams, Long wfInstanceId) {
+    public long runJob(Long jobId, String instanceParams) {
 
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
 
-        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, wfInstanceId, System.currentTimeMillis());
+        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, null, System.currentTimeMillis());
         instanceInfoRepository.flush();
 
-        // 特殊处理 workflow 任务，需要洗去时间表达式类型
-        if (wfInstanceId != null) {
-            JobInfoDO newJobInfo = new JobInfoDO();
-            BeanUtils.copyProperties(jobInfo, newJobInfo);
-
-            newJobInfo.setTimeExpressionType(TimeExpressionType.API.getV());
-            jobInfo = newJobInfo;
-        }
-
-        dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, wfInstanceId);
+        dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
         return instanceId;
     }
 

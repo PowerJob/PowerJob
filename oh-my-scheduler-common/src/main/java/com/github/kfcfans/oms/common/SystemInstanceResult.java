@@ -24,8 +24,7 @@ public class SystemInstanceResult {
     public static final String REPORT_TIMEOUT = "worker report timeout, maybe TaskTracker down";
 
     /* *********** workflow 专用 *********** */
-    public static final String JOB_NOT_FOUNT = "can't find job";
-    public static final String ONE_JOB_FAILED = "one job failure";
+    public static final String MIDDLE_JOB_FAILED = "middle job failed";
 
     // 被用户手动停止
     public static final String STOPPED_BY_USER = "stopped by user";

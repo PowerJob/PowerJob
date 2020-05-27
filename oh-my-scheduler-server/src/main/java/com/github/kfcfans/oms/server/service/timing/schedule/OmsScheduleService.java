@@ -90,9 +90,9 @@ public class OmsScheduleService {
 
         // 调度 CRON 表达式 JOB
         try {
-            scheduleCornJob(allAppIds);
+            scheduleCronJob(allAppIds);
         }catch (Exception e) {
-            log.error("[JobScheduleService] schedule cron job failed.", e);
+            log.error("[CronScheduler] schedule cron job failed.", e);
         }
         String cronTime = stopwatch.toString();
         stopwatch.reset().start();
@@ -101,7 +101,7 @@ public class OmsScheduleService {
         try {
             scheduleWorkflow(allAppIds);
         }catch (Exception e) {
-            log.error("[JobScheduleService] schedule workflow job failed.", e);
+            log.error("[WorkflowScheduler] schedule workflow job failed.", e);
         }
         String wfTime = stopwatch.toString();
         stopwatch.reset().start();
@@ -110,7 +110,7 @@ public class OmsScheduleService {
         try {
             scheduleFrequentJob(allAppIds);
         }catch (Exception e) {
-            log.error("[JobScheduleService] schedule frequent job failed.", e);
+            log.error("[FrequentScheduler] schedule frequent job failed.", e);
         }
 
         log.info("[JobScheduleService] cron schedule: {}, workflow schedule: {}, frequent schedule: {}.", cronTime, wfTime, stopwatch.stop());
@@ -119,7 +119,7 @@ public class OmsScheduleService {
     /**
      * 调度 CRON 表达式类型的任务
      */
-    private void scheduleCornJob(List<Long> appIds) {
+    private void scheduleCronJob(List<Long> appIds) {
 
 
         Date now = new Date();
@@ -214,7 +214,7 @@ public class OmsScheduleService {
                 // 2. 推入时间轮，准备调度执行
                 long delay = wfInfo.getNextTriggerTime() - System.currentTimeMillis();
                 if (delay < 0) {
-                    log.warn("[Workflow-{}] workflow schedule delay, expect:{}, actual: {}]", wfInfo.getId(), wfInfo.getNextTriggerTime(), System.currentTimeMillis());
+                    log.warn("[Workflow-{}] workflow schedule delay, expect:{}, actual: {}", wfInfo.getId(), wfInfo.getNextTriggerTime(), System.currentTimeMillis());
                     delay = 0;
                 }
                 HashedWheelTimerHolder.TIMER.schedule(() -> workflowInstanceManager.start(wfInfo, wfInstanceId), delay, TimeUnit.MILLISECONDS);
@@ -260,7 +260,7 @@ public class OmsScheduleService {
                 }
 
                 log.info("[FrequentScheduler] These frequent jobs will be scheduled： {}.", notRunningJobIds);
-                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null, null));
+                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null));
             }catch (Exception e) {
                 log.error("[FrequentScheduler] schedule frequent job failed.", e);
             }

@@ -143,24 +143,21 @@ public class InstanceManager {
         getInstanceInfoRepository().saveAndFlush(updateEntity);
 
         if (finished) {
-            processFinishedInstance(instanceId, updateEntity.getStatus());
-
-            // workflow 特殊处理
-            if (req.getWfInstanceId() != null) {
-                getWorkflowInstanceManager().move(req.getWfInstanceId(), instanceId, newStatus == InstanceStatus.SUCCEED, req.getResult());
-            }
+            // 这里的 InstanceStatus 只有 成功/失败 两种，手动停止不会由 TaskTracker 上报
+            processFinishedInstance(instanceId, req.getWfInstanceId(), newStatus, req.getResult());
         }
     }
 
     /**
      * 收尾完成的任务实例
      * @param instanceId 任务实例ID
-     * @param status 任务实例状态：成功/失败/手动停止
+     * @param wfInstanceId 工作流实例ID，非必须
+     * @param status 任务状态，有 成功/失败/手动停止
+     * @param result 执行结果
      */
-    public static void processFinishedInstance(Long instanceId, int status) {
+    public static void processFinishedInstance(Long instanceId, Long wfInstanceId, InstanceStatus status, String result) {
 
-        InstanceStatus instanceStatus = InstanceStatus.of(status);
-        log.info("[InstanceManager] instance(id={}) process finished, current status is {}.", instanceId, instanceStatus);
+        log.info("[Instance-{}] process finished, final status is {}.", instanceId, status.name());
 
         // 清除已完成的实例信息
         instanceId2StatusHolder.remove(instanceId);
@@ -170,8 +167,14 @@ public class InstanceManager {
         // 上报日志数据
         getInstanceLogService().sync(instanceId);
 
+        // workflow 特殊处理
+        if (wfInstanceId != null) {
+            // 手动停止在工作流中也认为是失败（理论上不应该发生）
+            getWorkflowInstanceManager().move(wfInstanceId, instanceId, status == InstanceStatus.SUCCEED, result);
+        }
+
         // 告警
-        if (instanceStatus == InstanceStatus.FAILED) {
+        if (status == InstanceStatus.FAILED) {
 
             if (jobInfo == null) {
                 jobInfo = fetchJobInfo(instanceId);

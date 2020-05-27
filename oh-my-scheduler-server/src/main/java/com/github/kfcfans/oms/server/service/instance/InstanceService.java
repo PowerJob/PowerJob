@@ -98,7 +98,7 @@ public class InstanceService {
             instanceInfoDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
             instanceInfoRepository.saveAndFlush(instanceInfoDO);
 
-            InstanceManager.processFinishedInstance(instanceId, STOPPED.getV());
+            InstanceManager.processFinishedInstance(instanceId, instanceInfoDO.getWfInstanceId(), STOPPED, SystemInstanceResult.STOPPED_BY_USER);
 
             /*
             不可靠通知停止 TaskTracker

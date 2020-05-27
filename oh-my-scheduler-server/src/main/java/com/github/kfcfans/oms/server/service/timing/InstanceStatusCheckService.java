@@ -57,9 +57,9 @@ public class InstanceStatusCheckService {
         try {
             innerCheck();
         }catch (Exception e) {
-            log.error("[InstanceStatusCheckService] status check failed.", e);
+            log.error("[InstanceStatusChecker] status check failed.", e);
         }
-        log.info("[InstanceStatusCheckService] status check using {}.", stopwatch.stop());
+        log.info("[InstanceStatusChecker] status check using {}.", stopwatch.stop());
     }
 
     private void innerCheck() {
@@ -67,7 +67,7 @@ public class InstanceStatusCheckService {
         // 查询DB获取该Server需要负责的AppGroup
         List<AppInfoDO> appInfoList = appInfoRepository.findAllByCurrentServer(OhMyServer.getActorSystemAddress());
         if (CollectionUtils.isEmpty(appInfoList)) {
-            log.info("[InstanceStatusCheckService] current server has no app's job to check");
+            log.info("[InstanceStatusChecker] current server has no app's job to check");
             return;
         }
         List<Long> allAppIds = appInfoList.stream().map(AppInfoDO::getId).collect(Collectors.toList());
@@ -78,7 +78,7 @@ public class InstanceStatusCheckService {
             long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
             List<InstanceInfoDO> waitingDispatchInstances = instanceInfoRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
-                log.warn("[InstanceStatusCheckService] instances({}) is not triggered as expected.", waitingDispatchInstances);
+                log.warn("[InstanceStatusChecker] instances({}) is not triggered as expected.", waitingDispatchInstances);
                 waitingDispatchInstances.forEach(instance -> {
 
                     // 过滤因为失败重试而改成 WAITING_DISPATCH 状态的任务实例
@@ -97,7 +97,7 @@ public class InstanceStatusCheckService {
             threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
             List<InstanceInfoDO> waitingWorkerReceiveInstances = instanceInfoRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingWorkerReceiveInstances)) {
-                log.warn("[InstanceStatusCheckService] instances({}) did n’t receive any reply from worker.", waitingWorkerReceiveInstances);
+                log.warn("[InstanceStatusChecker] instances({}) did n’t receive any reply from worker.", waitingWorkerReceiveInstances);
                 waitingWorkerReceiveInstances.forEach(instance -> {
                     // 重新派发
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
@@ -147,6 +147,6 @@ public class InstanceStatusCheckService {
         instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
         instanceInfoRepository.saveAndFlush(instance);
 
-        InstanceManager.processFinishedInstance(instance.getInstanceId(), InstanceStatus.FAILED.getV());
+        InstanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, "timeout, maybe TaskTracker down!");
     }
 }

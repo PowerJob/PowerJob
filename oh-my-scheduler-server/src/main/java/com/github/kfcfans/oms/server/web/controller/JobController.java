@@ -58,14 +58,14 @@ public class JobController {
     }
 
     @GetMapping("/delete")
-    public ResultDTO<Void> deleteJob(String jobId) throws Exception {
+    public ResultDTO<Void> deleteJob(String jobId) {
         jobService.deleteJob(Long.valueOf(jobId));
         return ResultDTO.success(null);
     }
 
     @GetMapping("/run")
     public ResultDTO<Long> runImmediately(String jobId) {
-        return ResultDTO.success(jobService.runJob(Long.valueOf(jobId), null, null));
+        return ResultDTO.success(jobService.runJob(Long.valueOf(jobId), null));
     }
 
     @PostMapping("/list")

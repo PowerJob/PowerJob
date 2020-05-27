@@ -1,28 +1,26 @@
 package com.github.kfcfans.oms.server.service.workflow;
 
 import com.github.kfcfans.oms.common.SystemInstanceResult;
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import com.github.kfcfans.oms.common.model.WorkflowDAG;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
+import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInstanceInfoRepository;
-import com.github.kfcfans.oms.server.service.JobService;
+import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Queues;
+import com.github.kfcfans.oms.server.service.instance.InstanceService;
+import com.google.common.collect.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -36,9 +34,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class WorkflowInstanceManager {
 
     @Resource
-    private JobService jobService;
+    private InstanceService instanceService;
+    @Resource
+    private DispatchService dispatchService;
     @Resource
     private IdGenerateService idGenerateService;
+    @Resource
+    private JobInfoRepository jobInfoRepository;
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
@@ -53,6 +55,7 @@ public class WorkflowInstanceManager {
 
         Date now = new Date();
         WorkflowInstanceInfoDO newWfInstance = new WorkflowInstanceInfoDO();
+        newWfInstance.setAppId(wfInfo.getAppId());
         newWfInstance.setWfInstanceId(wfInstanceId);
         newWfInstance.setWorkflowId(wfInfo.getId());
 
@@ -99,7 +102,7 @@ public class WorkflowInstanceManager {
         int instanceConcurrency = workflowInstanceInfoRepository.countByWorkflowIdAndStatusIn(wfInfo.getId(), WorkflowInstanceStatus.generalizedRunningStatus);
         if (instanceConcurrency > wfInfo.getMaxWfInstanceNum()) {
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.FAILED.getV());
-            wfInstanceInfo.setResult(SystemInstanceResult.TOO_MUCH_INSTANCE);
+            wfInstanceInfo.setResult(String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, instanceConcurrency, wfInfo.getMaxWfInstanceNum()));
 
             workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
             return;
@@ -111,23 +114,27 @@ public class WorkflowInstanceManager {
             // 运行根任务，无法找到根任务则直接失败
             WorkflowDAG.Node root = workflowDAG.getRoot();
 
-            // 调度执行根任务
-            Long instanceId = jobService.runJob(root.getJobId(), null, wfInstanceId);
+            // 创建根任务实例
+            Long instanceId = instanceService.create(root.getJobId(), wfInfo.getAppId(), null, wfInstanceId, System.currentTimeMillis());
             root.setInstanceId(instanceId);
 
             // 持久化
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.RUNNING.getV());
             wfInstanceInfo.setDag(JsonUtils.toJSONStringUnsafe(workflowDAG));
-
+            workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
             log.info("[Workflow-{}] start workflow successfully, wfInstanceId={}", wfInfo.getId(), wfInstanceId);
+
+            // 真正开始执行根任务
+            runInstance(root.getJobId(), instanceId, wfInstanceId);
         }catch (Exception e) {
 
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.FAILED.getV());
             wfInstanceInfo.setResult(e.getMessage());
 
             log.error("[Workflow-{}] submit workflow: {} failed.", wfInfo.getId(), wfInfo, e);
+
+            workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
         }
-        workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
     }
 
     /**
@@ -177,7 +184,7 @@ public class WorkflowInstanceManager {
             if (!success) {
                 wfInstance.setDag(JsonUtils.toJSONStringUnsafe(dag));
                 wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
-                wfInstance.setResult(SystemInstanceResult.ONE_JOB_FAILED);
+                wfInstance.setResult(SystemInstanceResult.MIDDLE_JOB_FAILED);
                 workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
                 log.warn("[Workflow-{}] workflow(wfInstanceId={}) process failed because middle task(instanceId={}) failed", wfId, wfInstanceId, instanceId);
@@ -185,6 +192,7 @@ public class WorkflowInstanceManager {
             }
 
             // 重新计算需要派发的任务
+            Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
             AtomicBoolean allFinished = new AtomicBoolean(true);
             relyMap.keySet().forEach(jobId -> {
 
@@ -203,10 +211,13 @@ public class WorkflowInstanceManager {
 
                 // 所有依赖已经执行完毕，可以执行该任务
                 Map<Long, String> jobId2Result = Maps.newHashMap();
+                // 构建下一个任务的入参 （jobId -> result）
                 relyMap.get(jobId).forEach(jid -> jobId2Result.put(jid, jobId2Node.get(jid).getResult()));
 
-                Long newInstanceId = jobService.runJob(jobId, JsonUtils.toJSONString(jobId2Result), wfInstanceId);
+                Long newInstanceId = instanceService.create(jobId, wfInstance.getAppId(), JsonUtils.toJSONString(jobId2Result), wfInstanceId, System.currentTimeMillis());
                 jobId2Node.get(jobId).setInstanceId(newInstanceId);
+
+                jobId2InstanceId.put(jobId, newInstanceId);
 
                 log.debug("[Workflow-{}] workflowInstance(wfInstanceId={}) start to process new node(jobId={},instanceId={})", wfId, wfInstanceId, jobId, newInstanceId);
             });
@@ -221,6 +232,9 @@ public class WorkflowInstanceManager {
             wfInstance.setDag(JsonUtils.toJSONString(dag));
             workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
+            // 持久化结束后，开始调度执行所有的任务
+            jobId2InstanceId.forEach((jobId, newInstanceId) -> runInstance(jobId, newInstanceId, wfInstanceId));
+
         }catch (Exception e) {
             wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
             wfInstance.setResult("MOVE NEXT STEP FAILED: " + e.getMessage());
@@ -228,6 +242,13 @@ public class WorkflowInstanceManager {
 
             log.error("[Workflow-{}] update failed for workflowInstance({}).", wfId, wfInstanceId, e);
         }
+    }
+
+    private void runInstance(Long jobId, Long instanceId, Long wfInstanceId) {
+        JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
+        // 洗去时间表达式类型
+        jobInfo.setTimeExpressionType(TimeExpressionType.API.getV());
+        dispatchService.dispatch(jobInfo, instanceId, 0, null, wfInstanceId);
     }
 
 }

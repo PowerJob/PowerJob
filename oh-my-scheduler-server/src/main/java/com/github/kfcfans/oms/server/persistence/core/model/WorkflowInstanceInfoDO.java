@@ -23,6 +23,8 @@ public class WorkflowInstanceInfoDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    // 任务所属应用的ID，冗余提高查询效率
+    private Long appId;
 
     // workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
     private Long wfInstanceId;
