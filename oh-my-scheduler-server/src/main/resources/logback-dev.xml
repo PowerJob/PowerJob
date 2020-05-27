@@ -18,12 +18,11 @@
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             <charset>utf8</charset>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>debug</level>
-            <onMatch>DENY</onMatch>
-            <onMismatch>NEUTRAL</onMismatch>
-        </filter>
     </appender>
+
+    <logger name="com.github.kfcfans.oms" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
