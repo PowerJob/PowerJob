@@ -24,13 +24,19 @@ public class WorkflowInstanceInfoDO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
+    private Long wfInstanceId;
+
     private Long workflowId;
 
     // workflow 状态（WorkflowInstanceStatus）
     private Integer status;
 
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String dag;
-
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String result;
 
     private Date gmtCreate;

@@ -39,6 +39,9 @@ public class WorkflowInfoDO {
     // 时间表达式，CRON/NULL/LONG/LONG
     private String timeExpression;
 
+    // 最大同时运行的工作流个数，默认 1
+    private Integer maxWfInstanceNum;
+
     // 1 正常运行，2 停止（不再调度）
     private Integer status;
     // 下一次调度时间

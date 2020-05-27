@@ -72,7 +72,7 @@ public class WorkflowController {
     }
 
     @GetMapping("/run")
-    public ResultDTO<Long> runWorkflow(Long workflowId, Long appId) {
+    public ResultDTO<Long> runWorkflow(Long workflowId, Long appId) throws Exception {
         return ResultDTO.success(workflowService.runWorkflow(workflowId, appId));
     }
 

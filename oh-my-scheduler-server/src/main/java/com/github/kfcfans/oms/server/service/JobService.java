@@ -97,31 +97,29 @@ public class JobService {
     /**
      * 手动立即运行某个任务
      * @param jobId 任务ID
-     * @param instanceParams 任务实例参数
+     * @param instanceParams 任务实例参数（仅 OpenAPI 存在）
+     * @param wfInstanceId 工作流任务实例ID（仅工作流触发的任务实例存在）
      * @return 任务实例ID
      */
-    public long runJob(Long jobId, String instanceParams) {
-        Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
-        if (!jobInfoOPT.isPresent()) {
-            throw new IllegalArgumentException("can't find job by jobId:" + jobId);
+    public long runJob(Long jobId, String instanceParams, Long wfInstanceId) {
+
+        JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
+
+        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, wfInstanceId, System.currentTimeMillis());
+        instanceInfoRepository.flush();
+
+        // 特殊处理 workflow 任务，需要洗去时间表达式类型
+        if (wfInstanceId != null) {
+            JobInfoDO newJobInfo = new JobInfoDO();
+            BeanUtils.copyProperties(jobInfo, newJobInfo);
+
+            newJobInfo.setTimeExpressionType(TimeExpressionType.API.getV());
+            jobInfo = newJobInfo;
         }
-        JobInfoDO jobInfo = jobInfoOPT.get();
-        long instanceId = idGenerateService.allocate();
 
-        InstanceInfoDO executeLog = new InstanceInfoDO();
-        executeLog.setJobId(jobInfo.getId());
-        executeLog.setAppId(jobInfo.getAppId());
-        executeLog.setInstanceId(instanceId);
-        executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-        executeLog.setExpectedTriggerTime(System.currentTimeMillis());
-        executeLog.setGmtCreate(new Date());
-        executeLog.setGmtModified(executeLog.getGmtCreate());
-
-        instanceInfoRepository.saveAndFlush(executeLog);
-        dispatchService.dispatch(jobInfo, executeLog.getInstanceId(), 0, instanceParams, null);
+        dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, wfInstanceId);
         return instanceId;
     }
-
 
     /**
      * 删除某个任务

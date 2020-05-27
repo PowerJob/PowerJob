@@ -35,6 +35,9 @@ public class WorkflowInfoVO {
     // 时间表达式，CRON/NULL/LONG/LONG
     private String timeExpression;
 
+    // 最大同时运行的工作流个数，默认 1
+    private Integer maxWfInstanceNum;
+
     // ENABLE / DISABLE
     private String status;
 

@@ -1,7 +1,10 @@
 package com.github.kfcfans.oms.common;
 
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.List;
 
 /**
  * Workflow 任务运行状态
@@ -14,10 +17,15 @@ import lombok.Getter;
 
 public enum WorkflowInstanceStatus {
 
-    RUNNING(1, "运行中"),
-    FAILED(2, "失败"),
-    SUCCEED(3, "成功"),
+    WAITING(1, "等待调度"),
+    RUNNING(2, "运行中"),
+    FAILED(3, "失败"),
+    SUCCEED(4, "成功"),
     STOPPED(10, "手动停止");
+
+    // 广义的运行状态
+    public static final List<Integer> generalizedRunningStatus = Lists.newArrayList(WAITING.v, RUNNING.v);
+
 
     private int v;
     private String des;

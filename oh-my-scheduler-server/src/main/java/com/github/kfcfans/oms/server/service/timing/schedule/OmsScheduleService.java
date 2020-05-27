@@ -6,7 +6,6 @@ import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
-import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
@@ -16,7 +15,7 @@ import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInfoRep
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
-import com.github.kfcfans.oms.server.service.id.IdGenerateService;
+import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -39,7 +38,8 @@ import java.util.stream.Collectors;
 
 /**
  * 任务调度执行服务（调度 CRON 表达式的任务进行执行）
- * FIX_RATE和FIX_DELAY任务不需要被调度，创建后直接被派发到Worker执行，只需要失败重试机制（在InstanceStatusCheckService中完成）
+ * 原：FIX_RATE和FIX_DELAY任务不需要被调度，创建后直接被派发到Worker执行，只需要失败重试机制（在InstanceStatusCheckService中完成）
+ * 先：那样写不太优雅，东一坨代码西一坨代码的，还是牺牲点性能统一调度算了 （优雅，永不过时～ BY：青钢影）
  *
  * @author tjq
  * @since 2020/4/5
@@ -48,12 +48,13 @@ import java.util.stream.Collectors;
 @Service
 public class OmsScheduleService {
 
-    private static final int MAX_BATCH_NUM = 10;
+    // 每次并发调度的应用数量
+    private static final int MAX_APP_NUM = 10;
 
     @Resource
     private DispatchService dispatchService;
     @Resource
-    private IdGenerateService idGenerateService;
+    private InstanceService instanceService;
     @Resource
     private WorkflowInstanceManager workflowInstanceManager;
 
@@ -121,9 +122,10 @@ public class OmsScheduleService {
     private void scheduleCornJob(List<Long> appIds) {
 
 
+        Date now = new Date();
         long nowTime = System.currentTimeMillis();
         long timeThreshold = nowTime + 2 * SCHEDULE_RATE;
-        Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
+        Lists.partition(appIds, MAX_APP_NUM).forEach(partAppIds -> {
 
             try {
 
@@ -136,25 +138,12 @@ public class OmsScheduleService {
 
                 // 1. 批量写日志表
                 Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
-                log.info("[JobScheduleService] These cron jobs will be scheduled： {}.", jobInfos);
+                log.info("[CronScheduler] These cron jobs will be scheduled： {}.", jobInfos);
 
-                List<InstanceInfoDO> executeLogs = Lists.newLinkedList();
-                jobInfos.forEach(jobInfoDO -> {
-
-                    InstanceInfoDO executeLog = new InstanceInfoDO();
-                    executeLog.setJobId(jobInfoDO.getId());
-                    executeLog.setAppId(jobInfoDO.getAppId());
-                    executeLog.setInstanceId(idGenerateService.allocate());
-                    executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-                    executeLog.setExpectedTriggerTime(jobInfoDO.getNextTriggerTime());
-                    executeLog.setGmtCreate(new Date());
-                    executeLog.setGmtModified(executeLog.getGmtCreate());
-
-                    executeLogs.add(executeLog);
-
-                    jobId2InstanceId.put(executeLog.getJobId(), executeLog.getInstanceId());
+                jobInfos.forEach(jobInfo -> {
+                    Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), null, null, jobInfo.getNextTriggerTime());
+                    jobId2InstanceId.put(jobInfo.getId(), instanceId);
                 });
-                instanceInfoRepository.saveAll(executeLogs);
                 instanceInfoRepository.flush();
 
                 // 2. 推入时间轮中等待调度执行
@@ -165,7 +154,7 @@ public class OmsScheduleService {
                     long targetTriggerTime = jobInfoDO.getNextTriggerTime();
                     long delay = 0;
                     if (targetTriggerTime < nowTime) {
-                        log.warn("[JobScheduleService] find a delayed Job: {}.", jobInfoDO);
+                        log.warn("[Job-{}] schedule delay, expect: {}, current: {}", jobInfoDO.getId(), targetTriggerTime, System.currentTimeMillis());
                     }else {
                         delay = targetTriggerTime - nowTime;
                     }
@@ -176,7 +165,6 @@ public class OmsScheduleService {
                 });
 
                 // 3. 计算下一次调度时间（忽略5S内的重复执行，即CRON模式下最小的连续执行间隔为 SCHEDULE_RATE ms）
-                Date now = new Date();
                 List<JobInfoDO> updatedJobInfos = Lists.newLinkedList();
                 jobInfos.forEach(jobInfoDO -> {
 
@@ -193,7 +181,7 @@ public class OmsScheduleService {
 
                         updatedJobInfos.add(updatedJobInfo);
                     } catch (Exception e) {
-                        log.error("[JobScheduleService] calculate next trigger time for job(jobId={}) failed.", jobInfoDO.getId(), e);
+                        log.error("[Job-{}] calculate next trigger time failed.", jobInfoDO.getId(), e);
                     }
                 });
                 jobInfoRepository.saveAll(updatedJobInfos);
@@ -201,7 +189,7 @@ public class OmsScheduleService {
 
 
             }catch (Exception e) {
-                log.error("[JobScheduleService] schedule cron job failed.", e);
+                log.error("[CronScheduler] schedule cron job failed.", e);
             }
         });
     }
@@ -210,20 +198,49 @@ public class OmsScheduleService {
 
         long nowTime = System.currentTimeMillis();
         long timeThreshold = nowTime + 2 * SCHEDULE_RATE;
-        Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
+        Lists.partition(appIds, MAX_APP_NUM).forEach(partAppIds -> {
             List<WorkflowInfoDO> wfInfos = workflowInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
 
             if (CollectionUtils.isEmpty(wfInfos)) {
                 return;
             }
 
-            wfInfos.forEach(wfInfo -> workflowInstanceManager.submit(wfInfo));
+            Date now = new Date();
+            wfInfos.forEach(wfInfo -> {
+
+                // 1. 先生成调度记录，防止不调度的情况发生
+                Long wfInstanceId = workflowInstanceManager.create(wfInfo);
+
+                // 2. 推入时间轮，准备调度执行
+                long delay = wfInfo.getNextTriggerTime() - System.currentTimeMillis();
+                if (delay < 0) {
+                    log.warn("[Workflow-{}] workflow schedule delay, expect:{}, actual: {}]", wfInfo.getId(), wfInfo.getNextTriggerTime(), System.currentTimeMillis());
+                    delay = 0;
+                }
+                HashedWheelTimerHolder.TIMER.schedule(() -> workflowInstanceManager.start(wfInfo, wfInstanceId), delay, TimeUnit.MILLISECONDS);
+
+                // 3. 重新计算下一次调度时间并更新
+                try {
+                    CronExpression cronExpression = new CronExpression(wfInfo.getTimeExpression());
+                    Date nextTriggerTime = cronExpression.getNextValidTimeAfter(new Date(wfInfo.getNextTriggerTime()));
+
+                    WorkflowInfoDO updateEntity = new WorkflowInfoDO();
+                    BeanUtils.copyProperties(wfInfo, updateEntity);
+
+                    updateEntity.setNextTriggerTime(nextTriggerTime.getTime());
+                    updateEntity.setGmtModified(now);
+                    workflowInfoRepository.save(updateEntity);
+                }catch (Exception e) {
+                    log.error("[Workflow-{}] parse cron failed.", wfInfo.getId(), e);
+                }
+            });
+            workflowInfoRepository.flush();
         });
     }
 
     private void scheduleFrequentJob(List<Long> appIds) {
 
-        Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
+        Lists.partition(appIds, MAX_APP_NUM).forEach(partAppIds -> {
             try {
                 // 查询所有的秒级任务（只包含ID）
                 List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
@@ -242,10 +259,10 @@ public class OmsScheduleService {
                     return;
                 }
 
-                log.info("[JobScheduleService] These frequent jobs will be scheduled： {}.", notRunningJobIds);
-                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null));
+                log.info("[FrequentScheduler] These frequent jobs will be scheduled： {}.", notRunningJobIds);
+                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null, null));
             }catch (Exception e) {
-                log.error("[JobScheduleService] schedule frequent job failed.", e);
+                log.error("[FrequentScheduler] schedule frequent job failed.", e);
             }
         });
     }

@@ -26,9 +26,9 @@ import java.util.Date;
 public class WorkflowService {
 
     @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
-    @Resource
     private WorkflowInstanceManager workflowInstanceManager;
+    @Resource
+    private WorkflowInfoRepository workflowInfoRepository;
 
     /**
      * 保存/修改DAG工作流
@@ -55,6 +55,8 @@ public class WorkflowService {
         wf.setGmtModified(new Date());
         wf.setPeDAG(JsonUtils.toJSONString(req.getPEWorkflowDAG()));
         wf.setStatus(SwitchableStatus.valueOf(req.getStatus()).getV());
+        wf.setTimeExpressionType(TimeExpressionType.valueOf(req.getTimeExpressionType()).getV());
+
         wf.setNotifyUserIds(SJ.commaJoiner.join(req.getNotifyUserIds()));
 
         // 计算 NextTriggerTime
@@ -100,8 +102,13 @@ public class WorkflowService {
      * @return 该 workflow 实例的 instanceId（wfInstanceId）
      */
     public Long runWorkflow(Long wfId, Long appId) {
+
         WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
-        return workflowInstanceManager.submit(wfInfo);
+        Long wfInstanceId = workflowInstanceManager.create(wfInfo);
+
+        // 正式启动任务
+        workflowInstanceManager.start(wfInfo, wfInstanceId);
+        return wfInstanceId;
     }
 
     private WorkflowInfoDO permissionCheck(Long wfId, Long appId) {

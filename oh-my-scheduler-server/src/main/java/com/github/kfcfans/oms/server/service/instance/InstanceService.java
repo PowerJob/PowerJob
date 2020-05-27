@@ -13,6 +13,7 @@ import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,39 @@ import static com.github.kfcfans.oms.common.InstanceStatus.STOPPED;
 public class InstanceService {
 
     @Resource
+    private IdGenerateService idGenerateService;
+    @Resource
     private InstanceInfoRepository instanceInfoRepository;
+
+    /**
+     * 创建任务实例（注意，该方法并不调用 saveAndFlush，如果有需要立即同步到DB的需求，请在方法结束后手动调用 flush）
+     * @param jobId 任务ID
+     * @param appId 所属应用ID
+     * @param instanceParams 任务实例参数，仅 OpenAPI 创建时存在
+     * @param wfInstanceId 工作流任务实例ID，仅工作流下的任务实例存在
+     * @param expectTriggerTime 预期执行时间
+     * @return 任务实例ID
+     */
+    public Long create(Long jobId, Long appId, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
+
+        Long instanceId = idGenerateService.allocate();
+        Date now = new Date();
+
+        InstanceInfoDO newInstanceInfo = new InstanceInfoDO();
+        newInstanceInfo.setJobId(jobId);
+        newInstanceInfo.setAppId(appId);
+        newInstanceInfo.setInstanceId(instanceId);
+        newInstanceInfo.setInstanceParams(instanceParams);
+        newInstanceInfo.setWfInstanceId(wfInstanceId);
+
+        newInstanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+        newInstanceInfo.setExpectedTriggerTime(expectTriggerTime);
+        newInstanceInfo.setGmtCreate(now);
+        newInstanceInfo.setGmtModified(now);
+
+        instanceInfoRepository.save(newInstanceInfo);
+        return instanceId;
+    }
 
     /**
      * 停止任务实例

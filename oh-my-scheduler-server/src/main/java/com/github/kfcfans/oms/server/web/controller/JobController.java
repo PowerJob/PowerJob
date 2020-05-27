@@ -65,7 +65,7 @@ public class JobController {
 
     @GetMapping("/run")
     public ResultDTO<Long> runImmediately(String jobId) {
-        return ResultDTO.success(jobService.runJob(Long.valueOf(jobId), null));
+        return ResultDTO.success(jobService.runJob(Long.valueOf(jobId), null, null));
     }
 
     @PostMapping("/list")
@@ -107,8 +107,6 @@ public class JobController {
         jobInfoPage = jobInfoRepository.findByAppIdAndJobNameLikeAndStatusNot(request.getAppId(), condition, SwitchableStatus.DELETED.getV(), pageRequest);
         return ResultDTO.success(convertPage(jobInfoPage));
     }
-
-
 
 
     private static PageResult<JobInfoVO> convertPage(Page<JobInfoDO> jobInfoPage) {
