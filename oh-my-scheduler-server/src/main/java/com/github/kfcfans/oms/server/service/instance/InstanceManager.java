@@ -36,9 +36,9 @@ import java.util.concurrent.TimeUnit;
 public class InstanceManager {
 
     // 存储 instanceId 对应的 Job 信息，便于重试
-    private static final Map<Long, JobInfoDO> instanceId2JobInfo = Maps.newConcurrentMap();
+    private static Map<Long, JobInfoDO> instanceId2JobInfo = Maps.newConcurrentMap();
     // 存储 instance 的状态（暂时只用到了 lastReportTime）
-    private static final Map<Long, InstanceStatusHolder> instanceId2StatusHolder = Maps.newConcurrentMap();
+    private static Map<Long, InstanceStatusHolder> instanceId2StatusHolder = Maps.newConcurrentMap();
 
     // Spring Bean
     private static DispatchService dispatchService;
@@ -204,6 +204,14 @@ public class InstanceManager {
             return getJobInfoRepository().findById(instanceInfo.getJobId()).orElse(null);
         }
         return null;
+    }
+
+    /**
+     * 释放本地缓存，防止内存泄漏
+     */
+    public static void releaseInstanceInfos() {
+        instanceId2JobInfo = Maps.newConcurrentMap();
+        instanceId2StatusHolder = Maps.newConcurrentMap();
     }
 
     private static InstanceInfoRepository getInstanceInfoRepository() {
