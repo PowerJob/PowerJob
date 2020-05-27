@@ -4,7 +4,8 @@ import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.oms.common.response.JobInfoDTO;
-import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.SJ;
+import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
@@ -12,7 +13,6 @@ import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRep
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
-import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -45,8 +45,6 @@ public class JobService {
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
-    private static final Joiner commaJoiner = Joiner.on(",").skipNulls();
-
     /**
      * 保存/修改任务
      * @param request 任务请求
@@ -70,7 +68,7 @@ public class JobService {
         jobInfoDO.setExecuteType(request.getExecuteType().getV());
         jobInfoDO.setProcessorType(request.getProcessorType().getV());
         jobInfoDO.setTimeExpressionType(request.getTimeExpressionType().getV());
-        jobInfoDO.setStatus(request.isEnable() ? JobStatus.ENABLE.getV() : JobStatus.DISABLE.getV());
+        jobInfoDO.setStatus(request.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
 
         if (jobInfoDO.getMaxWorkerCount() == null) {
             jobInfoDO.setMaxInstanceNum(0);
@@ -78,7 +76,7 @@ public class JobService {
 
         // 转化报警用户列表
         if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
-            jobInfoDO.setNotifyUserIds(commaJoiner.join(request.getNotifyUserIds()));
+            jobInfoDO.setNotifyUserIds(SJ.commaJoiner.join(request.getNotifyUserIds()));
         }
 
         refreshJob(jobInfoDO);
@@ -130,14 +128,14 @@ public class JobService {
      * @param jobId 任务ID
      */
     public void deleteJob(Long jobId) {
-        shutdownOrStopJob(jobId, JobStatus.DELETED);
+        shutdownOrStopJob(jobId, SwitchableStatus.DELETED);
     }
 
     /**
      * 禁用某个任务
      */
     public void disableJob(Long jobId) {
-        shutdownOrStopJob(jobId, JobStatus.DISABLE);
+        shutdownOrStopJob(jobId, SwitchableStatus.DISABLE);
     }
 
     /**
@@ -148,7 +146,7 @@ public class JobService {
     public void enableJob(Long jobId) throws Exception {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
 
-        jobInfoDO.setStatus(JobStatus.ENABLE.getV());
+        jobInfoDO.setStatus(SwitchableStatus.ENABLE.getV());
         refreshJob(jobInfoDO);
 
         jobInfoRepository.saveAndFlush(jobInfoDO);
@@ -158,7 +156,7 @@ public class JobService {
      * 停止或删除某个JOB
      * 秒级任务还要额外停止正在运行的任务实例
      */
-    private void shutdownOrStopJob(Long jobId, JobStatus status) throws IllegalArgumentException {
+    private void shutdownOrStopJob(Long jobId, SwitchableStatus status) throws IllegalArgumentException {
 
         // 1. 先更新 job_info 表
         Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);

@@ -58,7 +58,7 @@ public class WorkflowInstanceManager {
      * 提交运行 Workflow 工作流
      * @param wfInfo workflow 工作流数据库对象
      */
-    public void submit(WorkflowInfoDO wfInfo) {
+    public Long submit(WorkflowInfoDO wfInfo) {
 
         Long wfInstanceId = idGenerateService.allocate();
 
@@ -91,6 +91,7 @@ public class WorkflowInstanceManager {
             log.error("[WorkflowInstanceManager] submit workflow: {} failed.", wfInfo, e);
         }
         workflowInstanceInfoRepository.saveAndFlush(newWfInstance);
+        return wfInstanceId;
     }
 
     /**
@@ -165,7 +166,12 @@ public class WorkflowInstanceManager {
                 jobId2Node.get(jobId).setInstanceId(newInstanceId);
             });
 
-            wfInstance.setDag(JsonUtils.toJSONStringUnsafe(dag));
+            if (allFinished.get()) {
+                wfInstance.setStatus(WorkflowInstanceStatus.SUCCEED.getV());
+                // 最终任务的结果作为整个 workflow 的结果
+                wfInstance.setResult(result);
+            }
+            wfInstance.setDag(JsonUtils.toJSONString(dag));
             workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
         }catch (Exception e) {

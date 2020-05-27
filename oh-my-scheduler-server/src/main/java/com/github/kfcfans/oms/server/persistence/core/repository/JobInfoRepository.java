@@ -23,7 +23,7 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
     @Query(value = "select id from job_info where app_id in ?1 and status = ?2 and time_expression_type in ?3", nativeQuery = true)
     List<Long> findByAppIdInAndStatusAndTimeExpressionTypeIn(List<Long> appIds, int status, List<Integer> timeTypes);
 
-    Page<JobInfoDO> findByAppIdAndStatusNot(Long appId, Pageable pageable, int status);
+    Page<JobInfoDO> findByAppIdAndStatusNot(Long appId, int status, Pageable pageable);
 
     Page<JobInfoDO> findByAppIdAndJobNameLikeAndStatusNot(Long appId, String condition, int status, Pageable pageable);
 

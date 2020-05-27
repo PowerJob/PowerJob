@@ -3,7 +3,7 @@ package com.github.kfcfans.oms.server.service.timing.schedule;
 import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
-import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
@@ -128,7 +128,7 @@ public class OmsScheduleService {
             try {
 
                 // 查询条件：任务开启 + 使用CRON表达调度时间 + 指定appId + 即将需要调度执行
-                List<JobInfoDO> jobInfos = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
+                List<JobInfoDO> jobInfos = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
 
                 if (CollectionUtils.isEmpty(jobInfos)) {
                     return;
@@ -211,7 +211,7 @@ public class OmsScheduleService {
         long nowTime = System.currentTimeMillis();
         long timeThreshold = nowTime + 2 * SCHEDULE_RATE;
         Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
-            List<WorkflowInfoDO> wfInfos = workflowInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
+            List<WorkflowInfoDO> wfInfos = workflowInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), timeThreshold);
 
             if (CollectionUtils.isEmpty(wfInfos)) {
                 return;
@@ -226,7 +226,7 @@ public class OmsScheduleService {
         Lists.partition(appIds, MAX_BATCH_NUM).forEach(partAppIds -> {
             try {
                 // 查询所有的秒级任务（只包含ID）
-                List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, JobStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
+                List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
                 // 查询日志记录表中是否存在相关的任务
                 List<Long> runningJobIdList = instanceInfoRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.generalizedRunningStatus);
                 Set<Long> runningJobIdSet = Sets.newHashSet(runningJobIdList);

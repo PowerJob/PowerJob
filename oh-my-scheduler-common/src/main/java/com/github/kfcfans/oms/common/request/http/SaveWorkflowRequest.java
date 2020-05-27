@@ -3,6 +3,8 @@ package com.github.kfcfans.oms.common.request.http;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 创建/修改 Workflow 请求
  *
@@ -25,15 +27,13 @@ public class SaveWorkflowRequest {
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
-    private Integer timeExpressionType;
+    private String timeExpressionType;
     // 时间表达式，CRON/NULL/LONG/LONG
     private String timeExpression;
 
-    // 1 正常运行，2 停止（不再调度）
-    private Integer status;
+    // ENABLE / DISABLE
+    private String status;
 
     // 工作流整体失败的报警
-    private String notifyUserIds;
-
-
+    private List<Long> notifyUserIds;
 }

@@ -15,6 +15,7 @@ import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.alarm.AlarmContent;
 import com.github.kfcfans.oms.server.service.alarm.Alarmable;
 import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;
+import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceManager;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +46,7 @@ public class InstanceManager {
     private static InstanceInfoRepository instanceInfoRepository;
     private static JobInfoRepository jobInfoRepository;
     private static Alarmable omsCenterAlarmService;
+    private static WorkflowInstanceManager workflowInstanceManager;
 
     /**
      * 注册到任务实例管理器
@@ -142,6 +144,11 @@ public class InstanceManager {
 
         if (finished) {
             processFinishedInstance(instanceId, updateEntity.getStatus());
+
+            // workflow 特殊处理
+            if (req.getWfInstanceId() != null) {
+                getWorkflowInstanceManager().move(req.getWfInstanceId(), instanceId, newStatus == InstanceStatus.SUCCEED, req.getResult());
+            }
         }
     }
 
@@ -252,5 +259,16 @@ public class InstanceManager {
             omsCenterAlarmService = (Alarmable) SpringUtils.getBean("omsCenterAlarmService");
         }
         return omsCenterAlarmService;
+    }
+
+    private static WorkflowInstanceManager getWorkflowInstanceManager() {
+        while (workflowInstanceManager == null) {
+            try {
+                Thread.sleep(100);
+            }catch (Exception ignore) {
+            }
+            workflowInstanceManager = SpringUtils.getBean(WorkflowInstanceManager.class);
+        }
+        return workflowInstanceManager;
     }
 }

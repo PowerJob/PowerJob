@@ -3,7 +3,7 @@ package com.github.kfcfans.oms.server.web.controller;
 import com.github.kfcfans.oms.common.ExecuteType;
 import com.github.kfcfans.oms.common.ProcessorType;
 import com.github.kfcfans.oms.common.TimeExpressionType;
-import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.persistence.PageResult;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.common.response.ResultDTO;
@@ -77,7 +77,7 @@ public class JobController {
 
         // 无查询条件，查询全部
         if (request.getJobId() == null && StringUtils.isEmpty(request.getKeyword())) {
-            jobInfoPage = jobInfoRepository.findByAppIdAndStatusNot(request.getAppId(), pageRequest, JobStatus.DELETED.getV());
+            jobInfoPage = jobInfoRepository.findByAppIdAndStatusNot(request.getAppId(), SwitchableStatus.DELETED.getV(), pageRequest);
             return ResultDTO.success(convertPage(jobInfoPage));
         }
 
@@ -104,7 +104,7 @@ public class JobController {
 
         // 模糊查询
         String condition = "%" + request.getKeyword() + "%";
-        jobInfoPage = jobInfoRepository.findByAppIdAndJobNameLikeAndStatusNot(request.getAppId(), condition, JobStatus.DELETED.getV(), pageRequest);
+        jobInfoPage = jobInfoRepository.findByAppIdAndJobNameLikeAndStatusNot(request.getAppId(), condition, SwitchableStatus.DELETED.getV(), pageRequest);
         return ResultDTO.success(convertPage(jobInfoPage));
     }
 
@@ -130,7 +130,7 @@ public class JobController {
         jobInfoVO.setTimeExpressionType(timeExpressionType.name());
         jobInfoVO.setExecuteType(executeType.name());
         jobInfoVO.setProcessorType(processorType.name());
-        jobInfoVO.setEnable(jobInfoDO.getStatus() == JobStatus.ENABLE.getV());
+        jobInfoVO.setEnable(jobInfoDO.getStatus() == SwitchableStatus.ENABLE.getV());
 
         if (!StringUtils.isEmpty(jobInfoDO.getNotifyUserIds())) {
             jobInfoVO.setNotifyUserIds(commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));

@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.persistence.core.repository;
 
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,4 +18,8 @@ public interface WorkflowInfoRepository extends JpaRepository<WorkflowInfoDO, Lo
 
     List<WorkflowInfoDO> findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(List<Long> appIds, int status, int timeExpressionType, long time);
 
+    // 对外查询（list）三兄弟
+    Page<WorkflowInfoDO> findByAppIdAndStatusNot(Long appId, int nStatus, Pageable pageable);
+    Page<WorkflowInfoDO> findByIdAndStatusNot(Long id, int nStatus, Pageable pageable);
+    Page<WorkflowInfoDO> findByAppIdInAndStatusNotAndWfNameLike(Long appId, int nStatus, String condition, Pageable pageable);
 }

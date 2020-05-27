@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * JSON工具类
@@ -43,5 +44,15 @@ public class JsonUtils {
 
     public static <T> T parseObject(byte[] b, Class<T> clz) throws Exception {
         return objectMapper.readValue(b, clz);
+    }
+
+    public static <T> T parseObjectUnsafe(String json, Class<T> clz) {
+        try {
+            return objectMapper.readValue(json, clz);
+        }catch (Exception e) {
+            ExceptionUtils.rethrow(e);
+        }
+        // impossible
+        return null;
     }
 }

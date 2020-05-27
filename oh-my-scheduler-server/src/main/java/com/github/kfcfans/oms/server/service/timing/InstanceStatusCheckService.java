@@ -3,7 +3,7 @@ package com.github.kfcfans.oms.server.service.timing;
 import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.TimeExpressionType;
-import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
@@ -114,10 +114,10 @@ public class InstanceStatusCheckService {
 
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
                     TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
-                    JobStatus jobStatus = JobStatus.of(jobInfoDO.getStatus());
+                    SwitchableStatus switchableStatus = SwitchableStatus.of(jobInfoDO.getStatus());
 
                     // 如果任务已关闭，则不进行重试，将任务置为失败即可；秒级任务也直接置为失败，由派发器重新调度
-                    if (jobStatus != JobStatus.ENABLE || TimeExpressionType.frequentTypes.contains(timeExpressionType.getV())) {
+                    if (switchableStatus != SwitchableStatus.ENABLE || TimeExpressionType.frequentTypes.contains(timeExpressionType.getV())) {
                         updateFailedInstance(instance);
                         return;
                     }
