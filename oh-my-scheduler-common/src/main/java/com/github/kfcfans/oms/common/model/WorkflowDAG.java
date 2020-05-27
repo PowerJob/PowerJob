@@ -31,7 +31,7 @@ public class WorkflowDAG {
 
         // 运行时参数
         private Long instanceId;
-        private boolean finished = false;
+        private boolean finished;
         private String result;
     }
 }

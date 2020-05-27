@@ -42,7 +42,7 @@ public class DispatchService {
 
     public void redispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-        dispatch(jobInfo, instanceId, currentRunningTimes, instanceInfo.getInstanceParams(), instanceInfo.getWorkflowId());
+        dispatch(jobInfo, instanceId, currentRunningTimes, instanceInfo.getInstanceParams(), instanceInfo.getWfInstanceId());
     }
 
     /**

@@ -21,5 +21,5 @@ public interface WorkflowInfoRepository extends JpaRepository<WorkflowInfoDO, Lo
     // 对外查询（list）三兄弟
     Page<WorkflowInfoDO> findByAppIdAndStatusNot(Long appId, int nStatus, Pageable pageable);
     Page<WorkflowInfoDO> findByIdAndStatusNot(Long id, int nStatus, Pageable pageable);
-    Page<WorkflowInfoDO> findByAppIdInAndStatusNotAndWfNameLike(Long appId, int nStatus, String condition, Pageable pageable);
+    Page<WorkflowInfoDO> findByAppIdAndStatusNotAndWfNameLike(Long appId, int nStatus, String condition, Pageable pageable);
 }

@@ -66,7 +66,7 @@ public class WorkflowController {
             wfPage = workflowInfoRepository.findByIdAndStatusNot(req.getWorkflowId(), nStatus, pageRequest);
         }else {
             String condition = "%" + req.getKeyword() + "%";
-            wfPage = workflowInfoRepository.findByAppIdInAndStatusNotAndWfNameLike(req.getAppId(), nStatus, condition, pageRequest);
+            wfPage = workflowInfoRepository.findByAppIdAndStatusNotAndWfNameLike(req.getAppId(), nStatus, condition, pageRequest);
         }
         return ResultDTO.success(convertPage(wfPage));
     }
