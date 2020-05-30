@@ -11,6 +11,7 @@ import com.github.kfcfans.oms.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
+import com.github.kfcfans.oms.server.common.constans.InstanceType;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
@@ -61,6 +62,7 @@ public class InstanceService {
         newInstanceInfo.setAppId(appId);
         newInstanceInfo.setInstanceId(instanceId);
         newInstanceInfo.setInstanceParams(instanceParams);
+        newInstanceInfo.setType(wfInstanceId == null ? InstanceType.NORMAL.getV() : InstanceType.WORKFLOW.getV());
         newInstanceInfo.setWfInstanceId(wfInstanceId);
 
         newInstanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());

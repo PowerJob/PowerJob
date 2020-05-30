@@ -113,16 +113,16 @@ public class InstanceController {
 
         // 查询全部数据
         if (request.getJobId() == null && request.getInstanceId() == null) {
-            return ResultDTO.success(convertPage(instanceInfoRepository.findByAppId(request.getAppId(), pageable)));
+            return ResultDTO.success(convertPage(instanceInfoRepository.findByAppIdAndType(request.getAppId(), request.getType().getV(), pageable)));
         }
 
         // 根据JobId查询
         if (request.getJobId() != null) {
-            return ResultDTO.success(convertPage(instanceInfoRepository.findByJobId(request.getJobId(), pageable)));
+            return ResultDTO.success(convertPage(instanceInfoRepository.findByJobIdAndType(request.getJobId(), request.getType().getV(), pageable)));
         }
 
         // 根据InstanceId查询
-        return ResultDTO.success(convertPage(instanceInfoRepository.findByInstanceId(request.getInstanceId(), pageable)));
+        return ResultDTO.success(convertPage(instanceInfoRepository.findByInstanceIdAndType(request.getInstanceId(), request.getType().getV(), pageable)));
     }
 
     private PageResult<InstanceLogVO> convertPage(Page<InstanceInfoDO> page) {

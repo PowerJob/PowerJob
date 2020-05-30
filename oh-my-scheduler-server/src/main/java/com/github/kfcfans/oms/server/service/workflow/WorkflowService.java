@@ -54,14 +54,13 @@ public class WorkflowService {
         BeanUtils.copyProperties(req, wf);
         wf.setGmtModified(new Date());
         wf.setPeDAG(JsonUtils.toJSONString(req.getPEWorkflowDAG()));
-        wf.setStatus(SwitchableStatus.valueOf(req.getStatus()).getV());
-        wf.setTimeExpressionType(TimeExpressionType.valueOf(req.getTimeExpressionType()).getV());
+        wf.setStatus(req.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
+        wf.setTimeExpressionType(req.getTimeExpressionType().getV());
 
         wf.setNotifyUserIds(SJ.commaJoiner.join(req.getNotifyUserIds()));
 
         // 计算 NextTriggerTime
-        TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
-        if (timeExpressionType == TimeExpressionType.CRON) {
+        if (req.getTimeExpressionType() == TimeExpressionType.CRON) {
             CronExpression cronExpression = new CronExpression(req.getTimeExpression());
             Date nextValidTime = cronExpression.getNextValidTimeAfter(new Date());
             wf.setNextTriggerTime(nextValidTime.getTime());

@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.common.request.http;
 
+import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import lombok.Data;
 
@@ -27,7 +28,7 @@ public class SaveWorkflowRequest {
 
     /* ************************** 定时参数 ************************** */
     // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
-    private String timeExpressionType;
+    private TimeExpressionType timeExpressionType;
     // 时间表达式，CRON/NULL/LONG/LONG
     private String timeExpression;
 
@@ -35,7 +36,7 @@ public class SaveWorkflowRequest {
     private Integer maxWfInstanceNum;
 
     // ENABLE / DISABLE
-    private String status;
+    private boolean enable;
 
     // 工作流整体失败的报警
     private List<Long> notifyUserIds;

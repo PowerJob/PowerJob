@@ -33,6 +33,9 @@ public class InstanceInfoDO {
     private Long instanceId;
     // 任务实例参数
     private String instanceParams;
+
+    // 该任务实例的类型，普通/工作流（InstanceType）
+    private Integer type;
     // 该任务实例所属的 workflow ID，仅 workflow 任务存在
     private Long wfInstanceId;
     /**

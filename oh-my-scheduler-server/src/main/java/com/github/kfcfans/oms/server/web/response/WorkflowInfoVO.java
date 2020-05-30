@@ -8,6 +8,7 @@ import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,9 @@ public class WorkflowInfoVO {
     private String wfName;
     private String wfDescription;
 
+    // 所属应用ID
+    private Long appId;
+
     // 点线表示法
     private PEWorkflowDAG pEWorkflowDAG;
 
@@ -39,7 +43,7 @@ public class WorkflowInfoVO {
     private Integer maxWfInstanceNum;
 
     // ENABLE / DISABLE
-    private String status;
+    private boolean enable;
 
     // 工作流整体失败的报警
     private List<Long> notifyUserIds;
@@ -48,11 +52,12 @@ public class WorkflowInfoVO {
         WorkflowInfoVO vo = new WorkflowInfoVO();
         BeanUtils.copyProperties(wfDO, vo);
 
-        vo.setStatus(SwitchableStatus.of(wfDO.getStatus()).name());
+        vo.enable = SwitchableStatus.of(wfDO.getStatus()) == SwitchableStatus.ENABLE;
         vo.setTimeExpressionType(TimeExpressionType.of(wfDO.getTimeExpressionType()).name());
         vo.setPEWorkflowDAG(JsonUtils.parseObjectUnsafe(wfDO.getPeDAG(), PEWorkflowDAG.class));
-        vo.setNotifyUserIds(SJ.commaSplitter.splitToList(wfDO.getNotifyUserIds()).stream().map(Long::valueOf).collect(Collectors.toList()));
-
+        if (!StringUtils.isEmpty(wfDO.getNotifyUserIds())) {
+            vo.setNotifyUserIds(SJ.commaSplitter.splitToList(wfDO.getNotifyUserIds()).stream().map(Long::valueOf).collect(Collectors.toList()));
+        }
         return vo;
     }
 }
