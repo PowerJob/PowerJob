@@ -41,6 +41,11 @@ public class WorkflowInstanceInfoDO {
     @Column(columnDefinition="TEXT")
     private String result;
 
+    // 实际触发时间
+    private Long actualTriggerTime;
+    // 结束时间
+    private Long finishedTime;
+
     private Date gmtCreate;
     private Date gmtModified;
 }

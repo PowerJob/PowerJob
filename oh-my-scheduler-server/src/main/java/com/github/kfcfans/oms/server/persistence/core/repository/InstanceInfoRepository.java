@@ -62,6 +62,7 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
 
     InstanceInfoDO findByInstanceId(long instanceId);
 
+    // list 三兄弟
     Page<InstanceInfoDO> findByAppIdAndType(long appId, int type, Pageable pageable);
     Page<InstanceInfoDO> findByJobIdAndType(long jobId, int type, Pageable pageable);
     // 只会有一条数据，只是为了统一

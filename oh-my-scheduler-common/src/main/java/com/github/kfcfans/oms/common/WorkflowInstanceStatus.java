@@ -14,7 +14,6 @@ import java.util.List;
  */
 @Getter
 @AllArgsConstructor
-
 public enum WorkflowInstanceStatus {
 
     WAITING(1, "等待调度"),

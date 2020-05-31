@@ -1,0 +1,59 @@
+package com.github.kfcfans.oms.server.web.response;
+
+import com.github.kfcfans.oms.common.OmsConstant;
+import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
+import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
+import com.github.kfcfans.oms.common.model.WorkflowDAG;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
+import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
+import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
+import lombok.Data;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.BeanUtils;
+
+/**
+ * 工作流实例视图层展示对象
+ *
+ * @author tjq
+ * @since 2020/5/31
+ */
+@Data
+public class WorkflowInstanceInfoVO {
+
+    // 任务所属应用的ID，冗余提高查询效率
+    private Long appId;
+
+    // workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
+    private Long wfInstanceId;
+
+    private Long workflowId;
+
+    // workflow 状态（WorkflowInstanceStatus）
+    private String status;
+
+    private PEWorkflowDAG pEWorkflowDAG;
+    private String result;
+
+    // 实际触发时间（需要格式化为人看得懂的时间）
+    private String actualTriggerTime;
+    // 结束时间（同理，需要格式化）
+    private String finishedTime;
+
+    public static WorkflowInstanceInfoVO from(WorkflowInstanceInfoDO wfInstanceDO) {
+        WorkflowInstanceInfoVO vo = new WorkflowInstanceInfoVO();
+        BeanUtils.copyProperties(wfInstanceDO, vo);
+
+        vo.setStatus(WorkflowInstanceStatus.of(wfInstanceDO.getStatus()).getDes());
+        vo.setPEWorkflowDAG(WorkflowDAGUtils.convert2PE(JsonUtils.parseObjectUnsafe(wfInstanceDO.getDag(), WorkflowDAG.class)));
+
+        // 格式化时间
+        vo.setActualTriggerTime(DateFormatUtils.format(wfInstanceDO.getActualTriggerTime(), OmsConstant.TIME_PATTERN));
+        if (wfInstanceDO.getFinishedTime() == null) {
+            vo.setFinishedTime(OmsConstant.NONE);
+        }else {
+            vo.setFinishedTime(DateFormatUtils.format(wfInstanceDO.getFinishedTime(), OmsConstant.TIME_PATTERN));
+        }
+
+        return vo;
+    }
+}

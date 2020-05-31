@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.persistence.core.repository;
 
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,4 +30,9 @@ public interface WorkflowInstanceInfoRepository extends JpaRepository<WorkflowIn
     int deleteAllByGmtModifiedBefore(Date time);
 
     int countByWorkflowIdAndStatusIn(Long workflowId, List<Integer> status);
+
+    // list 三兄弟
+    Page<WorkflowInstanceInfoDO> findByAppId(Long appId, Pageable pageable);
+    Page<WorkflowInstanceInfoDO> findByAppIdAndWfInstanceId(Long appId, Long wfInstanceId, Pageable pageable);
+    Page<WorkflowInstanceInfoDO> findByAppIdAndWorkflowId(Long appId, Long workflowId, Pageable pageable);
 }

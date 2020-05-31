@@ -5,9 +5,12 @@ import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import com.github.kfcfans.oms.common.model.WorkflowDAG;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -62,6 +65,36 @@ public class WorkflowDAGUtils {
         }
 
         return new WorkflowDAG(id2Node.get(rootIds.iterator().next()));
+    }
+
+    /**
+     * 将引用式DAG图转化为点线式DAG图
+     * @param dag 引用式DAG图
+     * @return 点线式DAG图
+     */
+    public static PEWorkflowDAG convert2PE(WorkflowDAG dag) {
+
+        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
+
+        Queue<WorkflowDAG.Node> queue = Queues.newLinkedBlockingQueue();
+        queue.add(dag.getRoot());
+
+        while (!queue.isEmpty()) {
+            WorkflowDAG.Node node = queue.poll();
+            queue.addAll(node.getSuccessors());
+
+            // 添加点
+            PEWorkflowDAG.Node peNode = new PEWorkflowDAG.Node(node.getJobId(), node.getJobName(), node.getInstanceId(), node.isFinished(), node.getResult());
+            nodes.add(peNode);
+
+            // 添加线
+            node.getSuccessors().forEach(successor -> {
+                PEWorkflowDAG.Edge edge = new PEWorkflowDAG.Edge(node.getJobId(), successor.getJobId());
+                edges.add(edge);
+            });
+        }
+        return new PEWorkflowDAG(nodes, edges);
     }
 
     /**

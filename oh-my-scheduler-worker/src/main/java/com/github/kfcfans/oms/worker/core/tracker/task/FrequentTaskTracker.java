@@ -1,10 +1,7 @@
 package com.github.kfcfans.oms.worker.core.tracker.task;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.oms.common.ExecuteType;
-import com.github.kfcfans.oms.common.InstanceStatus;
-import com.github.kfcfans.oms.common.RemoteConstant;
-import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.*;
 import com.github.kfcfans.oms.common.model.InstanceDetail;
 import com.github.kfcfans.oms.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.common.request.TaskTrackerReportInstanceStatusReq;
@@ -64,7 +61,6 @@ public class FrequentTaskTracker extends TaskTracker {
 
     private static final int HISTORY_SIZE = 10;
     private static final String LAST_TASK_ID_PREFIX = "L";
-    private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     protected FrequentTaskTracker(ServerScheduleJobReq req) {
         super(req);
@@ -121,9 +117,9 @@ public class FrequentTaskTracker extends TaskTracker {
             subDetail.setSubInstanceId(subId);
 
             // 设置时间
-            subDetail.setStartTime(DateFormatUtils.format(subInstanceInfo.getStartTime(), TIME_PATTERN));
+            subDetail.setStartTime(DateFormatUtils.format(subInstanceInfo.getStartTime(), OmsConstant.TIME_PATTERN));
             if (status == InstanceStatus.SUCCEED || status == InstanceStatus.FAILED) {
-                subDetail.setFinishedTime(DateFormatUtils.format(subInstanceInfo.getFinishedTime(), TIME_PATTERN));
+                subDetail.setFinishedTime(DateFormatUtils.format(subInstanceInfo.getFinishedTime(), OmsConstant.TIME_PATTERN));
             }else {
                 subDetail.setFinishedTime("N/A");
             }

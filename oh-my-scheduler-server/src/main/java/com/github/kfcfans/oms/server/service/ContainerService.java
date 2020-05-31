@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.service;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.model.GitRepoInfo;
 import com.github.kfcfans.oms.common.request.ServerDeployContainerRequest;
@@ -69,8 +70,6 @@ public class ContainerService {
     private static final int DEPLOY_BATCH_NUM = 50;
     // 部署间隔
     private static final long DEPLOY_MIN_INTERVAL = 10 * 60 * 1000;
-    // 时间格式
-    private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * 保存容器
@@ -213,7 +212,7 @@ public class ContainerService {
             Date lastDeployTime = container.getLastDeployTime();
             if (lastDeployTime != null) {
                 if ((System.currentTimeMillis() - lastDeployTime.getTime()) < DEPLOY_MIN_INTERVAL) {
-                    remote.sendText("SYSTEM: [warn] deploy too frequent, last deploy time is: " + DateFormatUtils.format(lastDeployTime, TIME_PATTERN));
+                    remote.sendText("SYSTEM: [warn] deploy too frequent, last deploy time is: " + DateFormatUtils.format(lastDeployTime, OmsConstant.TIME_PATTERN));
                 }
             }
 

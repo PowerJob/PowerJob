@@ -29,6 +29,11 @@ public class PEWorkflowDAG {
     public static class Node {
         private Long jobId;
         private String jobName;
+
+        // 仅向前端输出时需要
+        private Long instanceId;
+        private boolean finished;
+        private String result;
     }
 
     // 边 jobId -> jobId

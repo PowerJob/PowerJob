@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.common.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kfcfans.oms.common.OmsException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -52,7 +53,6 @@ public class JsonUtils {
         }catch (Exception e) {
             ExceptionUtils.rethrow(e);
         }
-        // impossible
-        return null;
+        throw new OmsException("impossible");
     }
 }

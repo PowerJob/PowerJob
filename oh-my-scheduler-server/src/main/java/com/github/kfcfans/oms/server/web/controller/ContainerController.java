@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.web.controller;
 
+import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
@@ -119,7 +120,7 @@ public class ContainerController {
         if (containerInfoDO.getLastDeployTime() == null) {
             vo.setLastDeployTime("N/A");
         }else {
-            vo.setLastDeployTime(DateFormatUtils.format(containerInfoDO.getLastDeployTime(), "yyyy-MM-dd HH:mm:ss"));
+            vo.setLastDeployTime(DateFormatUtils.format(containerInfoDO.getLastDeployTime(), OmsConstant.TIME_PATTERN));
         }
         ContainerStatus status = ContainerStatus.of(containerInfoDO.getStatus());
         vo.setStatus(status.name());

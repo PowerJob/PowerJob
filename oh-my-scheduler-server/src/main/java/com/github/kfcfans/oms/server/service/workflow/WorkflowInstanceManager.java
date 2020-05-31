@@ -58,6 +58,7 @@ public class WorkflowInstanceManager {
         newWfInstance.setAppId(wfInfo.getAppId());
         newWfInstance.setWfInstanceId(wfInstanceId);
         newWfInstance.setWorkflowId(wfInfo.getId());
+        newWfInstance.setActualTriggerTime(System.currentTimeMillis());
 
         newWfInstance.setGmtCreate(now);
         newWfInstance.setGmtModified(now);
@@ -73,6 +74,7 @@ public class WorkflowInstanceManager {
 
             newWfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
             newWfInstance.setResult(e.getMessage());
+            newWfInstance.setFinishedTime(System.currentTimeMillis());
         }
         workflowInstanceInfoRepository.save(newWfInstance);
         return wfInstanceId;
@@ -103,6 +105,7 @@ public class WorkflowInstanceManager {
         if (instanceConcurrency > wfInfo.getMaxWfInstanceNum()) {
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.FAILED.getV());
             wfInstanceInfo.setResult(String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, instanceConcurrency, wfInfo.getMaxWfInstanceNum()));
+            wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
 
             workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
             return;
@@ -130,6 +133,7 @@ public class WorkflowInstanceManager {
 
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.FAILED.getV());
             wfInstanceInfo.setResult(e.getMessage());
+            wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
 
             log.error("[Workflow-{}] submit workflow: {} failed.", wfInfo.getId(), wfInfo, e);
 
@@ -185,6 +189,7 @@ public class WorkflowInstanceManager {
                 wfInstance.setDag(JsonUtils.toJSONStringUnsafe(dag));
                 wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
                 wfInstance.setResult(SystemInstanceResult.MIDDLE_JOB_FAILED);
+                wfInstance.setFinishedTime(System.currentTimeMillis());
                 workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
                 log.warn("[Workflow-{}] workflow(wfInstanceId={}) process failed because middle task(instanceId={}) failed", wfId, wfInstanceId, instanceId);
@@ -229,6 +234,7 @@ public class WorkflowInstanceManager {
                 wfInstance.setStatus(WorkflowInstanceStatus.SUCCEED.getV());
                 // 最终任务的结果作为整个 workflow 的结果
                 wfInstance.setResult(result);
+                wfInstance.setFinishedTime(System.currentTimeMillis());
 
                 log.info("[Workflow-{}] workflowInstance(wfInstanceId={}) process successfully.", wfId, wfInstanceId);
             }
@@ -241,6 +247,7 @@ public class WorkflowInstanceManager {
         }catch (Exception e) {
             wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
             wfInstance.setResult("MOVE NEXT STEP FAILED: " + e.getMessage());
+            wfInstance.setFinishedTime(System.currentTimeMillis());
             workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
             log.error("[Workflow-{}] update failed for workflowInstance({}).", wfId, wfInstanceId, e);

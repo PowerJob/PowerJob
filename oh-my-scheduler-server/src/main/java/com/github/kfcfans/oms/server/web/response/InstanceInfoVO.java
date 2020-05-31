@@ -3,13 +3,13 @@ package com.github.kfcfans.oms.server.web.response;
 import lombok.Data;
 
 /**
- * ExecuteLog 对外展示对象
+ * InstanceInfo 对外展示对象
  *
  * @author tjq
  * @since 2020/4/12
  */
 @Data
-public class InstanceLogVO {
+public class InstanceInfoVO {
 
     // 任务ID（JS精度丢失）
     private String jobId;

@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.common.model.InstanceDetail;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
@@ -15,7 +16,7 @@ import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
-import com.github.kfcfans.oms.server.web.response.InstanceLogVO;
+import com.github.kfcfans.oms.server.web.response.InstanceInfoVO;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,8 +57,6 @@ public class InstanceController {
     private AppInfoRepository appInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
-
-    private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @GetMapping("/stop")
     public ResultDTO<Void> stopInstance(Long instanceId) {
@@ -106,7 +105,7 @@ public class InstanceController {
     }
 
     @PostMapping("/list")
-    public ResultDTO<PageResult<InstanceLogVO>> list(@RequestBody QueryInstanceRequest request) {
+    public ResultDTO<PageResult<InstanceInfoVO>> list(@RequestBody QueryInstanceRequest request) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");
         PageRequest pageable = PageRequest.of(request.getIndex(), request.getPageSize(), sort);
@@ -125,36 +124,36 @@ public class InstanceController {
         return ResultDTO.success(convertPage(instanceInfoRepository.findByInstanceIdAndType(request.getInstanceId(), request.getType().getV(), pageable)));
     }
 
-    private PageResult<InstanceLogVO> convertPage(Page<InstanceInfoDO> page) {
-        List<InstanceLogVO> content = page.getContent().stream().map(instanceLogDO -> {
-            InstanceLogVO instanceLogVO = new InstanceLogVO();
-            BeanUtils.copyProperties(instanceLogDO, instanceLogVO);
+    private PageResult<InstanceInfoVO> convertPage(Page<InstanceInfoDO> page) {
+        List<InstanceInfoVO> content = page.getContent().stream().map(instanceLogDO -> {
+            InstanceInfoVO instanceInfoVO = new InstanceInfoVO();
+            BeanUtils.copyProperties(instanceLogDO, instanceInfoVO);
 
             // 状态转化为中文
-            instanceLogVO.setStatusStr(InstanceStatus.of(instanceLogDO.getStatus()).getDes());
+            instanceInfoVO.setStatusStr(InstanceStatus.of(instanceLogDO.getStatus()).getDes());
             // 额外设置任务名称，提高可读性
-            instanceLogVO.setJobName(cacheService.getJobName(instanceLogDO.getJobId()));
+            instanceInfoVO.setJobName(cacheService.getJobName(instanceLogDO.getJobId()));
 
             // ID 转化为 String（JS精度丢失）
-            instanceLogVO.setJobId(instanceLogDO.getJobId().toString());
-            instanceLogVO.setInstanceId(instanceLogDO.getInstanceId().toString());
+            instanceInfoVO.setJobId(instanceLogDO.getJobId().toString());
+            instanceInfoVO.setInstanceId(instanceLogDO.getInstanceId().toString());
 
             // 格式化时间
             if (instanceLogDO.getActualTriggerTime() == null) {
-                instanceLogVO.setActualTriggerTime("N/A");
+                instanceInfoVO.setActualTriggerTime(OmsConstant.NONE);
             }else {
-                instanceLogVO.setActualTriggerTime(DateFormatUtils.format(instanceLogDO.getActualTriggerTime(), TIME_PATTERN));
+                instanceInfoVO.setActualTriggerTime(DateFormatUtils.format(instanceLogDO.getActualTriggerTime(), OmsConstant.TIME_PATTERN));
             }
             if (instanceLogDO.getFinishedTime() == null) {
-                instanceLogVO.setFinishedTime("N/A");
+                instanceInfoVO.setFinishedTime(OmsConstant.NONE);
             }else {
-                instanceLogVO.setFinishedTime(DateFormatUtils.format(instanceLogDO.getFinishedTime(), TIME_PATTERN));
+                instanceInfoVO.setFinishedTime(DateFormatUtils.format(instanceLogDO.getFinishedTime(), OmsConstant.TIME_PATTERN));
             }
 
-            return instanceLogVO;
+            return instanceInfoVO;
         }).collect(Collectors.toList());
 
-        PageResult<InstanceLogVO> pageResult = new PageResult<>(page);
+        PageResult<InstanceInfoVO> pageResult = new PageResult<>(page);
         pageResult.setData(content);
         return pageResult;
     }
