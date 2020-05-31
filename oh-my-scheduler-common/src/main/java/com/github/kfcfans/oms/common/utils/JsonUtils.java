@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.common.utils;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kfcfans.oms.common.OmsException;
@@ -16,7 +17,7 @@ public class JsonUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
-
+        objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
     }
 
     public static String toJSONString(Object obj) {

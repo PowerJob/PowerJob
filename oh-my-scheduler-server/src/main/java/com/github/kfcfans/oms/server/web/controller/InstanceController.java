@@ -137,6 +137,11 @@ public class InstanceController {
             // ID 转化为 String（JS精度丢失）
             instanceInfoVO.setJobId(instanceLogDO.getJobId().toString());
             instanceInfoVO.setInstanceId(instanceLogDO.getInstanceId().toString());
+            if (instanceLogDO.getWfInstanceId() == null) {
+                instanceInfoVO.setWfInstanceId(OmsConstant.NONE);
+            }else {
+                instanceInfoVO.setWfInstanceId(String.valueOf(instanceLogDO.getWfInstanceId()));
+            }
 
             // 格式化时间
             if (instanceLogDO.getActualTriggerTime() == null) {

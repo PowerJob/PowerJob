@@ -2,8 +2,10 @@ package com.github.kfcfans.oms.server.service;
 
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInfoRepository;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -26,14 +28,22 @@ public class CacheService {
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
+    private WorkflowInfoRepository workflowInfoRepository;
+    @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
     private final Cache<Long, String> jobId2JobNameCache;
+    private final Cache<Long, String> workflowId2WorkflowNameCache;
     private final Cache<Long, Long> instanceId2AppId;
     private final Cache<Long, Long> jobId2AppId;
 
     public CacheService() {
         jobId2JobNameCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(Duration.ofMinutes(1))
+                .maximumSize(1024)
+                .build();
+
+        workflowId2WorkflowNameCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(1))
                 .maximumSize(1024)
                 .build();
@@ -48,6 +58,8 @@ public class CacheService {
 
     /**
      * 根据 jobId 查询 jobName（不保证数据一致性，或者说只要改了数据必不一致hhh）
+     * @param jobId 任务ID
+     * @return 任务名称
      */
     public String getJobName(Long jobId) {
         try {
@@ -57,7 +69,25 @@ public class CacheService {
                 return jobInfoDOOptional.map(JobInfoDO::getJobName).orElse("");
             });
         }catch (Exception e) {
-            log.error("[CacheService] getAppIdByInstanceId for {} failed.", jobId, e);
+            log.error("[CacheService] getJobName for {} failed.", jobId, e);
+        }
+        return null;
+    }
+
+    /**
+     * 根据 workflowId 查询 工作流名称
+     * @param workflowId 工作流ID
+     * @return 工作流名称
+     */
+    public String getWorkflowName(Long workflowId) {
+        try {
+            return workflowId2WorkflowNameCache.get(workflowId, () -> {
+                Optional<WorkflowInfoDO> jobInfoDOOptional = workflowInfoRepository.findById(workflowId);
+                // 防止缓存穿透 hhh（但是一开始没有，后来创建的情况下会有问题，不过问题不大，这里就不管了）
+                return jobInfoDOOptional.map(WorkflowInfoDO::getWfName).orElse("");
+            });
+        }catch (Exception e) {
+            log.error("[CacheService] getWorkflowName for {} failed.", workflowId, e);
         }
         return null;
     }

@@ -1,10 +1,10 @@
 package com.github.kfcfans.oms.server.service.workflow;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
 import com.github.kfcfans.oms.common.model.WorkflowDAG;
-import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
@@ -54,7 +54,7 @@ public class WorkflowInstanceService {
         wfInstanceInfoRepository.saveAndFlush(wfInstance);
 
         // 停止所有已启动且未完成的服务
-        WorkflowDAG workflowDAG = JsonUtils.parseObjectUnsafe(wfInstance.getDag(), WorkflowDAG.class);
+        WorkflowDAG workflowDAG = JSONObject.parseObject(wfInstance.getDag(), WorkflowDAG.class);
         Queue<WorkflowDAG.Node> queue = Queues.newLinkedBlockingQueue();
         queue.add(workflowDAG.getRoot());
         while (!queue.isEmpty()) {

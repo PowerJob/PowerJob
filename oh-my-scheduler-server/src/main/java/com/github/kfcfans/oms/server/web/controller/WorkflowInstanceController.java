@@ -4,6 +4,7 @@ import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.PageResult;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInstanceInfoRepository;
+import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryWorkflowInstanceRequest;
 import com.github.kfcfans.oms.server.web.response.WorkflowInstanceInfoVO;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/wfInstance")
 public class WorkflowInstanceController {
 
+    @Resource
+    private CacheService cacheService;
     @Resource
     private WorkflowInstanceService workflowInstanceService;
     @Resource
@@ -52,9 +55,9 @@ public class WorkflowInstanceController {
         return ResultDTO.success(convertPage(ps));
     }
 
-    private static PageResult<WorkflowInstanceInfoVO> convertPage(Page<WorkflowInstanceInfoDO> ps) {
+    private PageResult<WorkflowInstanceInfoVO> convertPage(Page<WorkflowInstanceInfoDO> ps) {
         PageResult<WorkflowInstanceInfoVO> pr = new PageResult<>(ps);
-        pr.setData(ps.getContent().stream().map(WorkflowInstanceInfoVO::from).collect(Collectors.toList()));
+        pr.setData(ps.getContent().stream().map(x -> WorkflowInstanceInfoVO.from(x, cacheService.getWorkflowName(x.getWorkflowId()))).collect(Collectors.toList()));
         return pr;
     }
 }

@@ -1,11 +1,12 @@
 package com.github.kfcfans.oms.server.service.workflow;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import com.github.kfcfans.oms.common.model.WorkflowDAG;
-import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
@@ -44,6 +45,11 @@ public class WorkflowInstanceManager {
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
+    static {
+        // 开启 FastJSON 序列化引用功能（当前版本默认开启，但是保险起见还是手动声明）
+        JSONObject.DEFAULT_GENERATE_FEATURE = SerializerFeature.DisableCircularReferenceDetect.getMask();
+    }
+
     /**
      * 创建工作流任务实例
      * @param wfInfo 工作流任务元数据（描述信息）
@@ -65,8 +71,8 @@ public class WorkflowInstanceManager {
         try {
 
             // 将用于表达的DAG转化为用于计算的DAG
-            WorkflowDAG workflowDAG = WorkflowDAGUtils.convert(JsonUtils.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class));
-            newWfInstance.setDag(JsonUtils.toJSONString(workflowDAG));
+            WorkflowDAG workflowDAG = WorkflowDAGUtils.convert(JSONObject.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class));
+            newWfInstance.setDag(JSONObject.toJSONString(workflowDAG));
             newWfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());
 
         }catch (Exception e) {
@@ -112,7 +118,7 @@ public class WorkflowInstanceManager {
         }
 
         try {
-            WorkflowDAG workflowDAG = WorkflowDAGUtils.convert(JsonUtils.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class));
+            WorkflowDAG workflowDAG = WorkflowDAGUtils.convert(JSONObject.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class));
 
             // 运行根任务，无法找到根任务则直接失败
             WorkflowDAG.Node root = workflowDAG.getRoot();
@@ -123,7 +129,7 @@ public class WorkflowInstanceManager {
 
             // 持久化
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.RUNNING.getV());
-            wfInstanceInfo.setDag(JsonUtils.toJSONStringUnsafe(workflowDAG));
+            wfInstanceInfo.setDag(JSONObject.toJSONString(workflowDAG));
             workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
             log.info("[Workflow-{}] start workflow successfully, wfInstanceId={}", wfInfo.getId(), wfInstanceId);
 
@@ -161,7 +167,7 @@ public class WorkflowInstanceManager {
         log.debug("[Workflow-{}] one task in dag finished, wfInstanceId={},instanceId={},success={},result={}", wfId, wfInstanceId, instanceId, success, result);
 
         try {
-            WorkflowDAG dag = JsonUtils.parseObject(wfInstance.getDag(), WorkflowDAG.class);
+            WorkflowDAG dag = JSONObject.parseObject(wfInstance.getDag(), WorkflowDAG.class);
 
             // 计算是否有新的节点需要派发执行（relyMap 为 自底向上 的映射，用来判断所有父节点是否都已经完成）
             Map<Long, WorkflowDAG.Node> jobId2Node = Maps.newHashMap();
@@ -186,7 +192,7 @@ public class WorkflowInstanceManager {
 
             // 任务失败，DAG流程被打断，整体失败
             if (!success) {
-                wfInstance.setDag(JsonUtils.toJSONStringUnsafe(dag));
+                wfInstance.setDag(JSONObject.toJSONString(dag));
                 wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
                 wfInstance.setResult(SystemInstanceResult.MIDDLE_JOB_FAILED);
                 wfInstance.setFinishedTime(System.currentTimeMillis());
@@ -221,11 +227,11 @@ public class WorkflowInstanceManager {
                 // 构建下一个任务的入参 （前置任务 jobId -> result）
                 relyMap.get(jobId).forEach(jid -> preJobId2Result.put(jid, jobId2Node.get(jid).getResult()));
 
-                Long newInstanceId = instanceService.create(jobId, wfInstance.getAppId(), JsonUtils.toJSONString(preJobId2Result), wfInstanceId, System.currentTimeMillis());
+                Long newInstanceId = instanceService.create(jobId, wfInstance.getAppId(), JSONObject.toJSONString(preJobId2Result), wfInstanceId, System.currentTimeMillis());
                 jobId2Node.get(jobId).setInstanceId(newInstanceId);
 
                 jobId2InstanceId.put(jobId, newInstanceId);
-                jobId2InstanceParams.put(jobId, JsonUtils.toJSONString(preJobId2Result));
+                jobId2InstanceParams.put(jobId, JSONObject.toJSONString(preJobId2Result));
 
                 log.debug("[Workflow-{}] workflowInstance(wfInstanceId={}) start to process new node(jobId={},instanceId={})", wfId, wfInstanceId, jobId, newInstanceId);
             });
@@ -238,7 +244,7 @@ public class WorkflowInstanceManager {
 
                 log.info("[Workflow-{}] workflowInstance(wfInstanceId={}) process successfully.", wfId, wfInstanceId);
             }
-            wfInstance.setDag(JsonUtils.toJSONString(dag));
+            wfInstance.setDag(JSONObject.toJSONString(dag));
             workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
             // 持久化结束后，开始调度执行所有的任务

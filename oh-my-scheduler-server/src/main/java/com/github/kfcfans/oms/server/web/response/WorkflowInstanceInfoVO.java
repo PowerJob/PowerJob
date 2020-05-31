@@ -20,16 +20,16 @@ import org.springframework.beans.BeanUtils;
 @Data
 public class WorkflowInstanceInfoVO {
 
-    // 任务所属应用的ID，冗余提高查询效率
-    private Long appId;
-
     // workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
-    private Long wfInstanceId;
+    private String wfInstanceId;
 
-    private Long workflowId;
+    private String workflowId;
+    // 工作流名称，通过 workflowId 查询获取
+    private String workflowName;
 
     // workflow 状态（WorkflowInstanceStatus）
-    private String status;
+    private Integer status;
+    private String statusStr;
 
     private PEWorkflowDAG pEWorkflowDAG;
     private String result;
@@ -39,12 +39,17 @@ public class WorkflowInstanceInfoVO {
     // 结束时间（同理，需要格式化）
     private String finishedTime;
 
-    public static WorkflowInstanceInfoVO from(WorkflowInstanceInfoDO wfInstanceDO) {
+    public static WorkflowInstanceInfoVO from(WorkflowInstanceInfoDO wfInstanceDO, String workflowName) {
         WorkflowInstanceInfoVO vo = new WorkflowInstanceInfoVO();
         BeanUtils.copyProperties(wfInstanceDO, vo);
 
-        vo.setStatus(WorkflowInstanceStatus.of(wfInstanceDO.getStatus()).getDes());
+        vo.setWorkflowName(workflowName);
+        vo.setStatusStr(WorkflowInstanceStatus.of(wfInstanceDO.getStatus()).getDes());
         vo.setPEWorkflowDAG(WorkflowDAGUtils.convert2PE(JsonUtils.parseObjectUnsafe(wfInstanceDO.getDag(), WorkflowDAG.class)));
+
+        // JS精度丢失问题
+        vo.setWfInstanceId(String.valueOf(wfInstanceDO.getWfInstanceId()));
+        vo.setWorkflowId(String.valueOf(wfInstanceDO.getWorkflowId()));
 
         // 格式化时间
         vo.setActualTriggerTime(DateFormatUtils.format(wfInstanceDO.getActualTriggerTime(), OmsConstant.TIME_PATTERN));

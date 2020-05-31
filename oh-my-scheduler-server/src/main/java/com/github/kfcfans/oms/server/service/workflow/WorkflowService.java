@@ -1,9 +1,9 @@
 package com.github.kfcfans.oms.server.service.workflow;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.request.http.SaveWorkflowRequest;
-import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.common.SJ;
 import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
@@ -53,7 +53,7 @@ public class WorkflowService {
 
         BeanUtils.copyProperties(req, wf);
         wf.setGmtModified(new Date());
-        wf.setPeDAG(JsonUtils.toJSONString(req.getPEWorkflowDAG()));
+        wf.setPeDAG(JSONObject.toJSONString(req.getPEWorkflowDAG()));
         wf.setStatus(req.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
         wf.setTimeExpressionType(req.getTimeExpressionType().getV());
 

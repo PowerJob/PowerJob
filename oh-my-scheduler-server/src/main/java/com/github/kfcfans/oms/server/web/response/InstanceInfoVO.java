@@ -18,7 +18,7 @@ public class InstanceInfoVO {
     // 任务实例ID（JS精度丢失）
     private String instanceId;
     // 该任务实例所属的 workflow ID，仅 workflow 任务存在
-    private Long wfInstanceId;
+    private String wfInstanceId;
 
     // 执行结果
     private String result;
