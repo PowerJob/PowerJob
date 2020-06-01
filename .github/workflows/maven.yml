@@ -22,3 +22,9 @@ jobs:
         java-version: 1.8
     - name: Build with Maven
       run: mvn -B clean package -Pdev -DskipTests --file pom.xml
+    - name: upload build result
+      run: mkdir staging && cp oh-my-scheduler-server/target/*.jar staging && cp oh-my-scheduler-client/target/*.jar staging && cp oh-my-scheduler-worker-agent/target/*.jar staging
+    - uses: actions/upload-artifact@v1
+      with:
+        name: Package
+        path: staging
