@@ -10,12 +10,12 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>oh-my-scheduler-worker-agent</artifactId>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
 
     <properties>
-        <oms.worker.version>1.2.0</oms.worker.version>
+        <oms.worker.version>2.0.0</oms.worker.version>
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
 
