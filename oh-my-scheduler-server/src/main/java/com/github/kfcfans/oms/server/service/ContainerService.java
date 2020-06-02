@@ -351,9 +351,9 @@ public class ContainerService {
                 }else {
                     remote.sendText(String.format("SYSTEM: new version detected, from %s to %s.", oldVersion, container.getVersion()));
                 }
+                remote.sendText("SYSTEM: git clone successfully, star to compile the project.");
 
                 // mvn clean package -DskipTests -U
-                remote.sendText("SYSTEM: git clone successfully, star to compile the project.");
                 Invoker mvnInvoker = new DefaultInvoker();
                 InvocationRequest ivkReq = new DefaultInvocationRequest();
                 // -U：强制让Maven检查所有SNAPSHOT依赖更新，确保集成基于最新的状态

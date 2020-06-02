@@ -29,8 +29,8 @@ public class TestWorkflow {
         // DAG 图
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, "node-1", null, false, null));
-        nodes.add(new PEWorkflowDAG.Node(2L, "node-2", null, false, null));
+        nodes.add(new PEWorkflowDAG.Node(1L, "node-1"));
+        nodes.add(new PEWorkflowDAG.Node(2L, "node-2"));
 
         PEWorkflowDAG peWorkflowDAG = new PEWorkflowDAG(nodes, null);
         SaveWorkflowRequest req = new SaveWorkflowRequest();
