@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.server.service.workflow;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
@@ -126,6 +127,7 @@ public class WorkflowInstanceManager {
             roots.forEach(root -> {
                 Long instanceId = instanceService.create(root.getJobId(), wfInfo.getAppId(), null, wfInstanceId, System.currentTimeMillis());
                 root.setInstanceId(instanceId);
+                root.setStatus(InstanceStatus.RUNNING.getV());
             });
 
             // 持久化
@@ -178,7 +180,7 @@ public class WorkflowInstanceManager {
             while (!queue.isEmpty()) {
                 WorkflowDAG.Node head = queue.poll();
                 if (instanceId.equals(head.getInstanceId())) {
-                    head.setFinished(true);
+                    head.setStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
                     head.setResult(result);
 
                     log.debug("[Workflow-{}|{}] node(jobId={}) finished in workflowInstance, success={},result={}", wfId, wfInstanceId, head.getJobId(), success, result);
@@ -208,8 +210,8 @@ public class WorkflowInstanceManager {
             AtomicBoolean allFinished = new AtomicBoolean(true);
             relyMap.keySet().forEach(jobId -> {
 
-                // 无需计算已完成节点
-                if (jobId2Node.get(jobId).isFinished()) {
+                // 无需计算已完成节点（理论上此处不可能出现 FAILED 的情况）
+                if (jobId2Node.get(jobId).getStatus() == InstanceStatus.SUCCEED.getV()) {
                     return;
                 }
                 allFinished.set(false);
@@ -220,7 +222,7 @@ public class WorkflowInstanceManager {
                 }
                 // 判断某个任务所有依赖的完成情况，只要有一个未完成，即无法执行
                 for (Long reliedJobId : relyMap.get(jobId)) {
-                    if (!jobId2Node.get(reliedJobId).isFinished()) {
+                    if (jobId2Node.get(reliedJobId).getStatus() != InstanceStatus.SUCCEED.getV()) {
                         return;
                     }
                 }
@@ -232,6 +234,7 @@ public class WorkflowInstanceManager {
 
                 Long newInstanceId = instanceService.create(jobId, wfInstance.getAppId(), JSONObject.toJSONString(preJobId2Result), wfInstanceId, System.currentTimeMillis());
                 jobId2Node.get(jobId).setInstanceId(newInstanceId);
+                jobId2Node.get(jobId).setStatus(InstanceStatus.RUNNING.getV());
 
                 jobId2InstanceId.put(jobId, newInstanceId);
                 jobId2InstanceParams.put(jobId, JSONObject.toJSONString(preJobId2Result));

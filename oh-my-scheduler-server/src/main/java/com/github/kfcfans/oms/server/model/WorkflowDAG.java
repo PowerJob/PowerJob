@@ -31,8 +31,8 @@ public class WorkflowDAG {
         private String jobName;
 
         // 运行时参数
-        private Long instanceId;
-        private boolean finished;
+        private Long instanceId; // 任务实例ID
+        private int status; // 状态 WAITING_DISPATCH -> RUNNING -> SUCCEED/FAILED/STOPPED
         private String result;
     }
 }

@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.service.workflow;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
@@ -45,13 +46,6 @@ public class WorkflowInstanceService {
         if (!WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
             throw new OmsException("workflow instance already stopped");
         }
-
-        // 修改数据库状态
-        wfInstance.setStatus(WorkflowInstanceStatus.STOPPED.getV());
-        wfInstance.setResult(SystemInstanceResult.STOPPED_BY_USER);
-        wfInstance.setGmtModified(new Date());
-        wfInstanceInfoRepository.saveAndFlush(wfInstance);
-
         // 停止所有已启动且未完成的服务
         WorkflowDAG workflowDAG = JSONObject.parseObject(wfInstance.getDag(), WorkflowDAG.class);
         Queue<WorkflowDAG.Node> queue = Queues.newLinkedBlockingQueue();
@@ -59,12 +53,21 @@ public class WorkflowInstanceService {
         while (!queue.isEmpty()) {
             WorkflowDAG.Node node = queue.poll();
 
-            if (node.getInstanceId() != null && !node.isFinished()) {
+            if (node.getInstanceId() != null && node.getStatus() == InstanceStatus.RUNNING.getV()) {
                 log.debug("[WfInstance-{}] instance({}) is running, try to stop it now.", wfInstanceId, node.getInstanceId());
+                node.setStatus(InstanceStatus.STOPPED.getV());
+                node.setResult(SystemInstanceResult.STOPPED_BY_USER);
+
                 instanceService.stopInstance(node.getInstanceId());
             }
             queue.addAll(node.getSuccessors());
         }
+
+        // 修改数据库状态
+        wfInstance.setStatus(WorkflowInstanceStatus.STOPPED.getV());
+        wfInstance.setResult(SystemInstanceResult.STOPPED_BY_USER);
+        wfInstance.setGmtModified(new Date());
+        wfInstanceInfoRepository.saveAndFlush(wfInstance);
 
         log.info("[WfInstance-{}] stop workflow instance successfully~", wfInstanceId);
     }

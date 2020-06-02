@@ -1,5 +1,9 @@
 ![logo](./others/images/oms-logo.png)
-![Java CI with Maven](https://github.com/KFCFans/OhMyScheduler/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master) [![GitHub license](https://img.shields.io/github/license/KFCFans/OhMyScheduler)](https://github.com/KFCFans/OhMyScheduler/blob/master/LICENSE)
+
+<p align="center">
+<a href="https://github.com/KFCFans/OhMyScheduler/actions"><img src="https://github.com/KFCFans/OhMyScheduler/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master"></a>
+<a href="https://github.com/KFCFans/OhMyScheduler/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/OhMyScheduler"></a>
+</p>
 
 OhMyScheduler is a powerful distributed scheduling platform and distributed computing framework based on Akka architecture.It provides you a chance to schedule job and distributed computing easily.
 

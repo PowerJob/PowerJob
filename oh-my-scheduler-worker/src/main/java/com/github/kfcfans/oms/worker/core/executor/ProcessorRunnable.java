@@ -155,7 +155,7 @@ public class ProcessorRunnable implements Runnable {
         try {
             processResult = processor.process(taskContext);
         }catch (Exception e) {
-            log.warn("[ProcessorRunnable-{}] task({}) process failed.", instanceId, taskContext.getDescription(), e);
+            log.warn("[ProcessorRunnable-{}] task(id={},name={}) process failed.", instanceId, taskContext.getTaskId(), taskContext.getTaskName(), e);
             processResult = new ProcessResult(false, e.toString());
         }
         reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()));

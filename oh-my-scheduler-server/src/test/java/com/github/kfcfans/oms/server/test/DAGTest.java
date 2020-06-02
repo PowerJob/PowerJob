@@ -25,8 +25,8 @@ public class DAGTest {
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
         // 图1： 1 -> 2 -> 1，理论上报错
-        nodes.add(new PEWorkflowDAG.Node(1L, "1", null, false, null));
-        nodes.add(new PEWorkflowDAG.Node(2L, "2", null, false, null));
+        nodes.add(new PEWorkflowDAG.Node(1L, "1"));
+        nodes.add(new PEWorkflowDAG.Node(2L, "2"));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 1L));
         System.out.println(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
@@ -35,10 +35,10 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes2 = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges2 = Lists.newLinkedList();
 
-        nodes2.add(new PEWorkflowDAG.Node(1L, "1", null, false, null));
-        nodes2.add(new PEWorkflowDAG.Node(2L, "2", null, false, null));
-        nodes2.add(new PEWorkflowDAG.Node(3L, "3", null, false, null));
-        nodes2.add(new PEWorkflowDAG.Node(4L, "4", null, false, null));
+        nodes2.add(new PEWorkflowDAG.Node(1L, "1"));
+        nodes2.add(new PEWorkflowDAG.Node(2L, "2"));
+        nodes2.add(new PEWorkflowDAG.Node(3L, "3"));
+        nodes2.add(new PEWorkflowDAG.Node(4L, "4"));
         edges2.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges2.add(new PEWorkflowDAG.Edge(1L, 3L));
         edges2.add(new PEWorkflowDAG.Edge(2L, 4L));
@@ -66,10 +66,10 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes3 = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges3 = Lists.newLinkedList();
 
-        nodes3.add(new PEWorkflowDAG.Node(1L, "1", null, false, null));
-        nodes3.add(new PEWorkflowDAG.Node(2L, "2", null, false, null));
-        nodes3.add(new PEWorkflowDAG.Node(3L, "3", null, false, null));
-        nodes3.add(new PEWorkflowDAG.Node(4L, "4", null, false, null));
+        nodes3.add(new PEWorkflowDAG.Node(1L, "1"));
+        nodes3.add(new PEWorkflowDAG.Node(2L, "2"));
+        nodes3.add(new PEWorkflowDAG.Node(3L, "3"));
+        nodes3.add(new PEWorkflowDAG.Node(4L, "4"));
         edges3.add(new PEWorkflowDAG.Edge(1L, 3L));
         edges3.add(new PEWorkflowDAG.Edge(2L, 4L));
 

@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.common.utils;
 
+import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
@@ -38,7 +39,7 @@ public class WorkflowDAGUtils {
         // 创建节点
         PEWorkflowDAG.getNodes().forEach(node -> {
             Long jobId = node.getJobId();
-            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), jobId, node.getJobName(), null, false, null);
+            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), jobId, node.getJobName(), null, InstanceStatus.WAITING_DISPATCH.getV(), null);
             id2Node.put(jobId, n);
 
             // 初始阶段，每一个点都设为顶点
@@ -88,7 +89,7 @@ public class WorkflowDAGUtils {
             queue.addAll(node.getSuccessors());
 
             // 添加点
-            PEWorkflowDAG.Node peNode = new PEWorkflowDAG.Node(node.getJobId(), node.getJobName(), node.getInstanceId(), node.isFinished(), node.getResult());
+            PEWorkflowDAG.Node peNode = new PEWorkflowDAG.Node(node.getJobId(), node.getJobName(), node.getInstanceId(), node.getStatus(), node.getResult());
             nodes.add(peNode);
 
             // 添加线
@@ -111,7 +112,7 @@ public class WorkflowDAGUtils {
 
             // 检查所有顶点的路径
             for (WorkflowDAG.Node root : workflowDAG.getRoots()) {
-                if (!check(root, Sets.newHashSet())) {
+                if (invalidPath(root, Sets.newHashSet())) {
                     return false;
                 }
             }
@@ -121,21 +122,21 @@ public class WorkflowDAGUtils {
         return false;
     }
 
-    private static boolean check(WorkflowDAG.Node root, Set<Long> ids) {
+    private static boolean invalidPath(WorkflowDAG.Node root, Set<Long> ids) {
 
         // 递归出口（出现之前的节点则代表有环，失败；出现无后继者节点，则说明该路径成功）
         if (ids.contains(root.getJobId())) {
-            return false;
+            return true;
         }
         if (root.getSuccessors().isEmpty()) {
-            return true;
+            return false;
         }
         ids.add(root.getJobId());
         for (WorkflowDAG.Node node : root.getSuccessors()) {
-            if (!check(node, Sets.newHashSet(ids))) {
-                return false;
+            if (invalidPath(node, Sets.newHashSet(ids))) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }
