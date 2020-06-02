@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.server.service.ha;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
+import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.akka.requests.Ping;
@@ -55,7 +56,7 @@ public class ServerSelectService {
             // 无锁获取当前数据库中的Server
             Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(appId);
             if (!appInfoOpt.isPresent()) {
-                throw new RuntimeException(appId + " is not registered!");
+                throw new OmsException(appId + " is not registered!");
             }
             String appName = appInfoOpt.get().getAppName();
             String originServer = appInfoOpt.get().getCurrentServer();

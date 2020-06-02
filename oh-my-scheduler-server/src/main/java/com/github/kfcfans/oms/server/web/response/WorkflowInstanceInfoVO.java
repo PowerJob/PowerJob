@@ -1,11 +1,11 @@
 package com.github.kfcfans.oms.server.web.response;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
-import com.github.kfcfans.oms.common.model.WorkflowDAG;
-import com.github.kfcfans.oms.common.utils.JsonUtils;
-import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
+import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
+import com.github.kfcfans.oms.server.model.WorkflowDAG;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
 import lombok.Data;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -45,7 +45,7 @@ public class WorkflowInstanceInfoVO {
 
         vo.setWorkflowName(workflowName);
         vo.setStatusStr(WorkflowInstanceStatus.of(wfInstanceDO.getStatus()).getDes());
-        vo.setPEWorkflowDAG(WorkflowDAGUtils.convert2PE(JsonUtils.parseObjectUnsafe(wfInstanceDO.getDag(), WorkflowDAG.class)));
+        vo.setPEWorkflowDAG(WorkflowDAGUtils.convert2PE(JSONObject.parseObject(wfInstanceDO.getDag(), WorkflowDAG.class)));
 
         // JS精度丢失问题
         vo.setWfInstanceId(String.valueOf(wfInstanceDO.getWfInstanceId()));

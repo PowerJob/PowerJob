@@ -1,8 +1,8 @@
 package com.github.kfcfans.oms.server.web.response;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
-import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.server.common.SJ;
 import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
@@ -54,7 +54,7 @@ public class WorkflowInfoVO {
 
         vo.enable = SwitchableStatus.of(wfDO.getStatus()) == SwitchableStatus.ENABLE;
         vo.setTimeExpressionType(TimeExpressionType.of(wfDO.getTimeExpressionType()).name());
-        vo.setPEWorkflowDAG(JsonUtils.parseObjectUnsafe(wfDO.getPeDAG(), PEWorkflowDAG.class));
+        vo.setPEWorkflowDAG(JSONObject.parseObject(wfDO.getPeDAG(), PEWorkflowDAG.class));
         if (!StringUtils.isEmpty(wfDO.getNotifyUserIds())) {
             vo.setNotifyUserIds(SJ.commaSplitter.splitToList(wfDO.getNotifyUserIds()).stream().map(Long::valueOf).collect(Collectors.toList()));
         }

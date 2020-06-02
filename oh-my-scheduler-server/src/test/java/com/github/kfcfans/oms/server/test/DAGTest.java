@@ -2,9 +2,9 @@ package com.github.kfcfans.oms.server.test;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
-import com.github.kfcfans.oms.common.model.WorkflowDAG;
+import com.github.kfcfans.oms.server.model.WorkflowDAG;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
-import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
+import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -61,6 +61,23 @@ public class DAGTest {
         // 打断点看 reference 关系
         System.out.println(wfDAGByJackSon);
         System.out.println(wfDAGByFastJSON);
+
+        // 测试图三（双顶点） 1 -> 3, 2 -> 4
+        List<PEWorkflowDAG.Node> nodes3 = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges3 = Lists.newLinkedList();
+
+        nodes3.add(new PEWorkflowDAG.Node(1L, "1", null, false, null));
+        nodes3.add(new PEWorkflowDAG.Node(2L, "2", null, false, null));
+        nodes3.add(new PEWorkflowDAG.Node(3L, "3", null, false, null));
+        nodes3.add(new PEWorkflowDAG.Node(4L, "4", null, false, null));
+        edges3.add(new PEWorkflowDAG.Edge(1L, 3L));
+        edges3.add(new PEWorkflowDAG.Edge(2L, 4L));
+
+        PEWorkflowDAG multiRootPEDAG = new PEWorkflowDAG(nodes3, edges3);
+        System.out.println(WorkflowDAGUtils.valid(multiRootPEDAG));
+        WorkflowDAG multiRootDAG = WorkflowDAGUtils.convert(multiRootPEDAG);
+        System.out.println(multiRootDAG);
+
     }
 
 

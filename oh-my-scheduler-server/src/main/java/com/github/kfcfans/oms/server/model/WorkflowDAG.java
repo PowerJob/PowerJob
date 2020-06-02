@@ -1,4 +1,4 @@
-package com.github.kfcfans.oms.common.model;
+package com.github.kfcfans.oms.server.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 public class WorkflowDAG {
 
-    private Node root;
+    // DAG允许存在多个顶点
+    private List<Node> roots;
 
     @Data
     @NoArgsConstructor

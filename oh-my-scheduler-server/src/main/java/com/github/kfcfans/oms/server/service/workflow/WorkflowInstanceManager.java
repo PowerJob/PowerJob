@@ -6,8 +6,8 @@ import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
-import com.github.kfcfans.oms.common.model.WorkflowDAG;
-import com.github.kfcfans.oms.common.utils.WorkflowDAGUtils;
+import com.github.kfcfans.oms.server.model.WorkflowDAG;
+import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
@@ -121,11 +121,12 @@ public class WorkflowInstanceManager {
             WorkflowDAG workflowDAG = WorkflowDAGUtils.convert(JSONObject.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class));
 
             // 运行根任务，无法找到根任务则直接失败
-            WorkflowDAG.Node root = workflowDAG.getRoot();
-
-            // 创建根任务实例
-            Long instanceId = instanceService.create(root.getJobId(), wfInfo.getAppId(), null, wfInstanceId, System.currentTimeMillis());
-            root.setInstanceId(instanceId);
+            List<WorkflowDAG.Node> roots = workflowDAG.getRoots();
+            // 创建所有的根任务
+            roots.forEach(root -> {
+                Long instanceId = instanceService.create(root.getJobId(), wfInfo.getAppId(), null, wfInstanceId, System.currentTimeMillis());
+                root.setInstanceId(instanceId);
+            });
 
             // 持久化
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.RUNNING.getV());
@@ -134,7 +135,7 @@ public class WorkflowInstanceManager {
             log.info("[Workflow-{}] start workflow successfully, wfInstanceId={}", wfInfo.getId(), wfInstanceId);
 
             // 真正开始执行根任务
-            runInstance(root.getJobId(), instanceId, wfInstanceId, null);
+            roots.forEach(root -> runInstance(root.getJobId(), root.getInstanceId(), wfInstanceId, null));
         }catch (Exception e) {
 
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.FAILED.getV());
@@ -164,8 +165,6 @@ public class WorkflowInstanceManager {
         WorkflowInstanceInfoDO wfInstance = wfInstanceInfoOpt.get();
         Long wfId = wfInstance.getWorkflowId();
 
-        log.debug("[Workflow-{}] one task in dag finished, wfInstanceId={},instanceId={},success={},result={}", wfId, wfInstanceId, instanceId, success, result);
-
         try {
             WorkflowDAG dag = JSONObject.parseObject(wfInstance.getDag(), WorkflowDAG.class);
 
@@ -175,7 +174,7 @@ public class WorkflowInstanceManager {
 
             // 层序遍历 DAG，更新完成节点的状态
             Queue<WorkflowDAG.Node> queue = Queues.newLinkedBlockingQueue();
-            queue.add(dag.getRoot());
+            queue.addAll(dag.getRoots());
             while (!queue.isEmpty()) {
                 WorkflowDAG.Node head = queue.poll();
                 if (instanceId.equals(head.getInstanceId())) {
@@ -209,12 +208,16 @@ public class WorkflowInstanceManager {
             AtomicBoolean allFinished = new AtomicBoolean(true);
             relyMap.keySet().forEach(jobId -> {
 
-                // 如果该任务本身已经完成，不需要再计算，直接跳过
+                // 无需计算已完成节点
                 if (jobId2Node.get(jobId).isFinished()) {
                     return;
                 }
-
                 allFinished.set(false);
+
+                // 存在 instanceId，代表任务已派发过，无需再次计算
+                if (jobId2Node.get(jobId).getInstanceId() != null) {
+                    return;
+                }
                 // 判断某个任务所有依赖的完成情况，只要有一个未完成，即无法执行
                 for (Long reliedJobId : relyMap.get(jobId)) {
                     if (!jobId2Node.get(reliedJobId).isFinished()) {

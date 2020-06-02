@@ -1,8 +1,9 @@
-package com.github.kfcfans.oms.common.utils;
+package com.github.kfcfans.oms.server.common.utils;
 
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
-import com.github.kfcfans.oms.common.model.WorkflowDAG;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
+import com.github.kfcfans.oms.server.model.WorkflowDAG;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
@@ -59,12 +60,14 @@ public class WorkflowDAGUtils {
             rootIds.remove(to.getJobId());
         });
 
-        // 合法性校验
-        if (rootIds.size() != 1) {
+        // 合法性校验（至少存在一个顶点）
+        if (rootIds.size() < 1) {
             throw new OmsException("Illegal DAG Graph: " + JsonUtils.toJSONString(PEWorkflowDAG));
         }
 
-        return new WorkflowDAG(id2Node.get(rootIds.iterator().next()));
+        List<WorkflowDAG.Node> roots = Lists.newLinkedList();
+        rootIds.forEach(id -> roots.add(id2Node.get(id)));
+        return new WorkflowDAG(roots);
     }
 
     /**
@@ -78,7 +81,7 @@ public class WorkflowDAGUtils {
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
         Queue<WorkflowDAG.Node> queue = Queues.newLinkedBlockingQueue();
-        queue.add(dag.getRoot());
+        queue.addAll(dag.getRoots());
 
         while (!queue.isEmpty()) {
             WorkflowDAG.Node node = queue.poll();
@@ -105,7 +108,14 @@ public class WorkflowDAGUtils {
     public static boolean valid(PEWorkflowDAG peWorkflowDAG) {
         try {
             WorkflowDAG workflowDAG = convert(peWorkflowDAG);
-            return check(workflowDAG.getRoot(), Sets.newHashSet());
+
+            // 检查所有顶点的路径
+            for (WorkflowDAG.Node root : workflowDAG.getRoots()) {
+                if (!check(root, Sets.newHashSet())) {
+                    return false;
+                }
+            }
+            return true;
         }catch (Exception ignore) {
         }
         return false;

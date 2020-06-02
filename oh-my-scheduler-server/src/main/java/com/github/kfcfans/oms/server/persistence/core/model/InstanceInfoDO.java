@@ -32,6 +32,8 @@ public class InstanceInfoDO {
     // 任务实例ID
     private Long instanceId;
     // 任务实例参数
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String instanceParams;
 
     // 该任务实例的类型，普通/工作流（InstanceType）
