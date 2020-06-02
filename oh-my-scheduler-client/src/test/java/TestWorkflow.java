@@ -69,4 +69,13 @@ public class TestWorkflow {
         System.out.println(ohMyClient.runWorkflow(1L));
     }
 
+    @Test
+    public void testStopWorkflowInstance() throws Exception {
+        System.out.println(ohMyClient.stopWorkflowInstance(148003202598436928L));
+    }
+
+    @Test
+    public void testFetchWfInstanceInfo() throws Exception {
+        System.out.println(ohMyClient.fetchWorkflowInstanceInfo(148003202598436928L));
+    }
 }

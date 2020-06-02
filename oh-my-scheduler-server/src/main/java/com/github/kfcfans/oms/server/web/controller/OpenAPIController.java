@@ -147,8 +147,8 @@ public class OpenAPIController {
 
     /* ************* Workflow Instance 区 ************* */
     @PostMapping(OpenAPIConstant.STOP_WORKFLOW_INSTANCE)
-    public ResultDTO<Void> stopWorkflowInstance(Long wfInstance, Long appId) {
-        workflowInstanceService.stopWorkflowInstance(wfInstance, appId);
+    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId, Long appId) {
+        workflowInstanceService.stopWorkflowInstance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO)
