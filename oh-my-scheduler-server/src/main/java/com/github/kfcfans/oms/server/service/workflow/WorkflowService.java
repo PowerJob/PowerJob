@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.request.http.SaveWorkflowRequest;
+import com.github.kfcfans.oms.common.response.WorkflowInfoDTO;
 import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.common.SJ;
 import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
@@ -71,6 +72,19 @@ public class WorkflowService {
     }
 
     /**
+     * 获取工作流元信息
+     * @param wfId 工作流ID
+     * @param appId 应用ID
+     * @return 对外输出对象
+     */
+    public WorkflowInfoDTO fetchWorkflow(Long wfId, Long appId) {
+        WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
+        WorkflowInfoDTO dto = new WorkflowInfoDTO();
+        BeanUtils.copyProperties(wfInfo, dto);
+        return dto;
+    }
+
+    /**
      * 删除工作流（软删除）
      * @param wfId 工作流ID
      * @param appId 所属应用ID
@@ -90,6 +104,18 @@ public class WorkflowService {
     public void disableWorkflow(Long wfId, Long appId) {
         WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
         wfInfo.setStatus(SwitchableStatus.DISABLE.getV());
+        wfInfo.setGmtModified(new Date());
+        workflowInfoRepository.saveAndFlush(wfInfo);
+    }
+
+    /**
+     * 启用工作流
+     * @param wfId 工作流ID
+     * @param appId 所属应用ID
+     */
+    public void enableWorkflow(Long wfId, Long appId) {
+        WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
+        wfInfo.setStatus(SwitchableStatus.ENABLE.getV());
         wfInfo.setGmtModified(new Date());
         workflowInfoRepository.saveAndFlush(wfInfo);
     }

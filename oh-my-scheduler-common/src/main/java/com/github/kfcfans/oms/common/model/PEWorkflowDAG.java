@@ -1,9 +1,12 @@
 package com.github.kfcfans.oms.common.model;
 
+import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -15,7 +18,6 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class PEWorkflowDAG {
 
     // DAG 图（点线表示法）
@@ -43,5 +45,10 @@ public class PEWorkflowDAG {
     public static class Edge {
         private Long from;
         private Long to;
+    }
+
+    public PEWorkflowDAG(@Nonnull List<Node> nodes, @Nullable List<Edge> edges) {
+        this.nodes = nodes;
+        this.edges = edges == null ? Lists.newLinkedList() : edges;
     }
 }

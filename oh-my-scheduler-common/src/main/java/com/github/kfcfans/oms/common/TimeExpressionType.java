@@ -19,7 +19,8 @@ public enum TimeExpressionType {
     API(1),
     CRON(2),
     FIX_RATE(3),
-    FIX_DELAY(4);
+    FIX_DELAY(4),
+    WORKFLOW(5);
 
     int v;
 

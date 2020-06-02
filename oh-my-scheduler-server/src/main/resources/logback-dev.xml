@@ -20,6 +20,11 @@
         </encoder>
     </appender>
 
+    <!-- 定时调度信息控制台就不输出了，看着就乱 -->
+    <logger name="com.github.kfcfans.oms.server.service.timing" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
     <logger name="com.github.kfcfans.oms" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>

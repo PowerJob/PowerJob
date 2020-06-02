@@ -11,7 +11,6 @@ import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
-import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -38,8 +37,6 @@ public class JobService {
 
     @Resource
     private DispatchService dispatchService;
-    @Resource
-    private IdGenerateService idGenerateService;
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
@@ -157,8 +154,7 @@ public class JobService {
         jobInfoRepository.saveAndFlush(jobInfoDO);
 
         // 2. 关闭秒级任务
-        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
-        if (timeExpressionType == TimeExpressionType.CRON || timeExpressionType == TimeExpressionType.API) {
+        if (!TimeExpressionType.frequentTypes.contains(jobInfoDO.getTimeExpressionType())) {
             return;
         }
         List<InstanceInfoDO> executeLogs = instanceInfoRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);

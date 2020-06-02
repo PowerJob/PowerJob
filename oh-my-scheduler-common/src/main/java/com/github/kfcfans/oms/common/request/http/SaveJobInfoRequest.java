@@ -23,7 +23,7 @@ public class SaveJobInfoRequest {
     private String jobName;
     // 任务描述
     private String jobDescription;
-    // 任务所属的应用ID（Client无需填写该参数）
+    // 任务所属的应用ID（Client无需填写该参数，自动填充）
     private Long appId;
     // 任务自带的参数
     private String jobParams;

@@ -55,7 +55,7 @@ public class DispatchService {
      */
     public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams, Long wfInstanceId) {
         Long jobId = jobInfo.getId();
-        log.info("[DispatchService] start to dispatch job: {};instancePrams: {}.", jobInfo, instanceParams);
+        log.info("[Dispatcher-{}|{}] start to dispatch job: {};instancePrams: {}.", jobId, instanceId, jobInfo, instanceParams);
 
         String dbInstanceParams = instanceParams == null ? "" : instanceParams;
 
@@ -66,7 +66,7 @@ public class DispatchService {
         // 超出最大同时运行限制，不执行调度
         if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
             String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
-            log.warn("[DispatchService] cancel dispatch job(jobId={}) due to too much instance(num={}) is running.", jobId, runningInstanceCount);
+            log.warn("[Dispatcher-{}|{}] cancel dispatch job due to too much instance(num={}) is running.", jobId, instanceId, runningInstanceCount);
             instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams);
 
             InstanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, result);
@@ -91,7 +91,7 @@ public class DispatchService {
 
         if (CollectionUtils.isEmpty(finalWorkers)) {
             String clusterStatusDescription = WorkerManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
-            log.warn("[DispatchService] cancel dispatch job(jobId={}) due to no worker available, clusterStatus is {}.", jobId, clusterStatusDescription);
+            log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available, clusterStatus is {}.", jobId, instanceId, clusterStatusDescription);
             instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE, dbInstanceParams);
 
             InstanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, SystemInstanceResult.NO_WORKER_AVAILABLE);
@@ -137,7 +137,7 @@ public class DispatchService {
         String taskTrackerAddress = finalWorkers.get(0);
         ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(taskTrackerAddress);
         taskTrackerActor.tell(req, null);
-        log.debug("[DispatchService] send request({}) to TaskTracker({}) succeed.", req, taskTrackerActor.pathString());
+        log.debug("[Dispatcher-{}|{}] send request({}) to TaskTracker({}) succeed.", jobId, instanceId, req, taskTrackerActor.pathString());
 
         // 修改状态
         instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress, dbInstanceParams);

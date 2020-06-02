@@ -4,12 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
+import com.github.kfcfans.oms.common.response.WorkflowInstanceInfoDTO;
 import com.github.kfcfans.oms.server.model.WorkflowDAG;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.google.common.collect.Queues;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,10 +41,7 @@ public class WorkflowInstanceService {
      * @param appId 所属应用ID
      */
     public void stopWorkflowInstance(Long wfInstanceId, Long appId) {
-        WorkflowInstanceInfoDO wfInstance = wfInstanceInfoRepository.findByWfInstanceId(wfInstanceId).orElseThrow(() -> new IllegalArgumentException("can't find workflow instance by wfInstanceId: " + wfInstanceId));
-        if (!Objects.equals(appId, wfInstance.getAppId())) {
-            throw new OmsException("Permission Denied!");
-        }
+        WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         if (!WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
             throw new OmsException("workflow instance already stopped");
         }
@@ -68,6 +67,21 @@ public class WorkflowInstanceService {
         }
 
         log.info("[WfInstance-{}] stop workflow instance successfully~", wfInstanceId);
+    }
+
+    public WorkflowInstanceInfoDTO fetchWorkflowInstanceInfo(Long wfInstanceId, Long appId) {
+        WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
+        WorkflowInstanceInfoDTO dto = new WorkflowInstanceInfoDTO();
+        BeanUtils.copyProperties(wfInstance, dto);
+        return dto;
+    }
+
+    private WorkflowInstanceInfoDO fetchWfInstance(Long wfInstanceId, Long appId) {
+        WorkflowInstanceInfoDO wfInstance = wfInstanceInfoRepository.findByWfInstanceId(wfInstanceId).orElseThrow(() -> new IllegalArgumentException("can't find workflow instance by wfInstanceId: " + wfInstanceId));
+        if (!Objects.equals(appId, wfInstance.getAppId())) {
+            throw new OmsException("Permission Denied!");
+        }
+        return wfInstance;
     }
 
 }

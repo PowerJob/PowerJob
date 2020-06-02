@@ -4,9 +4,11 @@ import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.OpenAPIConstant;
 import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
+import com.github.kfcfans.oms.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
 import com.github.kfcfans.oms.common.response.JobInfoDTO;
 import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.response.WorkflowInfoDTO;
 import com.github.kfcfans.oms.common.utils.HttpUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.google.common.collect.Lists;
@@ -57,7 +59,7 @@ public class OhMyClient {
 
         allAddress = addressList;
         for (String addr : addressList) {
-            String url = getUrl(addr, addr) + "?appName=" + appName;
+            String url = getUrl(OpenAPIConstant.ASSERT, addr) + "?appName=" + appName;
             try {
                 String result = HttpUtils.get(url);
                 if (StringUtils.isNotEmpty(result)) {
@@ -186,7 +188,7 @@ public class OhMyClient {
     /**
      * 停止应用实例
      * @param instanceId 应用实例ID
-     * @return true -> 停止成功，false -> 停止失败
+     * @return true 停止成功，false 停止失败
      * @throws Exception 异常
      */
     public ResultDTO<Void> stopInstance(Long instanceId) throws Exception {
@@ -225,6 +227,128 @@ public class OhMyClient {
         String post = postHA(OpenAPIConstant.FETCH_INSTANCE_INFO, body);
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
+
+    /* ************* Workflow 区 ************* */
+    /**
+     * 保存工作流（包括创建和修改）
+     * @param request 创建/修改 Workflow 请求
+     * @return 工作流ID
+     * @throws Exception 异常
+     */
+    public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws Exception {
+        request.setAppId(appId);
+        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        String json = JsonUtils.toJSONStringUnsafe(request);
+        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(json, jsonType));
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 根据 workflowId 查询工作流信息
+     * @param workflowId workflowId
+     * @return 工作流信息
+     * @throws Exception 异常
+     */
+    public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("workflowId", workflowId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.FETCH_WORKFLOW, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 禁用某个工作流
+     * @param workflowId 工作流ID
+     * @return 标准返回对象
+     * @throws Exception 异常
+     */
+    public ResultDTO<Void> disableWorkflow(Long workflowId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("workflowId", workflowId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.DISABLE_WORKFLOW, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 启用某个工作流
+     * @param workflowId workflowId
+     * @return 标准返回对象
+     * @throws Exception 异常
+     */
+    public ResultDTO<Void> enableWorkflow(Long workflowId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("workflowId", workflowId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.ENABLE_WORKFLOW, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 删除某个工作流
+     * @param workflowId workflowId
+     * @return 标准返回对象
+     * @throws Exception 异常
+     */
+    public ResultDTO<Void> deleteWorkflow(Long workflowId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("workflowId", workflowId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.DELETE_WORKFLOW, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 运行工作流
+     * @param workflowId workflowId
+     * @return 工作流实例ID
+     * @throws Exception 异常
+     */
+    public ResultDTO<Long> runWorkflow(Long workflowId) throws Exception {
+        FormBody.Builder builder = new FormBody.Builder()
+                .add("workflowId", workflowId.toString())
+                .add("appId", appId.toString());
+        String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /* ************* Workflow Instance 区 ************* */
+    /**
+     * 停止应用实例
+     * @param wfInstanceId 工作流实例ID
+     * @return true 停止成功 ； false 停止失败
+     * @throws Exception 异常
+     */
+    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("wfInstanceId", wfInstanceId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.STOP_WORKFLOW_INSTANCE, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 查询任务实例的信息
+     * @param wfInstanceId 任务实例ID
+     * @return 任务实例信息
+     * @throws Exception 潜在的异常
+     */
+    public ResultDTO<InstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("wfInstanceId", wfInstanceId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+
 
     private String postHA(String path, RequestBody requestBody) {
 

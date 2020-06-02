@@ -76,7 +76,7 @@ public class WorkflowInstanceManager {
             newWfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());
 
         }catch (Exception e) {
-            log.error("[Workflow-{}] parse PEDag({}) failed.", wfInfo.getId(), wfInfo.getPeDAG(), e);
+            log.error("[Workflow-{}|{}] parse PEDag({}) failed.", wfInfo.getId(), wfInstanceId, wfInfo.getPeDAG(), e);
 
             newWfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
             newWfInstance.setResult(e.getMessage());
@@ -102,7 +102,7 @@ public class WorkflowInstanceManager {
 
         // 不是等待中，不再继续执行（可能上一流程已经失败）
         if (wfInstanceInfo.getStatus() != WorkflowInstanceStatus.WAITING.getV()) {
-            log.info("[Workflow-{}] workflowInstance({}) need't running any more.", wfInfo.getId(), wfInstanceInfo);
+            log.info("[Workflow-{}|{}] workflowInstance({}) need't running any more.", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
             return;
         }
 
@@ -132,7 +132,7 @@ public class WorkflowInstanceManager {
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.RUNNING.getV());
             wfInstanceInfo.setDag(JSONObject.toJSONString(workflowDAG));
             workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
-            log.info("[Workflow-{}] start workflow successfully, wfInstanceId={}", wfInfo.getId(), wfInstanceId);
+            log.info("[Workflow-{}|{}] start workflow successfully", wfInfo.getId(), wfInstanceId);
 
             // 真正开始执行根任务
             roots.forEach(root -> runInstance(root.getJobId(), root.getInstanceId(), wfInstanceId, null));
@@ -142,7 +142,7 @@ public class WorkflowInstanceManager {
             wfInstanceInfo.setResult(e.getMessage());
             wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
 
-            log.error("[Workflow-{}] submit workflow: {} failed.", wfInfo.getId(), wfInfo, e);
+            log.error("[Workflow-{}|{}] submit workflow: {} failed.", wfInfo.getId(), wfInstanceId, wfInfo, e);
 
             workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
         }
@@ -181,7 +181,7 @@ public class WorkflowInstanceManager {
                     head.setFinished(true);
                     head.setResult(result);
 
-                    log.debug("[Workflow-{}] node(jobId={}) finished in workflowInstance(wfInstanceId={}), success={},result={}", wfId, head.getJobId(), wfInstanceId, success, result);
+                    log.debug("[Workflow-{}|{}] node(jobId={}) finished in workflowInstance, success={},result={}", wfId, wfInstanceId, head.getJobId(), success, result);
                 }
                 queue.addAll(head.getSuccessors());
 
@@ -197,7 +197,7 @@ public class WorkflowInstanceManager {
                 wfInstance.setFinishedTime(System.currentTimeMillis());
                 workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
-                log.warn("[Workflow-{}] workflow(wfInstanceId={}) process failed because middle task(instanceId={}) failed", wfId, wfInstanceId, instanceId);
+                log.warn("[Workflow-{}|{}] workflow instance process failed because middle task(instanceId={}) failed", wfId, wfInstanceId, instanceId);
                 return;
             }
 
@@ -236,7 +236,7 @@ public class WorkflowInstanceManager {
                 jobId2InstanceId.put(jobId, newInstanceId);
                 jobId2InstanceParams.put(jobId, JSONObject.toJSONString(preJobId2Result));
 
-                log.debug("[Workflow-{}] workflowInstance(wfInstanceId={}) start to process new node(jobId={},instanceId={})", wfId, wfInstanceId, jobId, newInstanceId);
+                log.debug("[Workflow-{}|{}] workflowInstance start to process new node(jobId={},instanceId={})", wfId, wfInstanceId, jobId, newInstanceId);
             });
 
             if (allFinished.get()) {
@@ -245,7 +245,7 @@ public class WorkflowInstanceManager {
                 wfInstance.setResult(result);
                 wfInstance.setFinishedTime(System.currentTimeMillis());
 
-                log.info("[Workflow-{}] workflowInstance(wfInstanceId={}) process successfully.", wfId, wfInstanceId);
+                log.info("[Workflow-{}|{}] process successfully.", wfId, wfInstanceId);
             }
             wfInstance.setDag(JSONObject.toJSONString(dag));
             workflowInstanceInfoRepository.saveAndFlush(wfInstance);
@@ -259,7 +259,7 @@ public class WorkflowInstanceManager {
             wfInstance.setFinishedTime(System.currentTimeMillis());
             workflowInstanceInfoRepository.saveAndFlush(wfInstance);
 
-            log.error("[Workflow-{}] update failed for workflowInstance({}).", wfId, wfInstanceId, e);
+            log.error("[Workflow-{}|{}] update failed.", wfId, wfInstanceId, e);
         }
     }
 
@@ -274,7 +274,7 @@ public class WorkflowInstanceManager {
     private void runInstance(Long jobId, Long instanceId, Long wfInstanceId, String instanceParams) {
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
         // 洗去时间表达式类型
-        jobInfo.setTimeExpressionType(TimeExpressionType.API.getV());
+        jobInfo.setTimeExpressionType(TimeExpressionType.WORKFLOW.getV());
         dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, wfInstanceId);
     }
 
