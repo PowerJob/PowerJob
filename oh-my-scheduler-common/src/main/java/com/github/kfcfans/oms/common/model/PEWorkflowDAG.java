@@ -32,9 +32,9 @@ public class PEWorkflowDAG {
         private Long jobId;
         private String jobName;
 
-        // 仅向前端输出时需要
+        // 运行时参数，图定义不需要
         private Long instanceId;
-        private int status;
+        private Integer status;
         private String result;
 
         public Node(Long jobId, String jobName) {

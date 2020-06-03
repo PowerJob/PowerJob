@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * DAG 工作流对象
- * 使用引用，易于计算
+ * 使用引用，易于计算（不再参与主运算，起辅助作用）
  *
  * @author tjq
  * @since 2020/5/26

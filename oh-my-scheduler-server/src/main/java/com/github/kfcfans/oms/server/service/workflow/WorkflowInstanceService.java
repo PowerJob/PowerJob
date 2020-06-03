@@ -5,12 +5,12 @@ import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
+import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import com.github.kfcfans.oms.common.response.WorkflowInstanceInfoDTO;
-import com.github.kfcfans.oms.server.model.WorkflowDAG;
+import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
-import com.google.common.collect.Queues;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Queue;
 
 /**
  * 工作流实例服务
@@ -47,21 +46,16 @@ public class WorkflowInstanceService {
             throw new OmsException("workflow instance already stopped");
         }
         // 停止所有已启动且未完成的服务
-        WorkflowDAG workflowDAG = JSONObject.parseObject(wfInstance.getDag(), WorkflowDAG.class);
-        Queue<WorkflowDAG.Node> queue = Queues.newLinkedBlockingQueue();
-        queue.addAll(workflowDAG.getRoots());
-        while (!queue.isEmpty()) {
-            WorkflowDAG.Node node = queue.poll();
-
-            if (node.getInstanceId() != null && node.getStatus() == InstanceStatus.RUNNING.getV()) {
+        PEWorkflowDAG workflowDAG = JSONObject.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
+        WorkflowDAGUtils.listRoots(workflowDAG).forEach(node -> {
+            if (node.getInstanceId() != null && InstanceStatus.generalizedRunningStatus.contains(node.getStatus())) {
                 log.debug("[WfInstance-{}] instance({}) is running, try to stop it now.", wfInstanceId, node.getInstanceId());
                 node.setStatus(InstanceStatus.STOPPED.getV());
                 node.setResult(SystemInstanceResult.STOPPED_BY_USER);
 
                 instanceService.stopInstance(node.getInstanceId());
             }
-            queue.addAll(node.getSuccessors());
-        }
+        });
 
         // 修改数据库状态
         wfInstance.setStatus(WorkflowInstanceStatus.STOPPED.getV());

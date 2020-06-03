@@ -7,12 +7,10 @@ import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.server.model.WorkflowDAG;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -22,6 +20,51 @@ import java.util.Set;
  * @since 2020/5/26
  */
 public class WorkflowDAGUtils {
+
+    /**
+     * 获取所有根节点
+     * @param peWorkflowDAG 点线表示法的DAG图
+     * @return 根节点列表
+     */
+    public static List<PEWorkflowDAG.Node> listRoots(PEWorkflowDAG peWorkflowDAG) {
+
+        Map<Long, PEWorkflowDAG.Node> jobId2Node = Maps.newHashMap();
+        peWorkflowDAG.getNodes().forEach(node -> jobId2Node.put(node.getJobId(), node));
+        peWorkflowDAG.getEdges().forEach(edge -> jobId2Node.remove(edge.getTo()));
+
+        return Lists.newLinkedList(jobId2Node.values());
+    }
+
+    /**
+     * 校验 DAG 是否有效
+     * @param peWorkflowDAG 点线表示法的 DAG 图
+     * @return true/false
+     */
+    public static boolean valid(PEWorkflowDAG peWorkflowDAG) {
+
+        // 点不允许重复，一个工作流中某个任务只允许出现一次
+        Set<Long> jobIds = Sets.newHashSet();
+        for (PEWorkflowDAG.Node n : peWorkflowDAG.getNodes()) {
+            if (jobIds.contains(n.getJobId())) {
+                return false;
+            }
+            jobIds.add(n.getJobId());
+        }
+
+        try {
+            WorkflowDAG workflowDAG = convert(peWorkflowDAG);
+
+            // 检查所有顶点的路径
+            for (WorkflowDAG.Node root : workflowDAG.getRoots()) {
+                if (invalidPath(root, Sets.newHashSet())) {
+                    return false;
+                }
+            }
+            return true;
+        }catch (Exception ignore) {
+        }
+        return false;
+    }
 
     /**
      * 将点线表示法的DAG图转化为引用表达法的DAG图
@@ -63,7 +106,7 @@ public class WorkflowDAGUtils {
 
         // 合法性校验（至少存在一个顶点）
         if (rootIds.size() < 1) {
-            throw new OmsException("Illegal DAG Graph: " + JsonUtils.toJSONString(PEWorkflowDAG));
+            throw new OmsException("Illegal DAG: " + JsonUtils.toJSONString(PEWorkflowDAG));
         }
 
         List<WorkflowDAG.Node> roots = Lists.newLinkedList();
@@ -71,66 +114,6 @@ public class WorkflowDAGUtils {
         return new WorkflowDAG(roots);
     }
 
-    /**
-     * 将引用式DAG图转化为点线式DAG图
-     * @param dag 引用式DAG图
-     * @return 点线式DAG图
-     */
-    public static PEWorkflowDAG convert2PE(WorkflowDAG dag) {
-
-        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
-        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
-
-        Queue<WorkflowDAG.Node> queue = Queues.newLinkedBlockingQueue();
-        queue.addAll(dag.getRoots());
-
-        while (!queue.isEmpty()) {
-            WorkflowDAG.Node node = queue.poll();
-            queue.addAll(node.getSuccessors());
-
-            // 添加点
-            PEWorkflowDAG.Node peNode = new PEWorkflowDAG.Node(node.getJobId(), node.getJobName(), node.getInstanceId(), node.getStatus(), node.getResult());
-            nodes.add(peNode);
-
-            // 添加线
-            node.getSuccessors().forEach(successor -> {
-                PEWorkflowDAG.Edge edge = new PEWorkflowDAG.Edge(node.getJobId(), successor.getJobId());
-                edges.add(edge);
-            });
-        }
-        return new PEWorkflowDAG(nodes, edges);
-    }
-
-    /**
-     * 校验 DAG 是否有效
-     * @param peWorkflowDAG 点线表示法的 DAG 图
-     * @return true/false
-     */
-    public static boolean valid(PEWorkflowDAG peWorkflowDAG) {
-
-        // 点不允许重复，一个工作流中某个任务只允许出现一次
-        Set<Long> jobIds = Sets.newHashSet();
-        for (PEWorkflowDAG.Node n : peWorkflowDAG.getNodes()) {
-            if (jobIds.contains(n.getJobId())) {
-                return false;
-            }
-            jobIds.add(n.getJobId());
-        }
-
-        try {
-            WorkflowDAG workflowDAG = convert(peWorkflowDAG);
-
-            // 检查所有顶点的路径
-            for (WorkflowDAG.Node root : workflowDAG.getRoots()) {
-                if (invalidPath(root, Sets.newHashSet())) {
-                    return false;
-                }
-            }
-            return true;
-        }catch (Exception ignore) {
-        }
-        return false;
-    }
 
     private static boolean invalidPath(WorkflowDAG.Node root, Set<Long> ids) {
 
