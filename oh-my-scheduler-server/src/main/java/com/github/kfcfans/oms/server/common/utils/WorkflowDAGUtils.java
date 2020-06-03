@@ -107,6 +107,16 @@ public class WorkflowDAGUtils {
      * @return true/false
      */
     public static boolean valid(PEWorkflowDAG peWorkflowDAG) {
+
+        // 点不允许重复，一个工作流中某个任务只允许出现一次
+        Set<Long> jobIds = Sets.newHashSet();
+        for (PEWorkflowDAG.Node n : peWorkflowDAG.getNodes()) {
+            if (jobIds.contains(n.getJobId())) {
+                return false;
+            }
+            jobIds.add(n.getJobId());
+        }
+
         try {
             WorkflowDAG workflowDAG = convert(peWorkflowDAG);
 

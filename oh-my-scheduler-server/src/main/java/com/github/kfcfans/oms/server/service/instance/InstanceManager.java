@@ -170,7 +170,7 @@ public class InstanceManager {
         // workflow 特殊处理
         if (wfInstanceId != null) {
             // 手动停止在工作流中也认为是失败（理论上不应该发生）
-            getWorkflowInstanceManager().move(wfInstanceId, instanceId, status == InstanceStatus.SUCCEED, result);
+            getWorkflowInstanceManager().move(wfInstanceId, instanceId, status, result);
         }
 
         // 告警
