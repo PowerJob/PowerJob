@@ -25,7 +25,7 @@ public class ClusterStatusHolder {
     private String appName;
     // 集群中所有机器的健康状态
     private Map<String, SystemMetrics> address2Metrics;
-    // 集群中所有机器的容器部署状态
+    // 集群中所有机器的容器部署状态 containerId -> (workerAddress -> containerInfo)
     private Map<Long, Map<String, DeployedContainerInfo>> containerId2Infos;
     // 集群中所有机器的最后心跳时间
     private Map<String, Long> address2ActiveTime;

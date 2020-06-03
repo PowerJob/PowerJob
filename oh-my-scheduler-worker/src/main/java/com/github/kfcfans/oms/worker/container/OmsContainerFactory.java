@@ -48,6 +48,7 @@ public class OmsContainerFactory {
         }
 
         // 尝试下载
+        log.info("[OmsContainer-{}] can't find the container in factory, try to deploy from server.", containerId);
         WorkerNeedDeployContainerRequest request = new WorkerNeedDeployContainerRequest(containerId);
 
         String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
@@ -62,10 +63,11 @@ public class OmsContainerFactory {
 
             if (askResponse.isSuccess()) {
                 ServerDeployContainerRequest deployRequest = askResponse.getData(ServerDeployContainerRequest.class);
+                log.info("[OmsContainer-{}] fetch containerInfo from server successfully.", containerId);
                 deployContainer(deployRequest);
             }
         }catch (Exception e) {
-            log.error("[OmsContainerFactory] get container(id={}) failed.", containerId, e);
+            log.error("[OmsContainer-{}] deployed container failed.", containerId, e);
         }
 
         return CARGO.get(containerId);
@@ -82,9 +84,11 @@ public class OmsContainerFactory {
         String containerName = request.getContainerName();
         String version = request.getVersion();
 
+        log.info("[OmsContainer-{}] start to deploy container(name={},version={},downloadUrl={})", containerId, containerName, version, request.getDownloadURL());
+
         OmsContainer oldContainer = CARGO.get(containerId);
         if (oldContainer != null && version.equals(oldContainer.getVersion())) {
-            log.info("[OmsContainerFactory] container(id={},version={}) already deployed.", containerId, version);
+            log.info("[OmsContainer-{}] version={} already deployed, so skip this deploy task.", containerId, version);
             return;
         }
 
@@ -96,7 +100,7 @@ public class OmsContainerFactory {
             if (!jarFile.exists()) {
                 FileUtils.forceMkdirParent(jarFile);
                 FileUtils.copyURLToFile(new URL(request.getDownloadURL()), jarFile, 5000, 300000);
-                log.info("[OmsContainerFactory] download Jar for container(id={}) successfully.", containerId);
+                log.info("[OmsContainer-{}] download jar successfully, path={}", containerId, jarFile.getPath());
             }
 
             // 创建新容器
@@ -105,7 +109,7 @@ public class OmsContainerFactory {
 
             // 替换容器
             CARGO.put(containerId, newContainer);
-            log.info("[OmsContainerFactory] container(id={},name={},version={}) deployed successfully.", containerId, containerName, version);
+            log.info("[OmsContainer-{}] deployed new version:{} successfully!", containerId, version);
 
             if (oldContainer != null) {
                 // 销毁旧容器
@@ -113,7 +117,7 @@ public class OmsContainerFactory {
             }
 
         }catch (Exception e) {
-            log.error("[OmsContainerFactory] deploy container(name={},version={}) failed.", containerName, version, e);
+            log.error("[OmsContainer-{}] deployContainer(name={},version={}) failed.", containerId, containerName, version, e);
         }
     }
 

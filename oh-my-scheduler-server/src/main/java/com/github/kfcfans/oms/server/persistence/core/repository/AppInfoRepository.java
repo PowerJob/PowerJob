@@ -4,6 +4,7 @@ import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * AppInfo 数据访问层
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long> {
 
-    AppInfoDO findByAppName(String appName);
+    Optional<AppInfoDO> findByAppName(String appName);
 
     List<AppInfoDO> findByAppNameLike(String condition);
 

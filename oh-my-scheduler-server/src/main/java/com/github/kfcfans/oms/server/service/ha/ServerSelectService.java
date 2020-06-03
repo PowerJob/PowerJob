@@ -102,7 +102,7 @@ public class ServerSelectService {
      * 判断指定server是否存活
      * @param serverAddress 需要检测的server地址
      * @param downServerCache 缓存，防止多次发送PING（这个QPS其实还蛮爆表的...）
-     * @return true -> 存活 / false -> down机
+     * @return true 存活 / false down机
      */
     private boolean isActive(String serverAddress, Set<String> downServerCache) {
 

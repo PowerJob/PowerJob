@@ -15,6 +15,7 @@ import com.github.kfcfans.oms.server.service.workflow.WorkflowService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Optional;
 
 /**
  * 开放接口（OpenAPI）控制器，对接 oms-client
@@ -43,11 +44,9 @@ public class OpenAPIController {
 
     @GetMapping(OpenAPIConstant.ASSERT)
     public ResultDTO<Long> assertAppName(String appName) {
-        AppInfoDO appInfo = appInfoRepository.findByAppName(appName);
-        if (appInfo == null) {
-            return ResultDTO.failed(appName + " is not registered!");
-        }
-        return ResultDTO.success(appInfo.getId());
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
+        return appInfoOpt.map(appInfoDO -> ResultDTO.success(appInfoDO.getId()))
+                .orElseGet(() -> ResultDTO.failed(appName + " is not registered!"));
     }
 
     /* ************* Job 区 ************* */
