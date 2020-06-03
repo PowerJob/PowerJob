@@ -103,6 +103,9 @@ public class SystemInfoController {
         Date date = DateUtils.addDays(new Date(), -1);
         overview.setFailedInstanceCount(instanceInfoRepository.countByAppIdAndStatusAndGmtCreateAfter(appId, InstanceStatus.FAILED.getV(), date));
 
+        // 服务器时间
+        overview.setServerTime(System.currentTimeMillis());
+
         return ResultDTO.success(overview);
     }
 

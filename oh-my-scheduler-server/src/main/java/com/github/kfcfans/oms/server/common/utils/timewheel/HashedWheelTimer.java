@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.common.utils.timewheel;
 
+import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -53,7 +54,7 @@ public class HashedWheelTimer implements Timer {
         this.tickDuration = tickDuration;
 
         // 初始化轮盘，大小格式化为2的N次，可以使用 & 代替取余
-        int ticksNum = formatSize(ticksPerWheel);
+        int ticksNum = CommonUtils.formatSize(ticksPerWheel);
         wheel = new HashedWheelBucket[ticksNum];
         for (int i = 0; i < ticksNum; i++) {
             wheel[i] = new HashedWheelBucket();
@@ -321,15 +322,5 @@ public class HashedWheelTimer implements Timer {
             }
             return tasks;
         }
-    }
-
-    private static int formatSize(int cap) {
-        int n = cap - 1;
-        n |= n >>> 1;
-        n |= n >>> 2;
-        n |= n >>> 4;
-        n |= n >>> 8;
-        n |= n >>> 16;
-        return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
     }
 }

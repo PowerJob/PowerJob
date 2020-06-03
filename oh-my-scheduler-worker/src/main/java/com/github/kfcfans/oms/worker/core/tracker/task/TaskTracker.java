@@ -7,6 +7,7 @@ import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.InstanceDetail;
 import com.github.kfcfans.oms.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.utils.SegmentLock;
 import com.github.kfcfans.oms.worker.OhMyWorker;
 import com.github.kfcfans.oms.worker.common.constants.TaskConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
@@ -35,8 +36,6 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 负责管理 JobInstance 的运行，主要包括任务的派发（MR可能存在大量的任务）和状态的更新
@@ -63,11 +62,10 @@ public abstract class TaskTracker {
     protected AtomicBoolean finished;
     // 上报时间缓存
     private Cache<String, Long> taskId2LastReportTime;
-    // 分段锁
-    private Lock[] locks = new ReentrantLock[UPDATE_CONCURRENCY];
 
-    private static final int UPDATE_CONCURRENCY = 8;
-    private static final int UPDATE_LOCK_MASK = UPDATE_CONCURRENCY - 1;
+    // 分段锁
+    private SegmentLock segmentLock;
+    private static final int UPDATE_CONCURRENCY = 4;
 
     protected TaskTracker(ServerScheduleJobReq req) {
 
@@ -94,9 +92,7 @@ public abstract class TaskTracker {
         taskId2LastReportTime = CacheBuilder.newBuilder().maximumSize(1024).build();
 
         // 构建分段锁
-        for (int i = 0; i < UPDATE_CONCURRENCY; i++) {
-            locks[i] = new ReentrantLock();
-        }
+        segmentLock = new SegmentLock(UPDATE_CONCURRENCY);
 
         // 子类自定义初始化操作
         initTaskTracker(req);
@@ -132,14 +128,13 @@ public abstract class TaskTracker {
         if (finished.get()) {
             return;
         }
-
-        Lock lock = locks[taskId.hashCode() & UPDATE_LOCK_MASK];
-
         TaskStatus nTaskStatus = TaskStatus.of(newStatus);
+
+        int lockId = taskId.hashCode();
         try {
 
             // 阻塞获取锁
-            lock.lockInterruptibly();
+            segmentLock.lockInterruptible(lockId);
 
             Long lastReportTime = taskId2LastReportTime.getIfPresent(taskId);
 
@@ -216,7 +211,7 @@ public abstract class TaskTracker {
 
         } catch (InterruptedException ignore) {
         } finally {
-            lock.unlock();
+            segmentLock.unlock(lockId);
         }
     }
 

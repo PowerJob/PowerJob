@@ -4,6 +4,7 @@ import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.InstanceLogContent;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.utils.SegmentLock;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.StringPage;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
@@ -55,6 +56,9 @@ public class InstanceLogService {
     // 本地维护了在线日志的任务实例ID
     private final Map<Long, Long> instanceId2LastReportTime = Maps.newConcurrentMap();
     private final ExecutorService workerPool;
+
+    // 分段锁
+    private final SegmentLock segmentLock = new SegmentLock(8);
 
     // 格式化时间戳
     private static final FastDateFormat dateFormat = FastDateFormat.getInstance(OmsConstant.TIME_PATTERN_PLUS);
@@ -200,7 +204,9 @@ public class InstanceLogService {
 
     private File genTemporaryLogFile(long instanceId) {
         String path = genLogFilePath(instanceId, false);
-        synchronized (("tpFileLock-" + instanceId).intern()) {
+        int lockId = ("tpFileLock-" + instanceId).hashCode();
+        try {
+            segmentLock.lockInterruptibleSafe(lockId);
 
             // Stream 需要在事务的包裹之下使用
             return localTransactionTemplate.execute(status -> {
@@ -223,12 +229,17 @@ public class InstanceLogService {
                     throw new RuntimeException(e);
                 }
             });
+        }finally {
+            segmentLock.unlock(lockId);
         }
     }
 
     private File genStableLogFile(long instanceId) {
         String path = genLogFilePath(instanceId, true);
-        synchronized (("stFileLock-" + instanceId).intern()) {
+        int lockId = ("stFileLock-" + instanceId).hashCode();
+        try {
+            segmentLock.lockInterruptibleSafe(lockId);
+
             return localTransactionTemplate.execute(status -> {
 
                 File f = new File(path);
@@ -265,6 +276,8 @@ public class InstanceLogService {
                     throw new RuntimeException(e);
                 }
             });
+        }finally {
+            segmentLock.unlock(lockId);
         }
     }
 
