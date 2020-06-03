@@ -1,7 +1,7 @@
 #!/bin/bash
 cd `dirname $0`/../.. || exit
 echo "================== 构建 jar =================="
-mvn clean package -DskipTests -Pdev -U -e
+mvn clean package -Pdev -DskipTests -U -e -pl oh-my-scheduler-server,oh-my-scheduler-worker-agent -am
 echo "================== 拷贝 jar =================="
 /bin/cp -rf oh-my-scheduler-server/target/*.jar oh-my-scheduler-server/docker/oms-server.jar
 /bin/cp -rf oh-my-scheduler-worker-agent/target/*.jar oh-my-scheduler-worker-agent/oms-agent.jar

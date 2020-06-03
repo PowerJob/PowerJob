@@ -69,8 +69,8 @@ public class RepositoryTest {
 
     @Test
     public void testExecuteLogUpdate() {
-        instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL", "");
-        instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200);
+        instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL", "", new Date());
+        instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200, new Date());
     }
 
     @Test

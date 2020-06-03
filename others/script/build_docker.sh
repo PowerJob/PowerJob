@@ -11,7 +11,8 @@ cd `dirname $0`/../.. || exit
 read -r -p "是否进行maven构建（y/n）:" needmvn
 if [ "$needmvn" = "y" ] || [  "$needmvn" = "Y" ]; then
   echo "================== 构建 jar =================="
-  mvn clean package -DskipTests -Pdev -U -e
+  # -U：强制检查snapshot库 -pl：指定需要构建的模块，多模块逗号分割 -am：同时构建依赖模块，一般与pl连用 -Pxxx：指定使用的配置文件
+  mvn clean package -Pdev -DskipTests -U -e -pl oh-my-scheduler-server,oh-my-scheduler-worker-agent -am
   echo "================== 拷贝 jar =================="
   /bin/cp -rf oh-my-scheduler-server/target/*.jar oh-my-scheduler-server/docker/oms-server.jar
   /bin/cp -rf oh-my-scheduler-worker-agent/target/*.jar oh-my-scheduler-worker-agent/oms-agent.jar

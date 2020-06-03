@@ -102,7 +102,7 @@ public class InstanceManager {
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
         if (TimeExpressionType.frequentTypes.contains(timeExpressionType)) {
-            getInstanceInfoRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum());
+            getInstanceInfoRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum(), new Date());
             return;
         }
 

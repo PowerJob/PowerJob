@@ -39,20 +39,20 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     @Transactional
     @Modifying
     @CanIgnoreReturnValue
-    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, finished_time = ?5, task_tracker_address = ?6, result = ?7, instance_params = ?8, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
-    int update4TriggerFailed(long instanceId, int status, long runningTimes, long actualTriggerTime, long finishedTime, String taskTrackerAddress, String result, String instanceParams);
+    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, finished_time = ?5, task_tracker_address = ?6, result = ?7, instance_params = ?8, gmt_modified = ?9 where instance_id = ?1", nativeQuery = true)
+    int update4TriggerFailed(long instanceId, int status, long runningTimes, long actualTriggerTime, long finishedTime, String taskTrackerAddress, String result, String instanceParams, Date modifyTime);
 
     @Transactional
     @Modifying
     @CanIgnoreReturnValue
-    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, instance_params = ?6, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
-    int update4TriggerSucceed(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress, String instanceParams);
+    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, instance_params = ?6, gmt_modified = ?7 where instance_id = ?1", nativeQuery = true)
+    int update4TriggerSucceed(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress, String instanceParams, Date modifyTime);
 
     @Modifying
     @Transactional
     @CanIgnoreReturnValue
-    @Query(value = "update instance_info set status = ?2, running_times = ?3, gmt_modified = now() where instance_id = ?1", nativeQuery = true)
-    int update4FrequentJob(long instanceId, int status, long runningTimes);
+    @Query(value = "update instance_info set status = ?2, running_times = ?3, gmt_modified = ?4 where instance_id = ?1", nativeQuery = true)
+    int update4FrequentJob(long instanceId, int status, long runningTimes, Date modifyTime);
 
     // 状态检查三兄弟，对应 WAITING_DISPATCH 、 WAITING_WORKER_RECEIVE 和 RUNNING 三阶段
     // 数据量一般不大，就不单独写SQL优化 IO 了
