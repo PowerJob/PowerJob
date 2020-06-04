@@ -2,15 +2,13 @@ package com.github.kfcfans.oms.server.test;
 
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.lock.LockService;
-import org.assertj.core.util.Lists;
+import com.github.kfcfans.oms.server.service.timing.CleanService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * 服务测试
@@ -18,7 +16,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/2
  */
-@ActiveProfiles("daily")
+//@ActiveProfiles("daily")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ServiceTest {
@@ -27,6 +25,8 @@ public class ServiceTest {
     private LockService lockService;
     @Resource
     private IdGenerateService idGenerateService;
+    @Resource
+    private CleanService cleanService;
 
     @Test
     public void testLockService() {
@@ -40,6 +40,11 @@ public class ServiceTest {
     @Test
     public void testIdGenerator() {
         System.out.println(idGenerateService.allocate());
+    }
+
+    @Test
+    public void testCleanInstanceInfo() {
+        cleanService.cleanInstanceLog();
     }
 
 }

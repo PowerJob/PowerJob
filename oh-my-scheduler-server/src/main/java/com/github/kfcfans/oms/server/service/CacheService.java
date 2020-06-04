@@ -34,7 +34,7 @@ public class CacheService {
 
     public CacheService() {
         jobId2JobNameCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(Duration.ofHours(1))
+                .expireAfterWrite(Duration.ofMinutes(1))
                 .maximumSize(1024)
                 .build();
 

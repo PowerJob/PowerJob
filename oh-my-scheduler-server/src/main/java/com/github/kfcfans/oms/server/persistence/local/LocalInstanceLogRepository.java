@@ -24,6 +24,7 @@ public interface LocalInstanceLogRepository extends JpaRepository<LocalInstanceL
     @Transactional
     long deleteByInstanceId(Long instanceId);
 
+    @Modifying
     @Transactional
     @CanIgnoreReturnValue
     long deleteByInstanceIdInAndLogTimeLessThan(List<Long> instanceIds, Long t);

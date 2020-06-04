@@ -1,11 +1,13 @@
 package com.github.kfcfans.oms.server.service.timing;
 
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
+import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.Date;
 
 /**
  * CCO（Chief Clean Officer）
@@ -26,6 +29,8 @@ public class CleanService {
 
     @Resource
     private GridFsManager gridFsManager;
+    @Resource
+    private InstanceInfoRepository instanceInfoRepository;
 
     @Value("${oms.log.retention.local}")
     private int localLogRetentionDay;
@@ -35,6 +40,9 @@ public class CleanService {
     private int localContainerRetentionDay;
     @Value("${oms.container.retention.remote}")
     private int remoteContainerRetentionDay;
+
+    @Value("${oms.instanceinfo.retention}")
+    private int instanceInfoRetentionDay;
 
     private static final int TEMPORARY_RETENTION_DAY = 3;
 
@@ -47,6 +55,8 @@ public class CleanService {
     public void timingClean() {
 
         WorkerManagerService.releaseContainerInfos();
+
+        cleanInstanceLog();
 
         cleanLocal(OmsFileUtils.genLogDirPath(), localLogRetentionDay);
         cleanLocal(OmsFileUtils.genContainerJarPath(), localContainerRetentionDay);
@@ -103,6 +113,17 @@ public class CleanService {
                 log.warn("[CleanService] clean remote bucket({}) failed.", bucketName, e);
             }
             log.info("[CleanService] clean remote bucket({}) successfully, using {}.", bucketName, stopwatch.stop());
+        }
+    }
+
+    @VisibleForTesting
+    public void cleanInstanceLog() {
+        try {
+            Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
+            int num = instanceInfoRepository.deleteAllByGmtModifiedBefore(t);
+            log.info("[CleanService] deleted {} instanceInfo records whose modify time before {}.", num, t);
+        }catch (Exception e) {
+            log.warn("[CleanService] clean instanceInfo failed.", e);
         }
     }
 
