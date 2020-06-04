@@ -22,7 +22,8 @@ public class TaskDAOImpl implements TaskDAO {
     public void initTable() throws Exception {
 
         String delTableSQL = "drop table if exists task_info";
-        String createTableSQL = "create table task_info (task_id varchar(20), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(20), task_content blob, address varchar(20), status int(5), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), last_report_time bigint(20), unique KEY pkey (instance_id, task_id))";
+        // 感谢 Gitee 用户 @Linfly 反馈的 BUG
+        String createTableSQL = "create table task_info (task_id varchar(20), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(20), task_content blob, address varchar(22), status int(5), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), last_report_time bigint(20), unique KEY pkey (instance_id, task_id))";
 
         try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);
