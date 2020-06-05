@@ -73,7 +73,7 @@ public class WorkflowInstanceService {
         return dto;
     }
 
-    private WorkflowInstanceInfoDO fetchWfInstance(Long wfInstanceId, Long appId) {
+    public WorkflowInstanceInfoDO fetchWfInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = wfInstanceInfoRepository.findByWfInstanceId(wfInstanceId).orElseThrow(() -> new IllegalArgumentException("can't find workflow instance by wfInstanceId: " + wfInstanceId));
         if (!Objects.equals(appId, wfInstance.getAppId())) {
             throw new OmsException("Permission Denied!");

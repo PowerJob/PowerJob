@@ -39,6 +39,12 @@ public class WorkflowInstanceController {
         return ResultDTO.success(null);
     }
 
+    @GetMapping("/info")
+    public ResultDTO<WorkflowInstanceInfoVO> getInfo(Long wfInstanceId, Long appId) {
+        WorkflowInstanceInfoDO wfInstanceDO = workflowInstanceService.fetchWfInstance(wfInstanceId, appId);
+        return ResultDTO.success(WorkflowInstanceInfoVO.from(wfInstanceDO, cacheService.getWorkflowName(wfInstanceDO.getWorkflowId())));
+    }
+
     @PostMapping("/list")
     public ResultDTO<PageResult<WorkflowInstanceInfoVO>> listWfInstance(@RequestBody QueryWorkflowInstanceRequest req) {
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");

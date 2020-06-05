@@ -35,15 +35,20 @@ public class AppInfoController {
     private static final int MAX_APP_NUM = 50;
 
     @PostMapping("/save")
-    public ResultDTO<Void> saveAppInfo(@RequestBody ModifyAppInfoRequest appInfoRequest) {
+    public ResultDTO<Void> saveAppInfo(@RequestBody ModifyAppInfoRequest req) {
 
-        AppInfoDO appInfoDO = new AppInfoDO();
-        BeanUtils.copyProperties(appInfoRequest, appInfoDO);
-        Date now = new Date();
-        if (appInfoRequest.getId() == null) {
-            appInfoDO.setGmtCreate(now);
+        AppInfoDO appInfoDO;
+
+        Long id = req.getId();
+        if (id == null) {
+            appInfoDO = new AppInfoDO();
+            appInfoDO.setGmtCreate(new Date());
+        }else {
+            appInfoDO = appInfoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by id:" + id));
         }
-        appInfoDO.setGmtModified(now);
+        BeanUtils.copyProperties(req, appInfoDO);
+        appInfoDO.setGmtModified(new Date());
+
         appInfoRepository.saveAndFlush(appInfoDO);
         return ResultDTO.success(null);
     }
