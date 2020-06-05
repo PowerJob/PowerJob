@@ -3,16 +3,16 @@ package com.github.kfcfans.oms.server.web.controller;
 import com.github.kfcfans.oms.common.ExecuteType;
 import com.github.kfcfans.oms.common.ProcessorType;
 import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
+import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.server.common.SJ;
 import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.persistence.PageResult;
-import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
-import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.oms.server.service.JobService;
-import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.oms.server.web.request.QueryJobInfoRequest;
 import com.github.kfcfans.oms.server.web.response.JobInfoVO;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -42,8 +42,6 @@ public class JobController {
     private JobService jobService;
     @Resource
     private JobInfoRepository jobInfoRepository;
-
-    private static final Splitter commaSplitter = Splitter.on(",");
 
     @PostMapping("/save")
     public ResultDTO<Void> saveJobInfo(@RequestBody SaveJobInfoRequest request) throws Exception {
@@ -131,7 +129,7 @@ public class JobController {
         jobInfoVO.setEnable(jobInfoDO.getStatus() == SwitchableStatus.ENABLE.getV());
 
         if (!StringUtils.isEmpty(jobInfoDO.getNotifyUserIds())) {
-            jobInfoVO.setNotifyUserIds(commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));
+            jobInfoVO.setNotifyUserIds(SJ.commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));
         }else {
             jobInfoVO.setNotifyUserIds(Lists.newLinkedList());
         }
