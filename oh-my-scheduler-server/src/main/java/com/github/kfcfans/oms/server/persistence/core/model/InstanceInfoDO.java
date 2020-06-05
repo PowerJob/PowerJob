@@ -43,7 +43,7 @@ public class InstanceInfoDO {
     /**
      * 任务状态 {@link InstanceStatus}
      */
-    private int status;
+    private Integer status;
     // 执行结果（允许存储稍大的结果）
     @Lob
     @Column(columnDefinition="TEXT")

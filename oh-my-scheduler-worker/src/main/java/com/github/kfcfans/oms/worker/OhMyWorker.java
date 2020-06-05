@@ -153,6 +153,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
             }catch (OmsException oe) {
                 throw oe;
             }catch (Exception ignore) {
+                log.warn("[OhMyWorker] assert appName by url({}) failed, please check the server address.", realUrl);
             }
         }
         log.error("[OhMyWorker] no available server in {}.", config.getServerAddress());

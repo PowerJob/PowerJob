@@ -44,6 +44,12 @@ public class WorkflowController {
         return ResultDTO.success(null);
     }
 
+    @GetMapping("/enable")
+    public ResultDTO<Void> enableWorkflow(Long workflowId, Long appId) {
+        workflowService.enableWorkflow(workflowId, appId);
+        return ResultDTO.success(null);
+    }
+
     @GetMapping("/delete")
     public ResultDTO<Void> deleteWorkflow(Long workflowId, Long appId) {
         workflowService.deleteWorkflow(workflowId, appId);

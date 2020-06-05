@@ -5,10 +5,10 @@ import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.oms.common.response.WorkflowInfoDTO;
-import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.common.SJ;
 import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
+import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInfoRepository;
 import org.springframework.beans.BeanUtils;
@@ -58,7 +58,9 @@ public class WorkflowService {
         wf.setStatus(req.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
         wf.setTimeExpressionType(req.getTimeExpressionType().getV());
 
-        wf.setNotifyUserIds(SJ.commaJoiner.join(req.getNotifyUserIds()));
+        if (req.getNotifyUserIds() != null) {
+            wf.setNotifyUserIds(SJ.commaJoiner.join(req.getNotifyUserIds()));
+        }
 
         // 计算 NextTriggerTime
         if (req.getTimeExpressionType() == TimeExpressionType.CRON) {

@@ -2,8 +2,6 @@ package com.github.kfcfans.oms.server.persistence.core.repository;
 
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -61,12 +59,6 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     List<InstanceInfoDO> findByAppIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
 
     InstanceInfoDO findByInstanceId(long instanceId);
-
-    // list 三兄弟
-    Page<InstanceInfoDO> findByAppIdAndType(long appId, int type, Pageable pageable);
-    Page<InstanceInfoDO> findByJobIdAndType(long jobId, int type, Pageable pageable);
-    // 只会有一条数据，只是为了统一
-    Page<InstanceInfoDO> findByInstanceIdAndType(long instanceId, int type, Pageable pageable);
 
     // 数据统计
     long countByAppIdAndStatus(long appId, int status);

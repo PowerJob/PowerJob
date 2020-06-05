@@ -20,6 +20,7 @@ import com.github.kfcfans.oms.server.web.response.InstanceInfoVO;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -110,18 +111,12 @@ public class InstanceController {
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");
         PageRequest pageable = PageRequest.of(request.getIndex(), request.getPageSize(), sort);
 
-        // 查询全部数据
-        if (request.getJobId() == null && request.getInstanceId() == null) {
-            return ResultDTO.success(convertPage(instanceInfoRepository.findByAppIdAndType(request.getAppId(), request.getType().getV(), pageable)));
-        }
+        InstanceInfoDO queryEntity = new InstanceInfoDO();
+        BeanUtils.copyProperties(request, queryEntity);
+        queryEntity.setType(request.getType().getV());
 
-        // 根据JobId查询
-        if (request.getJobId() != null) {
-            return ResultDTO.success(convertPage(instanceInfoRepository.findByJobIdAndType(request.getJobId(), request.getType().getV(), pageable)));
-        }
-
-        // 根据InstanceId查询
-        return ResultDTO.success(convertPage(instanceInfoRepository.findByInstanceIdAndType(request.getInstanceId(), request.getType().getV(), pageable)));
+        Page<InstanceInfoDO> pageResult = instanceInfoRepository.findAll(Example.of(queryEntity), pageable);
+        return ResultDTO.success(convertPage(pageResult));
     }
 
     private PageResult<InstanceInfoVO> convertPage(Page<InstanceInfoDO> page) {

@@ -23,4 +23,5 @@ public class QueryInstanceRequest {
     private InstanceType type;
     private Long instanceId;
     private Long jobId;
+    private Long wfInstanceId;
 }
