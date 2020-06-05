@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- 该 maven 配置文件将成为 oms-server 所使用的 maven 配置文件 -->
+<!-- The maven configuration file will become the maven configuration file used by oms-server -->
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file

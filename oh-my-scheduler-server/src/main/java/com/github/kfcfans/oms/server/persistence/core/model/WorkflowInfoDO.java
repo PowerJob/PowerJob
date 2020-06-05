@@ -31,6 +31,8 @@ public class WorkflowInfoDO {
     private Long appId;
 
     // 工作流的DAG图信息（点线式DAG的json）
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String peDAG;
 
     /* ************************** 定时参数 ************************** */
