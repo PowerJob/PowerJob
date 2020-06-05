@@ -1,6 +1,8 @@
 package com.github.kfcfans.oms.server.persistence.core.repository;
 
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long> {
 
     Optional<AppInfoDO> findByAppName(String appName);
 
-    List<AppInfoDO> findByAppNameLike(String condition);
+    Page<AppInfoDO> findByAppNameLike(String condition, Pageable pageable);
 
     /**
      * 根据 currentServer 查询 appId

@@ -33,6 +33,14 @@ public class WebLogAspect {
      * 最后的两个点：所有类型的参数
      */
     @Pointcut("execution(public * com.github.kfcfans.oms.server.web.controller..*.*(..))")
+    public void include() {
+    }
+
+    @Pointcut("execution(public * com.github.kfcfans.oms.server.web.controller.ServerController.*(..))")
+    public void exclude() {
+    }
+
+    @Pointcut("include() && !exclude()")
     public void webLog() {
     }
 
@@ -48,6 +56,9 @@ public class WebLogAspect {
         String[] classNameSplit = joinPoint.getSignature().getDeclaringTypeName().split("\\.");
         String classNameMini = classNameSplit[classNameSplit.length - 1];
         String classMethod = classNameMini + "." + joinPoint.getSignature().getName();
+
+        // 排除特殊类
+
         // 192.168.1.1|POST|com.xxx.xxx.save|请求参数
         log.info("{}|{}|{}|{}", request.getRemoteAddr(), request.getMethod(), classMethod, JSONObject.toJSONString(joinPoint.getArgs()));
     }

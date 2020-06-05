@@ -1,13 +1,15 @@
 package com.github.kfcfans.oms.server.web.controller;
 
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.web.request.ModifyAppInfoRequest;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +31,8 @@ public class AppInfoController {
 
     @Resource
     private AppInfoRepository appInfoRepository;
+
+    private static final int MAX_APP_NUM = 50;
 
     @PostMapping("/save")
     public ResultDTO<Void> saveAppInfo(@RequestBody ModifyAppInfoRequest appInfoRequest) {
@@ -53,10 +57,11 @@ public class AppInfoController {
     @GetMapping("/list")
     public ResultDTO<List<AppInfoVO>> listAppInfo(@RequestParam(required = false) String condition) {
         List<AppInfoDO> result;
+        Pageable limit = PageRequest.of(0, MAX_APP_NUM);
         if (StringUtils.isEmpty(condition)) {
-            result = appInfoRepository.findAll();
+            result = appInfoRepository.findAll(limit).getContent();
         }else {
-            result = appInfoRepository.findByAppNameLike("%" + condition + "%");
+            result = appInfoRepository.findByAppNameLike("%" + condition + "%", limit).getContent();
         }
         return ResultDTO.success(convert(result));
     }
