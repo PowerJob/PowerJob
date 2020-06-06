@@ -1,6 +1,11 @@
 package com.github.kfcfans.oms.server.web.response;
 
+import com.github.kfcfans.oms.common.InstanceStatus;
+import com.github.kfcfans.oms.common.OmsConstant;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import lombok.Data;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.springframework.beans.BeanUtils;
 
 /**
  * InstanceInfo 对外展示对象
@@ -36,4 +41,37 @@ public class InstanceInfoVO {
     private String actualTriggerTime;
     // 结束时间（同理，需要格式化）
     private String finishedTime;
+
+    public static InstanceInfoVO from(InstanceInfoDO instanceInfoDo, String jobName) {
+        InstanceInfoVO instanceInfoVO = new InstanceInfoVO();
+        BeanUtils.copyProperties(instanceInfoDo, instanceInfoVO);
+
+        // 状态转化为中文
+        instanceInfoVO.setStatusStr(InstanceStatus.of(instanceInfoDo.getStatus()).getDes());
+        // 额外设置任务名称，提高可读性
+        instanceInfoVO.setJobName(jobName);
+
+        // ID 转化为 String（JS精度丢失）
+        instanceInfoVO.setJobId(instanceInfoDo.getJobId().toString());
+        instanceInfoVO.setInstanceId(instanceInfoDo.getInstanceId().toString());
+        if (instanceInfoDo.getWfInstanceId() == null) {
+            instanceInfoVO.setWfInstanceId(OmsConstant.NONE);
+        }else {
+            instanceInfoVO.setWfInstanceId(String.valueOf(instanceInfoDo.getWfInstanceId()));
+        }
+
+        // 格式化时间
+        if (instanceInfoDo.getActualTriggerTime() == null) {
+            instanceInfoVO.setActualTriggerTime(OmsConstant.NONE);
+        }else {
+            instanceInfoVO.setActualTriggerTime(DateFormatUtils.format(instanceInfoDo.getActualTriggerTime(), OmsConstant.TIME_PATTERN));
+        }
+        if (instanceInfoDo.getFinishedTime() == null) {
+            instanceInfoVO.setFinishedTime(OmsConstant.NONE);
+        }else {
+            instanceInfoVO.setFinishedTime(DateFormatUtils.format(instanceInfoDo.getFinishedTime(), OmsConstant.TIME_PATTERN));
+        }
+
+        return instanceInfoVO;
+    }
 }

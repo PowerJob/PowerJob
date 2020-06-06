@@ -1,9 +1,7 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.oms.common.InstanceStatus;
-import com.github.kfcfans.oms.common.OmsConstant;
-import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.common.model.InstanceDetail;
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.PageResult;
@@ -17,7 +15,6 @@ import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
 import com.github.kfcfans.oms.server.web.response.InstanceInfoVO;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
@@ -28,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,8 +62,8 @@ public class InstanceController {
         return ResultDTO.success(null);
     }
 
-    @GetMapping("/status")
-    public ResultDTO<InstanceDetail> getRunningStatus(String instanceId) {
+    @GetMapping("/detail")
+    public ResultDTO<InstanceDetail> getInstanceDetail(String instanceId) {
         return ResultDTO.success(instanceService.getInstanceDetail(Long.valueOf(instanceId)));
     }
 
@@ -120,38 +117,8 @@ public class InstanceController {
     }
 
     private PageResult<InstanceInfoVO> convertPage(Page<InstanceInfoDO> page) {
-        List<InstanceInfoVO> content = page.getContent().stream().map(instanceLogDO -> {
-            InstanceInfoVO instanceInfoVO = new InstanceInfoVO();
-            BeanUtils.copyProperties(instanceLogDO, instanceInfoVO);
-
-            // 状态转化为中文
-            instanceInfoVO.setStatusStr(InstanceStatus.of(instanceLogDO.getStatus()).getDes());
-            // 额外设置任务名称，提高可读性
-            instanceInfoVO.setJobName(cacheService.getJobName(instanceLogDO.getJobId()));
-
-            // ID 转化为 String（JS精度丢失）
-            instanceInfoVO.setJobId(instanceLogDO.getJobId().toString());
-            instanceInfoVO.setInstanceId(instanceLogDO.getInstanceId().toString());
-            if (instanceLogDO.getWfInstanceId() == null) {
-                instanceInfoVO.setWfInstanceId(OmsConstant.NONE);
-            }else {
-                instanceInfoVO.setWfInstanceId(String.valueOf(instanceLogDO.getWfInstanceId()));
-            }
-
-            // 格式化时间
-            if (instanceLogDO.getActualTriggerTime() == null) {
-                instanceInfoVO.setActualTriggerTime(OmsConstant.NONE);
-            }else {
-                instanceInfoVO.setActualTriggerTime(DateFormatUtils.format(instanceLogDO.getActualTriggerTime(), OmsConstant.TIME_PATTERN));
-            }
-            if (instanceLogDO.getFinishedTime() == null) {
-                instanceInfoVO.setFinishedTime(OmsConstant.NONE);
-            }else {
-                instanceInfoVO.setFinishedTime(DateFormatUtils.format(instanceLogDO.getFinishedTime(), OmsConstant.TIME_PATTERN));
-            }
-
-            return instanceInfoVO;
-        }).collect(Collectors.toList());
+        List<InstanceInfoVO> content = page.getContent().stream()
+                .map(x -> InstanceInfoVO.from(x, cacheService.getJobName(x.getJobId()))).collect(Collectors.toList());
 
         PageResult<InstanceInfoVO> pageResult = new PageResult<>(page);
         pageResult.setData(content);
