@@ -11,6 +11,9 @@ COPY settings.xml /opt/oms-maven/conf/settings.xml
 # 设置 maven 环境变量（maven invoker 读取该变量调用 maven）
 ENV M2_HOME=/opt/oms-maven
 
+# 设置时区（Debian专用方法）
+ENV TZ=Asia/Shanghai
+
 # 设置其他环境变量
 ENV APP_NAME=oh-my-scheduler-server
 # 传递 SpringBoot 启动参数

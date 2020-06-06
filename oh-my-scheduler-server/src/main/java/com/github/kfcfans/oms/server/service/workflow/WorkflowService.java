@@ -67,6 +67,8 @@ public class WorkflowService {
             CronExpression cronExpression = new CronExpression(req.getTimeExpression());
             Date nextValidTime = cronExpression.getNextValidTimeAfter(new Date());
             wf.setNextTriggerTime(nextValidTime.getTime());
+        }else {
+            wf.setTimeExpression(null);
         }
 
         WorkflowInfoDO newEntity = workflowInfoRepository.saveAndFlush(wf);

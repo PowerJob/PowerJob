@@ -1,6 +1,8 @@
 # agent 没有 javac 需求，用 JRE 镜像
 FROM openjdk:8-jre-slim
 MAINTAINER tengjiqi@gmail.com
+# 设置时区
+ENV TZ=Asia/Shanghai
 
 ENV APP_NAME=oh-my-scheduler-worker-agent
 ENV PARAMS=""

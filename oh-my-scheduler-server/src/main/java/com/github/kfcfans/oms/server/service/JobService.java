@@ -61,7 +61,6 @@ public class JobService {
         BeanUtils.copyProperties(request, jobInfoDO);
 
         // 拷贝枚举值
-
         jobInfoDO.setExecuteType(request.getExecuteType().getV());
         jobInfoDO.setProcessorType(request.getProcessorType().getV());
         jobInfoDO.setTimeExpressionType(request.getTimeExpressionType().getV());
@@ -182,6 +181,8 @@ public class JobService {
             CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
             Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
             jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
+        }else if (timeExpressionType == TimeExpressionType.API || timeExpressionType == TimeExpressionType.WORKFLOW) {
+            jobInfoDO.setTimeExpression(null);
         }
         // 重写最后修改时间
         jobInfoDO.setGmtModified(now);
