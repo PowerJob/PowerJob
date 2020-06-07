@@ -130,6 +130,8 @@ public class CommonTaskTracker extends TaskTracker {
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
+            req.setWfInstanceId(instanceInfo.getWfInstanceId());
+
             req.setTotalTaskNum(finishedNum + unfinishedNum);
             req.setSucceedTaskNum(holder.succeedNum);
             req.setFailedTaskNum(holder.failedNum);
@@ -224,7 +226,7 @@ public class CommonTaskTracker extends TaskTracker {
                 try {
                     AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                     serverAccepted = askResponse.isSuccess();
-                }catch (Exception e) {
+                }catch (Exception ignore) {
                     log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, result);
                 }
 

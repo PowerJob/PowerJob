@@ -2,7 +2,7 @@ package com.github.kfcfans.oms.server.test;
 
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.utils.NetUtils;
-import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.OmsLockDO;
@@ -54,7 +54,7 @@ public class RepositoryTest {
 
     @Test
     public void testSelectCronJobSQL() {
-        List<JobInfoDO> result = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(Lists.newArrayList(1L), JobStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), System.currentTimeMillis());
+        List<JobInfoDO> result = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(Lists.newArrayList(1L), SwitchableStatus.ENABLE.getV(), TimeExpressionType.CRON.getV(), System.currentTimeMillis());
         System.out.println(result);
     }
 
@@ -69,8 +69,8 @@ public class RepositoryTest {
 
     @Test
     public void testExecuteLogUpdate() {
-        instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL", "");
-        instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200);
+        instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL", "", new Date());
+        instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200, new Date());
     }
 
     @Test

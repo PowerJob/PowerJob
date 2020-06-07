@@ -26,9 +26,9 @@ public class SwaggerConfig {
         ApiInfo apiInfo = new ApiInfoBuilder()
                 .title("OhMyScheduler")
                 .description("Distributed scheduling and computing framework.")
-                .license("GPL")
+                .license("Apache Licence 2")
                 .termsOfServiceUrl("https://github.com/KFCFans/OhMyScheduler")
-                .version("DEVELOP-VERSION")
+                .version("2.0.0")
                 .build();
 
         return new Docket(DocumentationType.SWAGGER_2)

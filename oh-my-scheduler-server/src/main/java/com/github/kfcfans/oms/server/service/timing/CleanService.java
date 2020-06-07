@@ -2,8 +2,10 @@ package com.github.kfcfans.oms.server.service.timing;
 
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.oms.server.service.instance.InstanceManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,8 @@ public class CleanService {
     private GridFsManager gridFsManager;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
+    @Resource
+    private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
     @Value("${oms.log.retention.local}")
     private int localLogRetentionDay;
@@ -54,14 +58,20 @@ public class CleanService {
     @Scheduled(cron = CLEAN_TIME_EXPRESSION)
     public void timingClean() {
 
+        // 释放本地缓存
         WorkerManagerService.releaseContainerInfos();
+        InstanceManager.releaseInstanceInfos();
 
+        // 删除数据库运行记录
         cleanInstanceLog();
+        cleanWorkflowInstanceLog();
 
+        // 释放磁盘空间
         cleanLocal(OmsFileUtils.genLogDirPath(), localLogRetentionDay);
         cleanLocal(OmsFileUtils.genContainerJarPath(), localContainerRetentionDay);
         cleanLocal(OmsFileUtils.genTemporaryPath(), TEMPORARY_RETENTION_DAY);
 
+        // 删除 GridFS 过期文件
         cleanRemote(GridFsManager.LOG_BUCKET, remoteLogRetentionDay);
         cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
     }
@@ -118,12 +128,29 @@ public class CleanService {
 
     @VisibleForTesting
     public void cleanInstanceLog() {
+        if (instanceInfoRetentionDay < 0) {
+            return;
+        }
         try {
             Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
             int num = instanceInfoRepository.deleteAllByGmtModifiedBefore(t);
             log.info("[CleanService] deleted {} instanceInfo records whose modify time before {}.", num, t);
         }catch (Exception e) {
             log.warn("[CleanService] clean instanceInfo failed.", e);
+        }
+    }
+
+    @VisibleForTesting
+    public void cleanWorkflowInstanceLog() {
+        if (instanceInfoRetentionDay < 0) {
+            return;
+        }
+        try {
+            Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
+            int num = workflowInstanceInfoRepository.deleteAllByGmtModifiedBefore(t);
+            log.info("[CleanService] deleted {} workflow instanceInfo records whose modify time before {}.", num, t);
+        }catch (Exception e) {
+            log.warn("[CleanService] clean workflow instanceInfo failed.", e);
         }
     }
 

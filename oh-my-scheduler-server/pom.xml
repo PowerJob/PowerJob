@@ -10,19 +10,20 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>oh-my-scheduler-server</artifactId>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
-        <oms.common.version>1.2.0</oms.common.version>
+        <oms.common.version>2.0.0</oms.common.version>
         <mysql.version>8.0.19</mysql.version>
         <h2.db.version>1.4.200</h2.db.version>
         <zip4j.version>2.5.2</zip4j.version>
         <jgit.version>5.7.0.202003110725-r</jgit.version>
         <mvn.invoker.version>3.0.1</mvn.invoker.version>
         <commons.net.version>3.6</commons.net.version>
+        <fastjson.version>1.2.68</fastjson.version>
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -120,6 +121,13 @@
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-invoker</artifactId>
             <version>${mvn.invoker.version}</version>
+        </dependency>
+
+        <!-- fastJson（为了序列化 DAG 引用引入） -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
         </dependency>
 
 

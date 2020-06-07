@@ -1,12 +1,9 @@
 package com.github.kfcfans.oms.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.oms.common.ExecuteType;
-import com.github.kfcfans.oms.common.ProcessorType;
-import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.*;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.worker.OhMyWorker;
-import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.worker.common.constants.TaskStatus;
 import com.github.kfcfans.oms.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.oms.worker.common.utils.SpringUtils;
@@ -273,12 +270,12 @@ public class ProcessorTracker {
                 break;
             default:
                 log.warn("[ProcessorRunnable-{}] unknown processor type: {}.", instanceId, processorType);
-                throw new IllegalArgumentException("unknown processor type of " + processorType);
+                throw new OmsException("unknown processor type of " + processorType);
         }
 
         if (processor == null) {
             log.warn("[ProcessorRunnable-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
-            throw new IllegalArgumentException("fetch Processor failed");
+            throw new OmsException("fetch Processor failed");
         }
     }
 

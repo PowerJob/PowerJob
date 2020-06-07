@@ -4,6 +4,7 @@ import akka.actor.ActorSelection;
 import com.github.kfcfans.oms.common.*;
 import com.github.kfcfans.oms.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
+import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
@@ -18,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -40,8 +42,8 @@ public class DispatchService {
     private static final Splitter commaSplitter = Splitter.on(",");
 
     public void redispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
-        String instanceParams = instanceInfoRepository.findByInstanceId(instanceId).getInstanceParams();
-        dispatch(jobInfo, instanceId, currentRunningTimes, instanceParams);
+        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+        dispatch(jobInfo, instanceId, currentRunningTimes, instanceInfo.getInstanceParams(), instanceInfo.getWfInstanceId());
     }
 
     /**
@@ -50,11 +52,13 @@ public class DispatchService {
      * @param instanceId 任务实例ID
      * @param currentRunningTimes 当前运行的次数
      * @param instanceParams 实例的运行参数，API触发方式专用
+     * @param wfInstanceId 工作流任务实例ID，workflow 任务专用
      */
-    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams) {
+    public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams, Long wfInstanceId) {
         Long jobId = jobInfo.getId();
-        log.info("[DispatchService] start to dispatch job: {};instancePrams: {}.", jobInfo, instanceParams);
+        log.info("[Dispatcher-{}|{}] start to dispatch job: {};instancePrams: {}.", jobId, instanceId, jobInfo, instanceParams);
 
+        Date now = new Date();
         String dbInstanceParams = instanceParams == null ? "" : instanceParams;
 
         // 查询当前运行的实例数
@@ -64,8 +68,10 @@ public class DispatchService {
         // 超出最大同时运行限制，不执行调度
         if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
             String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
-            log.warn("[DispatchService] cancel dispatch job(jobId={}) due to too much instance(num={}) is running.", jobId, runningInstanceCount);
-            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams);
+            log.warn("[Dispatcher-{}|{}] cancel dispatch job due to too much instance(num={}) is running.", jobId, instanceId, runningInstanceCount);
+            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams, now);
+
+            InstanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, result);
             return;
         }
 
@@ -87,8 +93,10 @@ public class DispatchService {
 
         if (CollectionUtils.isEmpty(finalWorkers)) {
             String clusterStatusDescription = WorkerManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
-            log.warn("[DispatchService] cancel dispatch job(jobId={}) due to no worker available, clusterStatus is {}.", jobId, clusterStatusDescription);
-            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE, dbInstanceParams);
+            log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available, clusterStatus is {}.", jobId, instanceId, clusterStatusDescription);
+            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE, dbInstanceParams, now);
+
+            InstanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, SystemInstanceResult.NO_WORKER_AVAILABLE);
             return;
         }
 
@@ -116,6 +124,9 @@ public class DispatchService {
         req.setInstanceId(instanceId);
         req.setAllWorkerAddress(finalWorkers);
 
+        // 设置工作流ID
+        req.setWfInstanceId(wfInstanceId);
+
         req.setExecuteType(ExecuteType.of(jobInfo.getExecuteType()).name());
         req.setProcessorType(ProcessorType.of(jobInfo.getProcessorType()).name());
         req.setTimeExpressionType(TimeExpressionType.of(jobInfo.getTimeExpressionType()).name());
@@ -128,9 +139,9 @@ public class DispatchService {
         String taskTrackerAddress = finalWorkers.get(0);
         ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(taskTrackerAddress);
         taskTrackerActor.tell(req, null);
-        log.debug("[DispatchService] send request({}) to TaskTracker({}) succeed.", req, taskTrackerActor.pathString());
+        log.debug("[Dispatcher-{}|{}] send request({}) to TaskTracker({}) succeed.", jobId, instanceId, req, taskTrackerActor.pathString());
 
         // 修改状态
-        instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress, dbInstanceParams);
+        instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress, dbInstanceParams, now);
     }
 }

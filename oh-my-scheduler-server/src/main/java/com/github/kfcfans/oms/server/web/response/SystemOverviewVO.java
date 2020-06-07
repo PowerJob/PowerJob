@@ -13,4 +13,6 @@ public class SystemOverviewVO {
     private long jobCount;
     private long runningInstanceCount;
     private long failedInstanceCount;
+    // 服务器时间
+    private long serverTime;
 }

@@ -1,5 +1,6 @@
 package com.github.kfcfans.oms.server.web.request;
 
+import com.github.kfcfans.oms.server.common.constans.InstanceType;
 import lombok.Data;
 
 /**
@@ -18,7 +19,9 @@ public class QueryInstanceRequest {
     // 页大小
     private Integer pageSize;
 
-    // 查询条件
+    // 查询条件（NORMAL/WORKFLOW）
+    private InstanceType type;
     private Long instanceId;
     private Long jobId;
+    private Long wfInstanceId;
 }

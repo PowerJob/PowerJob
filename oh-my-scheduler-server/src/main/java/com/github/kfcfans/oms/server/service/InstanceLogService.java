@@ -1,8 +1,10 @@
 package com.github.kfcfans.oms.server.service;
 
+import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.model.InstanceLogContent;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
+import com.github.kfcfans.oms.common.utils.SegmentLock;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.StringPage;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
@@ -55,8 +57,11 @@ public class InstanceLogService {
     private final Map<Long, Long> instanceId2LastReportTime = Maps.newConcurrentMap();
     private final ExecutorService workerPool;
 
+    // 分段锁
+    private final SegmentLock segmentLock = new SegmentLock(8);
+
     // 格式化时间戳
-    private static final FastDateFormat dateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final FastDateFormat dateFormat = FastDateFormat.getInstance(OmsConstant.TIME_PATTERN_PLUS);
     // 每一个展示的行数
     private static final int MAX_LINE_COUNT = 100;
     // 过期时间
@@ -118,7 +123,7 @@ public class InstanceLogService {
                     ++lines;
                 }
             }catch (Exception e) {
-                log.warn("[InstanceLogService] read logFile from disk failed.", e);
+                log.warn("[InstanceLog-{}] read logFile from disk failed.", instanceId, e);
                 return StringPage.simple("oms-server execution exception, caused by " + ExceptionUtils.getRootCauseMessage(e));
             }
 
@@ -128,7 +133,7 @@ public class InstanceLogService {
         }catch (TimeoutException te) {
             return StringPage.simple("log file is being prepared, please try again later.");
         }catch (Exception e) {
-            log.warn("[InstanceLogService] fetchInstanceLog failed for instance(instanceId={}).", instanceId, e);
+            log.warn("[InstanceLog-{}] fetch instance log failed.", instanceId, e);
             return StringPage.simple("oms-server execution exception, caused by " + ExceptionUtils.getRootCauseMessage(e));
         }
     }
@@ -180,26 +185,28 @@ public class InstanceLogService {
             if (gridFsManager.available()) {
                 try {
                     gridFsManager.store(stableLogFile, GridFsManager.LOG_BUCKET, genMongoFileName(instanceId));
-                    log.info("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB succeed, using: {}.", instanceId, sw.stop());
+                    log.info("[InstanceLog-{}] push local instanceLogs to mongoDB succeed, using: {}.", instanceId, sw.stop());
                 }catch (Exception e) {
-                    log.warn("[InstanceLogService] push local instanceLogs(instanceId={}) to mongoDB failed.", instanceId, e);
+                    log.warn("[InstanceLog-{}] push local instanceLogs to mongoDB failed.", instanceId, e);
                 }
             }
         }catch (Exception e) {
-            log.warn("[InstanceLogService] sync local instanceLogs(instanceId={}) failed.", instanceId, e);
+            log.warn("[InstanceLog-{}] sync local instanceLogs failed.", instanceId, e);
         }
         // 删除本地数据库数据
         try {
             CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.deleteByInstanceId(instanceId));
             instanceId2LastReportTime.remove(instanceId);
         }catch (Exception e) {
-            log.warn("[InstanceLogService] delete local instanceLog(instanceId={}) failed.", instanceId, e);
+            log.warn("[InstanceLog-{}] delete local instanceLog failed.", instanceId, e);
         }
     }
 
     private File genTemporaryLogFile(long instanceId) {
         String path = genLogFilePath(instanceId, false);
-        synchronized (("tpFileLock-" + instanceId).intern()) {
+        int lockId = ("tpFileLock-" + instanceId).hashCode();
+        try {
+            segmentLock.lockInterruptibleSafe(lockId);
 
             // Stream 需要在事务的包裹之下使用
             return localTransactionTemplate.execute(status -> {
@@ -222,12 +229,17 @@ public class InstanceLogService {
                     throw new RuntimeException(e);
                 }
             });
+        }finally {
+            segmentLock.unlock(lockId);
         }
     }
 
     private File genStableLogFile(long instanceId) {
         String path = genLogFilePath(instanceId, true);
-        synchronized (("stFileLock-" + instanceId).intern()) {
+        int lockId = ("stFileLock-" + instanceId).hashCode();
+        try {
+            segmentLock.lockInterruptibleSafe(lockId);
+
             return localTransactionTemplate.execute(status -> {
 
                 File f = new File(path);
@@ -264,6 +276,8 @@ public class InstanceLogService {
                     throw new RuntimeException(e);
                 }
             });
+        }finally {
+            segmentLock.unlock(lockId);
         }
     }
 

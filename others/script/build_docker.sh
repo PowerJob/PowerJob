@@ -11,11 +11,12 @@ cd `dirname $0`/../.. || exit
 read -r -p "是否进行maven构建（y/n）:" needmvn
 if [ "$needmvn" = "y" ] || [  "$needmvn" = "Y" ]; then
   echo "================== 构建 jar =================="
-  mvn clean package -DskipTests -Pdev -U -e
+  # -U：强制检查snapshot库 -pl：指定需要构建的模块，多模块逗号分割 -am：同时构建依赖模块，一般与pl连用 -Pxxx：指定使用的配置文件
+  mvn clean package -Pdev -DskipTests -U -e -pl oh-my-scheduler-server,oh-my-scheduler-worker-agent -am
   echo "================== 拷贝 jar =================="
-  /bin/cp -rf oh-my-scheduler-server/target/*.jar oh-my-scheduler-server/oms-server.jar
+  /bin/cp -rf oh-my-scheduler-server/target/*.jar oh-my-scheduler-server/docker/oms-server.jar
   /bin/cp -rf oh-my-scheduler-worker-agent/target/*.jar oh-my-scheduler-worker-agent/oms-agent.jar
-  ls -l oh-my-scheduler-server/oms-server.jar
+  ls -l oh-my-scheduler-server/docker/oms-server.jar
   ls -l oh-my-scheduler-worker-agent/oms-agent.jar
 fi
 
@@ -33,7 +34,7 @@ if [ "$rebuild" = "y" ] || [  "$rebuild" = "Y" ]; then
   docker rmi -f tjqq/oms-server:$version
   docker rmi -f tjqq/oms-agent:$version
   echo "================== 构建 oms-server 镜像 =================="
-  docker build -t tjqq/oms-server:$version oh-my-scheduler-server/. || exit
+  docker build -t tjqq/oms-server:$version oh-my-scheduler-server/docker/. || exit
   echo "================== 构建 oms-agent 镜像 =================="
   docker build -t tjqq/oms-agent:$version oh-my-scheduler-worker-agent/. || exit
 
@@ -59,7 +60,12 @@ if [ "$startup" = "y" ] || [  "$startup" = "Y" ]; then
   ## -v（--volume）：挂载目录，宿主机目录：docker内目录，写入docker内路径的数据会被直接写到宿主机上，常用于日志文件
   ## --net=host：容器和宿主机共享网络（容器直接使用宿主机IP，性能最好，但网络隔离较差）
   echo "================== 准备启动 oms-server =================="
-  docker run -d -e PARAMS="--spring.profiles.active=pre" -p 7700:7700 -p 10086:10086 --name oms-server -v ~/docker/oms-server:/root/oms-server tjqq/oms-server:$version
+  docker run -d \
+         --name oms-server \
+         -p 7700:7700 -p 10086:10086 \
+         -e PARAMS="--spring.profiles.active=pre" \
+         -v ~/docker/oms-server:/root/oms-server -v ~/.m2:/root/.m2 \
+         tjqq/oms-server:$version
   sleep 1
 #  tail -f -n 1000 ~/docker/oms-server/logs/oms-server-application.log
 

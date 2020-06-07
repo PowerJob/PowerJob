@@ -2,18 +2,20 @@ package com.github.kfcfans.oms.server.web.controller;
 
 import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OpenAPIConstant;
-import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
-import com.github.kfcfans.oms.common.response.JobInfoDTO;
-import com.github.kfcfans.oms.common.response.ResultDTO;
+import com.github.kfcfans.oms.common.request.http.SaveWorkflowRequest;
+import com.github.kfcfans.oms.common.response.*;
 import com.github.kfcfans.oms.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.JobService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
+import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceService;
+import com.github.kfcfans.oms.server.service.workflow.WorkflowService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Optional;
 
 /**
  * 开放接口（OpenAPI）控制器，对接 oms-client
@@ -29,6 +31,10 @@ public class OpenAPIController {
     private JobService jobService;
     @Resource
     private InstanceService instanceService;
+    @Resource
+    private WorkflowService workflowService;
+    @Resource
+    private WorkflowInstanceService workflowInstanceService;
 
     @Resource
     private CacheService cacheService;
@@ -38,11 +44,9 @@ public class OpenAPIController {
 
     @GetMapping(OpenAPIConstant.ASSERT)
     public ResultDTO<Long> assertAppName(String appName) {
-        AppInfoDO appInfo = appInfoRepository.findByAppName(appName);
-        if (appInfo == null) {
-            return ResultDTO.failed(appName + " is not registered!");
-        }
-        return ResultDTO.success(appInfo.getId());
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
+        return appInfoOpt.map(appInfoDO -> ResultDTO.success(appInfoDO.getId()))
+                .orElseGet(() -> ResultDTO.failed(appName + " is not registered!"));
     }
 
     /* ************* Job 区 ************* */
@@ -103,6 +107,52 @@ public class OpenAPIController {
     @PostMapping(OpenAPIConstant.FETCH_INSTANCE_INFO)
     public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) {
         return ResultDTO.success(instanceService.getInstanceInfo(instanceId));
+    }
+
+    /* ************* Workflow 区 ************* */
+    @PostMapping(OpenAPIConstant.SAVE_WORKFLOW)
+    public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) throws Exception {
+        if (request.getId() != null) {
+            checkJobIdValid(request.getId(), request.getAppId());
+        }
+        return ResultDTO.success(workflowService.saveWorkflow(request));
+    }
+
+    @PostMapping(OpenAPIConstant.FETCH_WORKFLOW)
+    public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId, Long appId) {
+        return ResultDTO.success(workflowService.fetchWorkflow(workflowId, appId));
+    }
+
+    @PostMapping(OpenAPIConstant.DELETE_WORKFLOW)
+    public ResultDTO<Void> deleteWorkflow(Long workflowId, Long appId) {
+        workflowService.deleteWorkflow(workflowId, appId);
+        return ResultDTO.success(null);
+    }
+    @PostMapping(OpenAPIConstant.DISABLE_WORKFLOW)
+    public ResultDTO<Void> disableWorkflow(Long workflowId, Long appId) {
+        workflowService.disableWorkflow(workflowId, appId);
+        return ResultDTO.success(null);
+    }
+    @PostMapping(OpenAPIConstant.ENABLE_WORKFLOW)
+    public ResultDTO<Void> enableWorkflow(Long workflowId, Long appId) {
+        workflowService.enableWorkflow(workflowId, appId);
+        return ResultDTO.success(null);
+    }
+
+    @PostMapping(OpenAPIConstant.RUN_WORKFLOW)
+    public ResultDTO<Long> runWorkflow(Long workflowId, Long appId) {
+        return ResultDTO.success(workflowService.runWorkflow(workflowId, appId));
+    }
+
+    /* ************* Workflow Instance 区 ************* */
+    @PostMapping(OpenAPIConstant.STOP_WORKFLOW_INSTANCE)
+    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId, Long appId) {
+        workflowInstanceService.stopWorkflowInstance(wfInstanceId, appId);
+        return ResultDTO.success(null);
+    }
+    @PostMapping(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO)
+    public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId, Long appId) {
+        return ResultDTO.success(workflowInstanceService.fetchWorkflowInstanceInfo(wfInstanceId, appId));
     }
 
     private void checkInstanceIdValid(Long instanceId, Long appId) {

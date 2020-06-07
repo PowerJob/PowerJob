@@ -15,6 +15,7 @@ import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.alarm.AlarmContent;
 import com.github.kfcfans.oms.server.service.alarm.Alarmable;
 import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;
+import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceManager;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -35,9 +36,9 @@ import java.util.concurrent.TimeUnit;
 public class InstanceManager {
 
     // 存储 instanceId 对应的 Job 信息，便于重试
-    private static final Map<Long, JobInfoDO> instanceId2JobInfo = Maps.newConcurrentMap();
+    private static Map<Long, JobInfoDO> instanceId2JobInfo = Maps.newConcurrentMap();
     // 存储 instance 的状态（暂时只用到了 lastReportTime）
-    private static final Map<Long, InstanceStatusHolder> instanceId2StatusHolder = Maps.newConcurrentMap();
+    private static Map<Long, InstanceStatusHolder> instanceId2StatusHolder = Maps.newConcurrentMap();
 
     // Spring Bean
     private static DispatchService dispatchService;
@@ -45,6 +46,7 @@ public class InstanceManager {
     private static InstanceInfoRepository instanceInfoRepository;
     private static JobInfoRepository jobInfoRepository;
     private static Alarmable omsCenterAlarmService;
+    private static WorkflowInstanceManager workflowInstanceManager;
 
     /**
      * 注册到任务实例管理器
@@ -100,7 +102,7 @@ public class InstanceManager {
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
         if (TimeExpressionType.frequentTypes.contains(timeExpressionType)) {
-            getInstanceInfoRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum());
+            getInstanceInfoRepository().update4FrequentJob(instanceId, newStatus.getV(), req.getTotalTaskNum(), new Date());
             return;
         }
 
@@ -141,19 +143,21 @@ public class InstanceManager {
         getInstanceInfoRepository().saveAndFlush(updateEntity);
 
         if (finished) {
-            processFinishedInstance(instanceId, updateEntity.getStatus());
+            // 这里的 InstanceStatus 只有 成功/失败 两种，手动停止不会由 TaskTracker 上报
+            processFinishedInstance(instanceId, req.getWfInstanceId(), newStatus, req.getResult());
         }
     }
 
     /**
      * 收尾完成的任务实例
      * @param instanceId 任务实例ID
-     * @param status 任务实例状态：成功/失败/手动停止
+     * @param wfInstanceId 工作流实例ID，非必须
+     * @param status 任务状态，有 成功/失败/手动停止
+     * @param result 执行结果
      */
-    public static void processFinishedInstance(Long instanceId, int status) {
+    public static void processFinishedInstance(Long instanceId, Long wfInstanceId, InstanceStatus status, String result) {
 
-        InstanceStatus instanceStatus = InstanceStatus.of(status);
-        log.info("[InstanceManager] instance(id={}) process finished, current status is {}.", instanceId, instanceStatus);
+        log.info("[Instance-{}] process finished, final status is {}.", instanceId, status.name());
 
         // 清除已完成的实例信息
         instanceId2StatusHolder.remove(instanceId);
@@ -163,8 +167,14 @@ public class InstanceManager {
         // 上报日志数据
         getInstanceLogService().sync(instanceId);
 
+        // workflow 特殊处理
+        if (wfInstanceId != null) {
+            // 手动停止在工作流中也认为是失败（理论上不应该发生）
+            getWorkflowInstanceManager().move(wfInstanceId, instanceId, status, result);
+        }
+
         // 告警
-        if (instanceStatus == InstanceStatus.FAILED) {
+        if (status == InstanceStatus.FAILED) {
 
             if (jobInfo == null) {
                 jobInfo = fetchJobInfo(instanceId);
@@ -197,6 +207,14 @@ public class InstanceManager {
             return getJobInfoRepository().findById(instanceInfo.getJobId()).orElse(null);
         }
         return null;
+    }
+
+    /**
+     * 释放本地缓存，防止内存泄漏
+     */
+    public static void releaseInstanceInfos() {
+        instanceId2JobInfo = Maps.newConcurrentMap();
+        instanceId2StatusHolder = Maps.newConcurrentMap();
     }
 
     private static InstanceInfoRepository getInstanceInfoRepository() {
@@ -252,5 +270,16 @@ public class InstanceManager {
             omsCenterAlarmService = (Alarmable) SpringUtils.getBean("omsCenterAlarmService");
         }
         return omsCenterAlarmService;
+    }
+
+    private static WorkflowInstanceManager getWorkflowInstanceManager() {
+        while (workflowInstanceManager == null) {
+            try {
+                Thread.sleep(100);
+            }catch (Exception ignore) {
+            }
+            workflowInstanceManager = SpringUtils.getBean(WorkflowInstanceManager.class);
+        }
+        return workflowInstanceManager;
     }
 }

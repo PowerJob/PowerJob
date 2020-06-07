@@ -61,7 +61,7 @@ public abstract class MapProcessor implements BasicProcessor {
             AskResponse respObj = (AskResponse) requestCS.toCompletableFuture().get(REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             requestSucceed = respObj.isSuccess();
         }catch (Exception e) {
-            log.warn("[MapProcessor] map failed.", e);
+            log.warn("[MapProcessor] map failed, exception is {}.", e.toString());
         }
 
         if (requestSucceed) {

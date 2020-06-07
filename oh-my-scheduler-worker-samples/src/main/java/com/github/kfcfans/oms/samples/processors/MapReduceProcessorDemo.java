@@ -22,6 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * MapReduce 处理器示例
  * com.github.kfcfans.oms.server.processors.MapReduceProcessorDemo
+ * {"batchSize": 100, "batchNum": 2}
  *
  * @author tjq
  * @since 2020/4/17
@@ -75,7 +76,7 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
 
     @Override
     public ProcessResult reduce(TaskContext context, List<TaskResult> taskResults) {
-        log.info("================ MapReduceProcessorDemo#postProcess ================");
+        log.info("================ MapReduceProcessorDemo#reduce ================");
         log.info("TaskContext: {}", JSONObject.toJSONString(context));
         log.info("List<TaskResult>: {}", JSONObject.toJSONString(taskResults));
         context.getOmsLogger().info("MapReduce job finished, result is {}.", taskResults);

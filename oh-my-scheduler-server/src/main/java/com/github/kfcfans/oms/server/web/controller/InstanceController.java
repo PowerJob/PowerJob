@@ -1,8 +1,7 @@
 package com.github.kfcfans.oms.server.web.controller;
 
-import com.github.kfcfans.oms.common.InstanceStatus;
-import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.common.model.InstanceDetail;
+import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.oms.server.persistence.PageResult;
@@ -15,10 +14,10 @@ import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.InstanceLogService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryInstanceRequest;
-import com.github.kfcfans.oms.server.web.response.InstanceLogVO;
-import org.apache.commons.lang3.time.DateFormatUtils;
+import com.github.kfcfans.oms.server.web.response.InstanceInfoVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,16 +56,14 @@ public class InstanceController {
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
-    private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
-
     @GetMapping("/stop")
     public ResultDTO<Void> stopInstance(Long instanceId) {
         instanceService.stopInstance(instanceId);
         return ResultDTO.success(null);
     }
 
-    @GetMapping("/status")
-    public ResultDTO<InstanceDetail> getRunningStatus(String instanceId) {
+    @GetMapping("/detail")
+    public ResultDTO<InstanceDetail> getInstanceDetail(String instanceId) {
         return ResultDTO.success(instanceService.getInstanceDetail(Long.valueOf(instanceId)));
     }
 
@@ -106,55 +103,24 @@ public class InstanceController {
     }
 
     @PostMapping("/list")
-    public ResultDTO<PageResult<InstanceLogVO>> list(@RequestBody QueryInstanceRequest request) {
+    public ResultDTO<PageResult<InstanceInfoVO>> list(@RequestBody QueryInstanceRequest request) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");
         PageRequest pageable = PageRequest.of(request.getIndex(), request.getPageSize(), sort);
 
-        // 查询全部数据
-        if (request.getJobId() == null && request.getInstanceId() == null) {
-            return ResultDTO.success(convertPage(instanceInfoRepository.findByAppId(request.getAppId(), pageable)));
-        }
+        InstanceInfoDO queryEntity = new InstanceInfoDO();
+        BeanUtils.copyProperties(request, queryEntity);
+        queryEntity.setType(request.getType().getV());
 
-        // 根据JobId查询
-        if (request.getJobId() != null) {
-            return ResultDTO.success(convertPage(instanceInfoRepository.findByJobId(request.getJobId(), pageable)));
-        }
-
-        // 根据InstanceId查询
-        return ResultDTO.success(convertPage(instanceInfoRepository.findByInstanceId(request.getInstanceId(), pageable)));
+        Page<InstanceInfoDO> pageResult = instanceInfoRepository.findAll(Example.of(queryEntity), pageable);
+        return ResultDTO.success(convertPage(pageResult));
     }
 
-    private PageResult<InstanceLogVO> convertPage(Page<InstanceInfoDO> page) {
-        List<InstanceLogVO> content = page.getContent().stream().map(instanceLogDO -> {
-            InstanceLogVO instanceLogVO = new InstanceLogVO();
-            BeanUtils.copyProperties(instanceLogDO, instanceLogVO);
+    private PageResult<InstanceInfoVO> convertPage(Page<InstanceInfoDO> page) {
+        List<InstanceInfoVO> content = page.getContent().stream()
+                .map(x -> InstanceInfoVO.from(x, cacheService.getJobName(x.getJobId()))).collect(Collectors.toList());
 
-            // 状态转化为中文
-            instanceLogVO.setStatusStr(InstanceStatus.of(instanceLogDO.getStatus()).getDes());
-            // 额外设置任务名称，提高可读性
-            instanceLogVO.setJobName(cacheService.getJobName(instanceLogDO.getJobId()));
-
-            // ID 转化为 String（JS精度丢失）
-            instanceLogVO.setJobId(instanceLogDO.getJobId().toString());
-            instanceLogVO.setInstanceId(instanceLogDO.getInstanceId().toString());
-
-            // 格式化时间
-            if (instanceLogDO.getActualTriggerTime() == null) {
-                instanceLogVO.setActualTriggerTime("N/A");
-            }else {
-                instanceLogVO.setActualTriggerTime(DateFormatUtils.format(instanceLogDO.getActualTriggerTime(), TIME_PATTERN));
-            }
-            if (instanceLogDO.getFinishedTime() == null) {
-                instanceLogVO.setFinishedTime("N/A");
-            }else {
-                instanceLogVO.setFinishedTime(DateFormatUtils.format(instanceLogDO.getFinishedTime(), TIME_PATTERN));
-            }
-
-            return instanceLogVO;
-        }).collect(Collectors.toList());
-
-        PageResult<InstanceLogVO> pageResult = new PageResult<>(page);
+        PageResult<InstanceInfoVO> pageResult = new PageResult<>(page);
         pageResult.setData(content);
         return pageResult;
     }

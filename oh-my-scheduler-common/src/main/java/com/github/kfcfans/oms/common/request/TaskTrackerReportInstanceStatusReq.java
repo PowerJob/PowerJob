@@ -15,6 +15,7 @@ public class TaskTrackerReportInstanceStatusReq implements OmsSerializable {
 
     private Long jobId;
     private Long instanceId;
+    private Long wfInstanceId;
 
     private int instanceStatus;
 

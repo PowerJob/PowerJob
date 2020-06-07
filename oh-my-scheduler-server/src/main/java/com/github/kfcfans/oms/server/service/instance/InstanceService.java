@@ -11,8 +11,10 @@ import com.github.kfcfans.oms.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.oms.common.response.AskResponse;
 import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
+import com.github.kfcfans.oms.server.common.constans.InstanceType;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,40 @@ import static com.github.kfcfans.oms.common.InstanceStatus.STOPPED;
 public class InstanceService {
 
     @Resource
+    private IdGenerateService idGenerateService;
+    @Resource
     private InstanceInfoRepository instanceInfoRepository;
+
+    /**
+     * 创建任务实例（注意，该方法并不调用 saveAndFlush，如果有需要立即同步到DB的需求，请在方法结束后手动调用 flush）
+     * @param jobId 任务ID
+     * @param appId 所属应用ID
+     * @param instanceParams 任务实例参数，仅 OpenAPI 创建时存在
+     * @param wfInstanceId 工作流任务实例ID，仅工作流下的任务实例存在
+     * @param expectTriggerTime 预期执行时间
+     * @return 任务实例ID
+     */
+    public Long create(Long jobId, Long appId, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
+
+        Long instanceId = idGenerateService.allocate();
+        Date now = new Date();
+
+        InstanceInfoDO newInstanceInfo = new InstanceInfoDO();
+        newInstanceInfo.setJobId(jobId);
+        newInstanceInfo.setAppId(appId);
+        newInstanceInfo.setInstanceId(instanceId);
+        newInstanceInfo.setInstanceParams(instanceParams);
+        newInstanceInfo.setType(wfInstanceId == null ? InstanceType.NORMAL.getV() : InstanceType.WORKFLOW.getV());
+        newInstanceInfo.setWfInstanceId(wfInstanceId);
+
+        newInstanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+        newInstanceInfo.setExpectedTriggerTime(expectTriggerTime);
+        newInstanceInfo.setGmtCreate(now);
+        newInstanceInfo.setGmtModified(now);
+
+        instanceInfoRepository.save(newInstanceInfo);
+        return instanceId;
+    }
 
     /**
      * 停止任务实例
@@ -45,42 +80,43 @@ public class InstanceService {
      */
     public void stopInstance(Long instanceId) {
 
+        log.info("[Instance-{}] try to stop the instance.", instanceId);
         try {
 
-            InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
-            if (instanceInfoDO == null) {
-                log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+            if (instanceInfo == null) {
+                log.warn("[Instance-{}] can't find instanceInfo by instanceId.", instanceId);
                 throw new IllegalArgumentException("invalid instanceId: " + instanceId);
             }
 
             // 判断状态，只有运行中才能停止
-            if (!InstanceStatus.generalizedRunningStatus.contains(instanceInfoDO.getStatus())) {
+            if (!InstanceStatus.generalizedRunningStatus.contains(instanceInfo.getStatus())) {
                 throw new IllegalArgumentException("can't stop finished instance!");
             }
 
             // 更新数据库，将状态置为停止
-            instanceInfoDO.setStatus(STOPPED.getV());
-            instanceInfoDO.setGmtModified(new Date());
-            instanceInfoDO.setFinishedTime(System.currentTimeMillis());
-            instanceInfoDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
-            instanceInfoRepository.saveAndFlush(instanceInfoDO);
+            instanceInfo.setStatus(STOPPED.getV());
+            instanceInfo.setGmtModified(new Date());
+            instanceInfo.setFinishedTime(System.currentTimeMillis());
+            instanceInfo.setResult(SystemInstanceResult.STOPPED_BY_USER);
+            instanceInfoRepository.saveAndFlush(instanceInfo);
 
-            InstanceManager.processFinishedInstance(instanceId, STOPPED.getV());
+            InstanceManager.processFinishedInstance(instanceId, instanceInfo.getWfInstanceId(), STOPPED, SystemInstanceResult.STOPPED_BY_USER);
 
             /*
             不可靠通知停止 TaskTracker
             假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭
              */
-            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfoDO.getTaskTrackerAddress());
+            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfo.getTaskTrackerAddress());
             ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
             taskTrackerActor.tell(req, null);
 
-            log.info("[InstanceService-{}] update instance log and send request succeed.", instanceId);
+            log.info("[Instance-{}] update instanceInfo and send request succeed.", instanceId);
 
         }catch (IllegalArgumentException ie) {
             throw ie;
         }catch (Exception e) {
-            log.error("[InstanceService-{}] stopInstance failed.", instanceId, e);
+            log.error("[Instance-{}] stopInstance failed.", instanceId, e);
             throw e;
         }
     }
@@ -93,7 +129,7 @@ public class InstanceService {
     public InstanceInfoDTO getInstanceInfo(Long instanceId) {
         InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfoDO == null) {
-            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            log.warn("[Instance-{}] can't find InstanceInfo by instanceId.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
         InstanceInfoDTO instanceInfoDTO = new InstanceInfoDTO();
@@ -109,7 +145,7 @@ public class InstanceService {
     public InstanceStatus getInstanceStatus(Long instanceId) {
         InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfoDO == null) {
-            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            log.warn("[Instance-{}] can't find InstanceInfo by instanceId.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
         return InstanceStatus.of(instanceInfoDO.getStatus());
@@ -124,7 +160,7 @@ public class InstanceService {
 
         InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfoDO == null) {
-            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            log.warn("[Instance-{}] can't find InstanceInfo by instanceId", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
 
@@ -151,11 +187,11 @@ public class InstanceService {
                 instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());
                 return instanceDetail;
             }else {
-                log.warn("[InstanceService] ask InstanceStatus from TaskTracker failed, the message is {}.", askResponse.getMessage());
+                log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, the message is {}.", instanceId, askResponse.getMessage());
             }
 
         }catch (Exception e) {
-            log.error("[InstanceService] ask InstanceStatus from TaskTracker failed.", e);
+            log.error("[Instance-{}] ask InstanceStatus from TaskTracker failed, exception is {}", instanceId, e.toString());
         }
 
         // 失败则返回基础版信息

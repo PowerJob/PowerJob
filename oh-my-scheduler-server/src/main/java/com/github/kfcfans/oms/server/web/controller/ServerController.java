@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Optional;
 
 /**
  * 处理Worker请求的 Controller
@@ -29,11 +30,9 @@ public class ServerController {
 
     @GetMapping("assert")
     public ResultDTO<Long> assertAppName(String appName) {
-        AppInfoDO appInfo = appInfoRepository.findByAppName(appName);
-        if (appInfo == null) {
-            return ResultDTO.failed(appName + " is not registered!");
-        }
-        return ResultDTO.success(appInfo.getId());
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
+        return appInfoOpt.map(appInfoDO -> ResultDTO.success(appInfoDO.getId())).
+                orElseGet(() -> ResultDTO.failed(String.format("app(%s) is not registered! Please register the app in oms-console first.", appName)));
     }
 
     @GetMapping("/acquire")

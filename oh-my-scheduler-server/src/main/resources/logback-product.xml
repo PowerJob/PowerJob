@@ -27,6 +27,23 @@
     </appender>
     <!-- 系统所有异常日志（ERROR）双写 end -->
 
+    <!-- web 访问日志 start -->
+    <appender name="WEB_LOG_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/oms-server-web.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_PATH}/oms-server-web.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <append>true</append>
+    </appender>
+    <logger name="WEB_LOG" level="INFO" additivity="false">
+        <appender-ref ref="WEB_LOG_APPENDER"/>
+    </logger>
+    <!-- web 访问日志 日志 end -->
 
     <!-- 系统主日志 start -->
     <appender name="DEFAULT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">

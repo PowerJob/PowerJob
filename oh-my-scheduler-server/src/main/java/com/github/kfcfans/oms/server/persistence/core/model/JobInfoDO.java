@@ -52,7 +52,9 @@ public class JobInfoDO {
     private Integer executeType;
     // 执行器类型，Java/Shell
     private Integer processorType;
-    // 执行器信息
+    // 执行器信息（可能需要存储整个脚本文件）
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */

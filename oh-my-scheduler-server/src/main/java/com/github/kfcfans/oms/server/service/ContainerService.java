@@ -1,6 +1,7 @@
 package com.github.kfcfans.oms.server.service;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.common.model.DeployedContainerInfo;
 import com.github.kfcfans.oms.common.model.GitRepoInfo;
 import com.github.kfcfans.oms.common.request.ServerDeployContainerRequest;
@@ -8,6 +9,7 @@ import com.github.kfcfans.oms.common.request.ServerDestroyContainerRequest;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.common.utils.NetUtils;
+import com.github.kfcfans.oms.common.utils.SegmentLock;
 import com.github.kfcfans.oms.server.akka.OhMyServer;
 import com.github.kfcfans.oms.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.oms.server.common.utils.OmsFileUtils;
@@ -17,14 +19,20 @@ import com.github.kfcfans.oms.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.oms.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.oms.server.service.lock.LockService;
 import com.github.kfcfans.oms.server.web.request.SaveContainerInfoRequest;
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.maven.shared.invoker.*;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.Invoker;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
@@ -65,12 +73,12 @@ public class ContainerService {
     @Resource
     private GridFsManager gridFsManager;
 
+    // 下载用的分段锁
+    private final SegmentLock segmentLock = new SegmentLock(4);
     // 并发部署的机器数量
     private static final int DEPLOY_BATCH_NUM = 50;
     // 部署间隔
     private static final long DEPLOY_MIN_INTERVAL = 10 * 60 * 1000;
-    // 时间格式
-    private static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * 保存容器
@@ -213,7 +221,7 @@ public class ContainerService {
             Date lastDeployTime = container.getLastDeployTime();
             if (lastDeployTime != null) {
                 if ((System.currentTimeMillis() - lastDeployTime.getTime()) < DEPLOY_MIN_INTERVAL) {
-                    remote.sendText("SYSTEM: [warn] deploy too frequent, last deploy time is: " + DateFormatUtils.format(lastDeployTime, TIME_PATTERN));
+                    remote.sendText("SYSTEM: [warn] deploy too frequent, last deploy time is: " + DateFormatUtils.format(lastDeployTime, OmsConstant.TIME_PATTERN));
                 }
             }
 
@@ -352,9 +360,9 @@ public class ContainerService {
                 }else {
                     remote.sendText(String.format("SYSTEM: new version detected, from %s to %s.", oldVersion, container.getVersion()));
                 }
+                remote.sendText("SYSTEM: git clone successfully, star to compile the project.");
 
                 // mvn clean package -DskipTests -U
-                remote.sendText("SYSTEM: git clone successfully, star to compile the project.");
                 Invoker mvnInvoker = new DefaultInvoker();
                 InvocationRequest ivkReq = new DefaultInvocationRequest();
                 // -U：强制让Maven检查所有SNAPSHOT依赖更新，确保集成基于最新的状态
@@ -421,7 +429,11 @@ public class ContainerService {
     }
 
     private void downloadJarFromGridFS(String mongoFileName, File targetFile) {
-        synchronized (("dlLock-" + mongoFileName).intern()) {
+
+        int lockId = mongoFileName.hashCode();
+        try {
+            segmentLock.lockInterruptibleSafe(lockId);
+
             if (targetFile.exists()) {
                 return;
             }
@@ -430,12 +442,17 @@ public class ContainerService {
                 return;
             }
             try {
+                FileUtils.forceMkdirParent(targetFile);
                 gridFsManager.download(targetFile, GridFsManager.CONTAINER_BUCKET, mongoFileName);
             }catch (Exception e) {
                 CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(targetFile));
                 ExceptionUtils.rethrow(e);
             }
+
+        }finally {
+            segmentLock.unlock(lockId);
         }
+
     }
 
     private static String genContainerJarName(String version) {

@@ -85,7 +85,7 @@ public class SystemInfoController {
             }
             return ResultDTO.failed(askResponse.getMessage());
         }catch (Exception e) {
-            log.error("[SystemInfoController] listWorker for appId:{} failed.", appId, e);
+            log.error("[SystemInfoController] listWorker for appId:{} failed, exception is {}", appId, e.toString());
             return ResultDTO.failed("no worker or server available");
         }
     }
@@ -102,6 +102,9 @@ public class SystemInfoController {
         // 近期失败任务数（24H内）
         Date date = DateUtils.addDays(new Date(), -1);
         overview.setFailedInstanceCount(instanceInfoRepository.countByAppIdAndStatusAndGmtCreateAfter(appId, InstanceStatus.FAILED.getV(), date));
+
+        // 服务器时间
+        overview.setServerTime(System.currentTimeMillis());
 
         return ResultDTO.success(overview);
     }

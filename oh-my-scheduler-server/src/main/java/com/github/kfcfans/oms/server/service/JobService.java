@@ -4,15 +4,14 @@ import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.oms.common.response.JobInfoDTO;
-import com.github.kfcfans.oms.server.common.constans.JobStatus;
+import com.github.kfcfans.oms.server.common.SJ;
+import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.common.utils.CronExpression;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
-import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
-import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -39,13 +38,9 @@ public class JobService {
     @Resource
     private DispatchService dispatchService;
     @Resource
-    private IdGenerateService idGenerateService;
-    @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
-
-    private static final Joiner commaJoiner = Joiner.on(",").skipNulls();
 
     /**
      * 保存/修改任务
@@ -66,11 +61,10 @@ public class JobService {
         BeanUtils.copyProperties(request, jobInfoDO);
 
         // 拷贝枚举值
-
         jobInfoDO.setExecuteType(request.getExecuteType().getV());
         jobInfoDO.setProcessorType(request.getProcessorType().getV());
         jobInfoDO.setTimeExpressionType(request.getTimeExpressionType().getV());
-        jobInfoDO.setStatus(request.isEnable() ? JobStatus.ENABLE.getV() : JobStatus.DISABLE.getV());
+        jobInfoDO.setStatus(request.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
 
         if (jobInfoDO.getMaxWorkerCount() == null) {
             jobInfoDO.setMaxInstanceNum(0);
@@ -78,7 +72,7 @@ public class JobService {
 
         // 转化报警用户列表
         if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
-            jobInfoDO.setNotifyUserIds(commaJoiner.join(request.getNotifyUserIds()));
+            jobInfoDO.setNotifyUserIds(SJ.commaJoiner.join(request.getNotifyUserIds()));
         }
 
         refreshJob(jobInfoDO);
@@ -99,45 +93,33 @@ public class JobService {
     /**
      * 手动立即运行某个任务
      * @param jobId 任务ID
-     * @param instanceParams 任务实例参数
+     * @param instanceParams 任务实例参数（仅 OpenAPI 存在）
      * @return 任务实例ID
      */
     public long runJob(Long jobId, String instanceParams) {
-        Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
-        if (!jobInfoOPT.isPresent()) {
-            throw new IllegalArgumentException("can't find job by jobId:" + jobId);
-        }
-        JobInfoDO jobInfo = jobInfoOPT.get();
-        long instanceId = idGenerateService.allocate();
 
-        InstanceInfoDO executeLog = new InstanceInfoDO();
-        executeLog.setJobId(jobInfo.getId());
-        executeLog.setAppId(jobInfo.getAppId());
-        executeLog.setInstanceId(instanceId);
-        executeLog.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-        executeLog.setExpectedTriggerTime(System.currentTimeMillis());
-        executeLog.setGmtCreate(new Date());
-        executeLog.setGmtModified(executeLog.getGmtCreate());
+        JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
 
-        instanceInfoRepository.saveAndFlush(executeLog);
-        dispatchService.dispatch(jobInfo, executeLog.getInstanceId(), 0, instanceParams);
+        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, null, System.currentTimeMillis());
+        instanceInfoRepository.flush();
+
+        dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
         return instanceId;
     }
-
 
     /**
      * 删除某个任务
      * @param jobId 任务ID
      */
     public void deleteJob(Long jobId) {
-        shutdownOrStopJob(jobId, JobStatus.DELETED);
+        shutdownOrStopJob(jobId, SwitchableStatus.DELETED);
     }
 
     /**
      * 禁用某个任务
      */
     public void disableJob(Long jobId) {
-        shutdownOrStopJob(jobId, JobStatus.DISABLE);
+        shutdownOrStopJob(jobId, SwitchableStatus.DISABLE);
     }
 
     /**
@@ -148,7 +130,7 @@ public class JobService {
     public void enableJob(Long jobId) throws Exception {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
 
-        jobInfoDO.setStatus(JobStatus.ENABLE.getV());
+        jobInfoDO.setStatus(SwitchableStatus.ENABLE.getV());
         refreshJob(jobInfoDO);
 
         jobInfoRepository.saveAndFlush(jobInfoDO);
@@ -158,7 +140,7 @@ public class JobService {
      * 停止或删除某个JOB
      * 秒级任务还要额外停止正在运行的任务实例
      */
-    private void shutdownOrStopJob(Long jobId, JobStatus status) throws IllegalArgumentException {
+    private void shutdownOrStopJob(Long jobId, SwitchableStatus status) throws IllegalArgumentException {
 
         // 1. 先更新 job_info 表
         Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
@@ -171,8 +153,7 @@ public class JobService {
         jobInfoRepository.saveAndFlush(jobInfoDO);
 
         // 2. 关闭秒级任务
-        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
-        if (timeExpressionType == TimeExpressionType.CRON || timeExpressionType == TimeExpressionType.API) {
+        if (!TimeExpressionType.frequentTypes.contains(jobInfoDO.getTimeExpressionType())) {
             return;
         }
         List<InstanceInfoDO> executeLogs = instanceInfoRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
@@ -200,6 +181,8 @@ public class JobService {
             CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
             Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
             jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
+        }else if (timeExpressionType == TimeExpressionType.API || timeExpressionType == TimeExpressionType.WORKFLOW) {
+            jobInfoDO.setTimeExpression(null);
         }
         // 重写最后修改时间
         jobInfoDO.setGmtModified(now);

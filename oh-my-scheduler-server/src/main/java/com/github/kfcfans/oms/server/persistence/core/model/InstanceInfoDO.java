@@ -32,12 +32,21 @@ public class InstanceInfoDO {
     // 任务实例ID
     private Long instanceId;
     // 任务实例参数
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String instanceParams;
+
+    // 该任务实例的类型，普通/工作流（InstanceType）
+    private Integer type;
+    // 该任务实例所属的 workflow ID，仅 workflow 任务存在
+    private Long wfInstanceId;
     /**
      * 任务状态 {@link InstanceStatus}
      */
-    private int status;
-    // 执行结果
+    private Integer status;
+    // 执行结果（允许存储稍大的结果）
+    @Lob
+    @Column(columnDefinition="TEXT")
     private String result;
     // 预计触发时间
     private Long expectedTriggerTime;

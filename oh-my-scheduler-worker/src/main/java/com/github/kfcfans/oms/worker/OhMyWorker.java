@@ -2,6 +2,7 @@ package com.github.kfcfans.oms.worker;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.RemoteConstant;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import com.github.kfcfans.oms.common.utils.CommonUtils;
@@ -147,15 +148,16 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
                     return appId;
                 }else {
                     log.error("[OhMyWorker] assert appName failed, this appName is invalid, please register the appName {} first.", appName);
-                    throw new IllegalArgumentException("appName invalid!");
+                    throw new OmsException(resultDTO.getMessage());
                 }
-            }catch (IllegalArgumentException ie) {
-                throw ie;
+            }catch (OmsException oe) {
+                throw oe;
             }catch (Exception ignore) {
+                log.warn("[OhMyWorker] assert appName by url({}) failed, please check the server address.", realUrl);
             }
         }
         log.error("[OhMyWorker] no available server in {}.", config.getServerAddress());
-        throw new RuntimeException("no server available!");
+        throw new OmsException("no server available!");
     }
 
     @Override
