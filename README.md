@@ -20,7 +20,7 @@ OhMyScheduler是基于Akka架构的新一代分布式调度与计算框架，能
 * 高可用&高性能：调度服务器经过精心设计，一改其他调度框架基于数据库锁的策略，实现了无锁化调度。部署多个调度服务器可以同时实现高可用和性能的提升（支持无限的水平扩展）。
 * 故障转移与恢复：任务执行失败后，可根据配置的重试策略完成重试，只要执行器集群有足够的计算节点，任务就能顺利完成。
 
-[在线使用地址](https://www.yuque.com/ohmyscheduler/guidence/hnbskn) 试用应用名称：oms-agent-test
+[在线试用地址](https://www.yuque.com/ohmyscheduler/guidence/hnbskn) 试用应用名称：oms-agent-test
 ### 适用场景
 * 有定时执行需求的业务场景：如每天凌晨全量同步数据、生成业务报表等。
 * 有需要全部机器一同执行的业务场景：如使用广播执行模式清理集群日志。
@@ -41,7 +41,7 @@ OhMyScheduler是基于Akka架构的新一代分布式调度与计算框架，能
 
 
 # 文档
-**[超详细中文文档](https://www.yuque.com/ohmyscheduler/guidence/ztn4i5)** OR **[备用地址，内容可能更新不及时](https://kfcfans.github.io/)**
+**[超详细中文文档](https://www.yuque.com/ohmyscheduler/guidence/ztn4i5)** OR **[备用地址（内容可能更新不及时）](https://kfcfans.github.io/)**
 
 PS：感谢文档翻译平台[breword](https://www.breword.com/)对本项目英文文档翻译做出的巨大贡献！
 
