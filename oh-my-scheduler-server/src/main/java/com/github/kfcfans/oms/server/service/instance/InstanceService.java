@@ -15,7 +15,6 @@ import com.github.kfcfans.oms.server.common.constans.InstanceType;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
-import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -41,8 +40,6 @@ public class InstanceService {
 
     @Resource
     private IdGenerateService idGenerateService;
-    @Resource
-    private WorkflowInstanceService workflowInstanceService;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
@@ -114,12 +111,12 @@ public class InstanceService {
             ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
             taskTrackerActor.tell(req, null);
 
-            log.info("[InstanceService-{}] update instance log and send request succeed.", instanceId);
+            log.info("[Instance-{}] update instanceInfo and send request succeed.", instanceId);
 
         }catch (IllegalArgumentException ie) {
             throw ie;
         }catch (Exception e) {
-            log.error("[InstanceService-{}] stopInstance failed.", instanceId, e);
+            log.error("[Instance-{}] stopInstance failed.", instanceId, e);
             throw e;
         }
     }
@@ -132,7 +129,7 @@ public class InstanceService {
     public InstanceInfoDTO getInstanceInfo(Long instanceId) {
         InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfoDO == null) {
-            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            log.warn("[Instance-{}] can't find InstanceInfo by instanceId.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
         InstanceInfoDTO instanceInfoDTO = new InstanceInfoDTO();
@@ -148,7 +145,7 @@ public class InstanceService {
     public InstanceStatus getInstanceStatus(Long instanceId) {
         InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfoDO == null) {
-            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            log.warn("[Instance-{}] can't find InstanceInfo by instanceId.", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
         return InstanceStatus.of(instanceInfoDO.getStatus());
@@ -163,7 +160,7 @@ public class InstanceService {
 
         InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfoDO == null) {
-            log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            log.warn("[Instance-{}] can't find InstanceInfo by instanceId", instanceId);
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
 
@@ -190,11 +187,11 @@ public class InstanceService {
                 instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());
                 return instanceDetail;
             }else {
-                log.warn("[InstanceService] ask InstanceStatus from TaskTracker failed, the message is {}.", askResponse.getMessage());
+                log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, the message is {}.", instanceId, askResponse.getMessage());
             }
 
         }catch (Exception e) {
-            log.error("[InstanceService] ask InstanceStatus from TaskTracker failed.", e);
+            log.error("[Instance-{}] ask InstanceStatus from TaskTracker failed, exception is {}", instanceId, e.toString());
         }
 
         // 失败则返回基础版信息

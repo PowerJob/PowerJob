@@ -85,7 +85,7 @@ public class SystemInfoController {
             }
             return ResultDTO.failed(askResponse.getMessage());
         }catch (Exception e) {
-            log.error("[SystemInfoController] listWorker for appId:{} failed.", appId, e);
+            log.error("[SystemInfoController] listWorker for appId:{} failed, exception is {}", appId, e.toString());
             return ResultDTO.failed("no worker or server available");
         }
     }

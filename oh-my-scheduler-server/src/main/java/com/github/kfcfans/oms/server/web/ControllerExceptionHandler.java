@@ -3,6 +3,8 @@ package com.github.kfcfans.oms.server.web;
 import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.response.ResultDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.messaging.handler.annotation.support.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -24,7 +26,9 @@ public class ControllerExceptionHandler {
         // 不是所有异常都需要打印完整堆栈，后续可以定义内部的Exception，便于判断
         if (e instanceof IllegalArgumentException || e instanceof OmsException) {
             log.warn("[ControllerException] http request failed, message is {}.", e.getMessage());
-        }else {
+        } else if (e instanceof HttpMessageNotReadableException || e instanceof MethodArgumentTypeMismatchException) {
+            log.warn("[ControllerException] invalid http request params, exception is {}.", e.getMessage());
+        } else {
             log.error("[ControllerException] http request failed.", e);
         }
         return ResultDTO.failed(e.getMessage());

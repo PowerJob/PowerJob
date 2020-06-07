@@ -67,7 +67,7 @@ public class OmsContainerFactory {
                 deployContainer(deployRequest);
             }
         }catch (Exception e) {
-            log.error("[OmsContainer-{}] deployed container failed.", containerId, e);
+            log.error("[OmsContainer-{}] deployed container failed, exception is {}", containerId, e.toString());
         }
 
         return CARGO.get(containerId);
