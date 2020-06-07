@@ -3,8 +3,10 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/KFCFans/OhMyScheduler/actions"><img src="https://github.com/KFCFans/OhMyScheduler/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master"></a>
-<a href="https://github.com/KFCFans/OhMyScheduler/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/OhMyScheduler"></a>
+<a href="https://github.com/KFCFans/OhMyScheduler/actions"><img src="https://github.com/KFCFans/OhMyScheduler/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master" alt="actions"></a>
+<a href="https://search.maven.org/search?q=com.github.kfcfans"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.github.kfcfans/oh-my-scheduler-worker"></a>
+<a href="https://github.com/KFCFans/OhMyScheduler/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/kfcfans/ohmyscheduler?color=%23E59866"></a>
+<a href="https://github.com/KFCFans/OhMyScheduler/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/OhMyScheduler" alt="LICENSE"></a>
 </p>
 
 OhMyScheduler是基于Akka架构的新一代分布式调度与计算框架，能让您轻松完成作业的调度与繁杂任务的分布式计算。
