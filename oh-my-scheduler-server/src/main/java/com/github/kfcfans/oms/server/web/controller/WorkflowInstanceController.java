@@ -8,6 +8,8 @@ import com.github.kfcfans.oms.server.service.CacheService;
 import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceService;
 import com.github.kfcfans.oms.server.web.request.QueryWorkflowInstanceRequest;
 import com.github.kfcfans.oms.server.web.response.WorkflowInstanceInfoVO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -50,14 +52,10 @@ public class WorkflowInstanceController {
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");
         PageRequest pageable = PageRequest.of(req.getIndex(), req.getPageSize(), sort);
 
-        Page<WorkflowInstanceInfoDO> ps;
-        if (req.getWfInstanceId() == null && req.getWorkflowId() == null) {
-            ps = workflowInstanceInfoRepository.findByAppId(req.getAppId(), pageable);
-        }else if (req.getWfInstanceId() != null) {
-            ps = workflowInstanceInfoRepository.findByAppIdAndWfInstanceId(req.getAppId(), req.getWfInstanceId(), pageable);
-        }else {
-            ps = workflowInstanceInfoRepository.findByAppIdAndWorkflowId(req.getAppId(), req.getWorkflowId(), pageable);
-        }
+        WorkflowInstanceInfoDO queryEntity = new WorkflowInstanceInfoDO();
+        BeanUtils.copyProperties(req, queryEntity);
+        Page<WorkflowInstanceInfoDO> ps = workflowInstanceInfoRepository.findAll(Example.of(queryEntity), pageable);
+
         return ResultDTO.success(convertPage(ps));
     }
 
