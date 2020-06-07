@@ -442,6 +442,7 @@ public class ContainerService {
                 return;
             }
             try {
+                FileUtils.forceMkdirParent(targetFile);
                 gridFsManager.download(targetFile, GridFsManager.CONTAINER_BUCKET, mongoFileName);
             }catch (Exception e) {
                 CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(targetFile));
