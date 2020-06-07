@@ -5,10 +5,7 @@ import com.github.kfcfans.oms.common.OmsException;
 import com.github.kfcfans.oms.common.OpenAPIConstant;
 import com.github.kfcfans.oms.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.oms.common.request.http.SaveWorkflowRequest;
-import com.github.kfcfans.oms.common.response.InstanceInfoDTO;
-import com.github.kfcfans.oms.common.response.JobInfoDTO;
-import com.github.kfcfans.oms.common.response.ResultDTO;
-import com.github.kfcfans.oms.common.response.WorkflowInfoDTO;
+import com.github.kfcfans.oms.common.response.*;
 import com.github.kfcfans.oms.common.utils.HttpUtils;
 import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.google.common.collect.Lists;
@@ -339,7 +336,7 @@ public class OhMyClient {
      * @return 任务实例信息
      * @throws Exception 潜在的异常
      */
-    public ResultDTO<InstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) throws Exception {
+    public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) throws Exception {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
                 .add("appId", appId.toString())

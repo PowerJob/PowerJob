@@ -6,7 +6,9 @@ import com.github.kfcfans.oms.common.SystemInstanceResult;
 import com.github.kfcfans.oms.common.TimeExpressionType;
 import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
+import com.github.kfcfans.oms.common.utils.JsonUtils;
 import com.github.kfcfans.oms.common.utils.SegmentLock;
+import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
@@ -17,6 +19,7 @@ import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +61,7 @@ public class WorkflowInstanceManager {
      */
     public Long create(WorkflowInfoDO wfInfo) {
 
+        Long wfId = wfInfo.getId();
         Long wfInstanceId = idGenerateService.allocate();
 
         // 仅创建，不写入 DAG 图信息
@@ -65,12 +69,27 @@ public class WorkflowInstanceManager {
         WorkflowInstanceInfoDO newWfInstance = new WorkflowInstanceInfoDO();
         newWfInstance.setAppId(wfInfo.getAppId());
         newWfInstance.setWfInstanceId(wfInstanceId);
-        newWfInstance.setWorkflowId(wfInfo.getId());
+        newWfInstance.setWorkflowId(wfId);
         newWfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());
         newWfInstance.setActualTriggerTime(System.currentTimeMillis());
 
         newWfInstance.setGmtCreate(now);
         newWfInstance.setGmtModified(now);
+
+        // 校验合法性（工作是否存在且启用）
+        List<Long> allJobIds = Lists.newLinkedList();
+        PEWorkflowDAG dag = JSONObject.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
+        dag.getNodes().forEach(node -> allJobIds.add(node.getJobId()));
+        int needNum = allJobIds.size();
+        long dbNum = jobInfoRepository.countByAppIdAndStatusAndIdIn(wfInfo.getAppId(), SwitchableStatus.ENABLE.getV(), allJobIds);
+        log.debug("[Workflow-{}|{}] contains {} jobs, find {} jobs in database.", wfId, wfInstanceId, needNum, dbNum);
+
+        if (dbNum < allJobIds.size()) {
+            log.warn("[Workflow-{}|{}] this workflow need {} jobs, but just find {} jobs in database, maybe you delete or disable some job!", wfId, wfInstanceId, needNum, dbNum);
+            newWfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
+            newWfInstance.setFinishedTime(System.currentTimeMillis());
+            newWfInstance.setResult(SystemInstanceResult.CAN_NOT_FIND_JOB);
+        }
 
         workflowInstanceInfoRepository.save(newWfInstance);
         return wfInstanceId;
@@ -151,11 +170,6 @@ public class WorkflowInstanceManager {
      */
     public void move(Long wfInstanceId, Long instanceId, InstanceStatus status, String result) {
 
-        // 手动停止的DAG数据已被更新，无需再次处理
-        if (status == InstanceStatus.STOPPED) {
-            return;
-        }
-
         int lockId = wfInstanceId.hashCode();
         try {
             segmentLock.lockInterruptible(lockId);
@@ -167,6 +181,14 @@ public class WorkflowInstanceManager {
             }
             WorkflowInstanceInfoDO wfInstance = wfInstanceInfoOpt.get();
             Long wfId = wfInstance.getWorkflowId();
+
+            // 特殊处理手动终止的情况
+            if (status == InstanceStatus.STOPPED) {
+                // 工作流已经不在运行状态了（由用户手动停止工作流实例导致），不需要任何操作
+                if (!WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
+                    return;
+                }
+            }
 
             try {
                 PEWorkflowDAG dag = JSONObject.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
@@ -209,6 +231,17 @@ public class WorkflowInstanceManager {
                     return;
                 }
 
+                // 子任务被手动停止
+                if (status == InstanceStatus.STOPPED) {
+                    wfInstance.setStatus(WorkflowInstanceStatus.STOPPED.getV());
+                    wfInstance.setResult(SystemInstanceResult.MIDDLE_JOB_STOPPED);
+                    wfInstance.setFinishedTime(System.currentTimeMillis());
+                    workflowInstanceInfoRepository.saveAndFlush(wfInstance);
+
+                    log.warn("[Workflow-{}|{}] workflow instance stopped because middle task(instanceId={}) stopped by user", wfId, wfInstanceId, instanceId);
+                    return;
+                }
+
                 // 工作流执行完毕（能执行到这里代表该工作流内所有子任务都执行成功了）
                 if (allFinished) {
                     wfInstance.setStatus(WorkflowInstanceStatus.SUCCEED.getV());
@@ -242,12 +275,12 @@ public class WorkflowInstanceManager {
                         }
                     }
 
-                    // 所有依赖已经执行完毕，可以执行该任务
-                    Map<Long, String> preJobId2Result = Maps.newHashMap();
+                    // 所有依赖已经执行完毕，可以执行该任务 （为什么是 Key 是 String？在 JSON 标准中，key必须由双引号引起来，Long会导致结果无法被反序列化）
+                    Map<String, String> preJobId2Result = Maps.newHashMap();
                     // 构建下一个任务的入参 （前置任务 jobId -> result）
-                    relyMap.get(jobId).forEach(jid -> preJobId2Result.put(jid, jobId2Node.get(jid).getResult()));
+                    relyMap.get(jobId).forEach(jid -> preJobId2Result.put(String.valueOf(jid), jobId2Node.get(jid).getResult()));
 
-                    Long newInstanceId = instanceService.create(jobId, wfInstance.getAppId(), JSONObject.toJSONString(preJobId2Result), wfInstanceId, System.currentTimeMillis());
+                    Long newInstanceId = instanceService.create(jobId, wfInstance.getAppId(), JsonUtils.toJSONString(preJobId2Result), wfInstanceId, System.currentTimeMillis());
                     jobId2Node.get(jobId).setInstanceId(newInstanceId);
                     jobId2Node.get(jobId).setStatus(InstanceStatus.RUNNING.getV());
 

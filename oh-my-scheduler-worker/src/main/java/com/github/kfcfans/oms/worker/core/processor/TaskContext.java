@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
@@ -62,10 +63,16 @@ public class TaskContext {
      * 获取工作流上游任务传递的数据（仅该任务实例由工作流触发时存在）
      * @return key: 上游任务的 jobId；value: 上游任务的 ProcessResult#result
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes, unchecked")
     public Map<Long, String> fetchUpstreamTaskResult() {
+        Map<Long, String> res = Maps.newHashMap();
+        if (StringUtils.isEmpty(instanceParams)) {
+            return res;
+        }
         try {
-            return (Map<Long, String>)JsonUtils.parseObject(instanceParams, Map.class);
+            Map originMap = JsonUtils.parseObject(instanceParams, Map.class);
+            originMap.forEach((k, v) -> res.put(Long.valueOf(String.valueOf(k)), String.valueOf(v)));
+            return res;
         }catch (Exception ignore) {
         }
         return Maps.newHashMap();

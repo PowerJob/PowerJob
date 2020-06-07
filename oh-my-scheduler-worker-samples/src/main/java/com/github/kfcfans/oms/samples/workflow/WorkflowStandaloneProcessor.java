@@ -1,6 +1,6 @@
 package com.github.kfcfans.oms.samples.workflow;
 
-import com.github.kfcfans.oms.common.utils.JsonUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.worker.core.processor.ProcessResult;
 import com.github.kfcfans.oms.worker.core.processor.TaskContext;
 import com.github.kfcfans.oms.worker.core.processor.sdk.BasicProcessor;
@@ -21,9 +21,10 @@ public class WorkflowStandaloneProcessor implements BasicProcessor {
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
         OmsLogger logger = context.getOmsLogger();
-        logger.info("current:" + JsonUtils.toJSONString(context));
+        logger.info("current:" + context.getJobParams());
+        System.out.println("current: " + context.getJobParams());
         System.out.println("currentContext:");
-        System.out.println(JsonUtils.toJSONString(context));
+        System.out.println(JSONObject.toJSONString(context));
 
         // 尝试获取上游任务
         Map<Long, String> upstreamTaskResult = context.fetchUpstreamTaskResult();

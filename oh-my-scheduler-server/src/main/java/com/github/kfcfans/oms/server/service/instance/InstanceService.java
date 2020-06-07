@@ -15,6 +15,7 @@ import com.github.kfcfans.oms.server.common.constans.InstanceType;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
+import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,8 @@ public class InstanceService {
 
     @Resource
     private IdGenerateService idGenerateService;
+    @Resource
+    private WorkflowInstanceService workflowInstanceService;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
@@ -80,33 +83,34 @@ public class InstanceService {
      */
     public void stopInstance(Long instanceId) {
 
+        log.info("[Instance-{}] try to stop the instance.", instanceId);
         try {
 
-            InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(instanceId);
-            if (instanceInfoDO == null) {
-                log.warn("[InstanceService] can't find execute log for instanceId: {}.", instanceId);
+            InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+            if (instanceInfo == null) {
+                log.warn("[Instance-{}] can't find instanceInfo by instanceId.", instanceId);
                 throw new IllegalArgumentException("invalid instanceId: " + instanceId);
             }
 
             // 判断状态，只有运行中才能停止
-            if (!InstanceStatus.generalizedRunningStatus.contains(instanceInfoDO.getStatus())) {
+            if (!InstanceStatus.generalizedRunningStatus.contains(instanceInfo.getStatus())) {
                 throw new IllegalArgumentException("can't stop finished instance!");
             }
 
             // 更新数据库，将状态置为停止
-            instanceInfoDO.setStatus(STOPPED.getV());
-            instanceInfoDO.setGmtModified(new Date());
-            instanceInfoDO.setFinishedTime(System.currentTimeMillis());
-            instanceInfoDO.setResult(SystemInstanceResult.STOPPED_BY_USER);
-            instanceInfoRepository.saveAndFlush(instanceInfoDO);
+            instanceInfo.setStatus(STOPPED.getV());
+            instanceInfo.setGmtModified(new Date());
+            instanceInfo.setFinishedTime(System.currentTimeMillis());
+            instanceInfo.setResult(SystemInstanceResult.STOPPED_BY_USER);
+            instanceInfoRepository.saveAndFlush(instanceInfo);
 
-            InstanceManager.processFinishedInstance(instanceId, instanceInfoDO.getWfInstanceId(), STOPPED, SystemInstanceResult.STOPPED_BY_USER);
+            InstanceManager.processFinishedInstance(instanceId, instanceInfo.getWfInstanceId(), STOPPED, SystemInstanceResult.STOPPED_BY_USER);
 
             /*
             不可靠通知停止 TaskTracker
             假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭
              */
-            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfoDO.getTaskTrackerAddress());
+            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfo.getTaskTrackerAddress());
             ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
             taskTrackerActor.tell(req, null);
 

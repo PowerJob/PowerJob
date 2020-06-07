@@ -1,5 +1,7 @@
 package com.github.kfcfans.oms.common.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +35,7 @@ public class PEWorkflowDAG {
         private String jobName;
 
         // 运行时参数，图定义不需要
+        @JsonSerialize(using= ToStringSerializer.class)
         private Long instanceId;
         private Integer status;
         private String result;

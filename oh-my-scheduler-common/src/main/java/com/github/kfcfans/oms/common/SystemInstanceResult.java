@@ -25,6 +25,8 @@ public class SystemInstanceResult {
 
     /* *********** workflow 专用 *********** */
     public static final String MIDDLE_JOB_FAILED = "middle job failed";
+    public static final String MIDDLE_JOB_STOPPED = "middle job stopped by user";
+    public static final String CAN_NOT_FIND_JOB = "can't find some job";
 
     // 被用户手动停止
     public static final String STOPPED_BY_USER = "stopped by user";

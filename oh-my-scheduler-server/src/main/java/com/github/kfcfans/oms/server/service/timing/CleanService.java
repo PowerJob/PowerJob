@@ -128,6 +128,9 @@ public class CleanService {
 
     @VisibleForTesting
     public void cleanInstanceLog() {
+        if (instanceInfoRetentionDay < 0) {
+            return;
+        }
         try {
             Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
             int num = instanceInfoRepository.deleteAllByGmtModifiedBefore(t);
@@ -139,6 +142,9 @@ public class CleanService {
 
     @VisibleForTesting
     public void cleanWorkflowInstanceLog() {
+        if (instanceInfoRetentionDay < 0) {
+            return;
+        }
         try {
             Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
             int num = workflowInstanceInfoRepository.deleteAllByGmtModifiedBefore(t);

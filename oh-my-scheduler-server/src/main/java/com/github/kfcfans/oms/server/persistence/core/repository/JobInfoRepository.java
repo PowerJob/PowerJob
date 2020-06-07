@@ -27,6 +27,8 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
 
     Page<JobInfoDO> findByAppIdAndJobNameLikeAndStatusNot(Long appId, String condition, int status, Pageable pageable);
 
+    // 校验工作流包含的任务
+    long countByAppIdAndStatusAndIdIn(Long appId, int status, List<Long> jobIds);
 
     long countByAppId(long appId);
 
