@@ -60,12 +60,11 @@ public class GridFsManager {
      * @throws IOException 异常
      */
     public void store(File localFile, String bucketName, String fileName) throws IOException {
-        if (db == null) {
-            return;
-        }
-        GridFSBucket bucket = getBucket(bucketName);
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(localFile))) {
-            bucket.uploadFromStream(fileName, bis);
+        if (available()) {
+            GridFSBucket bucket = getBucket(bucketName);
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(localFile))) {
+                bucket.uploadFromStream(fileName, bis);
+            }
         }
     }
 
@@ -77,18 +76,18 @@ public class GridFsManager {
      * @throws IOException 异常
      */
     public void download(File targetFile, String bucketName, String fileName) throws IOException {
-        if (db == null) {
-            return;
-        }
-        GridFSBucket bucket = getBucket(bucketName);
-        byte[] buffer = new byte[1024];
-        try (GridFSDownloadStream gis = bucket.openDownloadStream(fileName);
-             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile))
-        ) {
-            while (gis.read(buffer) != -1) {
-                bos.write(buffer);
+        if (available()) {
+            GridFSBucket bucket = getBucket(bucketName);
+            try (GridFSDownloadStream gis = bucket.openDownloadStream(fileName);
+                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(targetFile))
+            ) {
+                byte[] buffer = new byte[1024];
+                int bytes = 0;
+                while ((bytes = gis.read(buffer)) != -1) {
+                    bos.write(buffer, 0, bytes);
+                }
+                bos.flush();
             }
-            bos.flush();
         }
     }
 

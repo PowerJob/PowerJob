@@ -28,11 +28,14 @@ public class TestWorkflow {
 
         // DAG 图
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
         nodes.add(new PEWorkflowDAG.Node(1L, "node-1"));
         nodes.add(new PEWorkflowDAG.Node(2L, "node-2"));
 
-        PEWorkflowDAG peWorkflowDAG = new PEWorkflowDAG(nodes, null);
+        edges.add(new PEWorkflowDAG.Edge(1L, 2L));
+
+        PEWorkflowDAG peWorkflowDAG = new PEWorkflowDAG(nodes, edges);
         SaveWorkflowRequest req = new SaveWorkflowRequest();
 
         req.setWfName("workflow-by-client");
@@ -46,36 +49,36 @@ public class TestWorkflow {
 
     @Test
     public void testDisableWorkflow() throws Exception {
-        System.out.println(ohMyClient.disableWorkflow(1L));
+        System.out.println(ohMyClient.disableWorkflow(4L));
     }
 
     @Test
     public void testDeleteWorkflow() throws Exception {
-        System.out.println(ohMyClient.deleteWorkflow(1L));
+        System.out.println(ohMyClient.deleteWorkflow(4L));
     }
 
     @Test
     public void testEnableWorkflow() throws Exception {
-        System.out.println(ohMyClient.enableWorkflow(1L));
+        System.out.println(ohMyClient.enableWorkflow(4L));
     }
 
     @Test
     public void testFetchWorkflowInfo() throws Exception {
-        System.out.println(ohMyClient.fetchWorkflow(1L));
+        System.out.println(ohMyClient.fetchWorkflow(5L));
     }
 
     @Test
     public void testRunWorkflow() throws Exception {
-        System.out.println(ohMyClient.runWorkflow(1L));
+        System.out.println(ohMyClient.runWorkflow(5L));
     }
 
     @Test
     public void testStopWorkflowInstance() throws Exception {
-        System.out.println(ohMyClient.stopWorkflowInstance(148003202598436928L));
+        System.out.println(ohMyClient.stopWorkflowInstance(149962433421639744L));
     }
 
     @Test
     public void testFetchWfInstanceInfo() throws Exception {
-        System.out.println(ohMyClient.fetchWorkflowInstanceInfo(148003202598436928L));
+        System.out.println(ohMyClient.fetchWorkflowInstanceInfo(149962433421639744L));
     }
 }
