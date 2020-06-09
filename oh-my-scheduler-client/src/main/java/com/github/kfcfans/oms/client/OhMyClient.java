@@ -44,6 +44,7 @@ public class OhMyClient {
         this(Lists.newArrayList(domain), appName);
     }
 
+
     /**
      * 初始化 OhMyClient 客户端
      * @param addressList IP:Port 列表
