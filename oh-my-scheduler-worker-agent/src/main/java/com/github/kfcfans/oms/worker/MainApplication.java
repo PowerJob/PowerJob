@@ -17,22 +17,22 @@ import picocli.CommandLine.Option;
  * @since 2020/5/20
  */
 @Slf4j
-@Command(name = "OhMyAgent", mixinStandardHelpOptions = true, version = "1.2.0", description = "OhMyScheduler-Worker代理")
+@Command(name = "OhMyAgent", mixinStandardHelpOptions = true, version = "1.2.0", description = "OhMyScheduler-Worker agent")
 public class MainApplication implements Runnable {
 
-    @Option(names = {"-a", "--app"}, description = "worker-agent名称，可通过调度中心控制台创建", required = true)
+    @Option(names = {"-a", "--app"}, description = "worker-agent's name", required = true)
     private String appName;
 
-    @Option(names = {"-p", "--port"}, description = "worker-agent的ActorSystem监听端口，不建议更改")
+    @Option(names = {"-p", "--port"}, description = "akka ActorSystem working port, not recommended to change")
     private Integer port = RemoteConstant.DEFAULT_WORKER_PORT;
 
-    @Option(names = {"-e", "--persistence"}, description = "存储策略，枚举值，DISK 或 MEMORY")
+    @Option(names = {"-e", "--persistence"}, description = "storage strategy, DISK or MEMORY")
     private String storeStrategy = "DISK";
 
-    @Option(names = {"-s", "--server"}, description = "调度中心地址，多值英文逗号分隔，格式 IP:Port OR domain")
+    @Option(names = {"-s", "--server"}, description = "oms-server's address, IP:Port OR domain", required = true)
     private String server = "localhost:7700";
 
-    @Option(names = {"-l", "--length"}, description = "返回值最大长度")
+    @Option(names = {"-l", "--length"}, description = "ProcessResult#msg max length")
     private int length = 1024;
 
     public static void main(String[] args) {
