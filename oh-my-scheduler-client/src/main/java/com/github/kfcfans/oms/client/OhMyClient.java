@@ -20,7 +20,6 @@ import java.util.Objects;
 
 /**
  * OpenAPI 客户端
- * V1.0.0 摒弃一切优雅设计，先实现再说...
  *
  * @author tjq
  * @since 2020/4/15
