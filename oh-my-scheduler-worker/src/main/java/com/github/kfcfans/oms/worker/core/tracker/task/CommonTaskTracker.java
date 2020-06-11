@@ -64,7 +64,7 @@ public class CommonTaskTracker extends TaskTracker {
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
         detail.setActualTriggerTime(createTime);
-        detail.setStatus(InstanceStatus.RUNNING.getDes());
+        detail.setStatus(InstanceStatus.RUNNING.getV());
         detail.setTaskTrackerAddress(OhMyWorker.getWorkerAddress());
 
         // 填充详细信息

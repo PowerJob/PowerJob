@@ -57,6 +57,10 @@ public class TaskContext {
      * 在线日志记录
      */
     private OmsLogger omsLogger;
+    /**
+     * 用户自定义上下文
+     */
+    private Object userContext;
 
 
     /**

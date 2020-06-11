@@ -2,7 +2,6 @@ package com.github.kfcfans.oms.server.web.response;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.oms.common.OmsConstant;
-import com.github.kfcfans.oms.common.WorkflowInstanceStatus;
 import com.github.kfcfans.oms.common.model.PEWorkflowDAG;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
 import lombok.Data;
@@ -27,7 +26,6 @@ public class WorkflowInstanceInfoVO {
 
     // workflow 状态（WorkflowInstanceStatus）
     private Integer status;
-    private String statusStr;
 
     private PEWorkflowDAG pEWorkflowDAG;
     private String result;
@@ -42,7 +40,6 @@ public class WorkflowInstanceInfoVO {
         BeanUtils.copyProperties(wfInstanceDO, vo);
 
         vo.setWorkflowName(workflowName);
-        vo.setStatusStr(WorkflowInstanceStatus.of(wfInstanceDO.getStatus()).getDes());
         vo.setPEWorkflowDAG(JSONObject.parseObject(wfInstanceDO.getDag(), PEWorkflowDAG.class));
 
         // JS精度丢失问题

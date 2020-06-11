@@ -65,6 +65,7 @@ public class ProcessorRunnable implements Runnable {
         if (task.getTaskContent() != null && task.getTaskContent().length > 0) {
             taskContext.setSubTask(SerializerUtils.deSerialized(task.getTaskContent()));
         }
+        taskContext.setUserContext(OhMyWorker.getConfig().getUserContext());
         ThreadLocalStore.setTask(task);
 
         reportStatus(TaskStatus.WORKER_PROCESSING, null);

@@ -21,7 +21,7 @@ public class InstanceDetail implements OmsSerializable {
     // 任务整体结束时间（可能不存在）
     private Long finishedTime;
     // 任务状态（中文）
-    private String status;
+    private Integer status;
     // 任务执行结果（可能不存在）
     private String result;
     // TaskTracker地址

@@ -1,6 +1,5 @@
 package com.github.kfcfans.oms.server.web.response;
 
-import com.github.kfcfans.oms.common.InstanceStatus;
 import com.github.kfcfans.oms.common.OmsConstant;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import lombok.Data;
@@ -36,7 +35,6 @@ public class InstanceInfoVO {
     private int status;
 
     /* ********** 不一致区域 ********** */
-    private String statusStr;
     // 实际触发时间（需要格式化为人看得懂的时间）
     private String actualTriggerTime;
     // 结束时间（同理，需要格式化）
@@ -46,8 +44,6 @@ public class InstanceInfoVO {
         InstanceInfoVO instanceInfoVO = new InstanceInfoVO();
         BeanUtils.copyProperties(instanceInfoDo, instanceInfoVO);
 
-        // 状态转化为中文
-        instanceInfoVO.setStatusStr(InstanceStatus.of(instanceInfoDo.getStatus()).getDes());
         // 额外设置任务名称，提高可读性
         instanceInfoVO.setJobName(jobName);
 

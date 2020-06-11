@@ -35,7 +35,11 @@ public class OhMyConfig {
      * {@link com.github.kfcfans.oms.worker.core.processor.ProcessResult}#msg 的最大长度
      */
     private int maxResultLength = 8096;
-
+    /**
+     * 用户自定义上下文对象，该值会被透传到 TaskContext#userContext 属性
+     * 使用场景：容器脚本Java处理器需要使用oms-worker宿主应用的Spring Bean，可在此处传入 ApplicationContext，在Processor中获取 bean
+     */
+    private Object userContext;
     /**
      * 启动测试模式，true情况下，不再尝试连接 server 并验证appName
      * true -> 用于本地写单元测试调试； false -> 默认值，标准模式

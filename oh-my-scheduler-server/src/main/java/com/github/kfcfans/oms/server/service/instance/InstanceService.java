@@ -167,7 +167,7 @@ public class InstanceService {
         InstanceStatus instanceStatus = InstanceStatus.of(instanceInfoDO.getStatus());
 
         InstanceDetail detail = new InstanceDetail();
-        detail.setStatus(instanceStatus.getDes());
+        detail.setStatus(instanceStatus.getV());
 
         // 只要不是运行状态，只需要返回简要信息
         if (instanceStatus != RUNNING) {
