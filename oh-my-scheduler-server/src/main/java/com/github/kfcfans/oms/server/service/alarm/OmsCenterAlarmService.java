@@ -6,13 +6,11 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 报警服务
@@ -36,11 +34,24 @@ public class OmsCenterAlarmService implements Alarmable {
 
     @Async("omsCommonPool")
     @Override
-    public void alarm(AlarmContent alarmContent, List<UserInfoDO> targetUserList) {
+    public void onJobInstanceFailed(JobInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
         init();
         alarmableList.forEach(alarmable -> {
             try {
-                alarmable.alarm(alarmContent, targetUserList);
+                alarmable.onJobInstanceFailed(content, targetUserList);
+            }catch (Exception e) {
+                log.warn("[OmsCenterAlarmService] alarm failed.", e);
+            }
+        });
+    }
+
+    @Async("omsCommonPool")
+    @Override
+    public void onWorkflowInstanceFailed(WorkflowInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
+        init();
+        alarmableList.forEach(alarmable -> {
+            try {
+                alarmable.onWorkflowInstanceFailed(content, targetUserList);
             }catch (Exception e) {
                 log.warn("[OmsCenterAlarmService] alarm failed.", e);
             }

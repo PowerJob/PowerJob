@@ -1,17 +1,12 @@
 package com.github.kfcfans.oms.server.persistence.core.model;
 
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 任务信息表
@@ -94,10 +89,4 @@ public class JobInfoDO {
     private Date gmtCreate;
     private Date gmtModified;
 
-    public List<Long> fetchNotifyUserIds() {
-        if (StringUtils.isEmpty(notifyUserIds)) {
-            return Lists.newLinkedList();
-        }
-        return Splitter.on(",").splitToList(notifyUserIds).stream().map(Long::valueOf).collect(Collectors.toList());
-    }
 }

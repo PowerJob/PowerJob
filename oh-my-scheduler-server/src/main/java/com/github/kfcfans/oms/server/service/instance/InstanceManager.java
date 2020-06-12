@@ -1,19 +1,19 @@
 package com.github.kfcfans.oms.server.service.instance;
 
 import com.github.kfcfans.oms.common.InstanceStatus;
-import com.github.kfcfans.oms.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.oms.common.TimeExpressionType;
+import com.github.kfcfans.oms.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.oms.server.common.utils.SpringUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
-import com.github.kfcfans.oms.server.persistence.core.repository.UserInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
 import com.github.kfcfans.oms.server.service.InstanceLogService;
-import com.github.kfcfans.oms.server.service.alarm.AlarmContent;
+import com.github.kfcfans.oms.server.service.UserService;
 import com.github.kfcfans.oms.server.service.alarm.Alarmable;
+import com.github.kfcfans.oms.server.service.alarm.JobInstanceAlarmContent;
 import com.github.kfcfans.oms.server.service.timing.schedule.HashedWheelTimerHolder;
 import com.github.kfcfans.oms.server.service.workflow.WorkflowInstanceManager;
 import com.google.common.collect.Maps;
@@ -185,15 +185,12 @@ public class InstanceManager {
             }
 
             InstanceInfoDO instanceInfo = getInstanceInfoRepository().findByInstanceId(instanceId);
-            AlarmContent content = new AlarmContent();
+            JobInstanceAlarmContent content = new JobInstanceAlarmContent();
             BeanUtils.copyProperties(jobInfo, content);
             BeanUtils.copyProperties(instanceInfo, content);
 
-            List<Long> userIds = jobInfo.fetchNotifyUserIds();
-            List<UserInfoDO> userList = SpringUtils.getBean(UserInfoRepository.class).findByIdIn(userIds);
-            userList.forEach(x -> x.setPassword(null));
-
-            getAlarmService().alarm(content, userList);
+            List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
+            getAlarmService().onJobInstanceFailed(content, userList);
         }
     }
 

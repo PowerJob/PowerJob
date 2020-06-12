@@ -27,8 +27,9 @@ public class DefaultMailAlarmService implements Alarmable {
     @Value("${spring.mail.username}")
     private String from;
 
-    private static final String MAIL_TITLE = "OhMyScheduler 任务执行失败报警";
-    private static final String MAIL_CONTENT_PATTERN = "任务运行失败，详细信息如下：%s";
+    private static final String MAIL_TITLE = "OhMyScheduler AlarmService";
+    private static final String JOB_INSTANCE_FAILED_CONTENT_PATTERN = "Job run failed, detail is: %s";
+    private static final String WF_INSTANCE_FAILED_CONTENT_PATTERN = "Workflow run failed, detail is: %s";
 
     @Autowired(required = false)
     public DefaultMailAlarmService(JavaMailSender javaMailSender) {
@@ -36,24 +37,35 @@ public class DefaultMailAlarmService implements Alarmable {
     }
 
     @Override
-    public void alarm(AlarmContent alarmContent, List<UserInfoDO> targetUserList) {
+    public void onJobInstanceFailed(JobInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
+        String msg = String.format(JOB_INSTANCE_FAILED_CONTENT_PATTERN, JsonUtils.toJSONString(content));
+        sendMail(msg, targetUserList);
+    }
 
-        log.debug("[DefaultMailAlarmService] content: {}, user: {}", alarmContent, targetUserList);
+    @Override
+    public void onWorkflowInstanceFailed(WorkflowInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
+        String msg = String.format(WF_INSTANCE_FAILED_CONTENT_PATTERN, JsonUtils.toJSONString(content));
+        sendMail(msg, targetUserList);
+    }
 
-        if (CollectionUtils.isEmpty(targetUserList)) {
+    private void sendMail(String msg, List<UserInfoDO> targetUserList) {
+
+        log.debug("[OmsMailAlarmService] msg: {}, to: {}", msg, targetUserList);
+
+        if (CollectionUtils.isEmpty(targetUserList) || javaMailSender == null) {
             return;
         }
 
         SimpleMailMessage sm = new SimpleMailMessage();
-        sm.setFrom(from);
-        sm.setTo(targetUserList.stream().map(UserInfoDO::getEmail).toArray(String[]::new));
-        sm.setSubject(MAIL_TITLE);
-        sm.setText(String.format(MAIL_CONTENT_PATTERN, JsonUtils.toJSONString(alarmContent)));
-
         try {
+            sm.setFrom(from);
+            sm.setTo(targetUserList.stream().map(UserInfoDO::getEmail).toArray(String[]::new));
+            sm.setSubject(MAIL_TITLE);
+            sm.setText(msg);
+
             javaMailSender.send(sm);
         }catch (Exception e) {
-            log.error("[DefaultMailAlarmService] send mail({}) failed.", sm, e);
+            log.error("[OmsMailAlarmService] send mail({}) failed.", sm, e);
         }
     }
 }

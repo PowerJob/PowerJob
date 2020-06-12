@@ -12,5 +12,17 @@ import java.util.List;
  */
 public interface Alarmable {
 
-    void alarm(AlarmContent alarmContent, List<UserInfoDO> targetUserList);
+    /**
+     * 任务执行失败报警
+     * @param content 任务实例相关信息
+     * @param targetUserList 目标用户列表
+     */
+    void onJobInstanceFailed(JobInstanceAlarmContent content, List<UserInfoDO> targetUserList);
+
+    /**
+     * 工作流执行失败报警
+     * @param content 工作流实例相关信息
+     * @param targetUserList 目标用户列表
+     */
+    void onWorkflowInstanceFailed(WorkflowInstanceAlarmContent content, List<UserInfoDO> targetUserList);
 }

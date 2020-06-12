@@ -11,11 +11,16 @@ import com.github.kfcfans.oms.common.utils.SegmentLock;
 import com.github.kfcfans.oms.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.oms.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.oms.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.oms.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.model.WorkflowInstanceInfoDO;
 import com.github.kfcfans.oms.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.oms.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.oms.server.service.DispatchService;
+import com.github.kfcfans.oms.server.service.UserService;
+import com.github.kfcfans.oms.server.service.alarm.Alarmable;
+import com.github.kfcfans.oms.server.service.alarm.WorkflowInstanceAlarmContent;
 import com.github.kfcfans.oms.server.service.id.IdGenerateService;
 import com.github.kfcfans.oms.server.service.instance.InstanceService;
 import com.google.common.collect.LinkedListMultimap;
@@ -23,6 +28,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,7 +56,14 @@ public class WorkflowInstanceManager {
     @Resource
     private JobInfoRepository jobInfoRepository;
     @Resource
+    private UserService userService;
+    @Resource
+    private WorkflowInfoRepository workflowInfoRepository;
+    @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
+
+    @Resource(name = "omsCenterAlarmService")
+    private Alarmable omsCenterAlarmService;
 
     private final SegmentLock segmentLock = new SegmentLock(16);
 
@@ -86,12 +99,10 @@ public class WorkflowInstanceManager {
 
         if (dbNum < allJobIds.size()) {
             log.warn("[Workflow-{}|{}] this workflow need {} jobs, but just find {} jobs in database, maybe you delete or disable some job!", wfId, wfInstanceId, needNum, dbNum);
-            newWfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
-            newWfInstance.setFinishedTime(System.currentTimeMillis());
-            newWfInstance.setResult(SystemInstanceResult.CAN_NOT_FIND_JOB);
+            onWorkflowInstanceFailed(SystemInstanceResult.CAN_NOT_FIND_JOB, newWfInstance);
+        }else {
+            workflowInstanceInfoRepository.save(newWfInstance);
         }
-
-        workflowInstanceInfoRepository.save(newWfInstance);
         return wfInstanceId;
     }
 
@@ -118,11 +129,7 @@ public class WorkflowInstanceManager {
         // 并发度控制
         int instanceConcurrency = workflowInstanceInfoRepository.countByWorkflowIdAndStatusIn(wfInfo.getId(), WorkflowInstanceStatus.generalizedRunningStatus);
         if (instanceConcurrency > wfInfo.getMaxWfInstanceNum()) {
-            wfInstanceInfo.setStatus(WorkflowInstanceStatus.FAILED.getV());
-            wfInstanceInfo.setResult(String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, instanceConcurrency, wfInfo.getMaxWfInstanceNum()));
-            wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
-
-            workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
+            onWorkflowInstanceFailed(String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, instanceConcurrency, wfInfo.getMaxWfInstanceNum()), wfInstanceInfo);
             return;
         }
 
@@ -151,13 +158,8 @@ public class WorkflowInstanceManager {
             roots.forEach(root -> runInstance(root.getJobId(), root.getInstanceId(), wfInstanceId, null));
         }catch (Exception e) {
 
-            wfInstanceInfo.setStatus(WorkflowInstanceStatus.FAILED.getV());
-            wfInstanceInfo.setResult(e.getMessage());
-            wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
-
             log.error("[Workflow-{}|{}] submit workflow: {} failed.", wfInfo.getId(), wfInstanceId, wfInfo, e);
-
-            workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
+            onWorkflowInstanceFailed(e.getMessage(), wfInstanceInfo);
         }
     }
 
@@ -222,12 +224,8 @@ public class WorkflowInstanceManager {
 
                 // 任务失败，DAG流程被打断，整体失败
                 if (status == InstanceStatus.FAILED) {
-                    wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
-                    wfInstance.setResult(SystemInstanceResult.MIDDLE_JOB_FAILED);
-                    wfInstance.setFinishedTime(System.currentTimeMillis());
-                    workflowInstanceInfoRepository.saveAndFlush(wfInstance);
-
                     log.warn("[Workflow-{}|{}] workflow instance process failed because middle task(instanceId={}) failed", wfId, wfInstanceId, instanceId);
+                    onWorkflowInstanceFailed(SystemInstanceResult.MIDDLE_JOB_FAILED, wfInstance);
                     return;
                 }
 
@@ -297,11 +295,7 @@ public class WorkflowInstanceManager {
                 jobId2InstanceId.forEach((jobId, newInstanceId) -> runInstance(jobId, newInstanceId, wfInstanceId, jobId2InstanceParams.get(jobId)));
 
             }catch (Exception e) {
-                wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
-                wfInstance.setResult("MOVE NEXT STEP FAILED: " + e.getMessage());
-                wfInstance.setFinishedTime(System.currentTimeMillis());
-                workflowInstanceInfoRepository.saveAndFlush(wfInstance);
-
+                onWorkflowInstanceFailed("MOVE NEXT STEP FAILED: " + e.getMessage(), wfInstance);
                 log.error("[Workflow-{}|{}] update failed.", wfId, wfInstanceId, e);
             }
 
@@ -326,4 +320,28 @@ public class WorkflowInstanceManager {
         dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, wfInstanceId);
     }
 
+    private void onWorkflowInstanceFailed(String result, WorkflowInstanceInfoDO wfInstance) {
+
+        wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
+        wfInstance.setResult(result);
+        wfInstance.setFinishedTime(System.currentTimeMillis());
+        wfInstance.setGmtModified(new Date());
+
+        workflowInstanceInfoRepository.saveAndFlush(wfInstance);
+
+        // 报警
+        try {
+            workflowInfoRepository.findById(wfInstance.getWorkflowId()).ifPresent(wfInfo -> {
+                WorkflowInstanceAlarmContent content = new WorkflowInstanceAlarmContent();
+
+                BeanUtils.copyProperties(wfInfo, content);
+                BeanUtils.copyProperties(wfInstance, content);
+                content.setResult(result);
+
+                List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
+                omsCenterAlarmService.onWorkflowInstanceFailed(content, userList);
+            });
+        }catch (Exception ignore) {
+        }
+    }
 }
