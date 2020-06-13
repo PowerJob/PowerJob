@@ -1,6 +1,6 @@
 # 2020.4.8 第一轮测试
 ## 测试用例
-* MapReduce任务：http://localhost:7700/job/save?appId=1&concurrency=5&executeType=MAP_REDUCE&groupName=null&instanceRetryNum=3&instanceTimeLimit=4545454545&jobDescription=jobDescription&jobName=testJob&jobParams=%7B%22a%22%3A%22b%22%7D&maxInstanceNum=1&processorInfo=com.github.kfcfans.oms.processors.TestMapReduceProcessor&processorType=EMBEDDED_JAVA&status=1&taskRetryNum=3&taskTimeLimit=564465656&timeExpression=0%20*%20*%20*%20*%20%3F%20&timeExpressionType=CRON
+* MapReduce任务：http://localhost:7700/job/save?appId=1&concurrency=5&executeType=MAP_REDUCE&groupName=null&instanceRetryNum=3&instanceTimeLimit=4545454545&jobDescription=jobDescription&jobName=testJob&jobParams=%7B%22a%22%3A%22b%22%7D&maxInstanceNum=1&processorInfo=com.github.kfcfans.powerjob.processors.TestMapReduceProcessor&processorType=EMBEDDED_JAVA&status=1&taskRetryNum=3&taskTimeLimit=564465656&timeExpression=0%20*%20*%20*%20*%20%3F%20&timeExpressionType=CRON
 
 ## 问题记录
 #### 任务执行成功，释放资源失败
@@ -11,11 +11,11 @@
 java.lang.InterruptedException: sleep interrupted
 	at java.lang.Thread.sleep(Native Method)
 	at CommonUtils.executeWithRetry(CommonUtils.java:34)
-	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.execute(TaskPersistenceService.java:297)
-	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.deleteAllTasks(TaskPersistenceService.java:269)
-	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker.destroy(TaskTracker.java:231)
-	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker$StatusCheckRunnable.innerRun(TaskTracker.java:421)
-	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker$StatusCheckRunnable.run(TaskTracker.java:467)
+	at TaskPersistenceService.execute(TaskPersistenceService.java:297)
+	at TaskPersistenceService.deleteAllTasks(TaskPersistenceService.java:269)
+	at CommonTaskTracker.destroy(TaskTracker.java:231)
+	at CommonTaskTracker$StatusCheckRunnable.innerRun(TaskTracker.java:421)
+	at CommonTaskTracker$StatusCheckRunnable.run(TaskTracker.java:467)
 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
 	at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:308)
 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:180)
@@ -32,12 +32,12 @@ java.lang.InterruptedException: sleep interrupted
 2020-04-08 10:10:08 ERROR - [TaskTracker-1586311804030] create root task failed.
 [ERROR] [04/08/2020 10:10:08.511] [oms-akka.actor.internal-dispatcher-20] [akka://oms/user/task_tracker] create root task failed.
 java.lang.RuntimeException: create root task failed.
-	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker.persistenceRootTask(TaskTracker.java:208)
-	at com.github.kfcfans.oms.worker.core.tracker.task.CommonTaskTracker.<init>(TaskTracker.java:81)
-	at com.github.kfcfans.oms.worker.actors.TaskTrackerActor.lambda$onReceiveServerScheduleJobReq$2(TaskTrackerActor.java:138)
+	at CommonTaskTracker.persistenceRootTask(TaskTracker.java:208)
+	at CommonTaskTracker.<init>(TaskTracker.java:81)
+	at TaskTrackerActor.lambda$onReceiveServerScheduleJobReq$2(TaskTrackerActor.java:138)
 	at java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1660)
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTrackerPool.atomicCreateTaskTracker(TaskTrackerPool.java:30)
-	at com.github.kfcfans.oms.worker.actors.TaskTrackerActor.onReceiveServerScheduleJobReq(TaskTrackerActor.java:138)
+	at TaskTrackerPool.atomicCreateTaskTracker(TaskTrackerPool.java:30)
+	at TaskTrackerActor.onReceiveServerScheduleJobReq(TaskTrackerActor.java:138)
 ```
 ***
 原因及解决方案：destroy方法调用了scheduledPool.shutdownNow()方法导致调用该方法的线程池被强制关闭，该方法也自然被中断，数据删到一半没删掉，破坏了数据库结构，后面的insert自然也就失败了。
@@ -60,13 +60,13 @@ java.lang.RuntimeException: create root task failed.
 java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
 	at java.util.LinkedList.checkElementIndex(LinkedList.java:555)
 	at java.util.LinkedList.get(LinkedList.java:476)
-	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.lambda$getTaskStatus$10(TaskPersistenceService.java:214)
+	at TaskPersistenceService.lambda$getTaskStatus$10(TaskPersistenceService.java:214)
 	at CommonUtils.executeWithRetry(CommonUtils.java:37)
-	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.execute(TaskPersistenceService.java:310)
-	at com.github.kfcfans.oms.worker.persistence.TaskPersistenceService.getTaskStatus(TaskPersistenceService.java:212)
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.updateTaskStatus(TaskTracker.java:107)
-	at com.github.kfcfans.oms.worker.core.tracker.task.TaskTracker.broadcast(TaskTracker.java:214)
-	at com.github.kfcfans.oms.worker.actors.TaskTrackerActor.onReceiveBroadcastTaskPreExecuteFinishedReq(TaskTrackerActor.java:106)
+	at TaskPersistenceService.execute(TaskPersistenceService.java:310)
+	at TaskPersistenceService.getTaskStatus(TaskPersistenceService.java:212)
+	at TaskTracker.updateTaskStatus(TaskTracker.java:107)
+	at TaskTracker.broadcast(TaskTracker.java:214)
+	at TaskTrackerActor.onReceiveBroadcastTaskPreExecuteFinishedReq(TaskTrackerActor.java:106)
 	at akka.japi.pf.UnitCaseStatement.apply(CaseStatements.scala:24)
 	at akka.japi.pf.UnitCaseStatement.apply(CaseStatements.scala:20)
 	at scala.PartialFunction.applyOrElse(PartialFunction.scala:187)
