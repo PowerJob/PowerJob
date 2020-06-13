@@ -1,8 +1,8 @@
 #!/bin/bash
 # -p：允许后面跟一个字符串作为提示 -r：保证读入的是原始内容，不会发生任何转义
 read -r -p "请输入Dockedr镜像版本:" version
-echo "即将构建的 server 镜像：oms-server:$version"
-echo "即将构建的 agent 镜像：oms-agent:$version"
+echo "即将构建的 server 镜像：powerjob-server:$version"
+echo "即将构建的 agent 镜像：powerjob-agent:$version"
 read -r -p "任意键继续:"
 
 # 一键部署脚本，请勿挪动脚本
@@ -12,40 +12,40 @@ read -r -p "是否进行maven构建（y/n）:" needmvn
 if [ "$needmvn" = "y" ] || [  "$needmvn" = "Y" ]; then
   echo "================== 构建 jar =================="
   # -U：强制检查snapshot库 -pl：指定需要构建的模块，多模块逗号分割 -am：同时构建依赖模块，一般与pl连用 -Pxxx：指定使用的配置文件
-  mvn clean package -Pdev -DskipTests -U -e -pl oh-my-scheduler-server,oh-my-scheduler-worker-agent -am
+  mvn clean package -Pdev -DskipTests -U -e -pl powerjob-server,powerjob-worker-agent -am
   echo "================== 拷贝 jar =================="
-  /bin/cp -rf oh-my-scheduler-server/target/*.jar oh-my-scheduler-server/docker/oms-server.jar
-  /bin/cp -rf oh-my-scheduler-worker-agent/target/*.jar oh-my-scheduler-worker-agent/oms-agent.jar
-  ls -l oh-my-scheduler-server/docker/oms-server.jar
-  ls -l oh-my-scheduler-worker-agent/oms-agent.jar
+  /bin/cp -rf powerjob-server/target/*.jar powerjob-server/docker/powerjob-server.jar
+  /bin/cp -rf powerjob-worker-agent/target/*.jar powerjob-worker-agent/powerjob-agent.jar
+  ls -l powerjob-server/docker/powerjob-server.jar
+  ls -l powerjob-worker-agent/powerjob-agent.jar
 fi
 
 echo "================== 关闭老应用 =================="
-docker stop oms-server
-docker stop oms-agent
-docker stop oms-agent2
+docker stop powerjob-server
+docker stop powerjob-agent
+docker stop powerjob-agent2
 echo "================== 删除老容器 =================="
-docker container rm oms-server
-docker container rm oms-agent
-docker container rm oms-agent2
+docker container rm powerjob-server
+docker container rm powerjob-agent
+docker container rm powerjob-agent2
 read -r -p "是否重新构建镜像（y/n）:" rebuild
 if [ "$rebuild" = "y" ] || [  "$rebuild" = "Y" ]; then
   echo "================== 删除旧镜像 =================="
-  docker rmi -f tjqq/oms-server:$version
-  docker rmi -f tjqq/oms-agent:$version
-  echo "================== 构建 oms-server 镜像 =================="
-  docker build -t tjqq/oms-server:$version oh-my-scheduler-server/docker/. || exit
-  echo "================== 构建 oms-agent 镜像 =================="
-  docker build -t tjqq/oms-agent:$version oh-my-scheduler-worker-agent/. || exit
+  docker rmi -f tjqq/powerjob-server:$version
+  docker rmi -f tjqq/powerjob-agent:$version
+  echo "================== 构建 powerjob-server 镜像 =================="
+  docker build -t tjqq/powerjob-server:$version powerjob-server/docker/. || exit
+  echo "================== 构建 powerjob-agent 镜像 =================="
+  docker build -t tjqq/powerjob-agent:$version powerjob-worker-agent/. || exit
 
   read -r -p "是否正式发布该镜像（y/n）:" needrelease
   if [ "$needrelease" = "y" ] || [  "$needrelease" = "Y" ]; then
     read -r -p "三思！请确保当前处于已发布的Master分支！（y/n）:" needrelease
     if [ "$needrelease" = "y" ] || [  "$needrelease" = "Y" ]; then
       echo "================== 正在推送 server 镜像到中央仓库 =================="
-      docker push tjqq/oms-server:$version
+      docker push tjqq/powerjob-server:$version
       echo "================== 正在推送 agent 镜像到中央仓库 =================="
-      docker push tjqq/oms-agent:$version
+      docker push tjqq/powerjob-agent:$version
     fi
   fi
 fi
@@ -59,23 +59,23 @@ if [ "$startup" = "y" ] || [  "$startup" = "Y" ]; then
   ## --name：指定容器名称
   ## -v（--volume）：挂载目录，宿主机目录：docker内目录，写入docker内路径的数据会被直接写到宿主机上，常用于日志文件
   ## --net=host：容器和宿主机共享网络（容器直接使用宿主机IP，性能最好，但网络隔离较差）
-  echo "================== 准备启动 oms-server =================="
+  echo "================== 准备启动 powerjob-server =================="
   docker run -d \
-         --name oms-server \
+         --name powerjob-server \
          -p 7700:7700 -p 10086:10086 \
          -e PARAMS="--spring.profiles.active=pre" \
-         -v ~/docker/oms-server:/root/oms-server -v ~/.m2:/root/.m2 \
-         tjqq/oms-server:$version
+         -v ~/docker/powerjob-server:/root/powerjob-server -v ~/.m2:/root/.m2 \
+         tjqq/powerjob-server:$version
   sleep 1
-#  tail -f -n 1000 ~/docker/oms-server/logs/oms-server-application.log
+#  tail -f -n 1000 ~/docker/powerjob-server/logs/powerjob-server-application.log
 
   sleep 30
-  echo "================== 准备启动 oms-client =================="
-  serverIP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' oms-server)
+  echo "================== 准备启动 powerjob-client =================="
+  serverIP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' powerjob-server)
   serverAddress="$serverIP:7700"
   echo "使用的Server地址：$serverAddress"
-  docker run -d -e PARAMS="--app oms-agent-test --server $serverAddress" -p 27777:27777 --name oms-agent -v ~/docker/oms-agent:/root tjqq/oms-agent:$version
-  docker run -d -e PARAMS="--app oms-agent-test --server $serverAddress" -p 27778:27777 --name oms-agent2 -v ~/docker/oms-agent2:/root tjqq/oms-agent:$version
+  docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27777:27777 --name powerjob-agent -v ~/docker/powerjob-agent:/root tjqq/powerjob-agent:$version
+  docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27778:27777 --name powerjob-agent2 -v ~/docker/powerjob-agent2:/root tjqq/powerjob-agent:$version
 
-  tail -f -n 100 ~/docker/oms-agent/oms/logs/oms-agent-application.log
+  tail -f -n 100 ~/docker/powerjob-agent/powerjob/logs/powerjob-agent-application.log
 fi

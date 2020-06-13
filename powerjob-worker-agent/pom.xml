@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>powerjob</artifactId>
+        <groupId>com.github.kfcfans</groupId>
+        <version>1.0.0</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>powerjob-worker-agent</artifactId>
+    <version>3.0.0</version>
+    <packaging>jar</packaging>
+
+
+    <properties>
+        <powerjob.worker.version>3.0.0</powerjob.worker.version>
+        <logback.version>1.2.3</logback.version>
+        <picocli.version>4.3.2</picocli.version>
+
+        <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.github.kfcfans</groupId>
+            <artifactId>powerjob-worker</artifactId>
+            <version>${powerjob.worker.version}</version>
+        </dependency>
+
+        <!-- java cli 工具 -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>${picocli.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+    </dependencies>
+
+
+    <!-- 谁说SpringBoot的打包插件只能给SpringBoot用的？省的我写一堆配置还有BUG... -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <configuration>
+                    <mainClass>com.github.kfcfans.powerjob.worker.MainApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal><!--可以把依赖的包都打包到生成的Jar包中-->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
