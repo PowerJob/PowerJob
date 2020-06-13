@@ -36,6 +36,6 @@ public abstract class BroadcastProcessor implements BasicProcessor {
                 failed ++;
             }
         }
-        return new ProcessResult(succeed == 0, String.format("succeed:%d, failed:%d", succeed, failed));
+        return new ProcessResult(failed == 0, String.format("succeed:%d, failed:%d", succeed, failed));
     }
 }
