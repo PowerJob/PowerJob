@@ -67,7 +67,7 @@ if [ "$startup" = "y" ] || [  "$startup" = "Y" ]; then
          -v ~/docker/powerjob-server:/root/powerjob-server -v ~/.m2:/root/.m2 \
          tjqq/powerjob-server:$version
   sleep 1
-#  tail -f -n 1000 ~/docker/oms-server/logs/oms-server-application.log
+#  tail -f -n 1000 ~/docker/powerjob-server/logs/powerjob-server-application.log
 
   sleep 30
   echo "================== 准备启动 powerjob-client =================="
@@ -77,5 +77,5 @@ if [ "$startup" = "y" ] || [  "$startup" = "Y" ]; then
   docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27777:27777 --name powerjob-agent -v ~/docker/powerjob-agent:/root tjqq/powerjob-agent:$version
   docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27778:27777 --name powerjob-agent2 -v ~/docker/powerjob-agent2:/root tjqq/powerjob-agent:$version
 
-  tail -f -n 100 ~/docker/powerjob-agent/powerjob/logs/oms-agent-application.log
+  tail -f -n 100 ~/docker/powerjob-agent/powerjob/logs/powerjob-agent-application.log
 fi
