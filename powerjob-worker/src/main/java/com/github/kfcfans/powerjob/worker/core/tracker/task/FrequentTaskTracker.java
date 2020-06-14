@@ -82,7 +82,8 @@ public class FrequentTaskTracker extends TaskTracker {
         subInstanceId2TimeHolder = Maps.newConcurrentMap();
 
         // 1. 初始化定时调度线程池
-        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("oms-TaskTrackerTimingPool-%d").build();
+        String poolName = String.format("ftttp-%d", req.getInstanceId()) + "-%d";
+        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat(poolName).build();
         this.scheduledPool = Executors.newScheduledThreadPool(3, factory);
 
         // 2. 启动任务发射器
