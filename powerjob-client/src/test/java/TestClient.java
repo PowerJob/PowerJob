@@ -49,7 +49,7 @@ public class TestClient {
 
     @Test
     public void testFetchJob() throws Exception {
-        ResultDTO<JobInfoDTO> fetchJob = ohMyClient.fetchJob(7L);
+        ResultDTO<JobInfoDTO> fetchJob = ohMyClient.fetchJob(1L);
         System.out.println(JsonUtils.toJSONStringUnsafe(fetchJob));
     }
 

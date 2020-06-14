@@ -1,15 +1,15 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/KFCFans/OhMyScheduler/master/others/images/oms-logo.png" alt="OhMyScheduler" title="OhMyScheduler" width="557"/>
+<img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
 </p>
 
 <p align="center">
-<a href="https://github.com/KFCFans/OhMyScheduler/actions"><img src="https://github.com/KFCFans/OhMyScheduler/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master" alt="actions"></a>
-<a href="https://search.maven.org/search?q=com.github.kfcfans"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.github.kfcfans/oh-my-scheduler-worker"></a>
-<a href="https://github.com/KFCFans/OhMyScheduler/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/kfcfans/ohmyscheduler?color=%23E59866"></a>
-<a href="https://github.com/KFCFans/OhMyScheduler/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/OhMyScheduler" alt="LICENSE"></a>
+<a href="https://github.com/KFCFans/PowerJob/actions"><img src="https://github.com/KFCFans/PowerJob/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master" alt="actions"></a>
+<a href="https://search.maven.org/search?q=com.github.kfcfans"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.github.kfcfans/powerjob-worker"></a>
+<a href="https://github.com/KFCFans/PowerJob/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/kfcfans/powerjob?color=%23E59866"></a>
+<a href="https://github.com/KFCFans/PowerJob/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/PowerJob" alt="LICENSE"></a>
 </p>
 
-OhMyScheduler是基于Akka架构的新一代分布式调度与计算框架，能让您轻松完成作业的调度与繁杂任务的分布式计算。
+PowerJob（原OhMyScheduler）是全新一代分布式调度与计算框架，能让您轻松完成作业的调度与繁杂任务的分布式计算。
 # 简介
 ### 主要特性
 * 使用简单：提供前端Web界面，允许开发者可视化地完成调度任务的管理（增、删、改、查）、任务运行状态监控和运行日志查看等功能。
@@ -22,14 +22,14 @@ OhMyScheduler是基于Akka架构的新一代分布式调度与计算框架，能
 * 高可用&高性能：调度服务器经过精心设计，一改其他调度框架基于数据库锁的策略，实现了无锁化调度。部署多个调度服务器可以同时实现高可用和性能的提升（支持无限的水平扩展）。
 * 故障转移与恢复：任务执行失败后，可根据配置的重试策略完成重试，只要执行器集群有足够的计算节点，任务就能顺利完成。
 
-[在线试用地址](https://www.yuque.com/ohmyscheduler/guidence/hnbskn) 试用应用名称：oms-agent-test
+[在线试用地址](https://www.yuque.com/powerjob/guidence/hnbskn)
 ### 适用场景
 * 有定时执行需求的业务场景：如每天凌晨全量同步数据、生成业务报表等。
 * 有需要全部机器一同执行的业务场景：如使用广播执行模式清理集群日志。
 * 有需要分布式处理的业务场景：比如需要更新一大批数据，单机执行耗时非常长，可以使用Map/MapReduce处理器完成任务的分发，调动整个集群加速计算。
 
 ### 同类产品对比
-|                | QuartZ                   | xxl-job                                  | SchedulerX 2.0                                    | OhMyScheduler                                                |
+|                | QuartZ                   | xxl-job                                  | SchedulerX 2.0                                    | PowerJob                                                |
 | -------------- | ------------------------ | ---------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------ |
 | 定时类型       | CRON                     | CRON                                     | CRON、固定频率、固定延迟、OpenAPI                 | **CRON、固定频率、固定延迟、OpenAPI**                        |
 | 任务类型       | 内置Java                 | 内置Java、GLUE Java、Shell、Python等脚本 | 内置Java、外置Java（FatJar）、Shell、Python等脚本 | **内置Java、外置Java（容器）、Shell、Python等脚本**          |
@@ -43,7 +43,7 @@ OhMyScheduler是基于Akka架构的新一代分布式调度与计算框架，能
 
 
 # 文档
-**[超详细中文文档](https://www.yuque.com/ohmyscheduler/guidence/ztn4i5)** OR **[备用地址（内容可能更新不及时）](https://kfcfans.github.io/)**
+**[超详细中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)** OR **[备用地址（内容可能更新不及时）](https://kfcfans.github.io/)**
 
 PS：感谢文档翻译平台[breword](https://www.breword.com/)对本项目英文文档翻译做出的巨大贡献！
 

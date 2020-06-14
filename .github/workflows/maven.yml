@@ -23,16 +23,16 @@ jobs:
     - name: Build with Maven
       run: mvn -B clean package -Pdev -DskipTests --file pom.xml
     - name: upload build result
-      run: mkdir staging && cp oh-my-scheduler-server/target/*.jar staging/oms-server.jar && cp oh-my-scheduler-client/target/*.jar staging/oms-client.jar && cp oh-my-scheduler-worker-agent/target/*.jar staging/oms-agent.jar
+      run: mkdir staging && cp powerjob-server/target/*.jar staging/powerjob-server.jar && cp powerjob-client/target/*.jar staging/powerjob-client.jar && cp powerjob-worker-agent/target/*.jar staging/powerjob-agent.jar
     - uses: actions/upload-artifact@v1
       with:
-        name: oms-server.jar
-        path: staging/oms-server.jar
+        name: powerjob-server.jar
+        path: staging/powerjob-server.jar
     - uses: actions/upload-artifact@v1
       with:
-        name: oms-client.jar
-        path: staging/oms-client.jar
+        name: powerjob-client.jar
+        path: staging/powerjob-client.jar
     - uses: actions/upload-artifact@v1
       with:
-        name: oms-agent.jar
-        path: staging/oms-agent.jar
+        name: powerjob-agent.jar
+        path: staging/powerjob-agent.jar
