@@ -133,7 +133,7 @@ public class OmsJarContainer implements OmsContainer {
             Thread.currentThread().setContextClassLoader(oldCL);
         }
 
-        log.info("[OmsJarContainer] init container(name={},jarPath={}) successfully", containerId, localJarFile.getPath());
+        log.info("[OmsJarContainer-{}] init container(name={},jarPath={}) successfully", containerId, name, localJarFile.getPath());
     }
 
     @Override

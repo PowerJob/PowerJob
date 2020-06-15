@@ -86,7 +86,7 @@ public class ProcessorTracker {
             initProcessor();
 
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
-        }catch (Exception e) {
+        }catch (Throwable e) {
             log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, e);
             lethal = true;
             lethalReason = e.toString();
@@ -263,6 +263,8 @@ public class ProcessorTracker {
                 break;
             case JAVA_CONTAINER:
                 String[] split = processorInfo.split("#");
+                log.info("[ProcessorRunnable-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
+
                 omsContainer = OmsContainerFactory.getContainer(Long.valueOf(split[0]));
                 if (omsContainer != null) {
                     processor = omsContainer.getProcessor(split[1]);

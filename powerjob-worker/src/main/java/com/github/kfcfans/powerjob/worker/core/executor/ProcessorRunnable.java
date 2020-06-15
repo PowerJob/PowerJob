@@ -89,7 +89,7 @@ public class ProcessorRunnable implements Runnable {
                         ProcessResult processResult = broadcastProcessor.preProcess(taskContext);
                         spReq.setSuccess(processResult.isSuccess());
                         spReq.setMsg(suit(processResult.getMsg()));
-                    }catch (Exception e) {
+                    }catch (Throwable e) {
                         log.warn("[ProcessorRunnable-{}] broadcast task preProcess failed.", instanceId, e);
                         spReq.setSuccess(false);
                         spReq.setMsg(e.toString());
@@ -138,7 +138,7 @@ public class ProcessorRunnable implements Runnable {
                     default:
                         lastResult = new ProcessResult(false, "IMPOSSIBLE OR BUG");
                 }
-            }catch (Exception e) {
+            }catch (Throwable e) {
                 lastResult = new ProcessResult(false, e.toString());
                 log.warn("[ProcessorRunnable-{}] execute last task(taskId={}) failed.", instanceId, taskId, e);
             }
@@ -155,7 +155,7 @@ public class ProcessorRunnable implements Runnable {
         ProcessResult processResult;
         try {
             processResult = processor.process(taskContext);
-        }catch (Exception e) {
+        }catch (Throwable e) {
             log.warn("[ProcessorRunnable-{}] task(id={},name={}) process failed.", instanceId, taskContext.getTaskId(), taskContext.getTaskName(), e);
             processResult = new ProcessResult(false, e.toString());
         }
@@ -184,7 +184,7 @@ public class ProcessorRunnable implements Runnable {
         try {
             innerRun();
         }catch (InterruptedException ignore) {
-        }catch (Exception e) {
+        }catch (Throwable e) {
             log.error("[ProcessorRunnable-{}] execute failed, please fix this bug @tjq!", task.getInstanceId(), e);
         }finally {
             ThreadLocalStore.clear();
