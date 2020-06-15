@@ -162,6 +162,7 @@ public abstract class TaskTracker {
 
             // 此时本次请求已经有效，先写入最新的时间
             taskId2LastReportTime.put(taskId, reportTime);
+            log.debug("[TaskTracker-{}] task({}) receive new status: {}", instanceId, taskId, newStatus);
 
             // 处理失败的情况
             int configTaskRetryNum = instanceInfo.getTaskRetryNum();

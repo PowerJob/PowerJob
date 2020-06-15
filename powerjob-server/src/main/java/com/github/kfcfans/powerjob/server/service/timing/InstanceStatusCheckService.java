@@ -139,7 +139,7 @@ public class InstanceStatusCheckService {
                     }
 
                     // CRON 和 API一样，失败次数 + 1，根据重试配置进行重试
-                    if (instance.getRunningTimes() > jobInfoDO.getInstanceRetryNum()) {
+                    if (instance.getRunningTimes() < jobInfoDO.getInstanceRetryNum()) {
                         dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
                     }else {
                         updateFailedInstance(instance);
