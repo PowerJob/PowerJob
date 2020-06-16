@@ -1,7 +1,6 @@
 package com.github.kfcfans.powerjob.worker.actors;
 
 import akka.actor.AbstractActor;
-import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
@@ -15,7 +14,6 @@ import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatus
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
-import javafx.concurrent.Task;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

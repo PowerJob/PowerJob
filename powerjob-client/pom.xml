@@ -15,6 +15,7 @@
 
     <properties>
         <powerjob.common.version>3.0.1</powerjob.common.version>
+        <junit.version>5.6.1</junit.version>
     </properties>
 
     <dependencies>
@@ -23,6 +24,14 @@
             <groupId>com.github.kfcfans</groupId>
             <artifactId>powerjob-common</artifactId>
             <version>${powerjob.common.version}</version>
+        </dependency>
+
+        <!-- Junit 测试 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
