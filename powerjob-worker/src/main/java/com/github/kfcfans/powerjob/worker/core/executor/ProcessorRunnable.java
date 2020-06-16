@@ -1,10 +1,7 @@
 package com.github.kfcfans.powerjob.worker.core.executor;
 
 import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
@@ -16,7 +13,6 @@ import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
 import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.powerjob.worker.pojo.model.InstanceInfo;
-import com.github.kfcfans.powerjob.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
@@ -29,11 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Processor 执行器
@@ -78,40 +71,31 @@ public class ProcessorRunnable implements Runnable {
         taskContext.setUserContext(OhMyWorker.getConfig().getUserContext());
         ThreadLocalStore.setTask(task);
 
-        reportStatus(TaskStatus.WORKER_PROCESSING, null);
+        reportStatus(TaskStatus.WORKER_PROCESSING, null, null);
 
         // 1. 根任务特殊处理
+        ProcessResult processResult;
         ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
         if (TaskConstant.ROOT_TASK_NAME.equals(task.getTaskName())) {
 
             // 广播执行：先选本机执行 preProcess，完成后TaskTracker再为所有Worker生成子Task
             if (executeType == ExecuteType.BROADCAST) {
 
-                BroadcastTaskPreExecuteFinishedReq spReq = new BroadcastTaskPreExecuteFinishedReq();
-                spReq.setTaskId(taskId);
-                spReq.setInstanceId(instanceId);
-                spReq.setSubInstanceId(task.getSubInstanceId());
-
                 if (processor instanceof BroadcastProcessor) {
 
                     BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
                     try {
-                        ProcessResult processResult = broadcastProcessor.preProcess(taskContext);
-                        spReq.setSuccess(processResult.isSuccess());
-                        spReq.setMsg(suit(processResult.getMsg()));
+                        processResult = broadcastProcessor.preProcess(taskContext);
                     }catch (Throwable e) {
                         log.warn("[ProcessorRunnable-{}] broadcast task preProcess failed.", instanceId, e);
-                        spReq.setSuccess(false);
-                        spReq.setMsg(e.toString());
+                        processResult = new ProcessResult(false, e.toString());
                     }
 
                 }else {
-                    spReq.setSuccess(true);
-                    spReq.setMsg("NO_PREPOST_TASK");
+                    processResult = new ProcessResult(true, "NO_PREPOST_TASK");
                 }
-                spReq.setReportTime(System.currentTimeMillis());
-                taskTrackerActor.tell(spReq, null);
 
+                reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), ProcessorReportTaskStatusReq.BROADCAST);
                 // 广播执行的第一个 task 只执行 preProcess 部分
                 return;
             }
@@ -123,7 +107,6 @@ public class ProcessorRunnable implements Runnable {
             Stopwatch stopwatch = Stopwatch.createStarted();
             log.debug("[ProcessorRunnable-{}] the last task(taskId={}) start to process.", instanceId, taskId);
 
-            ProcessResult lastResult;
             List<TaskResult> taskResults = TaskPersistenceService.INSTANCE.getAllTaskResult(instanceId, task.getSubInstanceId());
             try {
                 switch (executeType) {
@@ -131,30 +114,30 @@ public class ProcessorRunnable implements Runnable {
 
                         if (processor instanceof  BroadcastProcessor) {
                             BroadcastProcessor broadcastProcessor = (BroadcastProcessor) processor;
-                            lastResult = broadcastProcessor.postProcess(taskContext, taskResults);
+                            processResult = broadcastProcessor.postProcess(taskContext, taskResults);
                         }else {
-                            lastResult = BroadcastProcessor.defaultResult(taskResults);
+                            processResult = BroadcastProcessor.defaultResult(taskResults);
                         }
                         break;
                     case MAP_REDUCE:
 
                         if (processor instanceof MapReduceProcessor) {
                             MapReduceProcessor mapReduceProcessor = (MapReduceProcessor) processor;
-                            lastResult = mapReduceProcessor.reduce(taskContext, taskResults);
+                            processResult = mapReduceProcessor.reduce(taskContext, taskResults);
                         }else {
-                            lastResult = new ProcessResult(false, "not implement the MapReduceProcessor");
+                            processResult = new ProcessResult(false, "not implement the MapReduceProcessor");
                         }
                         break;
                     default:
-                        lastResult = new ProcessResult(false, "IMPOSSIBLE OR BUG");
+                        processResult = new ProcessResult(false, "IMPOSSIBLE OR BUG");
                 }
             }catch (Throwable e) {
-                lastResult = new ProcessResult(false, e.toString());
+                processResult = new ProcessResult(false, e.toString());
                 log.warn("[ProcessorRunnable-{}] execute last task(taskId={}) failed.", instanceId, taskId, e);
             }
 
-            TaskStatus status = lastResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED;
-            reportStatus(status, suit(lastResult.getMsg()));
+            TaskStatus status = processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED;
+            reportStatus(status, suit(processResult.getMsg()), null);
 
             log.info("[ProcessorRunnable-{}] the last task execute successfully, using time: {}", instanceId, stopwatch);
             return;
@@ -162,27 +145,28 @@ public class ProcessorRunnable implements Runnable {
 
 
         // 3. 正式提交运行
-        ProcessResult processResult;
         try {
             processResult = processor.process(taskContext);
         }catch (Throwable e) {
             log.warn("[ProcessorRunnable-{}] task(id={},name={}) process failed.", instanceId, taskContext.getTaskId(), taskContext.getTaskName(), e);
             processResult = new ProcessResult(false, e.toString());
         }
-        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()));
+        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), null);
     }
 
     /**
      * 上报状态给 TaskTracker
      */
-    private void reportStatus(TaskStatus status, String result) {
+    private void reportStatus(TaskStatus status, String result, Integer cmd) {
         ProcessorReportTaskStatusReq req = new ProcessorReportTaskStatusReq();
 
         req.setInstanceId(task.getInstanceId());
+        req.setSubInstanceId(task.getSubInstanceId());
         req.setTaskId(task.getTaskId());
         req.setStatus(status.getValue());
         req.setResult(result);
         req.setReportTime(System.currentTimeMillis());
+        req.setCmd(cmd);
 
         // 最终结束状态要求可靠发送
         if (TaskStatus.finishedStatus.contains(status.getValue())) {
@@ -205,7 +189,7 @@ public class ProcessorRunnable implements Runnable {
             innerRun();
         }catch (InterruptedException ignore) {
         }catch (Throwable e) {
-            reportStatus(TaskStatus.WORKER_PROCESS_FAILED, e.toString());
+            reportStatus(TaskStatus.WORKER_PROCESS_FAILED, e.toString(), null);
             log.error("[ProcessorRunnable-{}] execute failed, please contact the author(@KFCFans) to fix the bug!", task.getInstanceId(), e);
         }finally {
             ThreadLocalStore.clear();

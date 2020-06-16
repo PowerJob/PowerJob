@@ -113,7 +113,7 @@ public class ProcessorTracker {
         // 一旦 ProcessorTracker 出现异常，所有提交到此处的任务直接返回失败，防止形成死锁
         // 死锁分析：TT创建PT，PT创建失败，无法定期汇报心跳，TT长时间未收到PT心跳，认为PT宕机（确实宕机了），无法选择可用的PT再次派发任务，死锁形成，GG斯密达 T_T
         if (lethal) {
-            ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, newTask.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), lethalReason, System.currentTimeMillis());
+            ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, newTask.getSubInstanceId(), newTask.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), lethalReason, System.currentTimeMillis(), null);
             taskTrackerActorRef.tell(report, null);
             return;
         }
@@ -139,6 +139,7 @@ public class ProcessorTracker {
         if (success) {
             ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
             reportReq.setInstanceId(instanceId);
+            reportReq.setSubInstanceId(newTask.getSubInstanceId());
             reportReq.setTaskId(newTask.getTaskId());
             reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             reportReq.setReportTime(System.currentTimeMillis());

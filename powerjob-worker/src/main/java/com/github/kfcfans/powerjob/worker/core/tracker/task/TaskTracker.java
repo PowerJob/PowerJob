@@ -254,10 +254,9 @@ public abstract class TaskTracker {
      * @param preExecuteSuccess 预执行广播任务运行状态
      * @param subInstanceId 子实例ID
      * @param preTaskId 预执行广播任务的taskId
-     * @param reportTime 上报时间
      * @param result 预执行广播任务的结果
      */
-    public void broadcast(boolean preExecuteSuccess, long subInstanceId, String preTaskId, long reportTime, String result) {
+    public void broadcast(boolean preExecuteSuccess, long subInstanceId, String preTaskId, String result) {
 
         if (finished.get()) {
             return;
@@ -280,10 +279,6 @@ public abstract class TaskTracker {
         }else {
             log.debug("[TaskTracker-{}] BroadcastTask failed because of preProcess failed, preProcess result={}.", instanceId, result);
         }
-
-        // 2. 更新根任务状态（广播任务的根任务为 preProcess 任务）
-        int status = preExecuteSuccess ? TaskStatus.WORKER_PROCESS_SUCCESS.getValue() : TaskStatus.WORKER_PROCESS_FAILED.getValue();
-        updateTaskStatus(preTaskId, status, reportTime, result);
     }
 
     /**
