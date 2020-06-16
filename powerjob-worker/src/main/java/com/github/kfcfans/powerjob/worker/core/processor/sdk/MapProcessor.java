@@ -23,7 +23,6 @@ import java.util.List;
 public abstract class MapProcessor implements BasicProcessor {
 
     private static final int RECOMMEND_BATCH_SIZE = 200;
-    private static final int REQUEST_TIMEOUT_MS = 5000;
 
     /**
      * 分发子任务

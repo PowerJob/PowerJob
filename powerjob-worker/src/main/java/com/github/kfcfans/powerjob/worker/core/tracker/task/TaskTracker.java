@@ -2,10 +2,12 @@ package com.github.kfcfans.powerjob.worker.core.tracker.task;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.powerjob.common.ExecuteType;
+import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
+import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
@@ -97,7 +99,7 @@ public abstract class TaskTracker {
         // 子类自定义初始化操作
         initTaskTracker(req);
 
-        log.info("[TaskTracker-{}] create TaskTracker from request({}) successfully.", instanceId, req);
+        log.info("[TaskTracker-{}] create TaskTracker successfully.", instanceId);
     }
 
     /**
@@ -106,12 +108,30 @@ public abstract class TaskTracker {
      * @return API/CRON -> CommonTaskTracker, FIX_RATE/FIX_DELAY -> FrequentTaskTracker
      */
     public static TaskTracker create(ServerScheduleJobReq req) {
-        TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
-        switch (timeExpressionType) {
-            case FIX_RATE:
-            case FIX_DELAY:return new FrequentTaskTracker(req);
-            default:return new CommonTaskTracker(req);
+        try {
+            TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
+            switch (timeExpressionType) {
+                case FIX_RATE:
+                case FIX_DELAY:return new FrequentTaskTracker(req);
+                default:return new CommonTaskTracker(req);
+            }
+        }catch (Exception e) {
+            log.warn("[TaskTracker-{}] create TaskTracker from request({}) failed.", req.getInstanceId(), req, e);
+
+            // 直接发送失败请求
+            TaskTrackerReportInstanceStatusReq response = new TaskTrackerReportInstanceStatusReq();
+            BeanUtils.copyProperties(req, response);
+            response.setInstanceStatus(InstanceStatus.FAILED.getV());
+            response.setResult(String.format("init TaskTracker failed, reason: %s", e.toString()));
+            response.setReportTime(System.currentTimeMillis());
+            response.setStartTime(System.currentTimeMillis());
+            response.setSourceAddress(OhMyWorker.getWorkerAddress());
+
+            String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
+            ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
+            serverActor.tell(response, null);
         }
+        return null;
     }
 
     /* *************************** 对外方法区 *************************** */
@@ -210,6 +230,8 @@ public abstract class TaskTracker {
             }
 
         } catch (InterruptedException ignore) {
+        } catch (Exception e) {
+            log.warn("[TaskTracker-{}] update task status failed.", instanceId, e);
         } finally {
             segmentLock.unlock(lockId);
         }
@@ -264,7 +286,7 @@ public abstract class TaskTracker {
 
         log.info("[TaskTracker-{}] finished broadcast's preProcess.", instanceId);
 
-        // 1. 生成集群子任务
+        // 生成集群子任务
         if (preExecuteSuccess) {
             List<String> allWorkerAddress = ptStatusHolder.getAllProcessorTrackers();
             List<TaskDO> subTaskList = Lists.newLinkedList();

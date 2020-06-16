@@ -156,6 +156,9 @@ public class ProcessorRunnable implements Runnable {
 
     /**
      * 上报状态给 TaskTracker
+     * @param status Task状态
+     * @param result 执行结果，只有结束时才存在
+     * @param cmd 特殊需求，比如广播执行需要创建广播任务
      */
     private void reportStatus(TaskStatus status, String result, Integer cmd) {
         ProcessorReportTaskStatusReq req = new ProcessorReportTaskStatusReq();

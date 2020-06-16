@@ -267,7 +267,7 @@ public class ProcessorTracker {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
                     }catch (Exception e) {
-                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, e.toString());
+                        log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, e.toString());
                     }
                 }
                 // 反射加载
@@ -283,7 +283,7 @@ public class ProcessorTracker {
                 break;
             case JAVA_CONTAINER:
                 String[] split = processorInfo.split("#");
-                log.info("[ProcessorRunnable-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
+                log.info("[ProcessorTracker-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
 
                 omsContainer = OmsContainerFactory.getContainer(Long.valueOf(split[0]));
                 if (omsContainer != null) {
@@ -291,12 +291,12 @@ public class ProcessorTracker {
                 }
                 break;
             default:
-                log.warn("[ProcessorRunnable-{}] unknown processor type: {}.", instanceId, processorType);
+                log.warn("[ProcessorTracker-{}] unknown processor type: {}.", instanceId, processorType);
                 throw new OmsException("unknown processor type of " + processorType);
         }
 
         if (processor == null) {
-            log.warn("[ProcessorRunnable-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
+            log.warn("[ProcessorTracker-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
             throw new OmsException("fetch Processor failed");
         }
     }
