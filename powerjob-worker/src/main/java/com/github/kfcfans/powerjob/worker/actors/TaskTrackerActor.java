@@ -1,19 +1,21 @@
 package com.github.kfcfans.powerjob.worker.actors;
 
 import akka.actor.AbstractActor;
+import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
+import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTrackerPool;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
-import com.github.kfcfans.powerjob.worker.pojo.request.BroadcastTaskPreExecuteFinishedReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorMapTaskRequest;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
+import javafx.concurrent.Task;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -34,7 +36,6 @@ public class TaskTrackerActor extends AbstractActor {
                 .match(ServerScheduleJobReq.class, this::onReceiveServerScheduleJobReq)
                 .match(ProcessorMapTaskRequest.class, this::onReceiveProcessorMapTaskRequest)
                 .match(ProcessorTrackerStatusReportReq.class, this::onReceiveProcessorTrackerStatusReportReq)
-                .match(BroadcastTaskPreExecuteFinishedReq.class, this::onReceiveBroadcastTaskPreExecuteFinishedReq)
                 .match(ServerStopInstanceReq.class, this::onReceiveServerStopInstanceReq)
                 .match(ServerQueryInstanceStatusReq.class, this::onReceiveServerQueryInstanceStatusReq)
                 .matchAny(obj -> log.warn("[ServerRequestActor] receive unknown request: {}.", obj))
@@ -47,13 +48,26 @@ public class TaskTrackerActor extends AbstractActor {
      */
     private void onReceiveProcessorReportTaskStatusReq(ProcessorReportTaskStatusReq req) {
 
+        int taskStatus = req.getStatus();
         TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
+
+        // 结束状态需要回复接受成功
+        if (TaskStatus.finishedStatus.contains(taskStatus)) {
+            AskResponse askResponse = AskResponse.succeed(null);
+            getSender().tell(askResponse, getSelf());
+        }
+
         // 手动停止 TaskTracker 的情况下会出现这种情况
         if (taskTracker == null) {
             log.warn("[TaskTrackerActor] receive ProcessorReportTaskStatusReq({}) but system can't find TaskTracker.", req);
-        } else {
-            taskTracker.updateTaskStatus(req.getTaskId(), req.getStatus(), req.getReportTime(), req.getResult());
+            return;
         }
+
+        if (ProcessorReportTaskStatusReq.BROADCAST.equals(req.getCmd())) {
+            taskTracker.broadcast(taskStatus == TaskStatus.WORKER_PROCESS_SUCCESS.getValue(), req.getSubInstanceId(), req.getTaskId(), req.getResult());
+        }
+
+        taskTracker.updateTaskStatus(req.getTaskId(), taskStatus, req.getReportTime(), req.getResult());
     }
 
     /**
@@ -92,19 +106,6 @@ public class TaskTrackerActor extends AbstractActor {
         AskResponse response = new AskResponse();
         response.setSuccess(success);
         getSender().tell(response, getSelf());
-    }
-
-    /**
-     * 广播任务前置任务执行完毕 处理器
-     */
-    private void onReceiveBroadcastTaskPreExecuteFinishedReq(BroadcastTaskPreExecuteFinishedReq req) {
-
-        TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
-        if (taskTracker == null) {
-            log.warn("[TaskTrackerActor] receive BroadcastTaskPreExecuteFinishedReq({}) but system can't find TaskTracker.", req);
-            return;
-        }
-        taskTracker.broadcast(req.isSuccess(), req.getSubInstanceId(), req.getTaskId(), req.getReportTime(), req.getMsg());
     }
 
     /**

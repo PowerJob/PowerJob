@@ -54,6 +54,8 @@ public class InstanceInfoDO {
     private Long actualTriggerTime;
     // 结束时间
     private Long finishedTime;
+    // 最后上报时间
+    private Long lastReportTime;
     // TaskTracker地址
     private String taskTrackerAddress;
 

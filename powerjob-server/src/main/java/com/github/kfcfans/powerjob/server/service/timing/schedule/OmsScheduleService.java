@@ -21,6 +21,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
@@ -169,10 +170,8 @@ public class OmsScheduleService {
                 jobInfos.forEach(jobInfoDO -> {
 
                     try {
-                        CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
 
-                        Date benchmarkTime = new Date(jobInfoDO.getNextTriggerTime());
-                        Date nextTriggerTime = cronExpression.getNextValidTimeAfter(benchmarkTime);
+                        Date nextTriggerTime = calculateNextTriggerTime(jobInfoDO.getNextTriggerTime(), jobInfoDO.getTimeExpression());
 
                         JobInfoDO updatedJobInfo = new JobInfoDO();
                         BeanUtils.copyProperties(jobInfoDO, updatedJobInfo);
@@ -221,8 +220,7 @@ public class OmsScheduleService {
 
                 // 3. 重新计算下一次调度时间并更新
                 try {
-                    CronExpression cronExpression = new CronExpression(wfInfo.getTimeExpression());
-                    Date nextTriggerTime = cronExpression.getNextValidTimeAfter(new Date(wfInfo.getNextTriggerTime()));
+                    Date nextTriggerTime = calculateNextTriggerTime(wfInfo.getNextTriggerTime(), wfInfo.getTimeExpression());
 
                     WorkflowInfoDO updateEntity = new WorkflowInfoDO();
                     BeanUtils.copyProperties(wfInfo, updateEntity);
@@ -267,4 +265,18 @@ public class OmsScheduleService {
         });
     }
 
+    /**
+     * 计算下次触发时间
+     * @param preTriggerTime 前一次触发时间
+     * @param cronExpression CRON 表达式
+     * @return 下一次调度时间
+     * @throws Exception 异常
+     */
+    private static Date calculateNextTriggerTime(Long preTriggerTime, String cronExpression) throws Exception {
+
+        CronExpression ce = new CronExpression(cronExpression);
+        // 取最大值，防止长时间未调度任务被连续调度（原来DISABLE的任务突然被打开，不取最大值会补上过去所有的调度）
+        long benchmarkTime = Math.max(System.currentTimeMillis(), preTriggerTime);
+        return ce.getNextValidTimeAfter(new Date(benchmarkTime));
+    }
 }

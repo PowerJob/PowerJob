@@ -21,11 +21,13 @@ import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatus
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
+import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.*;
 
 /**
@@ -50,6 +52,8 @@ public class ProcessorTracker {
     private OmsContainer omsContainer;
     // 在线日志
     private OmsLogger omsLogger;
+    // ProcessResult 上报失败的重试队列
+    private Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
@@ -77,6 +81,7 @@ public class ProcessorTracker {
             this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
             this.omsLogger = new OmsServerLogger(instanceId);
+            this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
 
             // 初始化 线程池，TimingPool 启动的任务会检查 ThreadPool，所以必须先初始化线程池，否则NPE
             initThreadPool();
@@ -86,7 +91,7 @@ public class ProcessorTracker {
             initProcessor();
 
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
-        }catch (Exception e) {
+        }catch (Throwable e) {
             log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, e);
             lethal = true;
             lethalReason = e.toString();
@@ -108,7 +113,7 @@ public class ProcessorTracker {
         // 一旦 ProcessorTracker 出现异常，所有提交到此处的任务直接返回失败，防止形成死锁
         // 死锁分析：TT创建PT，PT创建失败，无法定期汇报心跳，TT长时间未收到PT心跳，认为PT宕机（确实宕机了），无法选择可用的PT再次派发任务，死锁形成，GG斯密达 T_T
         if (lethal) {
-            ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, newTask.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), lethalReason, System.currentTimeMillis());
+            ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, newTask.getSubInstanceId(), newTask.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), lethalReason, System.currentTimeMillis(), null);
             taskTrackerActorRef.tell(report, null);
             return;
         }
@@ -119,7 +124,7 @@ public class ProcessorTracker {
         newTask.setAddress(taskTrackerAddress);
 
         ClassLoader classLoader = omsContainer == null ? getClass().getClassLoader() : omsContainer.getContainerClassLoader();
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader);
+        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader, statusReportRetryQueue);
         try {
             threadPool.submit(processorRunnable);
             success = true;
@@ -134,6 +139,7 @@ public class ProcessorTracker {
         if (success) {
             ProcessorReportTaskStatusReq reportReq = new ProcessorReportTaskStatusReq();
             reportReq.setInstanceId(instanceId);
+            reportReq.setSubInstanceId(newTask.getSubInstanceId());
             reportReq.setTaskId(newTask.getTaskId());
             reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             reportReq.setReportTime(System.currentTimeMillis());
@@ -165,6 +171,7 @@ public class ProcessorTracker {
 
         // 2. 去除顶层引用，送入GC世界
         taskTrackerActorRef = null;
+        statusReportRetryQueue.clear();
         ProcessorTrackerPool.removeProcessorTracker(instanceId);
 
         log.info("[ProcessorTracker-{}] ProcessorTracker already destroyed!", instanceId);
@@ -224,6 +231,19 @@ public class ProcessorTracker {
                 }
             }
 
+            // 上报状态之前，先重新发送失败的任务，只要有结果堆积，就不上报状态（让 PT 认为该 TT 失联然后重试相关任务）
+            while (!statusReportRetryQueue.isEmpty()) {
+                ProcessorReportTaskStatusReq req = statusReportRetryQueue.poll();
+                if (req != null) {
+                    req.setReportTime(System.currentTimeMillis());
+                    if (!AkkaUtils.reliableTransmit(taskTrackerActorRef, req)) {
+                        statusReportRetryQueue.add(req);
+                        return;
+                    }
+                }
+            }
+
+            // 上报当前 ProcessorTracker 负载
             long waitingNum = threadPool.getQueue().size();
             ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceId, waitingNum);
             taskTrackerActorRef.tell(req, null);
@@ -247,7 +267,7 @@ public class ProcessorTracker {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
                     }catch (Exception e) {
-                        log.warn("[ProcessorRunnable-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, e.toString());
+                        log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, e.toString());
                     }
                 }
                 // 反射加载
@@ -263,18 +283,20 @@ public class ProcessorTracker {
                 break;
             case JAVA_CONTAINER:
                 String[] split = processorInfo.split("#");
+                log.info("[ProcessorTracker-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
+
                 omsContainer = OmsContainerFactory.getContainer(Long.valueOf(split[0]));
                 if (omsContainer != null) {
                     processor = omsContainer.getProcessor(split[1]);
                 }
                 break;
             default:
-                log.warn("[ProcessorRunnable-{}] unknown processor type: {}.", instanceId, processorType);
+                log.warn("[ProcessorTracker-{}] unknown processor type: {}.", instanceId, processorType);
                 throw new OmsException("unknown processor type of " + processorType);
         }
 
         if (processor == null) {
-            log.warn("[ProcessorRunnable-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
+            log.warn("[ProcessorTracker-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
             throw new OmsException("fetch Processor failed");
         }
     }

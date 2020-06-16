@@ -41,6 +41,8 @@ public class InstanceService {
     @Resource
     private IdGenerateService idGenerateService;
     @Resource
+    private InstanceManager instanceManager;
+    @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
     /**
@@ -67,6 +69,7 @@ public class InstanceService {
 
         newInstanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
         newInstanceInfo.setExpectedTriggerTime(expectTriggerTime);
+        newInstanceInfo.setLastReportTime(-1L);
         newInstanceInfo.setGmtCreate(now);
         newInstanceInfo.setGmtModified(now);
 
@@ -101,7 +104,7 @@ public class InstanceService {
             instanceInfo.setResult(SystemInstanceResult.STOPPED_BY_USER);
             instanceInfoRepository.saveAndFlush(instanceInfo);
 
-            InstanceManager.processFinishedInstance(instanceId, instanceInfo.getWfInstanceId(), STOPPED, SystemInstanceResult.STOPPED_BY_USER);
+            instanceManager.processFinishedInstance(instanceId, instanceInfo.getWfInstanceId(), STOPPED, SystemInstanceResult.STOPPED_BY_USER);
 
             /*
             不可靠通知停止 TaskTracker

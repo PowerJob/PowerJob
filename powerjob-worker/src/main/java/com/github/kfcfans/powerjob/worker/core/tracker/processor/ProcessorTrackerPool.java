@@ -1,9 +1,13 @@
 package com.github.kfcfans.powerjob.worker.core.tracker.processor;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * 持有 Processor 对象
@@ -14,23 +18,36 @@ import java.util.function.Function;
  */
 public class ProcessorTrackerPool {
 
-    private static final Map<Long, ProcessorTracker> instanceId2ProcessorTracker = Maps.newConcurrentMap();
+    // instanceId -> (TaskTrackerAddress -> ProcessorTracker)
+    // 处理脑裂情况下同一个 Instance 存在多个 TaskTracker 的情况
+    private static final Map<Long, Map<String, ProcessorTracker>> processorTrackerPool = Maps.newHashMap();
 
     /**
      * 获取 ProcessorTracker，如果不存在则创建
      */
-    public static ProcessorTracker getProcessorTracker(Long instanceId, Function<Long, ProcessorTracker> creator) {
-        return instanceId2ProcessorTracker.computeIfAbsent(instanceId, creator);
+    public static ProcessorTracker getProcessorTracker(Long instanceId, String address, Supplier<ProcessorTracker> creator) {
+
+        ProcessorTracker processorTracker = processorTrackerPool.getOrDefault(instanceId, Collections.emptyMap()).get(address);
+        if (processorTracker == null) {
+            synchronized (ProcessorTrackerPool.class) {
+                processorTracker = processorTrackerPool.getOrDefault(instanceId, Collections.emptyMap()).get(address);
+                if (processorTracker == null) {
+                    processorTracker = creator.get();
+                    processorTrackerPool.computeIfAbsent(instanceId, ignore -> Maps.newHashMap()).put(address, processorTracker);
+                }
+            }
+        }
+        return processorTracker;
     }
 
-    /**
-     * 获取 ProcessorTracker
-     */
-    public static ProcessorTracker getProcessorTracker(Long instanceId) {
-        return instanceId2ProcessorTracker.get(instanceId);
-    }
+    public static List<ProcessorTracker> removeProcessorTracker(Long instanceId) {
 
-    public static void removeProcessorTracker(Long instanceId) {
-        instanceId2ProcessorTracker.remove(instanceId);
+        List<ProcessorTracker> res = Lists.newLinkedList();
+        Map<String, ProcessorTracker> ttAddress2Pt = processorTrackerPool.remove(instanceId);
+        if (ttAddress2Pt != null) {
+            res.addAll(ttAddress2Pt.values());
+            ttAddress2Pt.clear();
+        }
+        return res;
     }
 }

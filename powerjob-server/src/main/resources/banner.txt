@@ -9,5 +9,5 @@ ${AnsiColor.GREEN}
 ░░        ░░░░░░  ░░░    ░░░  ░░░░░░ ░░░     ░░░░░   ░░░░░░  ░░░░░
 ${AnsiColor.BRIGHT_RED}
 * Maintainer: tengjiqi@gmail.com
-* SourceCode: https://github.com/KFCFans/OhMyScheduler
+* SourceCode: https://github.com/KFCFans/PowerJob
 * PoweredBy:  SpringBoot${spring-boot.formatted-version} & Akka (v2.6.4)

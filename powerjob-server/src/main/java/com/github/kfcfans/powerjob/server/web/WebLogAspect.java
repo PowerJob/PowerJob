@@ -36,7 +36,7 @@ public class WebLogAspect {
      * 第三个*：所有的方法
      * 最后的两个点：所有类型的参数
      */
-    @Pointcut("execution(public * com.github.kfcfans.oms.server.web.controller..*.*(..))")
+    @Pointcut("execution(public * com.github.kfcfans.powerjob.server.web.controller..*.*(..))")
     public void include() {
     }
 

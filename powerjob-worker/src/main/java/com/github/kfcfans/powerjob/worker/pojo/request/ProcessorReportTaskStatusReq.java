@@ -17,7 +17,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProcessorReportTaskStatusReq implements OmsSerializable {
 
+    public static final Integer BROADCAST = 1;
+
     private Long instanceId;
+    private Long subInstanceId;
     private String taskId;
 
     private int status;
@@ -29,4 +32,6 @@ public class ProcessorReportTaskStatusReq implements OmsSerializable {
     // 上报时间
     private long reportTime;
 
+    // 特殊请求名称
+    private Integer cmd;
 }
