@@ -1,11 +1,15 @@
 package com.github.kfcfans.powerjob.worker.core.executor;
 
 import akka.actor.ActorSelection;
+import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.ExecuteType;
+import com.github.kfcfans.powerjob.common.RemoteConstant;
+import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
+import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskResult;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
@@ -25,7 +29,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Processor 执行器
@@ -45,6 +53,8 @@ public class ProcessorRunnable implements Runnable {
     private final OmsLogger omsLogger;
     // 类加载器
     private final ClassLoader classLoader;
+    // 重试队列，ProcessorTracker 将会定期重新上报处理结果
+    private final Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
 
     public void innerRun() throws InterruptedException {
 
@@ -174,7 +184,17 @@ public class ProcessorRunnable implements Runnable {
         req.setResult(result);
         req.setReportTime(System.currentTimeMillis());
 
-        taskTrackerActor.tell(req, null);
+        // 最终结束状态要求可靠发送
+        if (TaskStatus.finishedStatus.contains(status.getValue())) {
+            boolean success = AkkaUtils.reliableTransmit(taskTrackerActor, req);
+            if (!success) {
+                // 插入重试队列，等待重试
+                statusReportRetryQueue.add(req);
+                log.warn("[ProcessorRunnable-{}] report task(id={},status={},result={}) failed.", task.getInstanceId(), task.getTaskId(), status, result);
+            }
+        }else {
+            taskTrackerActor.tell(req, null);
+        }
     }
 
     @Override
@@ -185,7 +205,8 @@ public class ProcessorRunnable implements Runnable {
             innerRun();
         }catch (InterruptedException ignore) {
         }catch (Throwable e) {
-            log.error("[ProcessorRunnable-{}] execute failed, please fix this bug @tjq!", task.getInstanceId(), e);
+            reportStatus(TaskStatus.WORKER_PROCESS_FAILED, e.toString());
+            log.error("[ProcessorRunnable-{}] execute failed, please contact the author(@KFCFans) to fix the bug!", task.getInstanceId(), e);
         }finally {
             ThreadLocalStore.clear();
         }

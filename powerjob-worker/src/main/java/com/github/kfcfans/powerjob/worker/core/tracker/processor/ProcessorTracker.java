@@ -21,11 +21,13 @@ import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatus
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
+import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.*;
 
 /**
@@ -50,6 +52,8 @@ public class ProcessorTracker {
     private OmsContainer omsContainer;
     // 在线日志
     private OmsLogger omsLogger;
+    // ProcessResult 上报失败的重试队列
+    private Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
@@ -77,6 +81,7 @@ public class ProcessorTracker {
             this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
 
             this.omsLogger = new OmsServerLogger(instanceId);
+            this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
 
             // 初始化 线程池，TimingPool 启动的任务会检查 ThreadPool，所以必须先初始化线程池，否则NPE
             initThreadPool();
@@ -119,7 +124,7 @@ public class ProcessorTracker {
         newTask.setAddress(taskTrackerAddress);
 
         ClassLoader classLoader = omsContainer == null ? getClass().getClassLoader() : omsContainer.getContainerClassLoader();
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader);
+        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader, statusReportRetryQueue);
         try {
             threadPool.submit(processorRunnable);
             success = true;
@@ -165,6 +170,7 @@ public class ProcessorTracker {
 
         // 2. 去除顶层引用，送入GC世界
         taskTrackerActorRef = null;
+        statusReportRetryQueue.clear();
         ProcessorTrackerPool.removeProcessorTracker(instanceId);
 
         log.info("[ProcessorTracker-{}] ProcessorTracker already destroyed!", instanceId);
@@ -224,6 +230,19 @@ public class ProcessorTracker {
                 }
             }
 
+            // 上报状态之前，先重新发送失败的任务，只要有结果堆积，就不上报状态（让 PT 认为该 TT 失联然后重试相关任务）
+            while (!statusReportRetryQueue.isEmpty()) {
+                ProcessorReportTaskStatusReq req = statusReportRetryQueue.poll();
+                if (req != null) {
+                    req.setReportTime(System.currentTimeMillis());
+                    if (!AkkaUtils.reliableTransmit(taskTrackerActorRef, req)) {
+                        statusReportRetryQueue.add(req);
+                        return;
+                    }
+                }
+            }
+
+            // 上报当前 ProcessorTracker 负载
             long waitingNum = threadPool.getQueue().size();
             ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceId, waitingNum);
             taskTrackerActorRef.tell(req, null);

@@ -1,9 +1,6 @@
 package com.github.kfcfans.powerjob.worker.core.processor.sdk;
 
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
@@ -14,10 +11,7 @@ import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorMapTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Map 处理器，允许开发者自定义拆分任务进行分布式执行
@@ -53,20 +47,13 @@ public abstract class MapProcessor implements BasicProcessor {
         ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(task, taskList, taskName);
 
         // 2. 可靠发送请求（任务不允许丢失，需要使用 ask 方法，失败抛异常）
-        boolean requestSucceed = false;
-        try {
-            String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(task.getAddress(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
-            ActorSelection actorSelection = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
-            CompletionStage<Object> requestCS = Patterns.ask(actorSelection, req, Duration.ofMillis(REQUEST_TIMEOUT_MS));
-            AskResponse respObj = (AskResponse) requestCS.toCompletableFuture().get(REQUEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-            requestSucceed = respObj.isSuccess();
-        }catch (Exception e) {
-            log.warn("[MapProcessor] map failed, exception is {}.", e.toString());
-        }
+        String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(task.getAddress(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
+        boolean requestSucceed = AkkaUtils.reliableTransmit(OhMyWorker.actorSystem.actorSelection(akkaRemotePath), req);
 
         if (requestSucceed) {
             return new ProcessResult(true, "MAP_SUCCESS");
         }else {
+            log.warn("[MapProcessor] map failed for {}", taskName);
             return new ProcessResult(false, "MAP_FAILED");
         }
     }

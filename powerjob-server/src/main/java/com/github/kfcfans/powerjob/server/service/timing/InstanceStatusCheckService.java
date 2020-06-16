@@ -44,6 +44,8 @@ public class InstanceStatusCheckService {
     @Resource
     private DispatchService dispatchService;
     @Resource
+    private InstanceManager instanceManager;
+    @Resource
     private WorkflowInstanceManager workflowInstanceManager;
 
     @Resource
@@ -190,6 +192,6 @@ public class InstanceStatusCheckService {
         instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
         instanceInfoRepository.saveAndFlush(instance);
 
-        InstanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, "timeout, maybe TaskTracker down!");
+        instanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, "timeout, maybe TaskTracker down!");
     }
 }

@@ -7,6 +7,9 @@ import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStopInstanceReq;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /**
  * 普通计算节点，处理来自 TaskTracker 的请求
@@ -28,13 +31,14 @@ public class ProcessorTrackerActor extends AbstractActor {
 
     /**
      * 处理来自TaskTracker的task执行请求
+     * @param req 请求
      */
     private void onReceiveTaskTrackerStartTaskReq(TaskTrackerStartTaskReq req) {
 
         Long instanceId = req.getInstanceInfo().getInstanceId();
 
-        // 创建 ProcessorTracker 一定能成功，且每个任务实例只会创建一个 ProcessorTracker
-        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, ignore -> new ProcessorTracker(req));
+        // 创建 ProcessorTracker 一定能成功
+        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, req.getTaskTrackerAddress(), () -> new ProcessorTracker(req));
 
         TaskDO task = new TaskDO();
 
@@ -47,14 +51,18 @@ public class ProcessorTrackerActor extends AbstractActor {
         processorTracker.submitTask(task);
     }
 
+    /**
+     * 处理来自TaskTracker停止任务的请求
+     * @param req 请求
+     */
     private void onReceiveTaskTrackerStopInstanceReq(TaskTrackerStopInstanceReq req) {
 
         Long instanceId = req.getInstanceId();
-        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId);
-        if (processorTracker == null) {
+        List<ProcessorTracker> removedPts = ProcessorTrackerPool.removeProcessorTracker(instanceId);
+        if (CollectionUtils.isEmpty(removedPts)) {
             log.warn("[ProcessorTrackerActor] ProcessorTracker for instance(instanceId={}) already destroyed.", instanceId);
         }else {
-            processorTracker.destroy();
+            removedPts.forEach(ProcessorTracker::destroy);
         }
     }
 }

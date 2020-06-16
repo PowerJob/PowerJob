@@ -37,6 +37,8 @@ import static com.github.kfcfans.powerjob.common.InstanceStatus.*;
 public class DispatchService {
 
     @Resource
+    private InstanceManager instanceManager;
+    @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
     private static final Splitter commaSplitter = Splitter.on(",");
@@ -71,7 +73,7 @@ public class DispatchService {
             log.warn("[Dispatcher-{}|{}] cancel dispatch job due to too much instance(num={}) is running.", jobId, instanceId, runningInstanceCount);
             instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams, now);
 
-            InstanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, result);
+            instanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, result);
             return;
         }
 
@@ -96,7 +98,7 @@ public class DispatchService {
             log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available, clusterStatus is {}.", jobId, instanceId, clusterStatusDescription);
             instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE, dbInstanceParams, now);
 
-            InstanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, SystemInstanceResult.NO_WORKER_AVAILABLE);
+            instanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, SystemInstanceResult.NO_WORKER_AVAILABLE);
             return;
         }
 
@@ -106,9 +108,6 @@ public class DispatchService {
                 finalWorkers = finalWorkers.subList(0, jobInfo.getMaxWorkerCount());
             }
         }
-
-        // 注册到任务实例管理中心
-        InstanceManager.register(instanceId, jobInfo);
 
         // 构造请求
         ServerScheduleJobReq req = new ServerScheduleJobReq();
