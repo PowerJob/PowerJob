@@ -156,6 +156,23 @@ public class TaskPersistenceService {
         return Lists.newArrayList();
     }
 
+    // 获取某个 ProcessorTracker 未完成的任务
+    public List<TaskDO> getAllUnFinishedTaskByAddress(Long instanceId, String address) {
+        try {
+            String condition = String.format("status not in (%d, %d)", TaskStatus.WORKER_PROCESS_SUCCESS.getValue(), TaskStatus.WORKER_PROCESS_FAILED.getValue());
+
+            SimpleTaskQuery query = new SimpleTaskQuery();
+            query.setInstanceId(instanceId);
+            query.setAddress(address);
+            query.setQueryCondition(condition);
+
+            return execute(() -> taskDAO.simpleQuery(query));
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] getAllTaskByAddress for instance(id={}) failed.", instanceId, e);
+        }
+        return Lists.newArrayList();
+    }
+
     /**
      * 获取指定状态的Task
      */

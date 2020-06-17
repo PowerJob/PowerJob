@@ -66,9 +66,8 @@ public class TaskDO {
 
     @Override
     public String toString() {
-        return "TaskDO{" +
+        return "{" +
                 "taskId='" + taskId + '\'' +
-                ", instanceId='" + instanceId + '\'' +
                 ", taskName='" + taskName + '\'' +
                 ", address='" + address + '\'' +
                 ", status=" + status +

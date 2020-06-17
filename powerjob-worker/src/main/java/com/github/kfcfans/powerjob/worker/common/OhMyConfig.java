@@ -3,8 +3,10 @@ package com.github.kfcfans.powerjob.worker.common;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
+import com.google.common.collect.Lists;
 import lombok.Data;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,7 +28,7 @@ public class OhMyConfig {
     /**
      * 调度服务器地址，ip:port 或 域名
      */
-    private List<String> serverAddress;
+    private List<String> serverAddress = Lists.newArrayList();
     /**
      * 本地持久化方式，默认使用磁盘
      */
