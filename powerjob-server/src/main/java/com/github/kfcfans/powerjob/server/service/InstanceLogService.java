@@ -46,6 +46,8 @@ import java.util.stream.Stream;
 public class InstanceLogService {
 
     @Resource
+    private InstanceManager instanceManager;
+    @Resource
     private GridFsManager gridFsManager;
     // 本地数据库操作bean
     @Resource(name = "localTransactionTemplate")
@@ -195,8 +197,8 @@ public class InstanceLogService {
         }
         // 删除本地数据库数据
         try {
-            CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.deleteByInstanceId(instanceId));
             instanceId2LastReportTime.remove(instanceId);
+            CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.deleteByInstanceId(instanceId));
         }catch (Exception e) {
             log.warn("[InstanceLog-{}] delete local instanceLog failed.", instanceId, e);
         }
@@ -315,10 +317,10 @@ public class InstanceLogService {
     @Scheduled(fixedDelay = 60000)
     public void timingCheck() {
 
-        // 1. 定时删除秒级任务的日志
+        // 定时删除秒级任务的日志
         List<Long> frequentInstanceIds = Lists.newLinkedList();
         instanceId2LastReportTime.keySet().forEach(instanceId -> {
-            JobInfoDO jobInfo = InstanceManager.fetchJobInfo(instanceId);
+            JobInfoDO jobInfo = instanceManager.fetchJobInfo(instanceId);
             if (jobInfo == null) {
                 return;
             }
@@ -340,7 +342,7 @@ public class InstanceLogService {
             });
         }
 
-        // 2. 删除长时间未 REPORT 的日志
+        // 删除长时间未 REPORT 的日志（必要性考证中......）
     }
 
 

@@ -31,6 +31,8 @@ import java.util.Optional;
 @Slf4j
 public class ServerActor extends AbstractActor {
 
+    private InstanceManager instanceManager;
+
     @Override
     public Receive createReceive() {
         return receiveBuilder()
@@ -57,7 +59,7 @@ public class ServerActor extends AbstractActor {
      */
     private void onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) {
         try {
-            InstanceManager.updateStatus(req);
+            getInstanceManager().updateStatus(req);
 
             // 结束状态（成功/失败）需要回复消息
             if (!InstanceStatus.generalizedRunningStatus.contains(req.getInstanceStatus())) {
@@ -104,5 +106,13 @@ public class ServerActor extends AbstractActor {
         }
 
         getSender().tell(askResponse, getSelf());
+    }
+
+    // 不需要加锁，从 Spring IOC 中重复取并没什么问题
+    private InstanceManager getInstanceManager() {
+        if (instanceManager == null) {
+            instanceManager = SpringUtils.getBean(InstanceManager.class);
+        }
+        return instanceManager;
     }
 }

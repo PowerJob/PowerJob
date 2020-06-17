@@ -47,7 +47,9 @@ public class CommonTaskTracker extends TaskTracker {
     @Override
     protected void initTaskTracker(ServerScheduleJobReq req) {
 
-        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("oms-TaskTrackerTimingPool-%d").build();
+        // CommonTaskTrackerTimingPool 缩写
+        String poolName = String.format("ctttp-%d", req.getInstanceId()) + "-%d";
+        ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat(poolName).build();
         this.scheduledPool = Executors.newScheduledThreadPool(2, factory);
 
         // 持久化根任务

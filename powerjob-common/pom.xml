@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-common</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -20,6 +20,7 @@
         <guava.version>29.0-jre</guava.version>
         <okhttp.version>4.4.1</okhttp.version>
         <akka.version>2.6.4</akka.version>
+        <junit.version>5.6.1</junit.version>
     </properties>
 
     <dependencies>
@@ -68,12 +69,19 @@
             <version>${akka.version}</version>
         </dependency>
 
-
         <!-- commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
+        </dependency>
+
+        <!-- Junit 测试 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
