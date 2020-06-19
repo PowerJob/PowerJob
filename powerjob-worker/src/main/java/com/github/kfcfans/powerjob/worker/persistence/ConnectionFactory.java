@@ -33,7 +33,8 @@ public class ConnectionFactory {
         synchronized (ConnectionFactory.class) {
             if (dataSource == null) {
 
-                StoreStrategy strategy = OhMyWorker.getConfig().getStoreStrategy();
+                // 兼容单元测试，否则没办法单独测试 DAO 层了
+                StoreStrategy strategy = OhMyWorker.getConfig() == null ? StoreStrategy.DISK : OhMyWorker.getConfig().getStoreStrategy();
 
                 HikariConfig config = new HikariConfig();
                 config.setDriverClassName("org.h2.Driver");
