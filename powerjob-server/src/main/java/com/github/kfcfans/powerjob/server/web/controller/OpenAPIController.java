@@ -3,8 +3,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
-import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
-import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
+import com.github.kfcfans.powerjob.server.service.AppInfoService;
 import com.github.kfcfans.powerjob.server.service.CacheService;
 import com.github.kfcfans.powerjob.server.service.JobService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
@@ -15,7 +14,6 @@ import com.github.kfcfans.powerjob.common.response.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.Optional;
 
 /**
  * 开放接口（OpenAPI）控制器，对接 oms-client
@@ -28,6 +26,8 @@ import java.util.Optional;
 public class OpenAPIController {
 
     @Resource
+    private AppInfoService appInfoService;
+    @Resource
     private JobService jobService;
     @Resource
     private InstanceService instanceService;
@@ -39,14 +39,10 @@ public class OpenAPIController {
     @Resource
     private CacheService cacheService;
 
-    @Resource
-    private AppInfoRepository appInfoRepository;
 
-    @GetMapping(OpenAPIConstant.ASSERT)
-    public ResultDTO<Long> assertAppName(String appName) {
-        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
-        return appInfoOpt.map(appInfoDO -> ResultDTO.success(appInfoDO.getId()))
-                .orElseGet(() -> ResultDTO.failed(appName + " is not registered!"));
+    @PostMapping(OpenAPIConstant.ASSERT)
+    public ResultDTO<Long> assertAppName(String appName, @RequestParam(required = false) String password) {
+        return ResultDTO.success(appInfoService.assertApp(appName, password));
     }
 
     /* ************* Job 区 ************* */

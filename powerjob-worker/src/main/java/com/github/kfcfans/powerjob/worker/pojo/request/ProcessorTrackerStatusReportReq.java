@@ -16,6 +16,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProcessorTrackerStatusReportReq implements OmsSerializable {
 
+    public static final int IDLE = 1;
+    public static final int LOAD = 2;
+
+    // IDLE 代表 ProcessorTracker 长期处于空闲状态，LOAD 代表 负载上报请求
+    private int type;
+
     private Long instanceId;
 
     /**
@@ -33,11 +39,24 @@ public class ProcessorTrackerStatusReportReq implements OmsSerializable {
      */
     private String address;
 
-    public ProcessorTrackerStatusReportReq(Long instanceId, long remainTaskNum) {
-        this.instanceId = instanceId;
-        this.remainTaskNum = remainTaskNum;
 
-        this.time = System.currentTimeMillis();
-        this.address = OhMyWorker.getWorkerAddress();
+    public static ProcessorTrackerStatusReportReq buildIdleReport(Long instanceId) {
+        ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq();
+        req.type = IDLE;
+        req.instanceId = instanceId;
+        req.time = System.currentTimeMillis();
+        req.address = OhMyWorker.getWorkerAddress();
+        req.setRemainTaskNum(0);
+        return req;
+    }
+
+    public static ProcessorTrackerStatusReportReq buildLoadReport(Long instanceId, Long remainTaskNum) {
+        ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq();
+        req.type = LOAD;
+        req.instanceId = instanceId;
+        req.time = System.currentTimeMillis();
+        req.address = OhMyWorker.getWorkerAddress();
+        req.setRemainTaskNum(remainTaskNum);
+        return req;
     }
 }

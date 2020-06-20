@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.common.request.http;
+package com.github.kfcfans.powerjob.common.request;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
 import lombok.AllArgsConstructor;

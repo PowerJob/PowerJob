@@ -21,7 +21,8 @@ public class AppInfoDO {
     private Long id;
 
     private String appName;
-    private String description;
+    // 应用分组密码
+    private String password;
 
     // 当前负责该 appName 旗下任务调度的server地址，IP:Port（注意，该地址为ActorSystem地址，而不是HTTP地址，两者端口不同）
     private String currentServer;

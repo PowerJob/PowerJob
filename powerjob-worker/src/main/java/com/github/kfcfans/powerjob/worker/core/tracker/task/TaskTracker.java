@@ -267,8 +267,17 @@ public abstract class TaskTracker {
      * @param heartbeatReq ProcessorTracker（任务的执行管理器）发来的心跳包，包含了其当前状态
      */
     public void receiveProcessorTrackerHeartbeat(ProcessorTrackerStatusReportReq heartbeatReq) {
-        ptStatusHolder.updateStatus(heartbeatReq);
         log.debug("[TaskTracker-{}] receive heartbeat: {}", instanceId, heartbeatReq);
+        ptStatusHolder.updateStatus(heartbeatReq);
+
+        // 上报空闲，检查是否已经接收到全部该 ProcessorTracker 负责的任务
+        if (heartbeatReq.getType() == ProcessorTrackerStatusReportReq.IDLE) {
+            List<TaskDO> unfinishedTask = TaskPersistenceService.INSTANCE.getAllUnFinishedTaskByAddress(instanceId, heartbeatReq.getAddress());
+            if (!CollectionUtils.isEmpty(unfinishedTask)) {
+                log.warn("[TaskTracker-{}] ProcessorTracker is idle now but have unfinished tasks: {}", instanceId, unfinishedTask);
+                unfinishedTask.forEach(task -> updateTaskStatus(task.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), System.currentTimeMillis(), "SYSTEM: unreceived process result"));
+            }
+        }
     }
 
     /**

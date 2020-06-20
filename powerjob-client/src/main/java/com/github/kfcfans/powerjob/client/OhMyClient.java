@@ -15,6 +15,7 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,8 +40,8 @@ public class OhMyClient {
      * @param domain www.oms-server.com（内网域名，自行完成DNS & Proxy）
      * @param appName 负责的应用名称
      */
-    public OhMyClient(String domain, String appName) {
-        this(Lists.newArrayList(domain), appName);
+    public OhMyClient(String domain, String appName, String password) {
+        this(Lists.newArrayList(domain), appName, password);
     }
 
 
@@ -49,16 +50,16 @@ public class OhMyClient {
      * @param addressList IP:Port 列表
      * @param appName 负责的应用名称
      */
-    public OhMyClient(List<String> addressList, String appName) {
+    public OhMyClient(List<String> addressList, String appName, String password) {
 
         Objects.requireNonNull(addressList, "domain can't be null!");
         Objects.requireNonNull(appName, "appName can't be null");
 
         allAddress = addressList;
         for (String addr : addressList) {
-            String url = getUrl(OpenAPIConstant.ASSERT, addr) + "?appName=" + appName;
+            String url = getUrl(OpenAPIConstant.ASSERT, addr);
             try {
-                String result = HttpUtils.get(url);
+                String result = assertApp(appName, password, url);
                 if (StringUtils.isNotEmpty(result)) {
                     ResultDTO resultDTO = JsonUtils.parseObject(result, ResultDTO.class);
                     if (resultDTO.isSuccess()) {
@@ -75,6 +76,15 @@ public class OhMyClient {
             throw new OmsException("no server available");
         }
         log.info("[OhMyClient] {}'s oms-client bootstrap successfully.", appName);
+    }
+
+    private static String assertApp(String appName, String password, String url) throws IOException {
+        FormBody.Builder builder = new FormBody.Builder()
+                .add("appName", appName);
+        if (password != null) {
+            builder.add("password", password);
+        }
+        return HttpUtils.post(url, builder.build());
     }
 
 
