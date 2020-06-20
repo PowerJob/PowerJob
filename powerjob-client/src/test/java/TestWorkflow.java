@@ -20,7 +20,7 @@ public class TestWorkflow {
 
     @BeforeAll
     public static void initClient() throws Exception {
-        ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test");
+        ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test", null);
     }
 
     @Test

@@ -21,7 +21,7 @@ public class TestClient {
 
     @BeforeAll
     public static void initClient() throws Exception {
-        ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test2");
+        ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test2", null);
     }
 
     @Test
@@ -29,7 +29,7 @@ public class TestClient {
 
         SaveJobInfoRequest newJobInfo = new SaveJobInfoRequest();
 //        newJobInfo.setId(8L);
-        newJobInfo.setJobName("omsOpenAPIJob");
+        newJobInfo.setJobName("omsOpenAPIJobccccc");
         newJobInfo.setJobDescription("tes OpenAPI");
         newJobInfo.setJobParams("{'aa':'bb'}");
         newJobInfo.setTimeExpressionType(TimeExpressionType.CRON);
