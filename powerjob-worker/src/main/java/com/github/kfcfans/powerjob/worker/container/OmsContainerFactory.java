@@ -5,7 +5,7 @@ import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
-import com.github.kfcfans.powerjob.common.request.http.WorkerNeedDeployContainerRequest;
+import com.github.kfcfans.powerjob.common.request.WorkerNeedDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;

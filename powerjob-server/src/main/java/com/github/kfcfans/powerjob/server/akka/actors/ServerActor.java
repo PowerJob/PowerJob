@@ -6,7 +6,7 @@ import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.github.kfcfans.powerjob.common.request.WorkerLogReportReq;
-import com.github.kfcfans.powerjob.common.request.http.WorkerNeedDeployContainerRequest;
+import com.github.kfcfans.powerjob.common.request.WorkerNeedDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
