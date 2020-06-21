@@ -64,7 +64,7 @@ public class ProcessorTracker {
     private ScheduledExecutorService timingPool;
 
     private static final int THREAD_POOL_QUEUE_MAX_SIZE = 100;
-    // 最多，长时间空闲的 ProcessorTracker 会发起销毁请求
+    // 长时间空闲的 ProcessorTracker 会发起销毁请求
     private static final long MAX_IDLE_TIME = 120000;
 
     // 当 ProcessorTracker 出现根本性错误（比如 Processor 创建失败，所有的任务直接失败）
@@ -237,18 +237,6 @@ public class ProcessorTracker {
                 }
             }
 
-            // 上报状态之前，先重新发送失败的任务，只要有结果堆积，就不上报状态（让 PT 认为该 TT 失联然后重试相关任务）
-            while (!statusReportRetryQueue.isEmpty()) {
-                ProcessorReportTaskStatusReq req = statusReportRetryQueue.poll();
-                if (req != null) {
-                    req.setReportTime(System.currentTimeMillis());
-                    if (!AkkaUtils.reliableTransmit(taskTrackerActorRef, req)) {
-                        statusReportRetryQueue.add(req);
-                        return;
-                    }
-                }
-            }
-
             // 判断线程池活跃状态，长时间空闲则上报 TaskTracker 请求检查
             if (threadPool.getActiveCount() > 0) {
                 lastIdleTime = -1;
@@ -258,10 +246,23 @@ public class ProcessorTracker {
                 }else {
                     long idleTime = System.currentTimeMillis() - lastIdleTime;
                     if (idleTime > MAX_IDLE_TIME) {
-                        lastIdleTime = System.currentTimeMillis();
-                        log.warn("[ProcessorTracker-{}] ProcessorTracker have been idle for {}ms, it's time to tell TaskTracker.", instanceId, idleTime);
+                        log.warn("[ProcessorTracker-{}] ProcessorTracker have been idle for {}ms, it's time to tell TaskTracker and then destroy self.", instanceId, idleTime);
 
+                        // 不可靠通知，如果该请求失败，则整个任务处理集群缺失一个 ProcessorTracker，影响可接受
                         taskTrackerActorRef.tell(ProcessorTrackerStatusReportReq.buildIdleReport(instanceId), null);
+                        destroy();
+                        return;
+                    }
+                }
+            }
+
+            // 上报状态之前，先重新发送失败的任务，只要有结果堆积，就不上报状态（让 PT 认为该 TT 失联然后重试相关任务）
+            while (!statusReportRetryQueue.isEmpty()) {
+                ProcessorReportTaskStatusReq req = statusReportRetryQueue.poll();
+                if (req != null) {
+                    req.setReportTime(System.currentTimeMillis());
+                    if (!AkkaUtils.reliableTransmit(taskTrackerActorRef, req)) {
+                        statusReportRetryQueue.add(req);
                         return;
                     }
                 }

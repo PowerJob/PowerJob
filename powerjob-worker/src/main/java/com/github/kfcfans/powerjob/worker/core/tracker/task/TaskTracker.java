@@ -272,9 +272,12 @@ public abstract class TaskTracker {
 
         // 上报空闲，检查是否已经接收到全部该 ProcessorTracker 负责的任务
         if (heartbeatReq.getType() == ProcessorTrackerStatusReportReq.IDLE) {
-            List<TaskDO> unfinishedTask = TaskPersistenceService.INSTANCE.getAllUnFinishedTaskByAddress(instanceId, heartbeatReq.getAddress());
+            String idlePtAddress = heartbeatReq.getAddress();
+            // 该 ProcessorTracker 已销毁，重置为初始状态
+            ptStatusHolder.getProcessorTrackerStatus(idlePtAddress).setDispatched(false);
+            List<TaskDO> unfinishedTask = TaskPersistenceService.INSTANCE.getAllUnFinishedTaskByAddress(instanceId, idlePtAddress);
             if (!CollectionUtils.isEmpty(unfinishedTask)) {
-                log.warn("[TaskTracker-{}] ProcessorTracker is idle now but have unfinished tasks: {}", instanceId, unfinishedTask);
+                log.warn("[TaskTracker-{}] ProcessorTracker({}) is idle now but have unfinished tasks: {}", instanceId, idlePtAddress, unfinishedTask);
                 unfinishedTask.forEach(task -> updateTaskStatus(task.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), System.currentTimeMillis(), "SYSTEM: unreceived process result"));
             }
         }
