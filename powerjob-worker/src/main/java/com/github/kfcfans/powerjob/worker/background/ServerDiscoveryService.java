@@ -48,7 +48,9 @@ public class ServerDiscoveryService {
             String ip = currentServer.split(":")[0];
             // 直接请求当前Server的HTTP服务，可以少一次网络开销，减轻Server负担
             String firstServerAddress = IP2ADDRESS.get(ip);
-            result = acquire(firstServerAddress);
+            if (firstServerAddress != null) {
+                result = acquire(firstServerAddress);
+            }
         }
 
         for (String httpServerAddress : OhMyWorker.getConfig().getServerAddress()) {
