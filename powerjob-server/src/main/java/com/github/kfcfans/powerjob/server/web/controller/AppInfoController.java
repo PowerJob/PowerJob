@@ -3,6 +3,8 @@ package com.github.kfcfans.powerjob.server.web.controller;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
+import com.github.kfcfans.powerjob.server.service.AppInfoService;
+import com.github.kfcfans.powerjob.server.web.request.AppAssertRequest;
 import com.github.kfcfans.powerjob.server.web.request.ModifyAppInfoRequest;
 import com.google.common.collect.Lists;
 import lombok.Data;
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
 public class AppInfoController {
 
     @Resource
+    private AppInfoService appInfoService;
+    @Resource
     private AppInfoRepository appInfoRepository;
 
     private static final int MAX_APP_NUM = 50;
@@ -51,6 +55,11 @@ public class AppInfoController {
 
         appInfoRepository.saveAndFlush(appInfoDO);
         return ResultDTO.success(null);
+    }
+
+    @PostMapping("/assert")
+    public ResultDTO<Long> assertApp(@RequestBody AppAssertRequest request) {
+        return ResultDTO.success(appInfoService.assertApp(request.getAppName(), request.getPassword()));
     }
 
     @GetMapping("/delete")

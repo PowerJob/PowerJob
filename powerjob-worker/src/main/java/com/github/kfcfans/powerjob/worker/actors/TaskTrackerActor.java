@@ -127,6 +127,7 @@ public class TaskTrackerActor extends AbstractActor {
      * ProcessorTracker 心跳处理器
      */
     private void onReceiveProcessorTrackerStatusReportReq(ProcessorTrackerStatusReportReq req) {
+
         TaskTracker taskTracker = TaskTrackerPool.getTaskTrackerPool(req.getInstanceId());
         if (taskTracker == null) {
             log.warn("[TaskTrackerActor] receive ProcessorTrackerStatusReportReq({}) but system can't find TaskTracker.", req);

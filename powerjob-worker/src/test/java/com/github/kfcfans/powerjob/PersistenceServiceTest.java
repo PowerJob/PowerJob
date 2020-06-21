@@ -24,6 +24,7 @@ public class PersistenceServiceTest {
     public static void initTable() throws Exception {
         taskPersistenceService.init();
 
+        System.out.println("=============== init data ===============");
         List<TaskDO> taskList = Lists.newLinkedList();
         for (int i = 0; i < 10; i++) {
             TaskDO task = new TaskDO();
@@ -39,10 +40,11 @@ public class PersistenceServiceTest {
             task.setAddress(NetUtils.getLocalHost());
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
+            task.setLastReportTime(System.currentTimeMillis());
+            task.setResult("");
         }
 
         taskPersistenceService.batchSave(taskList);
-        System.out.println("=============== init data ===============");
         taskList.forEach(System.out::println);
     }
 
@@ -73,6 +75,13 @@ public class PersistenceServiceTest {
         Thread.sleep(1000);
         boolean success = taskPersistenceService.updateLostTasks(Lists.newArrayList(NetUtils.getLocalHost()));
         System.out.println("updateLostTasks: " + success);
+    }
+
+    @Test
+    public void testGetAllUnFinishedTaskByAddress() throws Exception {
+        System.out.println("=============== testGetAllUnFinishedTaskByAddress ===============");
+        List<TaskDO> res = taskPersistenceService.getAllUnFinishedTaskByAddress(10086L, NetUtils.getLocalHost());
+        System.out.println(res);
     }
 
 }

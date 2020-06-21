@@ -2,15 +2,12 @@ package com.github.kfcfans.powerjob.worker.core.tracker.task;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.SystemInstanceResult;
+import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
@@ -105,10 +102,11 @@ public class CommonTaskTracker extends TaskTracker {
         rootTask.setLastReportTime(-1L);
         rootTask.setSubInstanceId(instanceId);
 
-        if (!taskPersistenceService.save(rootTask)) {
-            log.error("[TaskTracker-{}] create root task failed.", instanceId);
-        }else {
+        if (taskPersistenceService.save(rootTask)) {
             log.info("[TaskTracker-{}] create root task successfully.", instanceId);
+        }else {
+            log.error("[TaskTracker-{}] create root task failed.", instanceId);
+            throw new OmsException("create root task failed for instance: " + instanceId);
         }
     }
 
@@ -176,7 +174,7 @@ public class CommonTaskTracker extends TaskTracker {
                             success = holder.failedNum == 0;
                             result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.succeedNum, holder.failedNum);
                             break;
-                        // MapReduce 和 Broadcast 任务实例是否完成根据**Last_Task**的执行情况判断
+                        // MapReduce 和 Broadcast 任务实例是否完成根据**LastTask**的执行情况判断
                         default:
 
                             Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId, instanceId);
@@ -267,8 +265,8 @@ public class CommonTaskTracker extends TaskTracker {
 
                         taskPersistenceService.updateTask(instanceId, uncheckTask.getTaskId(), updateEntity);
 
-                        log.warn("[TaskTracker-{}] task(taskId={}) try to dispatch again due to unreceived the response from ProcessorTracker.",
-                                instanceId, uncheckTask.getTaskId());
+                        log.warn("[TaskTracker-{}] task(id={},name={}) try to dispatch again due to unreceived the response from ProcessorTracker.",
+                                instanceId, uncheckTask.getTaskId(), uncheckTask.getTaskName());
                     }
 
                 });
@@ -280,9 +278,6 @@ public class CommonTaskTracker extends TaskTracker {
                 log.warn("[TaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}.", instanceId, disconnectedPTs);
                 taskPersistenceService.updateLostTasks(disconnectedPTs);
             }
-
-            // 6.3 超时检查 -> 检查超时的Task
-
         }
 
         @Override
@@ -290,7 +285,7 @@ public class CommonTaskTracker extends TaskTracker {
             try {
                 innerRun();
             }catch (Exception e) {
-                log.warn("[TaskTracker-{}] status checker execute failed, please fix the bug (@tjq)!", instanceInfo.getInstanceId(), e);
+                log.warn("[TaskTracker-{}] status checker execute failed, please fix the bug (@tjq)!", instanceId, e);
             }
         }
     }

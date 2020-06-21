@@ -54,6 +54,8 @@ public class ProcessorTracker {
     private OmsLogger omsLogger;
     // ProcessResult 上报失败的重试队列
     private Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
+    // 上一次空闲时间
+    private long lastIdleTime;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
@@ -62,6 +64,8 @@ public class ProcessorTracker {
     private ScheduledExecutorService timingPool;
 
     private static final int THREAD_POOL_QUEUE_MAX_SIZE = 100;
+    // 长时间空闲的 ProcessorTracker 会发起销毁请求
+    private static final long MAX_IDLE_TIME = 120000;
 
     // 当 ProcessorTracker 出现根本性错误（比如 Processor 创建失败，所有的任务直接失败）
     private boolean lethal = false;
@@ -82,6 +86,7 @@ public class ProcessorTracker {
 
             this.omsLogger = new OmsServerLogger(instanceId);
             this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
+            this.lastIdleTime = -1L;
 
             // 初始化 线程池，TimingPool 启动的任务会检查 ThreadPool，所以必须先初始化线程池，否则NPE
             initThreadPool();
@@ -221,6 +226,7 @@ public class ProcessorTracker {
         @Override
         public void run() {
 
+            // 超时检查，如果超时则自动关闭 TaskTracker
             long interval = System.currentTimeMillis() - startTime;
             // 秒级任务的ProcessorTracker不应该关闭
             if (!TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType())) {
@@ -228,6 +234,25 @@ public class ProcessorTracker {
                     log.warn("[ProcessorTracker-{}] detected instance timeout, maybe TaskTracker's destroy request missed, so try to kill self now.", instanceId);
                     destroy();
                     return;
+                }
+            }
+
+            // 判断线程池活跃状态，长时间空闲则上报 TaskTracker 请求检查
+            if (threadPool.getActiveCount() > 0) {
+                lastIdleTime = -1;
+            }else {
+                if (lastIdleTime == -1) {
+                    lastIdleTime = System.currentTimeMillis();
+                }else {
+                    long idleTime = System.currentTimeMillis() - lastIdleTime;
+                    if (idleTime > MAX_IDLE_TIME) {
+                        log.warn("[ProcessorTracker-{}] ProcessorTracker have been idle for {}ms, it's time to tell TaskTracker and then destroy self.", instanceId, idleTime);
+
+                        // 不可靠通知，如果该请求失败，则整个任务处理集群缺失一个 ProcessorTracker，影响可接受
+                        taskTrackerActorRef.tell(ProcessorTrackerStatusReportReq.buildIdleReport(instanceId), null);
+                        destroy();
+                        return;
+                    }
                 }
             }
 
@@ -245,8 +270,7 @@ public class ProcessorTracker {
 
             // 上报当前 ProcessorTracker 负载
             long waitingNum = threadPool.getQueue().size();
-            ProcessorTrackerStatusReportReq req = new ProcessorTrackerStatusReportReq(instanceId, waitingNum);
-            taskTrackerActorRef.tell(req, null);
+            taskTrackerActorRef.tell(ProcessorTrackerStatusReportReq.buildLoadReport(instanceId, waitingNum), null);
             log.debug("[ProcessorTracker-{}] send heartbeat to TaskTracker, current waiting task num is {}.", instanceId, waitingNum);
         }
 

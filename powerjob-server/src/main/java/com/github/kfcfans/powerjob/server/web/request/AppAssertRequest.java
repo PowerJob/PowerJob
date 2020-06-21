@@ -3,15 +3,13 @@ package com.github.kfcfans.powerjob.server.web.request;
 import lombok.Data;
 
 /**
- * 修改应用信息请求
+ * 验证应用（应用登陆）
  *
  * @author tjq
- * @since 2020/4/1
+ * @since 2020/6/20
  */
 @Data
-public class ModifyAppInfoRequest {
-
-    private Long id;
+public class AppAssertRequest {
     private String appName;
     private String password;
 }
