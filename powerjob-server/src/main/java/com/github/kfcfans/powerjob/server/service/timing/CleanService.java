@@ -60,7 +60,6 @@ public class CleanService {
 
         // 释放本地缓存
         WorkerManagerService.releaseContainerInfos();
-        InstanceManager.releaseCache();
 
         // 删除数据库运行记录
         cleanInstanceLog();

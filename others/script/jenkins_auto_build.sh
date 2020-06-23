@@ -25,7 +25,7 @@ docker run -d \
        --restart=always \
        --name powerjob-server \
        -p 7700:7700 -p 10086:10086 \
-       -e PARAMS="--spring.profiles.active=product --spring.datasource.core.jdbc-url=jdbc:mysql://127.0.0.1:3306/powerjob-product?useUnicode=true&characterEncoding=UTF-8 --spring.data.mongodb.uri=mongodb://127.0.0.1:27017/powerjob-product" \
+       -e PARAMS="--spring.profiles.active=product --spring.datasource.core.jdbc-url=jdbc:mysql://124.70.67.79:3306/powerjob-product?useUnicode=true&characterEncoding=UTF-8 --spring.data.mongodb.uri=mongodb://124.70.67.79:27017/powerjob-product" \
        -v ~/docker/powerjob-server:/root/powerjob-server -v ~/.m2:/root/.m2 \
        tjqq/powerjob-server:latest
 echo "================== powerjob-client 启动完成 =================="

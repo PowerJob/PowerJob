@@ -8,7 +8,6 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
-import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.DispatchService;
 import com.github.kfcfans.powerjob.server.service.InstanceLogService;
 import com.github.kfcfans.powerjob.server.service.UserService;
@@ -16,8 +15,6 @@ import com.github.kfcfans.powerjob.server.service.alarm.Alarmable;
 import com.github.kfcfans.powerjob.server.service.alarm.JobInstanceAlarmContent;
 import com.github.kfcfans.powerjob.server.service.timing.schedule.HashedWheelTimerHolder;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceManager;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -25,7 +22,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,10 +34,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class InstanceManager {
 
-    // 存储 instanceId 对应的 Job 信息，便于重试
-    private static Cache<Long, JobInfoDO> instanceId2JobInfo;
-
-    // Spring Bean
     @Resource
     private DispatchService dispatchService;
     @Resource
@@ -49,21 +41,12 @@ public class InstanceManager {
     @Resource(name = "omsCenterAlarmService")
     private Alarmable omsCenterAlarmService;
     @Resource
-    private InstanceInfoRepository instanceInfoRepository;
+    private InstanceMetaInfoService instanceMetaInfoService;
     @Resource
-    private JobInfoRepository jobInfoRepository;
+    private InstanceInfoRepository instanceInfoRepository;
     @Resource
     private WorkflowInstanceManager workflowInstanceManager;
 
-    private static final int CACHE_CONCURRENCY_LEVEL = 8;
-    private static final int CACHE_MAX_SIZE = 4096;
-
-    static {
-        instanceId2JobInfo = CacheBuilder.newBuilder()
-                .concurrencyLevel(CACHE_CONCURRENCY_LEVEL)
-                .maximumSize(CACHE_MAX_SIZE)
-                .build();
-    }
 
     /**
      * 更新任务状态
@@ -71,14 +54,10 @@ public class InstanceManager {
      */
     public void updateStatus(TaskTrackerReportInstanceStatusReq req) throws Exception {
 
-        Long jobId = req.getJobId();
         Long instanceId = req.getInstanceId();
 
         // 获取相关数据
-        JobInfoDO jobInfo = instanceId2JobInfo.get(instanceId, () -> {
-            Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(jobId);
-            return jobInfoOpt.orElseThrow(() -> new IllegalArgumentException("can't find JobIno by jobId: " + jobId));
-        });
+        JobInfoDO jobInfo = instanceMetaInfoService.fetchJobInfoByInstanceId(req.getInstanceId());
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfo == null) {
             log.warn("[InstanceManager-{}] can't find InstanceInfo from database", instanceId);
@@ -173,9 +152,11 @@ public class InstanceManager {
 
         // 告警
         if (status == InstanceStatus.FAILED) {
-            JobInfoDO jobInfo = fetchJobInfo(instanceId);
-            if (jobInfo == null) {
-                log.warn("[InstanceManager] can't find jobInfo by instanceId({}), alarm failed.", instanceId);
+            JobInfoDO jobInfo;
+            try {
+                jobInfo = instanceMetaInfoService.fetchJobInfoByInstanceId(instanceId);
+            }catch (Exception e) {
+                log.warn("[InstanceManager-{}] can't find jobInfo, alarm failed.", instanceId);
                 return;
             }
 
@@ -187,32 +168,6 @@ public class InstanceManager {
             List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
             omsCenterAlarmService.onJobInstanceFailed(content, userList);
         }
-
-        // 过期缓存
-        instanceId2JobInfo.invalidate(instanceId);
     }
 
-    /**
-     * 根据任务实例ID查询任务相关信息
-     * @param instanceId 任务实例ID
-     * @return 任务元数据
-     */
-    public JobInfoDO fetchJobInfo(Long instanceId) {
-        JobInfoDO jobInfo = instanceId2JobInfo.getIfPresent(instanceId);
-        if (jobInfo != null) {
-            return jobInfo;
-        }
-        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-        if (instanceInfo != null) {
-            return jobInfoRepository.findById(instanceInfo.getJobId()).orElse(null);
-        }
-        return null;
-    }
-
-    /**
-     * 释放本地缓存，防止内存泄漏
-     */
-    public static void releaseCache() {
-        instanceId2JobInfo.cleanUp();
-    }
 }
