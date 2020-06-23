@@ -80,10 +80,13 @@ public class InstanceManager {
             return jobInfoOpt.orElseThrow(() -> new IllegalArgumentException("can't find JobIno by jobId: " + jobId));
         });
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-
+        if (instanceInfo == null) {
+            log.warn("[InstanceManager-{}] can't find InstanceInfo from database", instanceId);
+            return;
+        }
         // 丢弃过期的上报数据
         if (req.getReportTime() <= instanceInfo.getLastReportTime()) {
-            log.warn("[InstanceManager-{}] receive the expired status report request: {}, this report will br dropped.", instanceId, req);
+            log.warn("[InstanceManager-{}] receive the expired status report request: {}, this report will be dropped.", instanceId, req);
             return;
         }
 

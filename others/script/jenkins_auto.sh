@@ -22,9 +22,11 @@ echo "================== 构建 powerjob-agent 镜像 =================="
 docker build -t tjqq/powerjob-agent:latest powerjob-worker-agent/. || exit
 echo "================== 准备启动 powerjob-server =================="
 docker run -d \
+       --rm \
+       --restart=always \
        --name powerjob-server \
        -p 7700:7700 -p 10086:10086 \
-       -e PARAMS="--spring.profiles.active=product --spring.datasource.core.jdbc-url=jdbc:mysql://172.27.147.252:3306/oms-product?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8 --spring.data.mongodb.uri=mongodb://172.27.147.252:27017/oms-product" \
+       -e PARAMS="--spring.profiles.active=product --spring.datasource.core.jdbc-url=jdbc:mysql://127.0.0.1:3306/powerjob-product?useUnicode=true&characterEncoding=UTF-8 --spring.data.mongodb.uri=mongodb://127.0.0.1:27017/powerjob-product" \
        -v ~/docker/powerjob-server:/root/powerjob-server -v ~/.m2:/root/.m2 \
        tjqq/powerjob-server:latest
 sleep 60
