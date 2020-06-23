@@ -1,5 +1,5 @@
-# agent 没有 javac 需求，用 JRE 镜像
-FROM openjdk:8-jre-slim
+# 为了便于使用 arthas，agent 也使用 jdk 而不是 jre
+FROM adoptopenjdk:8-jdk-hotspot
 MAINTAINER tengjiqi@gmail.com
 # 设置时区
 ENV TZ=Asia/Shanghai

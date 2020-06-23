@@ -1,5 +1,5 @@
-# 基础镜像
-FROM openjdk:8
+# 基础镜像（支持 amd64 & arm64）
+FROM adoptopenjdk:8-jdk-hotspot
 # 维护者
 MAINTAINER tengjiqi@gmail.com
 # 下载并安装 maven

@@ -22,15 +22,15 @@ echo "================== 构建 powerjob-agent 镜像 =================="
 docker build -t tjqq/powerjob-agent:latest powerjob-worker-agent/. || exit
 echo "================== 准备启动 powerjob-server =================="
 docker run -d \
-       --rm \
        --restart=always \
        --name powerjob-server \
        -p 7700:7700 -p 10086:10086 \
        -e PARAMS="--spring.profiles.active=product --spring.datasource.core.jdbc-url=jdbc:mysql://127.0.0.1:3306/powerjob-product?useUnicode=true&characterEncoding=UTF-8 --spring.data.mongodb.uri=mongodb://127.0.0.1:27017/powerjob-product" \
        -v ~/docker/powerjob-server:/root/powerjob-server -v ~/.m2:/root/.m2 \
        tjqq/powerjob-server:latest
-sleep 60
-echo "================== 准备启动 powerjob-client =================="
+echo "================== powerjob-client 启动完成 =================="
+sleep 45
+echo "================== 准备启动 powerjob-agent =================="
 serverIP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' powerjob-server)
 serverAddress="$serverIP:7700"
 echo "使用的Server地址：$serverAddress"
