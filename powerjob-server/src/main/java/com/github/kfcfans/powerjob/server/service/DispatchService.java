@@ -9,7 +9,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
-import com.github.kfcfans.powerjob.server.service.instance.InstanceMetaInfoService;
+import com.github.kfcfans.powerjob.server.service.instance.InstanceMetadataService;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -40,7 +40,7 @@ public class DispatchService {
     @Resource
     private InstanceManager instanceManager;
     @Resource
-    private InstanceMetaInfoService instanceMetaInfoService;
+    private InstanceMetadataService instanceMetadataService;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
@@ -147,6 +147,6 @@ public class DispatchService {
         instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), currentRunningTimes + 1, current, taskTrackerAddress, dbInstanceParams, now);
 
         // 装载缓存
-        instanceMetaInfoService.loadJobInfo(instanceId, jobInfo);
+        instanceMetadataService.loadJobInfo(instanceId, jobInfo);
     }
 }

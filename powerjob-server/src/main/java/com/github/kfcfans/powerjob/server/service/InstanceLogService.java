@@ -11,7 +11,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.local.LocalInstanceLogDO;
 import com.github.kfcfans.powerjob.server.persistence.local.LocalInstanceLogRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
-import com.github.kfcfans.powerjob.server.service.instance.InstanceMetaInfoService;
+import com.github.kfcfans.powerjob.server.service.instance.InstanceMetadataService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 public class InstanceLogService {
 
     @Resource
-    private InstanceMetaInfoService instanceMetaInfoService;
+    private InstanceMetadataService instanceMetadataService;
     @Resource
     private GridFsManager gridFsManager;
     // 本地数据库操作bean
@@ -317,13 +317,11 @@ public class InstanceLogService {
     @Scheduled(fixedDelay = 60000)
     public void timingCheck() {
 
-        // TODO: 检查 lastReportTime，过期 instance 调用 sync 同步并删除
-
         // 定时删除秒级任务的日志
         List<Long> frequentInstanceIds = Lists.newLinkedList();
         instanceId2LastReportTime.keySet().forEach(instanceId -> {
             try {
-                JobInfoDO jobInfo = instanceMetaInfoService.fetchJobInfoByInstanceId(instanceId);
+                JobInfoDO jobInfo = instanceMetadataService.fetchJobInfoByInstanceId(instanceId);
                 if (TimeExpressionType.frequentTypes.contains(jobInfo.getTimeExpressionType())) {
                     frequentInstanceIds.add(instanceId);
                 }

@@ -41,7 +41,7 @@ public class InstanceManager {
     @Resource(name = "omsCenterAlarmService")
     private Alarmable omsCenterAlarmService;
     @Resource
-    private InstanceMetaInfoService instanceMetaInfoService;
+    private InstanceMetadataService instanceMetadataService;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
     @Resource
@@ -57,7 +57,7 @@ public class InstanceManager {
         Long instanceId = req.getInstanceId();
 
         // 获取相关数据
-        JobInfoDO jobInfo = instanceMetaInfoService.fetchJobInfoByInstanceId(req.getInstanceId());
+        JobInfoDO jobInfo = instanceMetadataService.fetchJobInfoByInstanceId(req.getInstanceId());
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
         if (instanceInfo == null) {
             log.warn("[InstanceManager-{}] can't find InstanceInfo from database", instanceId);
@@ -154,7 +154,7 @@ public class InstanceManager {
         if (status == InstanceStatus.FAILED) {
             JobInfoDO jobInfo;
             try {
-                jobInfo = instanceMetaInfoService.fetchJobInfoByInstanceId(instanceId);
+                jobInfo = instanceMetadataService.fetchJobInfoByInstanceId(instanceId);
             }catch (Exception e) {
                 log.warn("[InstanceManager-{}] can't find jobInfo, alarm failed.", instanceId);
                 return;
@@ -168,6 +168,9 @@ public class InstanceManager {
             List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
             omsCenterAlarmService.onJobInstanceFailed(content, userList);
         }
+
+        // 主动移除缓存，减小内存占用
+        instanceMetadataService.invalidateJobInfo(instanceId);
     }
 
 }
