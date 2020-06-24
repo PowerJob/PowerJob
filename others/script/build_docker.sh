@@ -62,7 +62,8 @@ if [ "$startup" = "y" ] || [  "$startup" = "Y" ]; then
   echo "================== 准备启动 powerjob-server =================="
   docker run -d \
          --name powerjob-server \
-         -p 7700:7700 -p 10086:10086 \
+         -p 7700:7700 -p 10086:10086 -p 5001:5005 -p 10001:10000 \
+         -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" \
          -e PARAMS="--spring.profiles.active=pre" \
          -v ~/docker/powerjob-server:/root/powerjob-server -v ~/.m2:/root/.m2 \
          tjqq/powerjob-server:$version
@@ -74,8 +75,21 @@ if [ "$startup" = "y" ] || [  "$startup" = "Y" ]; then
   serverIP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' powerjob-server)
   serverAddress="$serverIP:7700"
   echo "使用的Server地址：$serverAddress"
-  docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27777:27777 --name powerjob-agent -v ~/docker/powerjob-agent:/root tjqq/powerjob-agent:$version
-  docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27778:27777 --name powerjob-agent2 -v ~/docker/powerjob-agent2:/root tjqq/powerjob-agent:$version
+  docker run -d \
+         --name powerjob-agent \
+         -p 27777:27777 -p 5002:5005 -p 10002:10000 \
+         -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" \
+         -e PARAMS="--app powerjob-agent-test --server $serverAddress" \
+         -v ~/docker/powerjob-agent:/root \
+         tjqq/powerjob-agent:$version
+
+  docker run -d \
+         --name powerjob-agent2 \
+         -p 27778:27777 -p 5003:5005 -p 10003:10000 \
+         -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" \
+         -e PARAMS="--app powerjob-agent-test --server $serverAddress" \
+         -v ~/docker/powerjob-agent2:/root \
+         tjqq/powerjob-agent:$version
 
   tail -f -n 100 ~/docker/powerjob-agent/powerjob/logs/powerjob-agent-application.log
 fi

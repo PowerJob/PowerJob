@@ -17,8 +17,9 @@ RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 设置其他环境变量
 ENV APP_NAME=powerjob-server
-# 传递 SpringBoot 启动参数
+# 传递 SpringBoot 启动参数 和 JVM参数
 ENV PARAMS=""
+ENV JVMOPTIONS=""
 # 将应用 jar 包拷入 docker
 COPY powerjob-server.jar /powerjob-server.jar
 # 暴露端口（HTTP + AKKA）
@@ -28,4 +29,4 @@ RUN mkdir -p /root/powerjob-server
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
 VOLUME /root/powerjob-server
 # 启动应用
-ENTRYPOINT ["sh","-c","java -jar /powerjob-server.jar $PARAMS"]
+ENTRYPOINT ["sh","-c","java $JVMOPTIONS -jar /powerjob-server.jar $PARAMS"]
