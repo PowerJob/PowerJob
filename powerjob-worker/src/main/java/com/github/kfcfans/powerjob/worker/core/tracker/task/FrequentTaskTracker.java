@@ -114,7 +114,7 @@ public class FrequentTaskTracker extends TaskTracker {
             InstanceDetail.SubInstanceDetail subDetail = new InstanceDetail.SubInstanceDetail();
             BeanUtils.copyProperties(subInstanceInfo, subDetail);
             InstanceStatus status = InstanceStatus.of(subInstanceInfo.status);
-            subDetail.setStatus(status.getDes());
+            subDetail.setStatus(status.getV());
             subDetail.setSubInstanceId(subId);
 
             // 设置时间
@@ -347,8 +347,8 @@ public class FrequentTaskTracker extends TaskTracker {
         subInstanceId2TimeHolder.remove(subInstanceId);
 
         // 更新缓存数据
-        if (recentSubInstanceInfo.containsKey(subInstanceId)) {
-            SubInstanceInfo subInstanceInfo = recentSubInstanceInfo.get(subInstanceId);
+        SubInstanceInfo subInstanceInfo = recentSubInstanceInfo.get(subInstanceId);
+        if (subInstanceInfo != null) {
             subInstanceInfo.status = success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV();
             subInstanceInfo.result = result;
             subInstanceInfo.finishedTime = System.currentTimeMillis();

@@ -21,4 +21,6 @@ public class QueryWorkflowInstanceRequest {
     // 查询条件（NORMAL/WORKFLOW）
     private Long wfInstanceId;
     private Long workflowId;
+
+    private String status;
 }

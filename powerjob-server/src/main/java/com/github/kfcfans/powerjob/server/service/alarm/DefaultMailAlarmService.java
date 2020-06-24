@@ -65,7 +65,7 @@ public class DefaultMailAlarmService implements Alarmable {
 
             javaMailSender.send(sm);
         }catch (Exception e) {
-            log.error("[OmsMailAlarmService] send mail({}) failed.", sm, e);
+            log.error("[OmsMailAlarmService] send mail({}) failed, reason is {}", sm, e.getMessage());
         }
     }
 }

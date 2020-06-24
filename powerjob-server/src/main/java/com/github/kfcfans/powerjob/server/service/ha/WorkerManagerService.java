@@ -94,9 +94,9 @@ public class WorkerManagerService {
     }
 
     /**
-     * 释放所有本地存储的容器信息（该操作会导致短暂的 listDeployedContainer 服务不可用）
+     * 清理缓存信息，防止 OOM
      */
-    public static void releaseContainerInfos() {
-        appId2ClusterStatus.values().forEach(ClusterStatusHolder::releaseContainerInfos);
+    public static void cleanUp() {
+        appId2ClusterStatus.values().forEach(ClusterStatusHolder::release);
     }
 }

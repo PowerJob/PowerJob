@@ -43,7 +43,7 @@ public class InstanceDetail implements OmsSerializable {
         private String startTime;
         private String finishedTime;
         private String result;
-        private String status;
+        private int status;
     }
 
     // MapReduce 和 Broadcast 任务的 extra ->

@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.web.controller;
 
+import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -111,6 +113,10 @@ public class InstanceController {
         InstanceInfoDO queryEntity = new InstanceInfoDO();
         BeanUtils.copyProperties(request, queryEntity);
         queryEntity.setType(request.getType().getV());
+
+        if (!StringUtils.isEmpty(request.getStatus())) {
+            queryEntity.setStatus(InstanceStatus.valueOf(request.getStatus()).getV());
+        }
 
         Page<InstanceInfoDO> pageResult = instanceInfoRepository.findAll(Example.of(queryEntity), pageable);
         return ResultDTO.success(convertPage(pageResult));

@@ -62,18 +62,18 @@ public class ServerDiscoveryService {
         }
 
         if (StringUtils.isEmpty(result)) {
-            log.warn("[OMS-ServerDiscoveryService] can't find any available server, this worker has been quarantined.");
+            log.warn("[OmsServerDiscovery] can't find any available server, this worker has been quarantined.");
 
             // 在 Server 高可用的前提下，连续失败多次，说明该节点与外界失联，Server已经将秒级任务转移到其他Worker，需要杀死本地的任务
             if (FAILED_COUNT++ > MAX_FAILED_COUNT) {
 
-                log.error("[OMS-ServerDiscoveryService] can't find any available server for 3 consecutive times, It's time to kill all frequent job in this worker.");
+                log.warn("[OmsServerDiscovery] can't find any available server for 3 consecutive times, It's time to kill all frequent job in this worker.");
                 List<Long> frequentInstanceIds = TaskTrackerPool.getAllFrequentTaskTrackerKeys();
                 if (!CollectionUtils.isEmpty(frequentInstanceIds)) {
                     frequentInstanceIds.forEach(instanceId -> {
                         TaskTracker taskTracker = TaskTrackerPool.remove(instanceId);
                         taskTracker.destroy();
-                        log.warn("[OMS-ServerDiscoveryService] kill frequent instance(instanceId={}) due to can't find any available server.", instanceId);
+                        log.warn("[OmsServerDiscovery] kill frequent instance(instanceId={}) due to can't find any available server.", instanceId);
                     });
                 }
 
@@ -83,7 +83,7 @@ public class ServerDiscoveryService {
         }else {
             // 重置失败次数
             FAILED_COUNT = 0;
-            log.debug("[OMS-ServerDiscoveryService] current server is {}.", result);
+            log.debug("[OmsServerDiscovery] current server is {}.", result);
             return result;
         }
     }
