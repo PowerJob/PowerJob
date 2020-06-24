@@ -7,6 +7,7 @@ import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.request.WorkerNeedDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
@@ -67,7 +68,7 @@ public class OmsContainerFactory {
                 deployContainer(deployRequest);
             }
         }catch (Exception e) {
-            log.error("[OmsContainer-{}] deployed container failed, exception is {}", containerId, e.toString());
+            log.error("[OmsContainer-{}] get container failed, exception is {}", containerId, e.toString());
         }
 
         return CARGO.get(containerId);
@@ -92,11 +93,11 @@ public class OmsContainerFactory {
             return;
         }
 
-        try {
+        String filePath = OmsWorkerFileUtils.getContainerDir() + containerId + "/" + version + ".jar";
+        // 下载Container到本地
+        File jarFile = new File(filePath);
 
-            // 下载Container到本地
-            String filePath = OmsWorkerFileUtils.getContainerDir() + containerId + "/" + version + ".jar";
-            File jarFile = new File(filePath);
+        try {
             if (!jarFile.exists()) {
                 FileUtils.forceMkdirParent(jarFile);
                 FileUtils.copyURLToFile(new URL(request.getDownloadURL()), jarFile, 5000, 300000);
@@ -118,6 +119,8 @@ public class OmsContainerFactory {
 
         }catch (Exception e) {
             log.error("[OmsContainer-{}] deployContainer(name={},version={}) failed.", containerId, containerName, version, e);
+            // 如果部署失败，则删除该 jar（本次失败可能是下载jar出错导致，不删除会导致这个版本永久无法重新部署）
+            CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(jarFile));
         }
     }
 

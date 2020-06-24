@@ -13,7 +13,6 @@ ENV M2_HOME=/opt/powerjob-maven
 
 # 设置时区
 ENV TZ=Asia/Shanghai
-RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 设置其他环境变量
 ENV APP_NAME=powerjob-server
