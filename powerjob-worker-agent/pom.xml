@@ -10,12 +10,12 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-agent</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1</version>
     <packaging>jar</packaging>
 
 
     <properties>
-        <powerjob.worker.version>3.1.0</powerjob.worker.version>
+        <powerjob.worker.version>3.1.1</powerjob.worker.version>
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
 
