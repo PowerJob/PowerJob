@@ -3,6 +3,7 @@ FROM adoptopenjdk:8-jdk-hotspot
 MAINTAINER tengjiqi@gmail.com
 # 设置时区
 ENV TZ=Asia/Shanghai
+RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENV APP_NAME=powerjob-worker-agent
 ENV PARAMS=""

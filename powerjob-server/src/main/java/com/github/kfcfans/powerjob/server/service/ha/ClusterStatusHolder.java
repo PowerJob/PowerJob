@@ -49,7 +49,7 @@ public class ClusterStatusHolder {
 
         Long oldTime = address2ActiveTime.getOrDefault(workerAddress, -1L);
         if (heartbeatTime < oldTime) {
-            log.warn("[ClusterStatusHolder-{}] receive the old heartbeat: {}.", appName, heartbeat);
+            log.warn("[ClusterStatusHolder-{}] receive the expired heartbeat from {}, serverTime: {}, heartTime: {}", appName, heartbeat.getWorkerAddress(), System.currentTimeMillis(), heartbeat.getHeartbeatTime());
             return;
         }
 

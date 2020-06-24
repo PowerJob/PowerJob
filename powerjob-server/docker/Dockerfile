@@ -1,4 +1,4 @@
-# 基础镜像（支持 amd64 & arm64）
+# 基础镜像（支持 amd64 & arm64），based on Ubuntu 18.04.4 LTS
 FROM adoptopenjdk:8-jdk-hotspot
 # 维护者
 MAINTAINER tengjiqi@gmail.com
@@ -11,8 +11,9 @@ COPY settings.xml /opt/powerjob-maven/conf/settings.xml
 # 设置 maven 环境变量（maven invoker 读取该变量调用 maven）
 ENV M2_HOME=/opt/powerjob-maven
 
-# 设置时区（Debian专用方法）
+# 设置时区
 ENV TZ=Asia/Shanghai
+RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 设置其他环境变量
 ENV APP_NAME=powerjob-server

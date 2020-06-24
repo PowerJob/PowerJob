@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.web.controller;
 
+import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.persistence.PageResult;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInstanceInfoDO;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -54,6 +56,11 @@ public class WorkflowInstanceController {
 
         WorkflowInstanceInfoDO queryEntity = new WorkflowInstanceInfoDO();
         BeanUtils.copyProperties(req, queryEntity);
+
+        if (!StringUtils.isEmpty(req.getStatus())) {
+            queryEntity.setStatus(WorkflowInstanceStatus.valueOf(req.getStatus()).getV());
+        }
+
         Page<WorkflowInstanceInfoDO> ps = workflowInstanceInfoRepository.findAll(Example.of(queryEntity), pageable);
 
         return ResultDTO.success(convertPage(ps));

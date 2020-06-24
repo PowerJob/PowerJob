@@ -24,4 +24,6 @@ public class QueryInstanceRequest {
     private Long instanceId;
     private Long jobId;
     private Long wfInstanceId;
+
+    private String status;
 }

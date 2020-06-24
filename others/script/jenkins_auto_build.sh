@@ -34,6 +34,6 @@ echo "================== 准备启动 powerjob-agent =================="
 serverIP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' powerjob-server)
 serverAddress="$serverIP:7700"
 echo "使用的Server地址：$serverAddress"
-docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27777:27777 --name powerjob-agent -v ~/docker/powerjob-agent:/root tjqq/powerjob-agent:latest
-docker run -d -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27778:27777 --name powerjob-agent2 -v ~/docker/powerjob-agent2:/root tjqq/powerjob-agent:latest
+docker run -d --restart=always -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27777:27777 --name powerjob-agent -v ~/docker/powerjob-agent:/root tjqq/powerjob-agent:latest
+docker run -d --restart=always -e PARAMS="--app powerjob-agent-test --server $serverAddress" -p 27778:27777 --name powerjob-agent2 -v ~/docker/powerjob-agent2:/root tjqq/powerjob-agent:latest
 
