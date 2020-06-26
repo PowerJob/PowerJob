@@ -102,7 +102,7 @@ public class FrequentTaskTracker extends TaskTracker {
         // 3. 启动任务分发器（事实上，秒级任务应该都是单机任务，且感觉不需要失败重试机制，那么 Dispatcher 的存在就有点浪费系统资源了...）
         scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 1, 2, TimeUnit.SECONDS);
         // 4. 启动状态检查器
-        scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(Math.max(timeParams, 5000), 5000), TimeUnit.MILLISECONDS);
+        scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(Math.max(timeParams, 5000), 15000), TimeUnit.MILLISECONDS);
     }
 
     @Override
