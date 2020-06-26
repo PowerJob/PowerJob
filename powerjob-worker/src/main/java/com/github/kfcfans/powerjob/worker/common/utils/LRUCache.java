@@ -19,7 +19,7 @@ public class LRUCache<K, V> {
     public LRUCache(int cacheSize) {
         innerCache = CacheBuilder.newBuilder()
                 .concurrencyLevel(2)
-                .initialCapacity(cacheSize)
+                .maximumSize(cacheSize)
                 .build();
     }
 

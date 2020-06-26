@@ -87,6 +87,7 @@ public class InstanceManager {
         // 综上，直接把 status 和 runningNum 同步到DB即可
         if (TimeExpressionType.frequentTypes.contains(timeExpressionType)) {
 
+            instanceInfo.setResult(req.getResult());
             instanceInfo.setRunningTimes(req.getTotalTaskNum());
             instanceInfoRepository.saveAndFlush(instanceInfo);
             return;

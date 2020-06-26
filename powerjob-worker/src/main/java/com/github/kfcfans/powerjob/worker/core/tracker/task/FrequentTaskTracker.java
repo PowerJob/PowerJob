@@ -61,6 +61,7 @@ public class FrequentTaskTracker extends TaskTracker {
 
     private static final int HISTORY_SIZE = 10;
     private static final String LAST_TASK_ID_PREFIX = "L";
+    private static final int MIN_INTERVAL = 1000;
 
     protected FrequentTaskTracker(ServerScheduleJobReq req) {
         super(req);
@@ -89,6 +90,10 @@ public class FrequentTaskTracker extends TaskTracker {
         // 2. 启动任务发射器
         launcher = new Launcher();
         if (timeExpressionType == TimeExpressionType.FIX_RATE) {
+            // 固定频率需要设置最小间隔
+            if (timeParams < MIN_INTERVAL) {
+                throw new OmsException("time interval too small, please set the timeExpressionInfo >= 1000");
+            }
             scheduledPool.scheduleAtFixedRate(launcher, 1, timeParams, TimeUnit.MILLISECONDS);
         }else {
             scheduledPool.schedule(launcher, 0, TimeUnit.MILLISECONDS);
@@ -97,8 +102,7 @@ public class FrequentTaskTracker extends TaskTracker {
         // 3. 启动任务分发器（事实上，秒级任务应该都是单机任务，且感觉不需要失败重试机制，那么 Dispatcher 的存在就有点浪费系统资源了...）
         scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 1, 2, TimeUnit.SECONDS);
         // 4. 启动状态检查器
-        scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(timeParams, 10000), TimeUnit.MILLISECONDS);
-
+        scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(Math.max(timeParams, 5000), 15000), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -213,6 +217,11 @@ public class FrequentTaskTracker extends TaskTracker {
 
         @Override
         public void run() {
+
+            if (finished.get()) {
+                return;
+            }
+
             try {
                 checkStatus();
                 reportStatus();
