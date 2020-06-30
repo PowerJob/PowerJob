@@ -37,8 +37,6 @@ public class HashedWheelTimer implements Timer {
 
     private final ExecutorService taskProcessPool;
 
-    private static final int MAXIMUM_CAPACITY = 1 << 30;
-
     public HashedWheelTimer(long tickDuration, int ticksPerWheel) {
         this(tickDuration, ticksPerWheel, 0);
     }
