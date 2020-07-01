@@ -22,11 +22,21 @@ PowerJob（原OhMyScheduler）是全新一代分布式调度与计算框架，�
 * 高可用&高性能：调度服务器经过精心设计，一改其他调度框架基于数据库锁的策略，实现了无锁化调度。部署多个调度服务器可以同时实现高可用和性能的提升（支持无限的水平扩展）。
 * 故障转移与恢复：任务执行失败后，可根据配置的重试策略完成重试，只要执行器集群有足够的计算节点，任务就能顺利完成。
 
-[在线试用地址](https://www.yuque.com/powerjob/guidence/hnbskn)
 ### 适用场景
 * 有定时执行需求的业务场景：如每天凌晨全量同步数据、生成业务报表等。
 * 有需要全部机器一同执行的业务场景：如使用广播执行模式清理集群日志。
 * 有需要分布式处理的业务场景：比如需要更新一大批数据，单机执行耗时非常长，可以使用Map/MapReduce处理器完成任务的分发，调动整个集群加速计算。
+* 有需要延迟执行某些任务的业务场景：比如订单过期处理等。
+
+### 设计目标
+PowerJob 的设计目标为企业级的分布式任务调度平台，即成为公司内部的**任务调度中间件**。整个公司统一部署调度中心 powerjob-server，旗下所有业务线应用只需要依赖 `powerjob-worker` 即可接入调度中心获取任务调度与分布式计算能力。
+
+### 在线试用
+试用地址：[try.powerjob.tech](http://try.powerjob.tech/)
+试用应用名称：powerjob-agent-test
+控制台密码：123
+
+[建议点击查看试用文档了解相关操作](https://www.yuque.com/powerjob/guidence/hnbskn)
 
 ### 同类产品对比
 |                | QuartZ                   | xxl-job                                  | SchedulerX 2.0                                    | PowerJob                                                |
@@ -43,7 +53,9 @@ PowerJob（原OhMyScheduler）是全新一代分布式调度与计算框架，�
 
 
 # 文档
-**[超详细中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)** OR **[备用地址（内容可能更新不及时）](https://kfcfans.github.io/)**
+**[中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)**
+
+**[Document](https://www.yuque.com/powerjob/en/xrdoqw)**
 
 PS：感谢文档翻译平台[breword](https://www.breword.com/)对本项目英文文档翻译做出的巨大贡献！
 

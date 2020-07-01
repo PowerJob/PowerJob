@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.common.request.http;
 import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.ProcessorType;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import lombok.Data;
 
 import java.util.List;
@@ -76,4 +77,14 @@ public class SaveJobInfoRequest {
 
     // 报警用户ID列表
     private List<Long> notifyUserIds;
+
+
+    public void valid() {
+        CommonUtils.requireNonNull(jobName, "jobName can't be empty");
+        CommonUtils.requireNonNull(appId, "appId can't be empty");
+        CommonUtils.requireNonNull(processorInfo, "processorInfo can't be empty");
+        CommonUtils.requireNonNull(executeType, "executeType can't be empty");
+        CommonUtils.requireNonNull(processorType, "processorType can't be empty");
+        CommonUtils.requireNonNull(timeExpressionType, "timeExpressionType can't be empty");
+    }
 }

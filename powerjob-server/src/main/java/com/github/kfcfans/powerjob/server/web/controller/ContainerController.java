@@ -4,7 +4,7 @@ import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
-import com.github.kfcfans.powerjob.server.common.constans.ContainerStatus;
+import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.ContainerTemplateGenerator;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
@@ -87,7 +87,8 @@ public class ContainerController {
 
     @GetMapping("/list")
     public ResultDTO<List<ContainerInfoVO>> listContainers(Long appId) {
-        List<ContainerInfoVO> res = containerInfoRepository.findByAppId(appId).stream().map(ContainerController::convert).collect(Collectors.toList());
+        List<ContainerInfoVO> res = containerInfoRepository.findByAppIdAndStatusNot(appId, SwitchableStatus.DELETED.getV())
+                .stream().map(ContainerController::convert).collect(Collectors.toList());
         return ResultDTO.success(res);
     }
 
@@ -122,7 +123,7 @@ public class ContainerController {
         }else {
             vo.setLastDeployTime(DateFormatUtils.format(containerInfoDO.getLastDeployTime(), OmsConstant.TIME_PATTERN));
         }
-        ContainerStatus status = ContainerStatus.of(containerInfoDO.getStatus());
+        SwitchableStatus status = SwitchableStatus.of(containerInfoDO.getStatus());
         vo.setStatus(status.name());
         ContainerSourceType sourceType = ContainerSourceType.of(containerInfoDO.getSourceType());
         vo.setSourceType(sourceType.name());

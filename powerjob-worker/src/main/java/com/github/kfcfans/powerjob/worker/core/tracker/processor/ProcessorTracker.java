@@ -65,7 +65,7 @@ public class ProcessorTracker {
 
     private static final int THREAD_POOL_QUEUE_MAX_SIZE = 100;
     // 长时间空闲的 ProcessorTracker 会发起销毁请求
-    private static final long MAX_IDLE_TIME = 120000;
+    private static final long MAX_IDLE_TIME = 300000;
 
     // 当 ProcessorTracker 出现根本性错误（比如 Processor 创建失败，所有的任务直接失败）
     private boolean lethal = false;
@@ -179,7 +179,7 @@ public class ProcessorTracker {
         statusReportRetryQueue.clear();
         ProcessorTrackerPool.removeProcessorTracker(instanceId);
 
-        log.info("[ProcessorTracker-{}] ProcessorTracker already destroyed!", instanceId);
+        log.info("[ProcessorTracker-{}] ProcessorTracker destroyed successfully!", instanceId);
 
         // 3. 关闭定时线程池
         CommonUtils.executeIgnoreException(() -> timingPool.shutdownNow());
@@ -309,9 +309,11 @@ public class ProcessorTracker {
                 String[] split = processorInfo.split("#");
                 log.info("[ProcessorTracker-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
 
-                omsContainer = OmsContainerFactory.getContainer(Long.valueOf(split[0]));
+                omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), true);
                 if (omsContainer != null) {
                     processor = omsContainer.getProcessor(split[1]);
+                }else {
+                    log.warn("[ProcessorTracker-{}] load container failed.", instanceId);
                 }
                 break;
             default:

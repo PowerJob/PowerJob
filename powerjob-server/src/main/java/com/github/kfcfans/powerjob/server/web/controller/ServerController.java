@@ -46,4 +46,9 @@ public class ServerController {
         return ResultDTO.success(server);
     }
 
+    @GetMapping("/hello")
+    public ResultDTO<String> ping() {
+        return ResultDTO.success("this is powerjob-server~");
+    }
+
 }

@@ -43,7 +43,7 @@ public class ServerSelectService {
 
     /**
      * 获取某个应用对应的Server
-     * 缺点：如果server死而复生，可能造成worker集群脑裂，不过感觉影响不是很大 & 概率极低，就不管了
+     *
      * @param appId 应用ID
      * @return 当前可用的Server
      */

@@ -258,7 +258,7 @@ public class OmsScheduleService {
                 }
 
                 log.info("[FrequentScheduler] These frequent jobs will be scheduled： {}.", notRunningJobIds);
-                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null));
+                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null, 0));
             }catch (Exception e) {
                 log.error("[FrequentScheduler] schedule frequent job failed.", e);
             }

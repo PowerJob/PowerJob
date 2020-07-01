@@ -66,9 +66,11 @@ public class OhMyClient {
                         appId = Long.parseLong(resultDTO.getData().toString());
                         currentAddress = addr;
                         break;
+                    }else {
+                        throw new OmsException(resultDTO.getMessage());
                     }
                 }
-            }catch (Exception ignore) {
+            }catch (IOException ignore) {
             }
         }
 
@@ -173,13 +175,15 @@ public class OhMyClient {
      * 运行某个任务
      * @param jobId 任务ID
      * @param instanceParams 任务实例的参数
+     * @param delayMS 延迟时间，单位毫秒
      * @return 任务实例ID（instanceId）
      * @throws Exception 异常
      */
-    public ResultDTO<Long> runJob(Long jobId, String instanceParams) throws Exception {
+    public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) throws Exception {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("jobId", jobId.toString())
-                .add("appId", appId.toString());
+                .add("appId", appId.toString())
+                .add("delay", String.valueOf(delayMS));
 
         if (StringUtils.isNotEmpty(instanceParams)) {
             builder.add("instanceParams", instanceParams);
@@ -188,7 +192,7 @@ public class OhMyClient {
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
     public ResultDTO<Long> runJob(Long jobId) throws Exception {
-        return runJob(jobId, null);
+        return runJob(jobId, null, 0);
     }
 
     /* ************* Instance 区 ************* */
