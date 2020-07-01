@@ -59,9 +59,7 @@ public class ProcessorTrackerActor extends AbstractActor {
 
         Long instanceId = req.getInstanceId();
         List<ProcessorTracker> removedPts = ProcessorTrackerPool.removeProcessorTracker(instanceId);
-        if (CollectionUtils.isEmpty(removedPts)) {
-            log.warn("[ProcessorTrackerActor] ProcessorTracker for instance(instanceId={}) already destroyed.", instanceId);
-        }else {
+        if (!CollectionUtils.isEmpty(removedPts)) {
             removedPts.forEach(ProcessorTracker::destroy);
         }
     }
