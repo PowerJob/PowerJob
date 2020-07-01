@@ -12,6 +12,7 @@ import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
+import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ContainerInfoRepository;
@@ -120,15 +121,17 @@ public class ContainerService {
             throw new RuntimeException("Permission Denied!");
         }
 
-        ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getContainerName());
+        ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getId());
         WorkerManagerService.getActiveWorkerInfo(container.getAppId()).keySet().forEach(akkaAddress -> {
             ActorSelection workerActor = OhMyServer.getWorkerActor(akkaAddress);
             workerActor.tell(destroyRequest, null);
         });
 
         log.info("[ContainerService] delete container: {}.", container);
-        // 硬删除算了...留着好像也没什么用
-        containerInfoRepository.deleteById(containerId);
+        // 软删除
+        container.setStatus(SwitchableStatus.DELETED.getV());
+        container.setGmtModified(new Date());
+        containerInfoRepository.saveAndFlush(container);
     }
 
     /**

@@ -70,7 +70,7 @@ public class TestClient {
 
     @Test
     public void testRunJob() throws Exception {
-        System.out.println(ohMyClient.runJob(8L, "this is instanceParams"));
+        System.out.println(ohMyClient.runJob(8L, "this is instanceParams", 20));
     }
 
     @Test

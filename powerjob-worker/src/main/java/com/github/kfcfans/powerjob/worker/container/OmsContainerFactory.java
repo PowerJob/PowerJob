@@ -133,4 +133,21 @@ public class OmsContainerFactory {
         CARGO.forEach((name, container) -> info.add(new DeployedContainerInfo(container.getContainerId(), container.getVersion(), container.getDeployedTime(), null)));
         return info;
     }
+
+    /**
+     * 销毁指定容器
+     * @param containerId 容器ID
+     */
+    public static void destroyContainer(Long containerId) {
+        OmsContainer container = CARGO.remove(containerId);
+        if (container == null) {
+            log.warn("[OmsContainer-{}] container not exists.", containerId);
+            return;
+        }
+        try {
+            container.destroy();
+        }catch (Exception e) {
+            log.warn("[OmsContainer-{}] destroy container failed.", containerId, e);
+        }
+    }
 }

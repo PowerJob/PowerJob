@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.server.web.request;
 
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
-import com.github.kfcfans.powerjob.server.common.constans.ContainerStatus;
+import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import lombok.Data;
 
 /**
@@ -28,5 +28,5 @@ public class SaveContainerInfoRequest {
     private String sourceInfo;
 
     // 状态，枚举值为 ContainerStatus（ENABLE/DISABLE）
-    private ContainerStatus status;
+    private SwitchableStatus status;
 }

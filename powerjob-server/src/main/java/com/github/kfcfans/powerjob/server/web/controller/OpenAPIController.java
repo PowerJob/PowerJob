@@ -80,9 +80,9 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.RUN_JOB)
-    public ResultDTO<Long> runJob(Long appId, Long jobId, @RequestParam(required = false) String instanceParams) {
+    public ResultDTO<Long> runJob(Long appId, Long jobId, @RequestParam(required = false) String instanceParams, @RequestParam(required = false) Long delay) {
         checkJobIdValid(jobId, appId);
-        return ResultDTO.success(jobService.runJob(jobId, instanceParams));
+        return ResultDTO.success(jobService.runJob(jobId, instanceParams, delay == null ? 0 : delay));
     }
 
     /* ************* Instance 区 ************* */

@@ -63,7 +63,7 @@ public class JobController {
 
     @GetMapping("/run")
     public ResultDTO<Long> runImmediately(String jobId) {
-        return ResultDTO.success(jobService.runJob(Long.valueOf(jobId), null));
+        return ResultDTO.success(jobService.runJob(Long.valueOf(jobId), null, 0));
     }
 
     @PostMapping("/list")
