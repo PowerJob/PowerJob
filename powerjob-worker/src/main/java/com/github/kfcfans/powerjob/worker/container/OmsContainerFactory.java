@@ -148,7 +148,7 @@ public class OmsContainerFactory {
     public static void destroyContainer(Long containerId) {
         OmsContainer container = CARGO.remove(containerId);
         if (container == null) {
-            log.warn("[OmsContainer-{}] container not exists.", containerId);
+            log.info("[OmsContainer-{}] container not exists, so there is no need to destroy the container.", containerId);
             return;
         }
         try {

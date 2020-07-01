@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.web.request;
 
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import lombok.Data;
@@ -29,4 +30,10 @@ public class SaveContainerInfoRequest {
 
     // 状态，枚举值为 ContainerStatus（ENABLE/DISABLE）
     private SwitchableStatus status;
+
+    public void valid() {
+        CommonUtils.requireNonNull(containerName, "containerName can't be empty");
+        CommonUtils.requireNonNull(appId, "appId can't be empty");
+        CommonUtils.requireNonNull(sourceInfo, "sourceInfo can't be empty");
+    }
 }

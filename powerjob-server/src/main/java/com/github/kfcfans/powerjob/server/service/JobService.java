@@ -52,6 +52,8 @@ public class JobService {
      */
     public Long saveJob(SaveJobInfoRequest request) throws Exception {
 
+        request.valid();
+
         JobInfoDO jobInfoDO;
         if (request.getId() != null) {
             jobInfoDO = jobInfoRepository.findById(request.getId()).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + request.getId()));

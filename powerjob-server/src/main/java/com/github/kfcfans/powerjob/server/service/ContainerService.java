@@ -86,6 +86,9 @@ public class ContainerService {
      * @param request 容器保存请求
      */
     public void save(SaveContainerInfoRequest request) {
+
+        request.valid();
+
         ContainerInfoDO container;
         Long originId = request.getId();
         if (originId != null) {

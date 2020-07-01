@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.common.request.http;
 
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import lombok.Data;
 
@@ -43,4 +44,11 @@ public class SaveWorkflowRequest {
 
     // 工作流整体失败的报警
     private List<Long> notifyUserIds = Lists.newLinkedList();
+
+    public void valid() {
+        CommonUtils.requireNonNull(wfName, "workflow name can't be empty");
+        CommonUtils.requireNonNull(appId, "appId can't be empty");
+        CommonUtils.requireNonNull(pEWorkflowDAG, "dag can't be empty");
+        CommonUtils.requireNonNull(timeExpressionType, "timeExpressionType can't be empty");
+    }
 }

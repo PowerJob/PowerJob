@@ -39,6 +39,8 @@ public class WorkflowService {
      */
     public Long saveWorkflow(SaveWorkflowRequest req) throws Exception {
 
+        req.valid();
+
         if (!WorkflowDAGUtils.valid(req.getPEWorkflowDAG())) {
             throw new OmsException("illegal DAG");
         }
