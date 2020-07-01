@@ -1,13 +1,15 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/KFCFans/OhMyScheduler/master/others/images/oms-logo.png" alt="OhMyScheduler" title="OhMyScheduler" width="557"/>
+<img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
 </p>
 
 <p align="center">
-<a href="https://github.com/KFCFans/OhMyScheduler/actions"><img src="https://github.com/KFCFans/OhMyScheduler/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master"></a>
-<a href="https://github.com/KFCFans/OhMyScheduler/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/OhMyScheduler"></a>
+<a href="https://github.com/KFCFans/PowerJob/actions"><img src="https://github.com/KFCFans/PowerJob/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master" alt="actions"></a>
+<a href="https://search.maven.org/search?q=com.github.kfcfans"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.github.kfcfans/powerjob-worker"></a>
+<a href="https://github.com/KFCFans/PowerJob/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/kfcfans/powerjob?color=%23E59866"></a>
+<a href="https://github.com/KFCFans/PowerJob/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/PowerJob" alt="LICENSE"></a>
 </p>
 
-OhMyScheduler is a powerful distributed scheduling platform and distributed computing framework based on Akka architecture.It provides you a chance to schedule job and distributed computing easily.
+PowerJob is a powerful distributed scheduling platform and distributed computing framework based on Akka architecture.It provides you a chance to schedule job and distributed computing easily.
 
 # Introduction
 
@@ -30,7 +32,7 @@ OhMyScheduler is a powerful distributed scheduling platform and distributed comp
 
 ### Comparison of similar products
 
-|                                    | QuartZ                                                    | xxl-job                                                   | SchedulerX 2.0                                               | OhMyScheduler                                                |
+|                                    | QuartZ                                                    | xxl-job                                                   | SchedulerX 2.0                                               | PowerJob                                                |
 | ---------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Timing type                        | CRON                                                      | CRON                                                      | CRON, fixed frequency, fixed delay, OpenAPI                  | **CRON, fixed frequency, fixed delay, OpenAPI**                  |
 | Task type                          | Built-in Java                                             | Built-in Java, GLUE Java, Shell, Python and other scripts | Built-in Java, external Java (FatJar), Shell, Python and other scripts | **Built-in Java, external Java (container), Shell, Python and other scripts** |
@@ -43,9 +45,9 @@ OhMyScheduler is a powerful distributed scheduling platform and distributed comp
 | workflow                       | not support                                               | not support                                               | support                                                      | **support**               |
 
 # Document
-**[GitHub Wiki](https://github.com/KFCFans/OhMyScheduler/wiki)**
+**[GitHub Wiki](https://github.com/KFCFans/PowerJob/wiki)**
 
-**[中文文档](https://www.yuque.com/ohmyscheduler/product)**
+**[中文文档](https://www.yuque.com/powerjob/product)**
 
 # Others
 

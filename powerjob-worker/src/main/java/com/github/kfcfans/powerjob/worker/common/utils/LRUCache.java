@@ -1,26 +1,37 @@
 package com.github.kfcfans.powerjob.worker.common.utils;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
+import java.util.function.BiConsumer;
 
 /**
  * LRU（Least Recently Used） 缓存
+ * before v3.1.1 使用 LinkedHashMap，但存在修改时访问报错问题，改用 Guava
  *
  * @author tjq
  * @since 2020/4/8
  */
-public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+public class LRUCache<K, V> {
 
-    private final int cacheSize;
+    private final Cache<K, V> innerCache;
 
     public LRUCache(int cacheSize) {
-        super((int) Math.ceil(cacheSize / 0.75) + 1, 0.75f, false);
-        this.cacheSize = cacheSize;
+        innerCache = CacheBuilder.newBuilder()
+                .concurrencyLevel(2)
+                .maximumSize(cacheSize)
+                .build();
     }
 
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
-        // 超过阈值时返回true，进行LRU淘汰
-        return size() > cacheSize;
+    public void forEach(BiConsumer<? super K, ? super V> action) {
+        innerCache.asMap().forEach(action);
+    }
+
+    public V get(K key) {
+        return innerCache.getIfPresent(key);
+    }
+
+    public void put(K key, V value) {
+        innerCache.put(key, value);
     }
 }

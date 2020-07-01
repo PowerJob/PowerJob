@@ -10,6 +10,7 @@ import com.github.kfcfans.powerjob.common.request.WorkerNeedDeployContainerReque
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ContainerInfoRepository;
@@ -91,8 +92,10 @@ public class ServerActor extends AbstractActor {
 
         Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findById(req.getContainerId());
         AskResponse askResponse = new AskResponse();
-        askResponse.setSuccess(false);
-        if (containerInfoOpt.isPresent()) {
+        if (!containerInfoOpt.isPresent() || containerInfoOpt.get().getStatus() != SwitchableStatus.ENABLE.getV()) {
+            askResponse.setSuccess(false);
+            askResponse.setMessage("can't find container by id: " + req.getContainerId());
+        }else {
             ContainerInfoDO containerInfo = containerInfoOpt.get();
             askResponse.setSuccess(true);
 
@@ -104,7 +107,6 @@ public class ServerActor extends AbstractActor {
 
             askResponse.setData(JsonUtils.toBytes(dpReq));
         }
-
         getSender().tell(askResponse, getSelf());
     }
 

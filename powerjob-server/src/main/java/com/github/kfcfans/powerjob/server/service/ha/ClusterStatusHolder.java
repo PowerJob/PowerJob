@@ -30,7 +30,7 @@ public class ClusterStatusHolder {
     // 集群中所有机器的最后心跳时间
     private Map<String, Long> address2ActiveTime;
 
-    private static final long WORKER_TIMEOUT_MS = 30000;
+    private static final long WORKER_TIMEOUT_MS = 60000;
 
     public ClusterStatusHolder(String appName) {
         this.appName = appName;
@@ -49,7 +49,7 @@ public class ClusterStatusHolder {
 
         Long oldTime = address2ActiveTime.getOrDefault(workerAddress, -1L);
         if (heartbeatTime < oldTime) {
-            log.warn("[ClusterStatusHolder-{}] receive the old heartbeat: {}.", appName, heartbeat);
+            log.warn("[ClusterStatusHolder-{}] receive the expired heartbeat from {}, serverTime: {}, heartTime: {}", appName, heartbeat.getWorkerAddress(), System.currentTimeMillis(), heartbeat.getHeartbeatTime());
             return;
         }
 
@@ -131,10 +131,25 @@ public class ClusterStatusHolder {
     /**
      * 释放所有本地存储的容器信息（该操作会导致短暂的 listDeployedContainer 服务不可用）
      */
-    public void releaseContainerInfos() {
+    public void release() {
         log.info("[ClusterStatusHolder-{}] clean the containerInfos, listDeployedContainer service may down about 1min~", appName);
         // 丢弃原来的所有数据，准备重建
         containerId2Infos = Maps.newConcurrentMap();
+
+        // 丢弃超时机器的信息
+        List<String> timeoutAddress = Lists.newLinkedList();
+        address2Metrics.forEach((addr, lastActiveTime) -> {
+            if (timeout(addr)) {
+                timeoutAddress.add(addr);
+            }
+        });
+        if (!timeoutAddress.isEmpty()) {
+            log.info("[ClusterStatusHolder-{}] detective timeout workers({}), try to release their infos.", appName, timeoutAddress);
+            timeoutAddress.forEach(addr -> {
+                address2ActiveTime.remove(addr);
+                address2Metrics.remove(addr);
+            });
+        }
     }
 
     private boolean timeout(String address) {

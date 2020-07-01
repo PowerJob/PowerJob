@@ -13,5 +13,5 @@ import java.util.List;
  */
 public interface ContainerInfoRepository extends JpaRepository<ContainerInfoDO, Long> {
 
-    List<ContainerInfoDO> findByAppId(Long appId);
+    List<ContainerInfoDO> findByAppIdAndStatusNot(Long appId, Integer status);
 }

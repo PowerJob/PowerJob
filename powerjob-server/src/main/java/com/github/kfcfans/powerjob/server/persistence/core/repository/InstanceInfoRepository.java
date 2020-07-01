@@ -68,7 +68,7 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     List<Long> findByJobIdInAndStatusIn(List<Long> jobIds, List<Integer> status);
 
     // 删除历史数据，JPA自带的删除居然是根据ID循环删，2000条数据删了几秒，也太拉垮了吧...
-    // 结果只能用 int 接受
+    // 结果只能用 int 接收
     @Modifying
     @Transactional
     @Query(value = "delete from instance_info where gmt_modified < ?1", nativeQuery = true)

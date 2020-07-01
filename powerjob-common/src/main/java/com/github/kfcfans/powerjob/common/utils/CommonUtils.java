@@ -1,8 +1,11 @@
 package com.github.kfcfans.powerjob.common.utils;
 
+import com.github.kfcfans.powerjob.common.OmsException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 
@@ -112,6 +115,18 @@ public class CommonUtils {
         n |= n >>> 8;
         n |= n >>> 16;
         return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+    }
+
+    public static <T> T requireNonNull(T obj, String msg) {
+        if (obj == null) {
+            throw new OmsException(msg);
+        }
+        if (obj instanceof String) {
+            if (StringUtils.isEmpty((String) obj)) {
+                throw new OmsException(msg);
+            }
+        }
+        return obj;
     }
 
 }

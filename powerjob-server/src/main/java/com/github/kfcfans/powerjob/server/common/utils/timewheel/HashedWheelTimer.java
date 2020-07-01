@@ -37,8 +37,6 @@ public class HashedWheelTimer implements Timer {
 
     private final ExecutorService taskProcessPool;
 
-    private static final int MAXIMUM_CAPACITY = 1 << 30;
-
     public HashedWheelTimer(long tickDuration, int ticksPerWheel) {
         this(tickDuration, ticksPerWheel, 0);
     }
@@ -47,9 +45,9 @@ public class HashedWheelTimer implements Timer {
      * 新建时间轮定时器
      * @param tickDuration 时间间隔，单位毫秒（ms）
      * @param ticksPerWheel 轮盘个数
-     * @param processTaskNum 处理任务的线程个数，0代表不启用新线程（如果定时任务需要耗时操作，请启用线程池）
+     * @param processThreadNum 处理任务的线程个数，0代表不启用新线程（如果定时任务需要耗时操作，请启用线程池）
      */
-    public HashedWheelTimer(long tickDuration, int ticksPerWheel, int processTaskNum) {
+    public HashedWheelTimer(long tickDuration, int ticksPerWheel, int processThreadNum) {
 
         this.tickDuration = tickDuration;
 
@@ -62,12 +60,13 @@ public class HashedWheelTimer implements Timer {
         mask = wheel.length - 1;
 
         // 初始化执行线程池
-        if (processTaskNum <= 0) {
+        if (processThreadNum <= 0) {
             taskProcessPool = null;
         }else {
             ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("HashedWheelTimer-Executor-%d").build();
             BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(16);
-            taskProcessPool = new ThreadPoolExecutor(2, processTaskNum,
+            int core = Math.max(Runtime.getRuntime().availableProcessors(), processThreadNum);
+            taskProcessPool = new ThreadPoolExecutor(core, 2 * core,
                     60, TimeUnit.SECONDS,
                     queue, threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
         }

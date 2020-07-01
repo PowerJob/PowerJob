@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.server.common.utils.timewheel;
 
 /**
- * description
+ * TimerFuture
  *
  * @author tjq
  * @since 2020/4/3

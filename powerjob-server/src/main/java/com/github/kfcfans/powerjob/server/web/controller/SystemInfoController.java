@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
@@ -18,6 +19,7 @@ import com.github.kfcfans.powerjob.server.web.response.SystemOverviewVO;
 import com.github.kfcfans.powerjob.server.web.response.WorkerStatusVO;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +59,7 @@ public class SystemInfoController {
         }
         String server =appInfoOpt.get().getCurrentServer();
 
-        // 没有Server
+        // 没有 Server，说明从来没有该 appId 的 worker 集群连接过
         if (StringUtils.isEmpty(server)) {
             return ResultDTO.success(Collections.emptyList());
         }
@@ -103,8 +105,10 @@ public class SystemInfoController {
         Date date = DateUtils.addDays(new Date(), -1);
         overview.setFailedInstanceCount(instanceInfoRepository.countByAppIdAndStatusAndGmtCreateAfter(appId, InstanceStatus.FAILED.getV(), date));
 
+        // 服务器时区
+        overview.setTimezone(TimeZone.getDefault().getDisplayName());
         // 服务器时间
-        overview.setServerTime(System.currentTimeMillis());
+        overview.setServerTime(DateFormatUtils.format(new Date(), OmsConstant.TIME_PATTERN));
 
         return ResultDTO.success(overview);
     }

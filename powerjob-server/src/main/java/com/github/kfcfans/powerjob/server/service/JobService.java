@@ -12,6 +12,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
+import com.github.kfcfans.powerjob.server.service.timing.schedule.HashedWheelTimerHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 任务服务
@@ -49,6 +51,8 @@ public class JobService {
      * @throws Exception 异常
      */
     public Long saveJob(SaveJobInfoRequest request) throws Exception {
+
+        request.valid();
 
         JobInfoDO jobInfoDO;
         if (request.getId() != null) {
@@ -94,16 +98,22 @@ public class JobService {
      * 手动立即运行某个任务
      * @param jobId 任务ID
      * @param instanceParams 任务实例参数（仅 OpenAPI 存在）
+     * @param delay 延迟时间，单位 毫秒
      * @return 任务实例ID
      */
-    public long runJob(Long jobId, String instanceParams) {
+    public long runJob(Long jobId, String instanceParams, long delay) {
 
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
-
-        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, null, System.currentTimeMillis());
+        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, null, System.currentTimeMillis() + Math.max(delay, 0));
         instanceInfoRepository.flush();
 
-        dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
+        if (delay <= 0) {
+            dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
+        }else {
+            HashedWheelTimerHolder.TIMER.schedule(() -> {
+                dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
+            }, delay, TimeUnit.MILLISECONDS);
+        }
         return instanceId;
     }
 
