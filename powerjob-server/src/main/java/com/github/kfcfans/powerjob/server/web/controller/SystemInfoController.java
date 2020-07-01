@@ -59,7 +59,7 @@ public class SystemInfoController {
         }
         String server =appInfoOpt.get().getCurrentServer();
 
-        // 没有Server
+        // 没有 Server，说明从来没有该 appId 的 worker 集群连接过
         if (StringUtils.isEmpty(server)) {
             return ResultDTO.success(Collections.emptyList());
         }

@@ -66,9 +66,11 @@ public class OhMyClient {
                         appId = Long.parseLong(resultDTO.getData().toString());
                         currentAddress = addr;
                         break;
+                    }else {
+                        throw new OmsException(resultDTO.getMessage());
                     }
                 }
-            }catch (Exception ignore) {
+            }catch (IOException ignore) {
             }
         }
 

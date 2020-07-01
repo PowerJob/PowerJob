@@ -21,7 +21,7 @@ public class TestClient {
 
     @BeforeAll
     public static void initClient() throws Exception {
-        ohMyClient = new OhMyClient("127.0.0.1:7700", "oms-test2", null);
+        ohMyClient = new OhMyClient("127.0.0.1:7700", "powerjob-agent-test", "123");
     }
 
     @Test
@@ -70,7 +70,7 @@ public class TestClient {
 
     @Test
     public void testRunJob() throws Exception {
-        System.out.println(ohMyClient.runJob(8L, "this is instanceParams", 20));
+        System.out.println(ohMyClient.runJob(6L, "this is instanceParams", 60000));
     }
 
     @Test

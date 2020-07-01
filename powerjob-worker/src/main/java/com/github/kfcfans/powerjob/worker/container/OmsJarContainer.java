@@ -190,7 +190,7 @@ public class OmsJarContainer implements OmsContainer {
         // 需要满足的条件：引用计数器减为0 & 有更新的容器出现
         if (referenceCount.decrementAndGet() <= 0) {
 
-            OmsContainer container = OmsContainerFactory.getContainer(containerId);
+            OmsContainer container = OmsContainerFactory.fetchContainer(containerId, false);
             if (container != this) {
                 try {
                     destroy();

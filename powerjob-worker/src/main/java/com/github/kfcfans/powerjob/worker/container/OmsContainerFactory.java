@@ -39,16 +39,21 @@ public class OmsContainerFactory {
     /**
      * 获取容器
      * @param containerId 容器ID
+     * @param loadFromServer 当本地不存在时尝试从 server 加载
      * @return 容器示例，可能为 null
      */
-    public static OmsContainer getContainer(Long containerId) {
+    public static OmsContainer fetchContainer(Long containerId, boolean loadFromServer) {
 
         OmsContainer omsContainer = CARGO.get(containerId);
         if (omsContainer != null) {
             return omsContainer;
         }
 
-        // 尝试下载
+        if (!loadFromServer) {
+            return null;
+        }
+
+        // 尝试从 server 加载
         log.info("[OmsContainer-{}] can't find the container in factory, try to deploy from server.", containerId);
         WorkerNeedDeployContainerRequest request = new WorkerNeedDeployContainerRequest(containerId);
 
@@ -66,6 +71,8 @@ public class OmsContainerFactory {
                 ServerDeployContainerRequest deployRequest = askResponse.getData(ServerDeployContainerRequest.class);
                 log.info("[OmsContainer-{}] fetch containerInfo from server successfully.", containerId);
                 deployContainer(deployRequest);
+            }else {
+                log.warn("[OmsContainer-{}] fetch containerInfo failed, reason is {}.", containerId, askResponse.getMessage());
             }
         }catch (Exception e) {
             log.error("[OmsContainer-{}] get container failed, exception is {}", containerId, e.toString());

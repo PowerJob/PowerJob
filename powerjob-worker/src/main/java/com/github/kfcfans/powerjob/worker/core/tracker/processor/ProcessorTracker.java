@@ -309,9 +309,11 @@ public class ProcessorTracker {
                 String[] split = processorInfo.split("#");
                 log.info("[ProcessorTracker-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
 
-                omsContainer = OmsContainerFactory.getContainer(Long.valueOf(split[0]));
+                omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), true);
                 if (omsContainer != null) {
                     processor = omsContainer.getProcessor(split[1]);
+                }else {
+                    log.warn("[ProcessorTracker-{}] load container failed.", instanceId);
                 }
                 break;
             default:
