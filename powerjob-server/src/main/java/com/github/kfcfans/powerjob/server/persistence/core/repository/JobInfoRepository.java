@@ -30,6 +30,6 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
     // 校验工作流包含的任务
     long countByAppIdAndStatusAndIdIn(Long appId, int status, List<Long> jobIds);
 
-    long countByAppId(long appId);
+    long countByAppIdAndStatusNot(long appId, int status);
 
 }

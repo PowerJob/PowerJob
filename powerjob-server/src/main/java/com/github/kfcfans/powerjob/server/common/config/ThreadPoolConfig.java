@@ -8,13 +8,13 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 /**
  * 公用线程池配置
  * omsTimingPool：用于执行定时任务的线程池
  * omsCommonPool：用于执行普通任务的线程池
+ * omsCommonPool：用于执行后台任务的线程池，这类任务对时间不敏感，慢慢执行细水长流即可
  * taskScheduler：用于定时调度的线程池
  *
  * @author tjq
@@ -51,7 +51,19 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(1024);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsCommonPool-");
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        executor.setRejectedExecutionHandler(new LogOnRejected());
+        return executor;
+    }
+
+    @Bean("omsBackgroundPool")
+    public Executor initBackgroundPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
+        executor.setQueueCapacity(8192);
+        executor.setKeepAliveSeconds(60);
+        executor.setThreadNamePrefix("omsBackgroundPool-");
+        executor.setRejectedExecutionHandler(new LogOnRejected());
         return executor;
     }
 
@@ -65,4 +77,11 @@ public class ThreadPoolConfig {
         return scheduler;
     }
 
+    private static final class LogOnRejected implements RejectedExecutionHandler {
+
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor p) {
+            log.error("[OmsThreadPool] Task({}) rejected from pool({}).", r, p);
+        }
+    }
 }
