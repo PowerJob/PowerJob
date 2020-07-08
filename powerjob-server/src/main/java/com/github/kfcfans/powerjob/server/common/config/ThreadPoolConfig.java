@@ -14,6 +14,7 @@ import java.util.concurrent.*;
  * 公用线程池配置
  * omsTimingPool：用于执行定时任务的线程池
  * omsCommonPool：用于执行普通任务的线程池
+ * omsCommonPool：用于执行后台任务的线程池，这类任务对时间不敏感，慢慢执行细水长流即可
  * taskScheduler：用于定时调度的线程池
  *
  * @author tjq
