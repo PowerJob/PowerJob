@@ -170,14 +170,8 @@ public class InstanceLogService {
      * 将本地的任务实例运行日志同步到 mongoDB 存储，在任务执行结束后异步执行
      * @param instanceId 任务实例ID
      */
-    @Async("omsCommonPool")
+    @Async("omsBackgroundPool")
     public void sync(Long instanceId) {
-
-        // 休眠10秒等待全部数据上报（OmsLogHandler 每隔5秒上报数据）
-        try {
-            TimeUnit.SECONDS.sleep(15);
-        }catch (Exception ignore) {
-        }
 
         Stopwatch sw = Stopwatch.createStarted();
         try {
