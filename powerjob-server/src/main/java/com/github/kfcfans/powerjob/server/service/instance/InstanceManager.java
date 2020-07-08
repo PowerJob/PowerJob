@@ -143,7 +143,7 @@ public class InstanceManager {
         log.info("[Instance-{}] process finished, final status is {}.", instanceId, status.name());
 
         // 上报日志数据
-        instanceLogService.sync(instanceId);
+        HashedWheelTimerHolder.INACCURATE_TIMER.schedule(() -> instanceLogService.sync(instanceId), 15, TimeUnit.SECONDS);
 
         // workflow 特殊处理
         if (wfInstanceId != null) {
