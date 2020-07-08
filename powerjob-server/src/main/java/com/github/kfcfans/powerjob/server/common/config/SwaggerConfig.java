@@ -24,11 +24,11 @@ public class SwaggerConfig {
     public Docket createRestApi() {
         // apiInfo()用来创建该Api的基本信息（这些基本信息会展现在文档页面中
         ApiInfo apiInfo = new ApiInfoBuilder()
-                .title("OhMyScheduler")
+                .title("PowerJob")
                 .description("Distributed scheduling and computing framework.")
                 .license("Apache Licence 2")
-                .termsOfServiceUrl("https://github.com/KFCFans/OhMyScheduler")
-                .version("2.0.0")
+                .termsOfServiceUrl("https://github.com/KFCFans/PowerJob")
+                .version("3.1.3")
                 .build();
 
         return new Docket(DocumentationType.SWAGGER_2)

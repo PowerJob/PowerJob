@@ -11,6 +11,7 @@ import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.akka.requests.FriendQueryWorkerClusterStatusReq;
+import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
@@ -98,7 +99,7 @@ public class SystemInfoController {
         SystemOverviewVO overview = new SystemOverviewVO();
 
         // 总任务数量
-        overview.setJobCount(jobInfoRepository.countByAppId(appId));
+        overview.setJobCount(jobInfoRepository.countByAppIdAndStatusNot(appId, SwitchableStatus.DELETED.getV()));
         // 运行任务数
         overview.setRunningInstanceCount(instanceInfoRepository.countByAppIdAndStatus(appId, InstanceStatus.RUNNING.getV()));
         // 近期失败任务数（24H内）
