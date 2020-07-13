@@ -9,7 +9,7 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <name>powerjob</name>
-    <url>https://github.com/KFCFans/OhMyScheduler</url>
+    <url>https://github.com/KFCFans/PowerJob</url>
     <description>Distributed scheduling and execution framework</description>
     <licenses>
         <license>
@@ -19,8 +19,8 @@
         </license>
     </licenses>
     <scm>
-        <url>https://github.com/KFCFans/OhMyScheduler</url>
-        <connection>https://github.com/KFCFans/OhMyScheduler.git</connection>
+        <url>https://github.com/KFCFans/PowerJob</url>
+        <connection>https://github.com/KFCFans/PowerJob.git</connection>
     </scm>
 
     <developers>
