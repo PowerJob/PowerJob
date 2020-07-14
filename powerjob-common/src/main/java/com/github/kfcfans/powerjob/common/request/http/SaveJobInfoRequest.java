@@ -46,8 +46,8 @@ public class SaveJobInfoRequest {
 
 
     /* ************************** 运行时配置 ************************** */
-    // 最大同时运行任务数
-    private Integer maxInstanceNum = 1;
+    // 最大同时运行任务数，0 代表不限
+    private Integer maxInstanceNum = 0;
     // 并发度，同时执行的线程数量
     private Integer concurrency = 5;
     // 任务整体超时时间

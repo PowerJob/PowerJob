@@ -28,6 +28,8 @@ public enum InstanceStatus {
 
     // 广义的运行状态
     public static final List<Integer> generalizedRunningStatus = Lists.newArrayList(WAITING_DISPATCH.v, WAITING_WORKER_RECEIVE.v, RUNNING.v);
+    // 结束状态
+    public static final List<Integer> finishedStatus = Lists.newArrayList(FAILED.v, SUCCEED.v, STOPPED.v);
 
     public static InstanceStatus of(int v) {
         for (InstanceStatus is : values()) {
