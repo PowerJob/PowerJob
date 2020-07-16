@@ -1,7 +1,10 @@
 package com.github.kfcfans.powerjob.worker;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.DeadLetter;
 import akka.actor.Props;
+import akka.routing.RoundRobinPool;
 import com.github.kfcfans.powerjob.common.OmsException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
@@ -9,6 +12,7 @@ import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import com.github.kfcfans.powerjob.worker.actors.TroubleshootingActor;
 import com.github.kfcfans.powerjob.worker.actors.ProcessorTrackerActor;
 import com.github.kfcfans.powerjob.worker.actors.TaskTrackerActor;
 import com.github.kfcfans.powerjob.worker.actors.WorkerActor;
@@ -93,10 +97,19 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
             Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.WORKER_AKKA_CONFIG_NAME);
             Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
+            int cores = Runtime.getRuntime().availableProcessors();
             actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
-            actorSystem.actorOf(Props.create(TaskTrackerActor.class), RemoteConstant.Task_TRACKER_ACTOR_NAME);
-            actorSystem.actorOf(Props.create(ProcessorTrackerActor.class), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
+            actorSystem.actorOf(Props.create(TaskTrackerActor.class)
+                    .withDispatcher("akka.task-tracker-dispatcher")
+                    .withRouter(new RoundRobinPool(cores * 2)), RemoteConstant.Task_TRACKER_ACTOR_NAME);
+            actorSystem.actorOf(Props.create(ProcessorTrackerActor.class)
+                    .withDispatcher("akka.processor-tracker-dispatcher")
+                    .withRouter(new RoundRobinPool(cores)), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
             actorSystem.actorOf(Props.create(WorkerActor.class), RemoteConstant.WORKER_ACTOR_NAME);
+
+            // 处理系统中产生的异常情况
+            ActorRef troubleshootingActor = actorSystem.actorOf(Props.create(TroubleshootingActor.class), RemoteConstant.TROUBLESHOOTING_ACTOR_NAME);
+            actorSystem.eventStream().subscribe(troubleshootingActor, DeadLetter.class);
 
             log.info("[OhMyWorker] akka-remote listening address: {}", workerAddress);
             log.info("[OhMyWorker] akka ActorSystem({}) initialized successfully.", actorSystem);
