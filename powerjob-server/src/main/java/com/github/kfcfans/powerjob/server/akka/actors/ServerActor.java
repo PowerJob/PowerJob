@@ -63,7 +63,7 @@ public class ServerActor extends AbstractActor {
             getInstanceManager().updateStatus(req);
 
             // 结束状态（成功/失败）需要回复消息
-            if (!InstanceStatus.generalizedRunningStatus.contains(req.getInstanceStatus())) {
+            if (InstanceStatus.finishedStatus.contains(req.getInstanceStatus())) {
                 getSender().tell(AskResponse.succeed(null), getSelf());
             }
         }catch (Exception e) {

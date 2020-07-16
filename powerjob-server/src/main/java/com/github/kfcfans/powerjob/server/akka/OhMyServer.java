@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.server.akka;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.routing.RoundRobinPool;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.akka.actors.FriendActor;
@@ -58,7 +59,9 @@ public class OhMyServer {
         Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
         actorSystem = ActorSystem.create(RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
 
-        actorSystem.actorOf(Props.create(ServerActor.class), RemoteConstant.SERVER_ACTOR_NAME);
+        actorSystem.actorOf(Props.create(ServerActor.class)
+                .withDispatcher("akka.server-actor-dispatcher")
+                .withRouter(new RoundRobinPool(Runtime.getRuntime().availableProcessors() * 4)), RemoteConstant.SERVER_ACTOR_NAME);
         actorSystem.actorOf(Props.create(FriendActor.class), RemoteConstant.SERVER_FRIEND_ACTOR_NAME);
 
         log.info("[OhMyServer] OhMyServer's akka system start successfully, using time {}.", stopwatch);
