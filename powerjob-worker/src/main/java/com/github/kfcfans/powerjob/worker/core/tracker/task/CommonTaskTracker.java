@@ -37,6 +37,10 @@ public class CommonTaskTracker extends TaskTracker {
     // 可以是除 ROOT_TASK_ID 的任何数字
     private static final String LAST_TASK_ID = "1111";
 
+    // 连续上报多次失败后放弃上报，视为结果不可达，TaskTracker down
+    private int reportFailedCnt = 0;
+    private static final int MAX_REPORT_FAILED_THRESHOLD = 5;
+
     protected CommonTaskTracker(ServerScheduleJobReq req) {
         super(req);
     }
@@ -232,6 +236,10 @@ public class CommonTaskTracker extends TaskTracker {
 
                 // 服务器未接受上报，则等待下次重新上报
                 if (!serverAccepted) {
+                    if (++reportFailedCnt > MAX_REPORT_FAILED_THRESHOLD) {
+                        log.error("[TaskTracker-{}] try to report finished status(success={}, result={}) lots of times but all failed, it's time to give up, so the process result will be dropped", instanceId, success, result);
+                        destroy();
+                    }
                     return;
                 }
 
