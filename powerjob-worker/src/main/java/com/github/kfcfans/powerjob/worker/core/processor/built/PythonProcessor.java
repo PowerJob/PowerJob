@@ -13,7 +13,7 @@ public class PythonProcessor extends ScriptProcessor {
     }
 
     @Override
-    protected String genScriptName(Long instanceId) {
+    protected String genScriptName() {
         return String.format("python_%d.py", instanceId);
     }
 
