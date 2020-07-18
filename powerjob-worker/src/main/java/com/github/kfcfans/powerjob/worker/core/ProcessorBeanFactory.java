@@ -37,7 +37,7 @@ public class ProcessorBeanFactory {
                 return (BasicProcessor) clz.getDeclaredConstructor().newInstance();
 
             }catch (Exception e) {
-                log.error("[ProcessorBeanFactory] load local Processor(className = {}) failed.", className, e);
+                log.warn("[ProcessorBeanFactory] load local Processor(className = {}) failed, reason is {}", className, e.getMessage());
             }
             return null;
         });

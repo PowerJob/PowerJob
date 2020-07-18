@@ -1,13 +1,12 @@
 package com.github.kfcfans.powerjob.server.akka;
 
-import akka.actor.ActorSelection;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.routing.RoundRobinPool;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.akka.actors.FriendActor;
 import com.github.kfcfans.powerjob.server.akka.actors.ServerActor;
+import com.github.kfcfans.powerjob.server.akka.actors.ServerTroubleshootingActor;
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
@@ -63,6 +62,10 @@ public class OhMyServer {
                 .withDispatcher("akka.server-actor-dispatcher")
                 .withRouter(new RoundRobinPool(Runtime.getRuntime().availableProcessors() * 4)), RemoteConstant.SERVER_ACTOR_NAME);
         actorSystem.actorOf(Props.create(FriendActor.class), RemoteConstant.SERVER_FRIEND_ACTOR_NAME);
+
+        // 处理系统中产生的异常情况
+        ActorRef troubleshootingActor = actorSystem.actorOf(Props.create(ServerTroubleshootingActor.class), RemoteConstant.SERVER_TROUBLESHOOTING_ACTOR_NAME);
+        actorSystem.eventStream().subscribe(troubleshootingActor, DeadLetter.class);
 
         log.info("[OhMyServer] OhMyServer's akka system start successfully, using time {}.", stopwatch);
     }
