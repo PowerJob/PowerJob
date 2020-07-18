@@ -1,7 +1,6 @@
 package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
@@ -15,6 +14,7 @@ import com.github.kfcfans.powerjob.server.service.CacheService;
 import com.github.kfcfans.powerjob.server.service.InstanceLogService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.web.request.QueryInstanceRequest;
+import com.github.kfcfans.powerjob.server.web.response.InstanceDetailVO;
 import com.github.kfcfans.powerjob.server.web.response.InstanceInfoVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,8 +65,8 @@ public class InstanceController {
     }
 
     @GetMapping("/detail")
-    public ResultDTO<InstanceDetail> getInstanceDetail(String instanceId) {
-        return ResultDTO.success(instanceService.getInstanceDetail(Long.valueOf(instanceId)));
+    public ResultDTO<InstanceDetailVO> getInstanceDetail(String instanceId) {
+        return ResultDTO.success(InstanceDetailVO.from(instanceService.getInstanceDetail(Long.valueOf(instanceId))));
     }
 
     @GetMapping("/log")
