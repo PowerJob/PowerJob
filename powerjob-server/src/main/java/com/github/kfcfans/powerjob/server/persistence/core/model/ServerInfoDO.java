@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(name = "server_info", uniqueConstraints = {@UniqueConstraint(columnNames = "ip")})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "ip")})
 public class ServerInfoDO {
 
     @Id

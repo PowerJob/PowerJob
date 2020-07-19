@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -41,6 +42,7 @@ public class RepositoryTest {
      * 需要证明批量写入失败后会回滚
      */
     @Test
+    @Transactional
     public void testBatchLock() {
 
         List<OmsLockDO> locks = Lists.newArrayList();
@@ -59,6 +61,7 @@ public class RepositoryTest {
     }
 
     @Test
+    @Transactional
     public void testUpdate() {
         InstanceInfoDO updateEntity = new InstanceInfoDO();
         updateEntity.setId(22L);
@@ -68,6 +71,7 @@ public class RepositoryTest {
     }
 
     @Test
+    @Transactional
     public void testExecuteLogUpdate() {
         instanceInfoRepository.update4TriggerFailed(1586310414570L, 2, 100, System.currentTimeMillis(), System.currentTimeMillis(), "192.168.1.1", "NULL", "", new Date());
         instanceInfoRepository.update4FrequentJob(1586310419650L, 2, 200, new Date());

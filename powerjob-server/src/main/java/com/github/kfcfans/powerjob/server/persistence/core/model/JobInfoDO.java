@@ -18,7 +18,7 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "job_info", indexes = {@Index(columnList = "appId")})
+@Table(indexes = {@Index(columnList = "appId")})
 public class JobInfoDO {
 
 

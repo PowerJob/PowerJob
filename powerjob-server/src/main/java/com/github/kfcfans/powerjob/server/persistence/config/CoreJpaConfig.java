@@ -1,6 +1,9 @@
 package com.github.kfcfans.powerjob.server.persistence.config;
 
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -15,6 +18,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -39,6 +44,9 @@ public class CoreJpaConfig {
     @Resource(name = "omsCoreDatasource")
     private DataSource omsCoreDatasource;
 
+    @Resource
+    private PowerJobPhysicalNamingStrategy powerJobPhysicalNamingStrategy;
+
     public static final String CORE_PACKAGES = "com.github.kfcfans.powerjob.server.persistence.core";
 
     /**
@@ -49,7 +57,7 @@ public class CoreJpaConfig {
      *
      * @return 配置Map
      */
-    private static Map<String, Object> genDatasourceProperties() {
+    private Map<String, Object> genDatasourceProperties() {
 
         JpaProperties jpaProperties = new JpaProperties();
         jpaProperties.setOpenInView(false);
@@ -57,7 +65,14 @@ public class CoreJpaConfig {
 
         HibernateProperties hibernateProperties = new HibernateProperties();
         hibernateProperties.setDdlAuto("update");
-        return hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings());
+
+        // 配置JPA自定义表名称策略
+        HibernateSettings hibernateSettings = new HibernateSettings();
+        List<HibernatePropertiesCustomizer> customizers = new ArrayList<>();
+        customizers.add(
+                new NamingStrategiesHibernatePropertiesCustomizer(powerJobPhysicalNamingStrategy, null));
+        hibernateSettings.hibernatePropertiesCustomizers(customizers);
+        return hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(), hibernateSettings);
     }
 
     @Primary
@@ -79,4 +94,31 @@ public class CoreJpaConfig {
         return new JpaTransactionManager(Objects.requireNonNull(initCoreEntityManagerFactory(builder).getObject()));
     }
 
+
+    /**
+     * 参考 HibernateJpaConfiguration.NamingStrategiesHibernatePropertiesCustomizer
+     */
+    private static class NamingStrategiesHibernatePropertiesCustomizer implements HibernatePropertiesCustomizer {
+
+        private final PhysicalNamingStrategy physicalNamingStrategy;
+
+        private final ImplicitNamingStrategy implicitNamingStrategy;
+
+        NamingStrategiesHibernatePropertiesCustomizer(PhysicalNamingStrategy physicalNamingStrategy,
+                                                      ImplicitNamingStrategy implicitNamingStrategy) {
+            this.physicalNamingStrategy = physicalNamingStrategy;
+            this.implicitNamingStrategy = implicitNamingStrategy;
+        }
+
+        @Override
+        public void customize(Map<String, Object> hibernateProperties) {
+            if (this.physicalNamingStrategy != null) {
+                hibernateProperties.put("hibernate.physical_naming_strategy", this.physicalNamingStrategy);
+            }
+            if (this.implicitNamingStrategy != null) {
+                hibernateProperties.put("hibernate.implicit_naming_strategy", this.implicitNamingStrategy);
+            }
+        }
+
+    }
 }
