@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 处理 server 异常信息的 actor
  *
- * @author 朱八
+ * @author tjq
  * @since 2020/7/18
  */
 @Slf4j

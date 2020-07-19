@@ -64,7 +64,7 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     long countByAppIdAndStatus(long appId, int status);
     long countByAppIdAndStatusAndGmtCreateAfter(long appId, int status, Date time);
 
-    @Query(value = "select jobId from InstanceInfoDO where jobId in ?1 and status in ?2")
+    @Query(value = "select distinct jobId from InstanceInfoDO where jobId in ?1 and status in ?2")
     List<Long> findByJobIdInAndStatusIn(List<Long> jobIds, List<Integer> status);
 
     // 删除历史数据，JPA自带的删除居然是根据ID循环删，2000条数据删了几秒，也太拉垮了吧...

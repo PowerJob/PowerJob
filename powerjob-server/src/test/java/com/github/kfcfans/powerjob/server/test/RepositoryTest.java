@@ -9,6 +9,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.OmsLockDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.OmsLockRepository;
+import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +38,8 @@ public class RepositoryTest {
     private OmsLockRepository omsLockRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
+    @Resource
+    private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
     /**
      * 需要证明批量写入失败后会回滚
@@ -52,6 +55,14 @@ public class RepositoryTest {
         }
         omsLockRepository.saveAll(locks);
         omsLockRepository.flush();
+    }
+
+    @Test
+    public void testDeleteLock() {
+        String lockName = "test-lock";
+        OmsLockDO lockDO = new OmsLockDO(lockName, NetUtils.getLocalHost(), 10000L);
+        omsLockRepository.save(lockDO);
+        omsLockRepository.deleteByLockName(lockName);
     }
 
     @Test
@@ -83,6 +94,22 @@ public class RepositoryTest {
         System.out.println(time);
         final List<InstanceInfoDO> res = instanceInfoRepository.findByAppIdInAndStatusAndGmtModifiedBefore(Lists.newArrayList(1L), 3, time);
         System.out.println(res);
+    }
+
+    @Test
+    public void testFindByJobIdInAndStatusIn() {
+        List<Long> res = instanceInfoRepository.findByJobIdInAndStatusIn(Lists.newArrayList(1L, 2L, 3L, 4L), Lists.newArrayList(1, 2, 3, 4, 5));
+        System.out.println(res);
+    }
+
+    @Test
+    public void testDeleteInstanceInfo() {
+        instanceInfoRepository.deleteAllByGmtModifiedBefore(new Date());
+    }
+
+    @Test
+    public void testDeleteWorkflowInstanceInfo() {
+        workflowInstanceInfoRepository.deleteAllByGmtModifiedBefore(new Date());
     }
 
 }
