@@ -1,6 +1,16 @@
 package com.github.kfcfans.powerjob.server.web.response;
 
+import com.github.kfcfans.powerjob.common.ExecuteType;
+import com.github.kfcfans.powerjob.common.ProcessorType;
+import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import com.github.kfcfans.powerjob.server.common.SJ;
+import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
+import com.google.common.collect.Lists;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -56,6 +66,8 @@ public class JobInfoVO {
     private boolean enable;
     // 下一次调度时间
     private Long nextTriggerTime;
+    // 下一次调度时间（文字版）
+    private String nextTriggerTimeStr;
 
     /* ************************** 繁忙机器配置 ************************** */
     // 最低CPU核心数量，0代表不限
@@ -76,4 +88,27 @@ public class JobInfoVO {
 
     // 报警用户ID列表
     private List<String> notifyUserIds;
+
+    public static JobInfoVO from(JobInfoDO jobInfoDO) {
+        JobInfoVO jobInfoVO = new JobInfoVO();
+        BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
+
+        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
+        ExecuteType executeType = ExecuteType.of(jobInfoDO.getExecuteType());
+        ProcessorType processorType = ProcessorType.of(jobInfoDO.getProcessorType());
+
+        jobInfoVO.setTimeExpressionType(timeExpressionType.name());
+        jobInfoVO.setExecuteType(executeType.name());
+        jobInfoVO.setProcessorType(processorType.name());
+        jobInfoVO.setEnable(jobInfoDO.getStatus() == SwitchableStatus.ENABLE.getV());
+
+        if (!StringUtils.isEmpty(jobInfoDO.getNotifyUserIds())) {
+            jobInfoVO.setNotifyUserIds(SJ.commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));
+        }else {
+            jobInfoVO.setNotifyUserIds(Lists.newLinkedList());
+        }
+        jobInfoVO.setNextTriggerTimeStr(CommonUtils.formatTime(jobInfoDO.getNextTriggerTime()));
+
+        return jobInfoVO;
+    }
 }

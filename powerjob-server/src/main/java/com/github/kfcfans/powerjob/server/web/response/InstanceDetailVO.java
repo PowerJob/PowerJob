@@ -15,7 +15,7 @@ import java.util.List;
  * 任务实例的运行详细信息（对外展示对象）
  * 注意：日期的格式化全部需要在 server 完成，不能在浏览器完成，否则会有时区问题（当 server 与 browser 时区不一致时显示会有问题）
  *
- * @author 朱八
+ * @author tjq
  * @since 2020/7/18
  */
 @Data
