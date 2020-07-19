@@ -8,9 +8,11 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,6 +88,11 @@ public class WebLogAspect {
             if (obj instanceof HttpServletRequest || obj instanceof HttpServletResponse) {
                 break;
             }
+            // FatJar
+            if (obj instanceof MultipartFile || obj instanceof Resource) {
+                break;
+            }
+
             objList.add(obj);
         }
         return JSONObject.toJSONString(objList);

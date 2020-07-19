@@ -68,16 +68,20 @@ public class DispatchService {
 
         // 查询当前运行的实例数
         long current = System.currentTimeMillis();
-        long runningInstanceCount = instanceInfoRepository.countByJobIdAndStatusIn(jobId, generalizedRunningStatus);
 
-        // 超出最大同时运行限制，不执行调度
-        if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
-            String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
-            log.warn("[Dispatcher-{}|{}] cancel dispatch job due to too much instance(num={}) is running.", jobId, instanceId, runningInstanceCount);
-            instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams, now);
+        // 0 代表不限制在线任务，还能省去一次 DB 查询
+        if (jobInfo.getMaxInstanceNum() > 0) {
 
-            instanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, result);
-            return;
+            long runningInstanceCount = instanceInfoRepository.countByJobIdAndStatusIn(jobId, Lists.newArrayList(WAITING_WORKER_RECEIVE.getV(), RUNNING.getV()));
+            // 超出最大同时运行限制，不执行调度
+            if (runningInstanceCount > jobInfo.getMaxInstanceNum()) {
+                String result = String.format(SystemInstanceResult.TOO_MUCH_INSTANCE, runningInstanceCount, jobInfo.getMaxInstanceNum());
+                log.warn("[Dispatcher-{}|{}] cancel dispatch job due to too much instance(num={}) is running.", jobId, instanceId, runningInstanceCount);
+                instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams, now);
+
+                instanceManager.processFinishedInstance(instanceId, wfInstanceId, FAILED, result);
+                return;
+            }
         }
 
         // 获取当前所有可用的Worker

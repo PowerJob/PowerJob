@@ -35,17 +35,14 @@ public class CleanService {
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
-    @Value("${oms.log.retention.local}")
-    private int localLogRetentionDay;
-    @Value("${oms.log.retention.remote}")
-    private int remoteLogRetentionDay;
+    @Value("${oms.instanceinfo.retention}")
+    private int instanceInfoRetentionDay;
+
     @Value("${oms.container.retention.local}")
     private int localContainerRetentionDay;
     @Value("${oms.container.retention.remote}")
     private int remoteContainerRetentionDay;
 
-    @Value("${oms.instanceinfo.retention}")
-    private int instanceInfoRetentionDay;
 
     private static final int TEMPORARY_RETENTION_DAY = 3;
 
@@ -65,12 +62,12 @@ public class CleanService {
         cleanWorkflowInstanceLog();
 
         // 释放磁盘空间
-        cleanLocal(OmsFileUtils.genLogDirPath(), localLogRetentionDay);
+        cleanLocal(OmsFileUtils.genLogDirPath(), instanceInfoRetentionDay);
         cleanLocal(OmsFileUtils.genContainerJarPath(), localContainerRetentionDay);
         cleanLocal(OmsFileUtils.genTemporaryPath(), TEMPORARY_RETENTION_DAY);
 
         // 删除 GridFS 过期文件
-        cleanRemote(GridFsManager.LOG_BUCKET, remoteLogRetentionDay);
+        cleanRemote(GridFsManager.LOG_BUCKET, instanceInfoRetentionDay);
         cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
     }
 

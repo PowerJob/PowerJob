@@ -5,6 +5,7 @@ import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
+import com.github.kfcfans.powerjob.worker.common.OmsWorkerVersion;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SystemInfoUtils;
 import com.github.kfcfans.powerjob.worker.container.OmsContainerFactory;
@@ -39,6 +40,7 @@ public class WorkerHealthReporter implements Runnable {
         heartbeat.setAppName(OhMyWorker.getConfig().getAppName());
         heartbeat.setAppId(OhMyWorker.getAppId());
         heartbeat.setHeartbeatTime(System.currentTimeMillis());
+        heartbeat.setVersion(OmsWorkerVersion.getVersion());
 
         // 获取当前加载的容器列表
         heartbeat.setContainerInfos(OmsContainerFactory.getDeployedContainerInfos());

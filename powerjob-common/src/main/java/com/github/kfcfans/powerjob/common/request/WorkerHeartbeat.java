@@ -27,6 +27,10 @@ public class WorkerHeartbeat implements OmsSerializable {
     private long heartbeatTime;
     // 当前加载的容器（容器名称 -> 容器版本）
     private List<DeployedContainerInfo> containerInfos;
+    // worker 版本信息
+    private String version;
+    // 扩展字段
+    private String extra;
 
     private SystemMetrics systemMetrics;
 }

@@ -17,7 +17,6 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
@@ -120,14 +119,6 @@ public class FrequentTaskTracker extends TaskTracker {
             InstanceStatus status = InstanceStatus.of(subInstanceInfo.status);
             subDetail.setStatus(status.getV());
             subDetail.setSubInstanceId(subId);
-
-            // 设置时间
-            subDetail.setStartTime(DateFormatUtils.format(subInstanceInfo.getStartTime(), OmsConstant.TIME_PATTERN));
-            if (status == InstanceStatus.SUCCEED || status == InstanceStatus.FAILED) {
-                subDetail.setFinishedTime(DateFormatUtils.format(subInstanceInfo.getFinishedTime(), OmsConstant.TIME_PATTERN));
-            }else {
-                subDetail.setFinishedTime("N/A");
-            }
 
             history.add(subDetail);
         });

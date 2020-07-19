@@ -194,7 +194,7 @@ public class InstanceService {
             }
 
         }catch (Exception e) {
-            log.error("[Instance-{}] ask InstanceStatus from TaskTracker failed, exception is {}", instanceId, e.toString());
+            log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, exception is {}", instanceId, e.toString());
         }
 
         // 失败则返回基础版信息

@@ -17,7 +17,7 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "workflow_info", indexes = {@Index(columnList = "appId")})
+@Table(indexes = {@Index(columnList = "appId")})
 public class WorkflowInfoDO {
 
     @Id

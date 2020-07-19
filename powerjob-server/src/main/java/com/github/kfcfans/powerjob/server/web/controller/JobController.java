@@ -1,11 +1,7 @@
 package com.github.kfcfans.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.PageResult;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
@@ -15,7 +11,6 @@ import com.github.kfcfans.powerjob.server.web.request.QueryJobInfoRequest;
 import com.github.kfcfans.powerjob.server.web.response.JobInfoVO;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -90,7 +85,7 @@ public class JobController {
             if (jobInfoOpt.isPresent()) {
                 result.setTotalItems(1);
                 result.setTotalPages(1);
-                result.setData(Lists.newArrayList(convert(jobInfoOpt.get())));
+                result.setData(Lists.newArrayList(JobInfoVO.from(jobInfoOpt.get())));
             }else {
                 result.setTotalPages(0);
                 result.setTotalItems(0);
@@ -108,34 +103,11 @@ public class JobController {
 
 
     private static PageResult<JobInfoVO> convertPage(Page<JobInfoDO> jobInfoPage) {
-        List<JobInfoVO> jobInfoVOList = jobInfoPage.getContent().stream().map(JobController::convert).collect(Collectors.toList());
+        List<JobInfoVO> jobInfoVOList = jobInfoPage.getContent().stream().map(JobInfoVO::from).collect(Collectors.toList());
 
         PageResult<JobInfoVO> pageResult = new PageResult<>(jobInfoPage);
         pageResult.setData(jobInfoVOList);
         return pageResult;
     }
-
-    private static JobInfoVO convert(JobInfoDO jobInfoDO) {
-        JobInfoVO jobInfoVO = new JobInfoVO();
-        BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
-
-        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
-        ExecuteType executeType = ExecuteType.of(jobInfoDO.getExecuteType());
-        ProcessorType processorType = ProcessorType.of(jobInfoDO.getProcessorType());
-
-        jobInfoVO.setTimeExpressionType(timeExpressionType.name());
-        jobInfoVO.setExecuteType(executeType.name());
-        jobInfoVO.setProcessorType(processorType.name());
-        jobInfoVO.setEnable(jobInfoDO.getStatus() == SwitchableStatus.ENABLE.getV());
-
-        if (!StringUtils.isEmpty(jobInfoDO.getNotifyUserIds())) {
-            jobInfoVO.setNotifyUserIds(SJ.commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));
-        }else {
-            jobInfoVO.setNotifyUserIds(Lists.newLinkedList());
-        }
-
-        return jobInfoVO;
-    }
-
 
 }

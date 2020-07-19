@@ -57,7 +57,11 @@ public class CoreJpaConfig {
 
         HibernateProperties hibernateProperties = new HibernateProperties();
         hibernateProperties.setDdlAuto("update");
-        return hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings());
+
+        // 配置JPA自定义表名称策略
+        hibernateProperties.getNaming().setPhysicalStrategy(PowerJobPhysicalNamingStrategy.class.getName());
+        HibernateSettings hibernateSettings = new HibernateSettings();
+        return hibernateProperties.determineHibernateProperties(jpaProperties.getProperties(), hibernateSettings);
     }
 
     @Primary
@@ -78,5 +82,4 @@ public class CoreJpaConfig {
     public PlatformTransactionManager initCoreTransactionManager(EntityManagerFactoryBuilder builder) {
         return new JpaTransactionManager(Objects.requireNonNull(initCoreEntityManagerFactory(builder).getObject()));
     }
-
 }
