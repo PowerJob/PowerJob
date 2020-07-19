@@ -22,7 +22,7 @@ import java.util.Locale;
  *
  * @author songyinyin
  * @date 2020/7/18 下午 11:01
- * @since 3.1.4
+ * @since 3.2.0
  */
 @Component
 public class PowerJobPhysicalNamingStrategy implements PhysicalNamingStrategy, Serializable {
