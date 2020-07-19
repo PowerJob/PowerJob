@@ -17,7 +17,7 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "workflow_instance_info")
+@Table
 public class WorkflowInstanceInfoDO {
 
     @Id
