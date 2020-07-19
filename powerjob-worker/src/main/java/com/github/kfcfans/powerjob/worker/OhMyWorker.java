@@ -105,7 +105,9 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
             actorSystem.actorOf(Props.create(ProcessorTrackerActor.class)
                     .withDispatcher("akka.processor-tracker-dispatcher")
                     .withRouter(new RoundRobinPool(cores)), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-            actorSystem.actorOf(Props.create(WorkerActor.class), RemoteConstant.WORKER_ACTOR_NAME);
+            actorSystem.actorOf(Props.create(WorkerActor.class)
+                    .withDispatcher("akka.worker-common-dispatcher")
+                    .withRouter(new RoundRobinPool(cores)), RemoteConstant.WORKER_ACTOR_NAME);
 
             // 处理系统中产生的异常情况
             ActorRef troubleshootingActor = actorSystem.actorOf(Props.create(TroubleshootingActor.class), RemoteConstant.TROUBLESHOOTING_ACTOR_NAME);

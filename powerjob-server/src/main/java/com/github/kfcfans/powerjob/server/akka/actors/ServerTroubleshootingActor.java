@@ -1,17 +1,17 @@
-package com.github.kfcfans.powerjob.worker.actors;
+package com.github.kfcfans.powerjob.server.akka.actors;
 
 import akka.actor.AbstractActor;
 import akka.actor.DeadLetter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 处理系统异常的 Actor
+ * 处理 server 异常信息的 actor
  *
- * @author 朱八
- * @since 2020/7/16
+ * @author tjq
+ * @since 2020/7/18
  */
 @Slf4j
-public class TroubleshootingActor extends AbstractActor {
+public class ServerTroubleshootingActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
@@ -20,6 +20,6 @@ public class TroubleshootingActor extends AbstractActor {
     }
 
     public void onReceiveDeadLetter(DeadLetter dl) {
-        log.warn("[TroubleshootingActor] receive DeadLetter: {}", dl);
+        log.warn("[ServerTroubleshootingActor] receive DeadLetter: {}", dl);
     }
 }

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * 任务实例的运行详细信息（对外）
+ * 任务实例的运行详细信息
  *
  * @author tjq
  * @since 2020/4/11
@@ -20,7 +20,7 @@ public class InstanceDetail implements OmsSerializable {
     private Long actualTriggerTime;
     // 任务整体结束时间（可能不存在）
     private Long finishedTime;
-    // 任务状态（中文）
+    // 任务状态
     private Integer status;
     // 任务执行结果（可能不存在）
     private String result;
@@ -35,13 +35,16 @@ public class InstanceDetail implements OmsSerializable {
     // 重试次数
     private Long runningTimes;
 
+    // 扩展字段，中间件升级不易，最好不要再改 common 包了...否则 server worker 版本不兼容
+    private String extra;
+
     // 秒级任务的 extra -> List<SubInstanceDetail>
     @Data
     @NoArgsConstructor
     public static class SubInstanceDetail implements OmsSerializable {
         private long subInstanceId;
-        private String startTime;
-        private String finishedTime;
+        private Long startTime;
+        private Long finishedTime;
         private String result;
         private int status;
     }

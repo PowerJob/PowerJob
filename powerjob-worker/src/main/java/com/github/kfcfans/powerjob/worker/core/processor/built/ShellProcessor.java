@@ -17,7 +17,7 @@ public class ShellProcessor extends ScriptProcessor {
     }
 
     @Override
-    protected String genScriptName(Long instanceId) {
+    protected String genScriptName() {
         return String.format("shell_%d.sh", instanceId);
     }
 

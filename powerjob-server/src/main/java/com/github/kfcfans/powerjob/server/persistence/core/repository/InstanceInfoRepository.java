@@ -37,19 +37,19 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     @Transactional
     @Modifying
     @CanIgnoreReturnValue
-    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, finished_time = ?5, task_tracker_address = ?6, result = ?7, instance_params = ?8, gmt_modified = ?9 where instance_id = ?1", nativeQuery = true)
+    @Query(value = "update InstanceInfoDO set status = ?2, runningTimes = ?3, actualTriggerTime = ?4, finishedTime = ?5, taskTrackerAddress = ?6, result = ?7, instanceParams = ?8, gmtModified = ?9 where instanceId = ?1")
     int update4TriggerFailed(long instanceId, int status, long runningTimes, long actualTriggerTime, long finishedTime, String taskTrackerAddress, String result, String instanceParams, Date modifyTime);
 
     @Transactional
     @Modifying
     @CanIgnoreReturnValue
-    @Query(value = "update instance_info set status = ?2, running_times = ?3, actual_trigger_time = ?4, task_tracker_address = ?5, instance_params = ?6, gmt_modified = ?7 where instance_id = ?1", nativeQuery = true)
+    @Query(value = "update InstanceInfoDO set status = ?2, runningTimes = ?3, actualTriggerTime = ?4, taskTrackerAddress = ?5, instanceParams = ?6, gmtModified = ?7 where instanceId = ?1")
     int update4TriggerSucceed(long instanceId, int status, long runningTimes, long actualTriggerTime, String taskTrackerAddress, String instanceParams, Date modifyTime);
 
     @Modifying
     @Transactional
     @CanIgnoreReturnValue
-    @Query(value = "update instance_info set status = ?2, running_times = ?3, gmt_modified = ?4 where instance_id = ?1", nativeQuery = true)
+    @Query(value = "update InstanceInfoDO set status = ?2, runningTimes = ?3, gmtModified = ?4 where instanceId = ?1")
     int update4FrequentJob(long instanceId, int status, long runningTimes, Date modifyTime);
 
     // 状态检查三兄弟，对应 WAITING_DISPATCH 、 WAITING_WORKER_RECEIVE 和 RUNNING 三阶段
@@ -64,13 +64,13 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     long countByAppIdAndStatus(long appId, int status);
     long countByAppIdAndStatusAndGmtCreateAfter(long appId, int status, Date time);
 
-    @Query(value = "select job_id from instance_info where job_id in ?1 and status in ?2", nativeQuery = true)
+    @Query(value = "select distinct jobId from InstanceInfoDO where jobId in ?1 and status in ?2")
     List<Long> findByJobIdInAndStatusIn(List<Long> jobIds, List<Integer> status);
 
     // 删除历史数据，JPA自带的删除居然是根据ID循环删，2000条数据删了几秒，也太拉垮了吧...
     // 结果只能用 int 接收
     @Modifying
     @Transactional
-    @Query(value = "delete from instance_info where gmt_modified < ?1", nativeQuery = true)
+    @Query(value = "delete from InstanceInfoDO where gmtModified < ?1")
     int deleteAllByGmtModifiedBefore(Date time);
 }

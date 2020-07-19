@@ -24,7 +24,7 @@ public interface WorkflowInstanceInfoRepository extends JpaRepository<WorkflowIn
     // 结果只能用 int 接收
     @Modifying
     @Transactional
-    @Query(value = "delete from workflow_instance_info where gmt_modified < ?1", nativeQuery = true)
+    @Query(value = "delete from WorkflowInstanceInfoDO where gmtModified < ?1")
     int deleteAllByGmtModifiedBefore(Date time);
 
     int countByWorkflowIdAndStatusIn(Long workflowId, List<Integer> status);

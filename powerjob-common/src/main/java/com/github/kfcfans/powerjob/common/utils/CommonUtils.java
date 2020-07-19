@@ -1,11 +1,12 @@
 package com.github.kfcfans.powerjob.common.utils;
 
+import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.OmsException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 
@@ -127,6 +128,22 @@ public class CommonUtils {
             }
         }
         return obj;
+    }
+
+    /**
+     * 格式化时间，将时间戳转化为可阅读时间
+     * @param ts 时间戳
+     * @return 可阅读时间
+     */
+    public static String formatTime(Long ts) {
+        if (ts == null || ts <= 0) {
+            return OmsConstant.NONE;
+        }
+        try {
+            return DateFormatUtils.format(ts, OmsConstant.TIME_PATTERN);
+        }catch (Exception ignore) {
+        }
+        return OmsConstant.NONE;
     }
 
 }

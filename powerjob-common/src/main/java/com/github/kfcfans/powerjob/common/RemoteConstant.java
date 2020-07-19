@@ -27,6 +27,7 @@ public class RemoteConstant {
 
     public static final String SERVER_ACTOR_NAME = "server_actor";
     public static final String SERVER_FRIEND_ACTOR_NAME = "friend_actor";
+    public static final String SERVER_TROUBLESHOOTING_ACTOR_NAME = "server_troubleshooting_actor";
     public static final String SERVER_AKKA_CONFIG_NAME = "oms-server.akka.conf";
 
 
