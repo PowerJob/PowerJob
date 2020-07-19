@@ -96,7 +96,6 @@ public abstract class ScriptProcessor implements BasicProcessor {
             }
             String result = String.format("[INPUT]: %s;[ERROR]: %s", inputSB.toString(), errorSB.toString());
 
-            omsLogger.info("SYSTEM===> ScriptProcessor finished process");
             return new ProcessResult(true, result);
         }catch (InterruptedException ie) {
             omsLogger.info("SYSTEM===> ScriptProcessor has been interrupted");

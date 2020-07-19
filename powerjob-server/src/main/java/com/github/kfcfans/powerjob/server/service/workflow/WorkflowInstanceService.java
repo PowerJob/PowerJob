@@ -48,12 +48,16 @@ public class WorkflowInstanceService {
         // 停止所有已启动且未完成的服务
         PEWorkflowDAG workflowDAG = JSONObject.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
         WorkflowDAGUtils.listRoots(workflowDAG).forEach(node -> {
-            if (node.getInstanceId() != null && InstanceStatus.generalizedRunningStatus.contains(node.getStatus())) {
-                log.debug("[WfInstance-{}] instance({}) is running, try to stop it now.", wfInstanceId, node.getInstanceId());
-                node.setStatus(InstanceStatus.STOPPED.getV());
-                node.setResult(SystemInstanceResult.STOPPED_BY_USER);
+            try {
+                if (node.getInstanceId() != null && InstanceStatus.generalizedRunningStatus.contains(node.getStatus())) {
+                    log.debug("[WfInstance-{}] instance({}) is running, try to stop it now.", wfInstanceId, node.getInstanceId());
+                    node.setStatus(InstanceStatus.STOPPED.getV());
+                    node.setResult(SystemInstanceResult.STOPPED_BY_USER);
 
-                instanceService.stopInstance(node.getInstanceId());
+                    instanceService.stopInstance(node.getInstanceId());
+                }
+            }catch (Exception e) {
+                log.warn("[WfInstance-{}] stop instance({}) failed.", wfInstanceId, JSONObject.toJSONString(node), e);
             }
         });
 
