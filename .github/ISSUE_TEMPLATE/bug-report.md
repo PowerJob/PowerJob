@@ -1,5 +1,5 @@
 ---
-name: \U0001F41B Bug Report
+name: "\U0001F41B Bug Report"
 about: Something doesn't work as expected
 labels: bug
 assignees: KFCFans
