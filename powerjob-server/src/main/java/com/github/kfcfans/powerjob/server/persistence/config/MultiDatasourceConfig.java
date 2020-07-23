@@ -1,9 +1,7 @@
 package com.github.kfcfans.powerjob.server.persistence.config;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -19,26 +17,17 @@ import javax.sql.DataSource;
 @Configuration
 public class MultiDatasourceConfig {
 
-    private static final String H2_JDBC_URL = "jdbc:h2:file:~/powerjob-server/h2/powerjob_server_db";
 
     @Primary
     @Bean("omsCoreDatasource")
-    @ConfigurationProperties(prefix = "spring.datasource.core")
+    @ConfigurationProperties(prefix = "spring.datasource.druid.core")
     public DataSource initOmsCoreDatasource() {
-        return DataSourceBuilder.create().build();
+        return DruidDataSourceBuilder.create().build();
     }
 
     @Bean("omsLocalDatasource")
+    @ConfigurationProperties(prefix = "spring.datasource.druid.local")
     public DataSource initOmsLocalDatasource() {
-
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl(H2_JDBC_URL);
-        config.setAutoCommit(true);
-        // 池中最小空闲连接数量
-        config.setMinimumIdle(4);
-        // 池中最大连接数量
-        config.setMaximumPoolSize(32);
-        return new HikariDataSource(config);
+        return DruidDataSourceBuilder.create().build();
     }
 }
