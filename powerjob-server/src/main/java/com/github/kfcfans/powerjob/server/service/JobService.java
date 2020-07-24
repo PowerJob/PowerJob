@@ -12,7 +12,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
-import com.github.kfcfans.powerjob.server.service.timing.schedule.HashedWheelTimerHolder;
+import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,6 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 任务服务
@@ -110,9 +109,9 @@ public class JobService {
         if (delay <= 0) {
             dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
         }else {
-            HashedWheelTimerHolder.TIMER.schedule(() -> {
+            InstanceTimeWheelService.schedule(instanceId, delay, () -> {
                 dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
-            }, delay, TimeUnit.MILLISECONDS);
+            });
         }
         return instanceId;
     }

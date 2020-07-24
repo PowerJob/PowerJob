@@ -66,6 +66,14 @@ public class DispatchService {
         Date now = new Date();
         String dbInstanceParams = instanceParams == null ? "" : instanceParams;
 
+        // 检查当前任务是否被取消
+        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+        InstanceStatus currentStatus = InstanceStatus.of(instanceInfo.getStatus());
+        if (currentStatus != WAITING_DISPATCH) {
+            log.info("[Dispatcher-{}|{}] cancel dispatch job due to instance status({}) is not WAITING_DISPATCH", jobId, instanceId, currentStatus.name());
+            return;
+        }
+
         // 查询当前运行的实例数
         long current = System.currentTimeMillis();
 

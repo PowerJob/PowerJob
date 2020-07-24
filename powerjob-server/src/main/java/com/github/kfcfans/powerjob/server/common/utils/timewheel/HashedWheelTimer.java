@@ -30,7 +30,7 @@ public class HashedWheelTimer implements Timer {
 
     private final Indicator indicator;
 
-    private long startTime;
+    private final long startTime;
 
     private final Queue<HashedWheelTimerFuture> waitingTasks = Queues.newLinkedBlockingQueue();
     private final Queue<HashedWheelTimerFuture> canceledTasks = Queues.newLinkedBlockingQueue();

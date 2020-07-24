@@ -30,6 +30,7 @@ public class SystemInstanceResult {
 
     // 被用户手动停止
     public static final String STOPPED_BY_USER = "stopped by user";
+    public static final String CANCELED_BY_USER = "canceled by user";
 
 
 }

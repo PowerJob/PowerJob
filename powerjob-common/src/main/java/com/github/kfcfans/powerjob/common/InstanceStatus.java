@@ -21,6 +21,7 @@ public enum InstanceStatus {
     RUNNING(3, "运行中"),
     FAILED(4, "失败"),
     SUCCEED(5, "成功"),
+    CANCELED(9, "取消"),
     STOPPED(10, "手动停止");
 
     private int v;
@@ -29,7 +30,7 @@ public enum InstanceStatus {
     // 广义的运行状态
     public static final List<Integer> generalizedRunningStatus = Lists.newArrayList(WAITING_DISPATCH.v, WAITING_WORKER_RECEIVE.v, RUNNING.v);
     // 结束状态
-    public static final List<Integer> finishedStatus = Lists.newArrayList(FAILED.v, SUCCEED.v, STOPPED.v);
+    public static final List<Integer> finishedStatus = Lists.newArrayList(FAILED.v, SUCCEED.v, CANCELED.v, STOPPED.v);
 
     public static InstanceStatus of(int v) {
         for (InstanceStatus is : values()) {

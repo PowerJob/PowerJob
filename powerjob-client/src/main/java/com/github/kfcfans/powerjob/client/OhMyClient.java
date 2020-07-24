@@ -211,6 +211,15 @@ public class OhMyClient {
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
+    public ResultDTO<Void> cancelInstance(Long instanceId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("instanceId", instanceId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.CANCEL_INSTANCE, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
     /**
      * 查询任务实例状态
      * @param instanceId 应用实例ID
