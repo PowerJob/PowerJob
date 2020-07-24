@@ -21,12 +21,13 @@ public class MultiDatasourceConfig {
     private static final String H2_DRIVER_CLASS_NAME = "org.h2.Driver";
     private static final String H2_JDBC_URL = "jdbc:h2:file:~/powerjob-server/h2/powerjob_server_db";
     private static final int H2_INITIAL_SIZE = 4;
+    private static final int H2_MIN_SIZE = 4;
     private static final int H2_MAX_ACTIVE_SIZE = 10;
     private static final String H2_DATASOURCE_NAME = "localDatasource";
 
     @Primary
     @Bean("omsCoreDatasource")
-    @ConfigurationProperties(prefix = "spring.datasource.druid.core")
+    @ConfigurationProperties(prefix = "spring.datasource.druid")
     public DataSource initOmsCoreDatasource() {
         return DruidDataSourceBuilder.create().build();
     }
@@ -37,6 +38,7 @@ public class MultiDatasourceConfig {
         ds.setDriverClassName(H2_DRIVER_CLASS_NAME);
         ds.setUrl(H2_JDBC_URL);
         ds.setInitialSize(H2_INITIAL_SIZE);
+        ds.setMinIdle(H2_MIN_SIZE);
         ds.setMaxActive(H2_MAX_ACTIVE_SIZE);
         ds.setName(H2_DATASOURCE_NAME);
         ds.setTestWhileIdle(false);
