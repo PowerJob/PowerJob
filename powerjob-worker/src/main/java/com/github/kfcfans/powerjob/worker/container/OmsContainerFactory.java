@@ -124,7 +124,7 @@ public class OmsContainerFactory {
                 oldContainer.destroy();
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("[OmsContainer-{}] deployContainer(name={},version={}) failed.", containerId, containerName, version, e);
             // 如果部署失败，则删除该 jar（本次失败可能是下载jar出错导致，不删除会导致这个版本永久无法重新部署）
             CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(jarFile));

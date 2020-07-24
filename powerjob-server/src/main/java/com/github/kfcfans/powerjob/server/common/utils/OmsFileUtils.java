@@ -54,6 +54,14 @@ public class OmsFileUtils {
     }
 
     /**
+     * 获取 H2 数据库工作目录
+     * @return H2 工作目录
+     */
+    public static String genH2Path() {
+        return COMMON_PATH + "h2/";
+    }
+
+    /**
      * 将文本写入文件
      * @param content 文本内容
      * @param file 文件
