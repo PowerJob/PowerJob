@@ -1,7 +1,6 @@
 ---
-name: bug report
-about: Create a report to help us improve
-title: "[BUG] bug report"
+name: "\U0001F41B Bug Report"
+about: Something doesn't work as expected
 labels: bug
 assignees: KFCFans
 

@@ -22,6 +22,8 @@ import java.util.List;
 @NoArgsConstructor
 public class InstanceDetailVO {
 
+    // 任务预计执行时间
+    private String expectedTriggerTime;
     // 任务整体开始时间
     private String actualTriggerTime;
     // 任务整体结束时间（可能不存在）
@@ -68,6 +70,7 @@ public class InstanceDetailVO {
         // 格式化时间
         vo.setFinishedTime(CommonUtils.formatTime(origin.getFinishedTime()));
         vo.setActualTriggerTime(CommonUtils.formatTime(origin.getActualTriggerTime()));
+        vo.setExpectedTriggerTime(CommonUtils.formatTime(origin.getExpectedTriggerTime()));
 
         // 拷贝 TaskDetail
         if (origin.getTaskDetail() != null) {

@@ -192,6 +192,6 @@ public class InstanceStatusCheckService {
         instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
         instanceInfoRepository.saveAndFlush(instance);
 
-        instanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, "timeout, maybe TaskTracker down!");
+        instanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, SystemInstanceResult.REPORT_TIMEOUT);
     }
 }
