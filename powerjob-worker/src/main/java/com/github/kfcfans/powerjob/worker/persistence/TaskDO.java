@@ -68,6 +68,8 @@ public class TaskDO {
     public String toString() {
         return "{" +
                 "taskId='" + taskId + '\'' +
+                ", instanceId=" + instanceId +
+                ", subInstanceId=" + subInstanceId +
                 ", taskName='" + taskName + '\'' +
                 ", address='" + address + '\'' +
                 ", status=" + status +
@@ -75,6 +77,7 @@ public class TaskDO {
                 ", failedCnt=" + failedCnt +
                 ", createdTime=" + createdTime +
                 ", lastModifiedTime=" + lastModifiedTime +
+                ", lastReportTime=" + lastReportTime +
                 '}';
     }
 }
