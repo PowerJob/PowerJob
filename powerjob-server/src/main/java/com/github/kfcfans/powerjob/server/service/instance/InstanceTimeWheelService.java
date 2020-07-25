@@ -20,6 +20,8 @@ public class InstanceTimeWheelService {
 
     // 精确时间轮，每 1S 走一格
     private static final HashedWheelTimer TIMER = new HashedWheelTimer(1, 4096, Runtime.getRuntime().availableProcessors() * 4);
+    // 支持取消的时间间隔，低于该阈值则不会放进 CARGO
+    private static final long MIN_INTERVAL_MS = 1000;
 
     /**
      * 定时调度
@@ -32,8 +34,9 @@ public class InstanceTimeWheelService {
             CARGO.remove(uniqueId);
             timerTask.run();
         }, delayMS, TimeUnit.MILLISECONDS);
-
-        CARGO.put(uniqueId, timerFuture);
+        if (delayMS > MIN_INTERVAL_MS) {
+            CARGO.put(uniqueId, timerFuture);
+        }
     }
 
     /**

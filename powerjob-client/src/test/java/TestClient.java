@@ -9,6 +9,8 @@ import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 测试 Client
  *
@@ -86,5 +88,25 @@ public class TestClient {
     @Test
     public void testFetchInstanceStatus() throws Exception {
         System.out.println(ohMyClient.fetchInstanceStatus(141251409466097728L));
+    }
+
+    @Test
+    public void testCancelInstanceInTimeWheel() throws Exception {
+        ResultDTO<Long> startRes = ohMyClient.runJob(15L, "start by OhMyClient", 20000);
+        System.out.println("runJob result: " + JsonUtils.toJSONString(startRes));
+        ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
+        System.out.println("cancelJob result: " + JsonUtils.toJSONString(cancelRes));
+    }
+
+    @Test
+    public void testCancelInstanceInDatabase() throws Exception {
+        ResultDTO<Long> startRes = ohMyClient.runJob(15L, "start by OhMyClient", 2000000);
+        System.out.println("runJob result: " + JsonUtils.toJSONString(startRes));
+
+        // 手动重启 server，干掉时间轮中的调度数据
+        TimeUnit.MINUTES.sleep(1);
+
+        ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
+        System.out.println("cancelJob result: " + JsonUtils.toJSONString(cancelRes));
     }
 }
