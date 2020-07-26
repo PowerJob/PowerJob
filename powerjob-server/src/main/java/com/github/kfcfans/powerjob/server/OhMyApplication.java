@@ -39,9 +39,9 @@ public class OhMyApplication {
         // 再启动SpringBoot
         try {
             SpringApplication.run(OhMyApplication.class, args);
-        }catch (Exception e) {
+        }catch (Throwable t) {
             log.error(TIPS);
-            throw e;
+            throw t;
         }
     }
 
