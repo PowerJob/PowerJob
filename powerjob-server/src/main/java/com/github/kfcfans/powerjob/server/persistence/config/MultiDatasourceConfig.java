@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.persistence.config;
 
+import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,7 +21,7 @@ import javax.sql.DataSource;
 public class MultiDatasourceConfig {
 
     private static final String H2_DRIVER_CLASS_NAME = "org.h2.Driver";
-    private static final String H2_JDBC_URL = "jdbc:h2:file:~/powerjob-server/h2/powerjob_server_db";
+    private static final String H2_JDBC_URL_PATTERN = "jdbc:h2:file:%spowerjob_server_db";
     private static final int H2_MIN_SIZE = 4;
     private static final int H2_MAX_ACTIVE_SIZE = 10;
 
@@ -35,7 +36,7 @@ public class MultiDatasourceConfig {
     public DataSource initOmsLocalDatasource() {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(H2_DRIVER_CLASS_NAME);
-        config.setJdbcUrl(H2_JDBC_URL);
+        config.setJdbcUrl(String.format(H2_JDBC_URL_PATTERN, OmsFileUtils.genH2Path()));
         config.setAutoCommit(true);
         // 池中最小空闲连接数量
         config.setMinimumIdle(H2_MIN_SIZE);
