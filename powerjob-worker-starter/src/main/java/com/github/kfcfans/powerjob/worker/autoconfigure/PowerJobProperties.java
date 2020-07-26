@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * PowerJob 配置项
  *
  * @author songyinyin
- * @date 2020/7/26 16:37
+ * @since 2020/7/26 16:37
  */
 @Data
 @ConfigurationProperties(prefix = "powerjob")
@@ -26,7 +26,7 @@ public class PowerJobProperties {
     /**
      * 调度服务器地址，ip:port 或 域名，多个用英文逗号分隔
      */
-    private String serverAddress = "127.0.0.1:7700";
+    private String serverAddress;
     /**
      * 本地持久化方式，默认使用磁盘
      */

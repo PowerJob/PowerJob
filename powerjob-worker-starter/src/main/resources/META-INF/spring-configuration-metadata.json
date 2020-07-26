@@ -29,9 +29,8 @@
     {
       "name": "powerjob.server-address",
       "type": "java.lang.String",
-      "description": "调度服务器地址，ip:port 或 域名，多个用英文逗号分隔",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "defaultValue": "127.0.0.1:7700"
+      "description": "调度服务器地址，ip:port 或 域名，多值用英文逗号分隔",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties"
     },
     {
       "name": "powerjob.store-strategy",
