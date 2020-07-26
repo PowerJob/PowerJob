@@ -171,11 +171,13 @@ public class FrequentTaskTracker extends TaskTracker {
             newRootTask.setLastReportTime(-1L);
 
             // 判断是否超出最大执行实例数
-            if (timeExpressionType == TimeExpressionType.FIX_RATE) {
-                if (subInstanceId2TimeHolder.size() > maxInstanceNum) {
-                    log.warn("[TaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
-                    processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
-                    return;
+            if (maxInstanceNum > 0) {
+                if (timeExpressionType == TimeExpressionType.FIX_RATE) {
+                    if (subInstanceId2TimeHolder.size() > maxInstanceNum) {
+                        log.warn("[TaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
+                        processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
+                        return;
+                    }
                 }
             }
 

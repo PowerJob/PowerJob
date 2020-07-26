@@ -204,7 +204,7 @@ public class WorkflowInstanceManager {
                         node.setStatus(status.getV());
                         node.setResult(result);
 
-                        log.debug("[Workflow-{}|{}] node(jobId={},instanceId={}) finished in workflowInstance, status={},result={}", wfId, wfInstanceId, node.getJobId(), instanceId, status.name(), result);
+                        log.info("[Workflow-{}|{}] node(jobId={},instanceId={}) finished in workflowInstance, status={},result={}", wfId, wfInstanceId, node.getJobId(), instanceId, status.name(), result);
                     }
 
                     if (InstanceStatus.generalizedRunningStatus.contains(node.getStatus())) {

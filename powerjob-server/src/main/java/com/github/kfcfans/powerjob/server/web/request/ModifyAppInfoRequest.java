@@ -1,6 +1,9 @@
 package com.github.kfcfans.powerjob.server.web.request;
 
+import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 修改应用信息请求
@@ -14,4 +17,11 @@ public class ModifyAppInfoRequest {
     private Long id;
     private String appName;
     private String password;
+
+    public void valid() {
+        CommonUtils.requireNonNull(appName, "appName can't be empty");
+        if (StringUtils.containsWhitespace(appName)) {
+            throw new OmsException("appName can't contains white space!");
+        }
+    }
 }
