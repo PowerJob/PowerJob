@@ -115,7 +115,7 @@ public class InstanceStatusCheckService {
             threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
             List<InstanceInfoDO> waitingWorkerReceiveInstances = instanceInfoRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingWorkerReceiveInstances)) {
-                log.warn("[InstanceStatusChecker] instances({}) did n’t receive any reply from worker.", waitingWorkerReceiveInstances);
+                log.warn("[InstanceStatusChecker] instances({}) didn't receive any reply from worker.", waitingWorkerReceiveInstances);
                 waitingWorkerReceiveInstances.forEach(instance -> {
                     // 重新派发
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
