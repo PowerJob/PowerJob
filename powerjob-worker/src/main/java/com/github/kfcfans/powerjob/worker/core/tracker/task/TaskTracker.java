@@ -176,7 +176,7 @@ public abstract class TaskTracker {
             // 过滤过期的请求（潜在的集群时间一致性需求，重试跨Worker时，时间不一致可能导致问题）
             if (lastReportTime > reportTime) {
                 log.warn("[TaskTracker-{}] receive expired(last {} > current {}) task status report(taskId={},newStatus={}), TaskTracker will drop this report.",
-                        lastReportTime, reportTime, instanceId, taskId, newStatus);
+                        instanceId, lastReportTime, reportTime, taskId, newStatus);
                 return;
             }
 
