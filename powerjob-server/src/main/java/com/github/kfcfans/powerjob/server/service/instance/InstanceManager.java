@@ -107,7 +107,7 @@ public class InstanceManager {
                 log.info("[InstanceManager-{}] instance execute failed but will take the {}th retry.", instanceId, instanceInfo.getRunningTimes());
 
                 // 延迟10S重试（由于重试不改变 instanceId，如果派发到同一台机器，上一个 TaskTracker 还处于资源释放阶段，无法创建新的TaskTracker，任务失败）
-                HashedWheelTimerHolder.TIMER.schedule(() -> {
+                HashedWheelTimerHolder.INACCURATE_TIMER.schedule(() -> {
                     dispatchService.redispatch(jobInfo, instanceId, instanceInfo.getRunningTimes());
                 }, 10, TimeUnit.SECONDS);
 

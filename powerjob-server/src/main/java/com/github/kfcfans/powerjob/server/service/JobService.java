@@ -12,7 +12,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
-import com.github.kfcfans.powerjob.server.service.timing.schedule.HashedWheelTimerHolder;
+import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,6 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 任务服务
@@ -103,6 +102,8 @@ public class JobService {
      */
     public long runJob(Long jobId, String instanceParams, long delay) {
 
+        log.info("[Job-{}] try to run job, instanceParams={},delay={} ms.", jobId, instanceParams, delay);
+
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
         Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, null, System.currentTimeMillis() + Math.max(delay, 0));
         instanceInfoRepository.flush();
@@ -110,10 +111,11 @@ public class JobService {
         if (delay <= 0) {
             dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
         }else {
-            HashedWheelTimerHolder.TIMER.schedule(() -> {
+            InstanceTimeWheelService.schedule(instanceId, delay, () -> {
                 dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
-            }, delay, TimeUnit.MILLISECONDS);
+            });
         }
+        log.info("[Job-{}] run job successfully, instanceId={}", jobId, instanceId);
         return instanceId;
     }
 
@@ -171,7 +173,7 @@ public class JobService {
             return;
         }
         if (executeLogs.size() > 1) {
-            log.warn("[JobService] frequent job should just have one running instance, there must have some bug.");
+            log.warn("[Job-{}] frequent job should just have one running instance, there must have some bug.", jobId);
         }
         executeLogs.forEach(instance -> {
             try {

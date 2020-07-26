@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HttpUtils {
 
-    private static OkHttpClient client;
+    private static final OkHttpClient client;
     private static final int HTTP_SUCCESS_CODE = 200;
 
     static {

@@ -96,7 +96,9 @@ public abstract class ScriptProcessor implements BasicProcessor {
             }
             String result = String.format("[INPUT]: %s;[ERROR]: %s", inputSB.toString(), errorSB.toString());
 
-            return new ProcessResult(true, result);
+            // 0 代表正常退出
+            int exitValue = process.exitValue();
+            return new ProcessResult(exitValue == 0, result);
         }catch (InterruptedException ie) {
             omsLogger.info("SYSTEM===> ScriptProcessor has been interrupted");
             return new ProcessResult(false, "Interrupted");

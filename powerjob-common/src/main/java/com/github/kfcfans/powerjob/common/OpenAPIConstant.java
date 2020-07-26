@@ -22,6 +22,7 @@ public class OpenAPIConstant {
 
     /* ************* Instance 区 ************* */
     public static final String STOP_INSTANCE = "/stopInstance";
+    public static final String CANCEL_INSTANCE = "/cancelInstance";
     public static final String FETCH_INSTANCE_STATUS = "/fetchInstanceStatus";
     public static final String FETCH_INSTANCE_INFO = "/fetchInstanceInfo";
 

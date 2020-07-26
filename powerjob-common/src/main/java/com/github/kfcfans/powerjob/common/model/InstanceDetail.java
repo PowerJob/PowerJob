@@ -16,6 +16,8 @@ import java.util.List;
 @NoArgsConstructor
 public class InstanceDetail implements OmsSerializable {
 
+    // 任务预计执行时间
+    private Long expectedTriggerTime;
     // 任务整体开始时间
     private Long actualTriggerTime;
     // 任务整体结束时间（可能不存在）

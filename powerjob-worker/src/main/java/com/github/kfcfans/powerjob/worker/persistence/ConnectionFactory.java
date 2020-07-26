@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.worker.persistence;
 
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
+import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -19,8 +20,8 @@ public class ConnectionFactory {
 
     private static volatile DataSource dataSource;
 
-    private static final String DISK_JDBC_URL = "jdbc:h2:file:~/powerjob/h2/oms_worker_db";
-    private static final String MEMORY_JDBC_URL = "jdbc:h2:mem:~/powerjob/h2/oms_worker_db";
+    private static final String DISK_JDBC_URL = String.format("jdbc:h2:file:%spowerjob_worker_db", OmsWorkerFileUtils.getH2Dir());
+    private static final String MEMORY_JDBC_URL = String.format("jdbc:h2:mem:%spowerjob_worker_db", OmsWorkerFileUtils.getH2Dir());
 
     public static Connection getConnection() throws SQLException {
         return getDataSource().getConnection();

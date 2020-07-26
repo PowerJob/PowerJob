@@ -6,6 +6,7 @@ import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.*;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.google.common.collect.Lists;
@@ -31,13 +32,13 @@ public class OhMyClient {
 
     private Long appId;
     private String currentAddress;
-    private List<String> allAddress;
+    private final List<String> allAddress;
 
     private static final String URL_PATTERN = "http://%s%s%s";
 
     /**
      * 初始化 OhMyClient 客户端
-     * @param domain www.oms-server.com（内网域名，自行完成DNS & Proxy）
+     * @param domain 比如 www.powerjob-server.com（内网域名，自行完成 DNS & Proxy）
      * @param appName 负责的应用名称
      */
     public OhMyClient(String domain, String appName, String password) {
@@ -52,8 +53,8 @@ public class OhMyClient {
      */
     public OhMyClient(List<String> addressList, String appName, String password) {
 
-        Objects.requireNonNull(addressList, "domain can't be null!");
-        Objects.requireNonNull(appName, "appName can't be null");
+        CommonUtils.requireNonNull(addressList, "domain can't be null!");
+        CommonUtils.requireNonNull(appName, "appName can't be null");
 
         allAddress = addressList;
         for (String addr : addressList) {
@@ -77,7 +78,7 @@ public class OhMyClient {
         if (StringUtils.isEmpty(currentAddress)) {
             throw new OmsException("no server available");
         }
-        log.info("[OhMyClient] {}'s oms-client bootstrap successfully.", appName);
+        log.info("[OhMyClient] {}'s oms-client bootstrap successfully, using server: {}", appName, currentAddress);
     }
 
     private static String assertApp(String appName, String password, String url) throws IOException {
@@ -208,6 +209,22 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.STOP_INSTANCE, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
+     * 取消任务实例
+     * 接口使用条件：调用接口时间与待取消任务的预计执行时间有一定时间间隔，否则不保证可靠性！
+     * @param instanceId 任务实例ID
+     * @return true 代表取消成功，false 取消失败
+     * @throws Exception 异常
+     */
+    public ResultDTO<Void> cancelInstance(Long instanceId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("instanceId", instanceId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.CANCEL_INSTANCE, body);
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
@@ -364,28 +381,35 @@ public class OhMyClient {
     private String postHA(String path, RequestBody requestBody) {
 
         // 先尝试默认地址
+        String url = getUrl(path, currentAddress);
         try {
-            String res = HttpUtils.post(getUrl(path, currentAddress), requestBody);
+            String res = HttpUtils.post(url, requestBody);
             if (StringUtils.isNotEmpty(res)) {
                 return res;
             }
-        }catch (Exception ignore) {
+        }catch (Exception e) {
+            log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
         }
 
         // 失败，开始重试
         for (String addr : allAddress) {
+            if (Objects.equals(addr, currentAddress)) {
+                continue;
+            }
+            url = getUrl(path, addr);
             try {
-                String res = HttpUtils.post(getUrl(path, addr), requestBody);
+                String res = HttpUtils.post(url, requestBody);
                 if (StringUtils.isNotEmpty(res)) {
                     log.warn("[OhMyClient] server change: from({}) -> to({}).", currentAddress, addr);
                     currentAddress = addr;
                     return res;
                 }
-            }catch (Exception ignore) {
+            }catch (Exception e) {
+                log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
             }
         }
 
-        log.error("[OhMyClient] no server available in {}.", allAddress);
+        log.error("[OhMyClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
         throw new OmsException("no server available");
     }
 }

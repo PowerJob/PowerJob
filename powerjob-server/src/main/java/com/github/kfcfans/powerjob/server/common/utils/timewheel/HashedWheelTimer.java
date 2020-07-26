@@ -30,7 +30,7 @@ public class HashedWheelTimer implements Timer {
 
     private final Indicator indicator;
 
-    private long startTime;
+    private final long startTime;
 
     private final Queue<HashedWheelTimerFuture> waitingTasks = Queues.newLinkedBlockingQueue();
     private final Queue<HashedWheelTimerFuture> canceledTasks = Queues.newLinkedBlockingQueue();
@@ -184,7 +184,6 @@ public class HashedWheelTimer implements Timer {
                         log.warn("[HashedWheelTimer] timerFuture.totalTicks < currentTick, please fix the bug");
                     }
 
-                    timerFuture.status = HashedWheelTimerFuture.RUNNING;
                     try {
                         // 提交执行
                         runTask(timerFuture);
@@ -202,6 +201,7 @@ public class HashedWheelTimer implements Timer {
     }
 
     private void runTask(HashedWheelTimerFuture timerFuture) {
+        timerFuture.status = HashedWheelTimerFuture.RUNNING;
         if (taskProcessPool == null) {
             timerFuture.timerTask.run();
         }else {

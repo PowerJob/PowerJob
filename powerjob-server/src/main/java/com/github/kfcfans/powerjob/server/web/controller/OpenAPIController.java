@@ -94,6 +94,13 @@ public class OpenAPIController {
         return ResultDTO.success(null);
     }
 
+    @PostMapping(OpenAPIConstant.CANCEL_INSTANCE)
+    public ResultDTO<Void> cancelInstance(Long instanceId, Long appId) {
+        checkInstanceIdValid(instanceId, appId);
+        instanceService.cancelInstance(instanceId);
+        return ResultDTO.success(null);
+    }
+
     @PostMapping(OpenAPIConstant.FETCH_INSTANCE_STATUS)
     public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) {
         InstanceStatus instanceStatus = instanceService.getInstanceStatus(instanceId);

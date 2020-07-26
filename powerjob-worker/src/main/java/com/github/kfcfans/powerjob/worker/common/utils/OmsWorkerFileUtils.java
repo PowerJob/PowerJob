@@ -18,4 +18,8 @@ public class OmsWorkerFileUtils {
     public static String getContainerDir() {
         return WORKER_DIR + "container/";
     }
+
+    public static String getH2Dir() {
+        return WORKER_DIR + "h2/";
+    }
 }
