@@ -41,6 +41,7 @@ public class AppInfoController {
     @PostMapping("/save")
     public ResultDTO<Void> saveAppInfo(@RequestBody ModifyAppInfoRequest req) {
 
+        req.valid();
         AppInfoDO appInfoDO;
 
         Long id = req.getId();
