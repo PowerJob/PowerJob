@@ -99,4 +99,8 @@ public class WorkerManagerService {
     public static void cleanUp() {
         appId2ClusterStatus.values().forEach(ClusterStatusHolder::release);
     }
+
+    public static Map<Long, ClusterStatusHolder> getAppId2ClusterStatus() {
+        return appId2ClusterStatus;
+    }
 }
