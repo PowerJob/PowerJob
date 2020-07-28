@@ -22,12 +22,12 @@ import java.util.List;
 @Service("omsDefaultMailAlarmService")
 public class DefaultMailAlarmService implements Alarmable {
 
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username}")
     private String from;
 
-    private static final String MAIL_TITLE = "OhMyScheduler AlarmService";
+    private static final String MAIL_TITLE = "PowerJob AlarmService";
     private static final String JOB_INSTANCE_FAILED_CONTENT_PATTERN = "Job run failed, detail is: %s";
     private static final String WF_INSTANCE_FAILED_CONTENT_PATTERN = "Workflow run failed, detail is: %s";
 

@@ -308,7 +308,7 @@ public class InstanceLogService {
 
 
     @Async("omsTimingPool")
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 120000)
     public void timingCheck() {
 
         // 定时删除秒级任务的日志
