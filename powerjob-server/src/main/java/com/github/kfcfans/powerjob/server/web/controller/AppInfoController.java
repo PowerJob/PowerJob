@@ -36,7 +36,7 @@ public class AppInfoController {
     @Resource
     private AppInfoRepository appInfoRepository;
 
-    private static final int MAX_APP_NUM = 50;
+    private static final int MAX_APP_NUM = 200;
 
     @PostMapping("/save")
     public ResultDTO<Void> saveAppInfo(@RequestBody ModifyAppInfoRequest req) {
