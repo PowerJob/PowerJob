@@ -22,7 +22,7 @@ import java.util.Date;
 public class InstanceInfoDO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     // 任务ID
@@ -33,7 +33,7 @@ public class InstanceInfoDO {
     private Long instanceId;
     // 任务实例参数
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column
     private String instanceParams;
 
     // 该任务实例的类型，普通/工作流（InstanceType）
@@ -46,7 +46,7 @@ public class InstanceInfoDO {
     private Integer status;
     // 执行结果（允许存储稍大的结果）
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column
     private String result;
     // 预计触发时间
     private Long expectedTriggerTime;

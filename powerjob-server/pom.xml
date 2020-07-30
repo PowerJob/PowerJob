@@ -17,8 +17,14 @@
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
         <powerjob.common.version>3.2.1</powerjob.common.version>
+        <!-- 数据库驱动版本，使用的是spring-boot-dependencies管理的版本 -->
         <mysql.version>8.0.19</mysql.version>
+        <ojdbc.version>19.7.0.0</ojdbc.version>
+        <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
+        <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
+        <postgresql.version>42.2.14</postgresql.version>
         <h2.db.version>1.4.200</h2.db.version>
+
         <zip4j.version>2.5.2</zip4j.version>
         <jgit.version>5.7.0.202003110725-r</jgit.version>
         <mvn.invoker.version>3.0.1</mvn.invoker.version>
@@ -43,6 +49,30 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
+        </dependency>
+        <!-- oracle -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>${ojdbc.version}</version>
+        </dependency>
+        <!-- sqlserver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql-jdbc.version}</version>
+        </dependency>
+        <!-- db2 -->
+        <dependency>
+            <groupId>com.ibm.db2</groupId>
+            <artifactId>jcc</artifactId>
+            <version>${db2-jdbc.version}</version>
+        </dependency>
+        <!-- postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
         <!-- h2 database -->
         <dependency>

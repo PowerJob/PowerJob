@@ -21,7 +21,7 @@ import java.util.Date;
 public class WorkflowInfoDO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String wfName;
@@ -32,7 +32,7 @@ public class WorkflowInfoDO {
 
     // 工作流的DAG图信息（点线式DAG的json）
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column
     private String peDAG;
 
     /* ************************** 定时参数 ************************** */
