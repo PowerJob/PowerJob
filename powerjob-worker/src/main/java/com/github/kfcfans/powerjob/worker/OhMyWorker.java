@@ -186,11 +186,13 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
     private static void pre() {
         // 删除历史遗留的 H2 数据库文件
-        String h2Path = OmsWorkerFileUtils.getH2Dir();
+        File oldH2File = new File(OmsWorkerFileUtils.getH2BaseDir());
         try {
-            FileUtils.forceDeleteOnExit(new File(h2Path));
+            if (oldH2File.exists()) {
+                FileUtils.forceDelete(oldH2File);
+            }
         }catch (Exception e) {
-            log.warn("[PowerJob] delete h2 workspace({}) failed, if worker can't startup successfully, please delete it manually", h2Path, e);
+            log.warn("[PowerJob] delete h2 workspace({}) failed, if worker can't startup successfully, please delete it manually", oldH2File, e);
         }
     }
 }

@@ -1,13 +1,12 @@
 package com.github.kfcfans.powerjob.server.common.utils;
 
-import org.apache.commons.lang3.StringUtils;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
-import java.util.UUID;
 
 /**
  * 文件工具类，统一文件存放地址
@@ -49,16 +48,18 @@ public class OmsFileUtils {
      * @return 临时目录
      */
     public static String genTemporaryWorkPath() {
-        String uuid = StringUtils.replace(UUID.randomUUID().toString(), "-", "");
-        return genTemporaryPath() + uuid + "/";
+        return genTemporaryPath() + CommonUtils.genUUID() + "/";
     }
 
     /**
      * 获取 H2 数据库工作目录
      * @return H2 工作目录
      */
-    public static String genH2Path() {
+    public static String genH2BasePath() {
         return COMMON_PATH + "h2/";
+    }
+    public static String genH2WorkPath() {
+        return genH2BasePath() + CommonUtils.genUUID() + "/";
     }
 
     /**

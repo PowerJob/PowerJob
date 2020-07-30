@@ -20,8 +20,8 @@ public class ConnectionFactory {
 
     private static volatile DataSource dataSource;
 
-    private static final String DISK_JDBC_URL = String.format("jdbc:h2:file:%spowerjob_worker_db", OmsWorkerFileUtils.getH2Dir());
-    private static final String MEMORY_JDBC_URL = String.format("jdbc:h2:mem:%spowerjob_worker_db", OmsWorkerFileUtils.getH2Dir());
+    private static final String DISK_JDBC_URL = String.format("jdbc:h2:file:%spowerjob_worker_db", OmsWorkerFileUtils.getH2WorkDir());
+    private static final String MEMORY_JDBC_URL = String.format("jdbc:h2:mem:%spowerjob_worker_db", OmsWorkerFileUtils.getH2WorkDir());
 
     public static Connection getConnection() throws SQLException {
         return getDataSource().getConnection();

@@ -1,5 +1,7 @@
 package com.github.kfcfans.powerjob.worker.common.utils;
 
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+
 /**
  * 文件工具类
  *
@@ -19,7 +21,10 @@ public class OmsWorkerFileUtils {
         return WORKER_DIR + "container/";
     }
 
-    public static String getH2Dir() {
+    public static String getH2BaseDir() {
         return WORKER_DIR + "h2/";
+    }
+    public static String getH2WorkDir() {
+        return WORKER_DIR + "h2/" + CommonUtils.genUUID() + "/";
     }
 }

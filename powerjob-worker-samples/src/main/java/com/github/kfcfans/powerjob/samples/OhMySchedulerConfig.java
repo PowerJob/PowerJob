@@ -34,8 +34,7 @@ public class OhMySchedulerConfig {
         config.setAppName("powerjob-agent-test");
         config.setServerAddress(serverAddress);
         // 如果没有大型 Map/MapReduce 的需求，建议使用内存来加速计算
-        // 为了本地模拟多个实例，只能使用 MEMORY 启动（文件只能由一个应用占有）
-        config.setStoreStrategy(StoreStrategy.MEMORY);
+        config.setStoreStrategy(StoreStrategy.DISK);
 
         // 2. 创建 Worker 对象，设置配置文件
         OhMyWorker ohMyWorker = new OhMyWorker();

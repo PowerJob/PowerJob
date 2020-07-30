@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server;
 
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.boot.SpringApplication;
@@ -45,14 +46,18 @@ public class OhMyApplication {
         }
     }
 
-    private static void pre() {
+    @VisibleForTesting
+    public static void pre() {
         log.info(TIPS);
 
         // 删除历史遗留的 H2 数据库文件
+        File oldH2 = new File(OmsFileUtils.genH2BasePath());
         try {
-            FileUtils.forceDeleteOnExit(new File(OmsFileUtils.genH2Path()));
+            if (oldH2.exists()) {
+                FileUtils.forceDelete(oldH2);
+            }
         }catch (Exception e) {
-            log.warn("[PowerJob] delete h2 workspace({}) failed, if server can't startup successfully, please delete it manually", OmsFileUtils.genH2Path(), e);
+            log.warn("[PowerJob] delete h2 workspace({}) failed, if server can't startup successfully, please delete it manually", oldH2, e);
         }
     }
 

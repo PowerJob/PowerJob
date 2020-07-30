@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.test;
 
+import com.github.kfcfans.powerjob.server.OhMyApplication;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.HashedWheelTimer;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
@@ -90,5 +91,10 @@ public class UtilsTest {
         String appName = "powerjob-server ";
         System.out.println(StringUtils.containsWhitespace(goodAppName));
         System.out.println(StringUtils.containsWhitespace(appName));
+    }
+
+    @Test
+    public void testPre() {
+        OhMyApplication.pre();
     }
 }

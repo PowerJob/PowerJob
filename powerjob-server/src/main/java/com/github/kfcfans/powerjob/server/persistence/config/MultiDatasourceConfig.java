@@ -36,7 +36,7 @@ public class MultiDatasourceConfig {
     public DataSource initOmsLocalDatasource() {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(H2_DRIVER_CLASS_NAME);
-        config.setJdbcUrl(String.format(H2_JDBC_URL_PATTERN, OmsFileUtils.genH2Path()));
+        config.setJdbcUrl(String.format(H2_JDBC_URL_PATTERN, OmsFileUtils.genH2WorkPath()));
         config.setAutoCommit(true);
         // 池中最小空闲连接数量
         config.setMinimumIdle(H2_MIN_SIZE);
