@@ -92,9 +92,4 @@ public class UtilsTest {
         System.out.println(StringUtils.containsWhitespace(goodAppName));
         System.out.println(StringUtils.containsWhitespace(appName));
     }
-
-    @Test
-    public void testPre() {
-        OhMyApplication.pre();
-    }
 }
