@@ -23,7 +23,7 @@ public class JobInfoDO {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     /* ************************** 任务基本信息 ************************** */
@@ -49,7 +49,7 @@ public class JobInfoDO {
     private Integer processorType;
     // 执行器信息（可能需要存储整个脚本文件）
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */
