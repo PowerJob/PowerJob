@@ -229,6 +229,22 @@ public class OhMyClient {
     }
 
     /**
+     * 重试任务实例
+     * 只有完成状态（成功、失败、手动停止、被取消）的任务才能被重试，且暂不支持工作流内任务实例的重试
+     * @param instanceId 任务实例ID
+     * @return true 代表取消成功，false 取消失败
+     * @throws Exception 异常
+     */
+    public ResultDTO<Void> retryInstance(Long instanceId) throws Exception {
+        RequestBody body = new FormBody.Builder()
+                .add("instanceId", instanceId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.RETRY_INSTANCE, body);
+        return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+
+    /**
      * 查询任务实例状态
      * @param instanceId 应用实例ID
      * @return {@link InstanceStatus} 的枚举值
@@ -410,6 +426,6 @@ public class OhMyClient {
         }
 
         log.error("[OhMyClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
-        throw new OmsException("no server available");
+        throw new OmsException("no server available when send post");
     }
 }
