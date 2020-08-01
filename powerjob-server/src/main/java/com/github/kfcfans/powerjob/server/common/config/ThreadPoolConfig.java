@@ -59,7 +59,7 @@ public class ThreadPoolConfig {
     public Executor initBackgroundPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
-        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);
         executor.setQueueCapacity(8192);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsBackgroundPool-");
