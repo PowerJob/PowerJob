@@ -22,13 +22,13 @@ import java.util.Map;
 public class ClusterStatusHolder {
 
     // 集群所属的应用名称
-    private String appName;
+    private final String appName;
     // 集群中所有机器的健康状态
-    private Map<String, SystemMetrics> address2Metrics;
+    private final Map<String, SystemMetrics> address2Metrics;
     // 集群中所有机器的容器部署状态 containerId -> (workerAddress -> containerInfo)
     private Map<Long, Map<String, DeployedContainerInfo>> containerId2Infos;
     // 集群中所有机器的最后心跳时间
-    private Map<String, Long> address2ActiveTime;
+    private final Map<String, Long> address2ActiveTime;
 
     private static final long WORKER_TIMEOUT_MS = 60000;
 
@@ -78,11 +78,14 @@ public class ClusterStatusHolder {
         address2Metrics.forEach((address, metrics) -> {
 
             if (timeout(address)) {
+                log.info("[ClusterStatusHolder] worker(address={},metrics={}) was filtered because of timeout, last active time is {}.", address, metrics, address2ActiveTime.get(address));
                 return;
             }
             // 判断指标
             if (metrics.available(minCPUCores, minMemorySpace, minDiskSpace)) {
                 workers.add(address);
+            }else {
+                log.info("[ClusterStatusHolder] worker(address={},metrics={}) was filtered by config(minCPUCores={},minMemory={},minDiskSpace={})", address, metrics, minCPUCores, minMemorySpace, minDiskSpace);
             }
         });
 

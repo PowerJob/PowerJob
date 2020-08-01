@@ -1,5 +1,7 @@
 package com.github.kfcfans.powerjob.worker.common;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -17,6 +19,8 @@ import java.util.jar.JarFile;
  */
 public final class OmsWorkerVersion {
 
+    private static String CACHE = null;
+
     /**
      * Return the full version string of the present OhMyScheduler-Worker codebase, or {@code null}
      * if it cannot be determined.
@@ -24,7 +28,11 @@ public final class OmsWorkerVersion {
      * @see Package#getImplementationVersion()
      */
     public static String getVersion() {
-        return determineSpringBootVersion();
+        if (StringUtils.isNotEmpty(CACHE)) {
+            return CACHE;
+        }
+        CACHE = determineSpringBootVersion();
+        return CACHE;
     }
 
     private static String determineSpringBootVersion() {
