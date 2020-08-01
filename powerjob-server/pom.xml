@@ -10,13 +10,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>3.2.1</version>
+    <version>3.2.2</version>
     <packaging>jar</packaging>
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
-        <powerjob.common.version>3.2.1</powerjob.common.version>
+        <powerjob.common.version>3.2.2</powerjob.common.version>
         <!-- 数据库驱动版本，使用的是spring-boot-dependencies管理的版本 -->
         <mysql.version>8.0.19</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
