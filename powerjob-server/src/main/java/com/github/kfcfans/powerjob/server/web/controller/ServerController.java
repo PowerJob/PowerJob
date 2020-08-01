@@ -1,15 +1,18 @@
 package com.github.kfcfans.powerjob.server.web.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.service.ha.ServerSelectService;
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -51,12 +54,17 @@ public class ServerController {
     }
 
     @GetMapping("/hello")
-    public ResultDTO<JSONObject> ping() {
+    public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
         res.put("localHost", NetUtils.getLocalHost());
         res.put("actorSystemAddress", OhMyServer.getActorSystemAddress());
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
+        res.put("appIds", WorkerManagerService.getAppId2ClusterStatus().keySet());
+        if (debug) {
+            res.put("appId2ClusterInfo", JSON.parseObject(JSON.toJSONString(WorkerManagerService.getAppId2ClusterStatus())));
+
+        }
         return ResultDTO.success(res);
     }
 

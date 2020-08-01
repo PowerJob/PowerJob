@@ -10,7 +10,7 @@ import lombok.Data;
  * @since 2020/6/12
  */
 @Data
-public class WorkflowInstanceAlarmContent {
+public class WorkflowInstanceAlarm implements Alarm {
 
     private String workflowName;
 
@@ -34,4 +34,9 @@ public class WorkflowInstanceAlarmContent {
     private Integer timeExpressionType;
     // 时间表达式，CRON/NULL/LONG/LONG
     private String timeExpression;
+
+    @Override
+    public String fetchTitle() {
+        return "PowerJob AlarmService: Workflow Running Failed";
+    }
 }

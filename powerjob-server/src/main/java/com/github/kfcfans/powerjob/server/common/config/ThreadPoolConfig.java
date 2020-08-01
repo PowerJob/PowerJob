@@ -14,7 +14,7 @@ import java.util.concurrent.*;
  * 公用线程池配置
  * omsTimingPool：用于执行定时任务的线程池
  * omsCommonPool：用于执行普通任务的线程池
- * omsCommonPool：用于执行后台任务的线程池，这类任务对时间不敏感，慢慢执行细水长流即可
+ * omsBackgroundPool：用于执行后台任务的线程池，这类任务对时间不敏感，慢慢执行细水长流即可
  * taskScheduler：用于定时调度的线程池
  *
  * @author tjq
@@ -59,7 +59,7 @@ public class ThreadPoolConfig {
     public Executor initBackgroundPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
-        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors());
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);
         executor.setQueueCapacity(8192);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsBackgroundPool-");

@@ -1,5 +1,8 @@
 package com.github.kfcfans.powerjob.worker.common.utils;
 
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import com.github.kfcfans.powerjob.worker.OhMyWorker;
+
 /**
  * 文件工具类
  *
@@ -9,7 +12,7 @@ package com.github.kfcfans.powerjob.worker.common.utils;
 public class OmsWorkerFileUtils {
 
     private static final String USER_HOME = System.getProperty("user.home", "powerjob");
-    private static final String WORKER_DIR = USER_HOME + "/powerjob/";
+    private static final String WORKER_DIR = USER_HOME + "/powerjob/" + OhMyWorker.getConfig().getAppName() + "/";
 
     public static String getScriptDir() {
         return WORKER_DIR + "script/";
@@ -19,7 +22,7 @@ public class OmsWorkerFileUtils {
         return WORKER_DIR + "container/";
     }
 
-    public static String getH2Dir() {
-        return WORKER_DIR + "h2/";
+    public static String getH2WorkDir() {
+        return WORKER_DIR + "h2/" + CommonUtils.genUUID() + "/";
     }
 }

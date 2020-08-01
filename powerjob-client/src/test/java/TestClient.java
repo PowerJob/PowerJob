@@ -109,4 +109,10 @@ public class TestClient {
         ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
         System.out.println("cancelJob result: " + JsonUtils.toJSONString(cancelRes));
     }
+
+    @Test
+    public void testRetryInstance() throws Exception {
+        ResultDTO<Void> res = ohMyClient.retryInstance(169557545206153344L);
+        System.out.println(res);
+    }
 }

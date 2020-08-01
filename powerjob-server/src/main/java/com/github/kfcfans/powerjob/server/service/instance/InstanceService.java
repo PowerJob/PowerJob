@@ -15,7 +15,10 @@ import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
+import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
+import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.powerjob.server.service.DispatchService;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -41,9 +44,13 @@ import static com.github.kfcfans.powerjob.common.InstanceStatus.STOPPED;
 public class InstanceService {
 
     @Resource
+    private DispatchService dispatchService;
+    @Resource
     private IdGenerateService idGenerateService;
     @Resource
     private InstanceManager instanceManager;
+    @Resource
+    private JobInfoRepository jobInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
@@ -119,6 +126,34 @@ public class InstanceService {
             log.error("[Instance-{}] stopInstance failed.", instanceId, e);
             throw e;
         }
+    }
+
+    /**
+     * 重试任务（只有结束的任务运行重试）
+     * @param instanceId 任务实例ID
+     */
+    public void retryInstance(Long instanceId) {
+        InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
+        if (!InstanceStatus.finishedStatus.contains(instanceInfo.getStatus())) {
+            throw new OmsException("Only stopped instance can be retry!");
+        }
+        // 暂时不支持工作流任务的重试
+        if (instanceInfo.getWfInstanceId() != null) {
+            throw new OmsException("Workflow's instance do not support retry!");
+        }
+
+        instanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+        instanceInfo.setExpectedTriggerTime(System.currentTimeMillis());
+        instanceInfo.setFinishedTime(null);
+        instanceInfo.setActualTriggerTime(null);
+        instanceInfo.setTaskTrackerAddress(null);
+        instanceInfo.setResult(null);
+        instanceInfoRepository.saveAndFlush(instanceInfo);
+
+        // 派发任务
+        Long jobId = instanceInfo.getJobId();
+        JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new OmsException("can't find job info by jobId: " + jobId));
+        dispatchService.redispatch(jobInfo, instanceId, instanceInfo.getRunningTimes());
     }
 
     /**

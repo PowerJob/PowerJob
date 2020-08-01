@@ -36,7 +36,7 @@ public class TaskPersistenceService {
     private TaskPersistenceService() {
     }
 
-    private TaskDAO taskDAO = new TaskDAOImpl();
+    private final TaskDAO taskDAO = new TaskDAOImpl();
 
     public void init() throws Exception {
         if (initialized) {
@@ -207,8 +207,8 @@ public class TaskPersistenceService {
                 Map<TaskStatus, Long> result = Maps.newHashMap();
                 dbRES.forEach(row -> {
                     // H2 数据库都是大写...
-                    int status = Integer.parseInt(String.valueOf(row.get("STATUS")));
-                    long num = Long.parseLong(String.valueOf(row.get("NUM")));
+                    int status = Integer.parseInt(String.valueOf(row.get("status")));
+                    long num = Long.parseLong(String.valueOf(row.get("num")));
                     result.put(TaskStatus.of(status), num);
                 });
                 return result;
@@ -238,10 +238,10 @@ public class TaskPersistenceService {
 
         try {
             SimpleTaskQuery query = genKeyQuery(instanceId, taskId);
-            query.setQueryContent("STATUS");
+            query.setQueryContent("status");
             return execute(() -> {
                 List<Map<String, Object>> rows = taskDAO.simpleQueryPlus(query);
-                return Optional.of(TaskStatus.of((int) rows.get(0).get("STATUS")));
+                return Optional.of(TaskStatus.of((int) rows.get(0).get("status")));
             });
         }catch (Exception e) {
             log.error("[TaskPersistenceService] getTaskStatus failed, instanceId={},taskId={}.", instanceId, taskId, e);

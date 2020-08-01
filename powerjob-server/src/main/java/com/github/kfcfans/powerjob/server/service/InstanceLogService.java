@@ -193,6 +193,7 @@ public class InstanceLogService {
         try {
             instanceId2LastReportTime.remove(instanceId);
             CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.deleteByInstanceId(instanceId));
+            log.warn("[InstanceLog-{}] delete local instanceLog successfully.", instanceId);
         }catch (Exception e) {
             log.warn("[InstanceLog-{}] delete local instanceLog failed.", instanceId, e);
         }
@@ -308,7 +309,7 @@ public class InstanceLogService {
 
 
     @Async("omsTimingPool")
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 120000)
     public void timingCheck() {
 
         // 定时删除秒级任务的日志

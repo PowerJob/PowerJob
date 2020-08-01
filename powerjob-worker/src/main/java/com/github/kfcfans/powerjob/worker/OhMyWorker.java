@@ -12,16 +12,15 @@ import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.worker.actors.TroubleshootingActor;
 import com.github.kfcfans.powerjob.worker.actors.ProcessorTrackerActor;
 import com.github.kfcfans.powerjob.worker.actors.TaskTrackerActor;
+import com.github.kfcfans.powerjob.worker.actors.TroubleshootingActor;
 import com.github.kfcfans.powerjob.worker.actors.WorkerActor;
 import com.github.kfcfans.powerjob.worker.background.OmsLogHandler;
 import com.github.kfcfans.powerjob.worker.background.ServerDiscoveryService;
 import com.github.kfcfans.powerjob.worker.background.WorkerHealthReporter;
 import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
 import com.github.kfcfans.powerjob.worker.common.OmsBannerPrinter;
-import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
 import com.google.common.base.Stopwatch;
@@ -31,7 +30,6 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,7 +37,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -83,7 +80,6 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyWorker] start to initialize OhMyWorker...");
         try {
-            pre();
             OmsBannerPrinter.print();
             // 校验 appName
             if (!config.isEnableTestMode()) {
@@ -182,15 +178,5 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
     @Override
     public void destroy() throws Exception {
         timingPool.shutdownNow();
-    }
-
-    private static void pre() {
-        // 删除历史遗留的 H2 数据库文件
-        String h2Path = OmsWorkerFileUtils.getH2Dir();
-        try {
-            FileUtils.forceDeleteOnExit(new File(h2Path));
-        }catch (Exception e) {
-            log.warn("[PowerJob] delete h2 workspace({}) failed, if worker can't startup successfully, please delete it manually", h2Path, e);
-        }
     }
 }

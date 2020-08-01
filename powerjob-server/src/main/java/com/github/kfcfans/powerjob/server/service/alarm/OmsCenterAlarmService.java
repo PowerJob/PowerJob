@@ -29,29 +29,14 @@ public class OmsCenterAlarmService implements Alarmable {
     private List<Alarmable> alarmableList;
     private volatile boolean initialized = false;
 
-    public OmsCenterAlarmService() {
-    }
 
     @Async("omsCommonPool")
     @Override
-    public void onJobInstanceFailed(JobInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
+    public void onFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
         init();
         alarmableList.forEach(alarmable -> {
             try {
-                alarmable.onJobInstanceFailed(content, targetUserList);
-            }catch (Exception e) {
-                log.warn("[OmsCenterAlarmService] alarm failed.", e);
-            }
-        });
-    }
-
-    @Async("omsCommonPool")
-    @Override
-    public void onWorkflowInstanceFailed(WorkflowInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
-        init();
-        alarmableList.forEach(alarmable -> {
-            try {
-                alarmable.onWorkflowInstanceFailed(content, targetUserList);
+                alarmable.onFailed(alarm, targetUserList);
             }catch (Exception e) {
                 log.warn("[OmsCenterAlarmService] alarm failed.", e);
             }
@@ -86,4 +71,5 @@ public class OmsCenterAlarmService implements Alarmable {
             initialized = true;
         }
     }
+
 }

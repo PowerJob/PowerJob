@@ -4,6 +4,7 @@ package com.github.kfcfans.powerjob.server.persistence.core.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -23,7 +24,8 @@ public class JobInfoDO {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     private Long id;
 
     /* ************************** 任务基本信息 ************************** */
@@ -49,7 +51,7 @@ public class JobInfoDO {
     private Integer processorType;
     // 执行器信息（可能需要存储整个脚本文件）
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */

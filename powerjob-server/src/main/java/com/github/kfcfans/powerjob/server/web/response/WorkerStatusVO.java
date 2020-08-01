@@ -25,37 +25,35 @@ public class WorkerStatusVO {
     private int status;
 
     // 12.3%(4 cores)
-    private static final String CPU_FORMAT = "%s%%(%d cores)";
+    private static final String CPU_FORMAT = "%s / %s cores";
     // 27.7%(2.9/8.0 GB)
-    private static final String OTHER_FORMAT = "%s%%（%s/%s GB）";
+    private static final String OTHER_FORMAT = "%s%%（%s / %s GB）";
     private static final DecimalFormat df = new DecimalFormat("#.#");
 
-    private static final double threshold = 0.8;
+    private static final double THRESHOLD = 0.8;
 
     public WorkerStatusVO(String address, SystemMetrics systemMetrics) {
+        this.status = 1;
         this.address = address;
-
-        String cpuL = df.format(systemMetrics.getCpuLoad() * 100);
-        this.cpuLoad = String.format(CPU_FORMAT, cpuL, systemMetrics.getCpuProcessors());
-
+        this.cpuLoad = String.format(CPU_FORMAT, df.format(systemMetrics.getCpuLoad()), systemMetrics.getCpuProcessors());
+        if (systemMetrics.getCpuLoad() > systemMetrics.getCpuProcessors() * THRESHOLD) {
+            this.status ++;
+        }
 
         String menL = df.format(systemMetrics.getJvmMemoryUsage() * 100);
         String menUsed = df.format(systemMetrics.getJvmUsedMemory());
         String menMax = df.format(systemMetrics.getJvmMaxMemory());
         this.memoryLoad = String.format(OTHER_FORMAT, menL, menUsed, menMax);
+        if (systemMetrics.getJvmMemoryUsage() > THRESHOLD) {
+            this.status ++;
+        }
 
         String diskL = df.format(systemMetrics.getDiskUsage() * 100);
         String diskUsed = df.format(systemMetrics.getDiskUsed());
         String diskMax = df.format(systemMetrics.getDiskTotal());
         this.diskLoad = String.format(OTHER_FORMAT, diskL, diskUsed, diskMax);
-
-
-        if (systemMetrics.getCpuLoad() < threshold && systemMetrics.getDiskUsage() < threshold && systemMetrics.getJvmMemoryUsage() < threshold) {
-            status = 1;
-        }else if (systemMetrics.getCpuLoad() > threshold && systemMetrics.getDiskUsage() > threshold && systemMetrics.getJvmMemoryUsage() > threshold) {
-            status =  3;
-        }else {
-            status = 2;
+        if (systemMetrics.getDiskUsage() > THRESHOLD) {
+            this.status ++;
         }
     }
 }

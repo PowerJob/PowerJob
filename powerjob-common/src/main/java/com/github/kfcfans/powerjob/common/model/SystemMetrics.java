@@ -14,7 +14,7 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
 
     // CPU核心数量
     private int cpuProcessors;
-    // CPU负载（需要处以核心数）
+    // CPU负载（负载 和 使用率 是两个完全不同的概念，Java 无法获取 CPU 使用率，只能获取负载）
     private double cpuLoad;
 
     // 内存（单位 GB）
@@ -38,7 +38,7 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
     }
 
     /**
-     * 计算得分情况，内存 then CPU then 磁盘（磁盘必须有1G以上的剩余空间）
+     * 计算得分情况，内存 & CPU (磁盘不参与计算)
      * @return 得分情况
      */
     public int calculateScore() {
@@ -47,13 +47,16 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
             return score;
         }
 
-        double availableCPUCores = cpuProcessors * cpuLoad;
-        double availableMemory = jvmMaxMemory - jvmUsedMemory;
+        // 对于 TaskTracker 来说，内存是任务顺利完成的关键，因此内存 2 块钱 1GB
+        double memScore = (jvmMaxMemory - jvmUsedMemory) * 2;
+        // CPU 剩余负载，1 块钱 1 斤
+        double cpuScore = cpuProcessors - cpuLoad;
+        // Indian Windows 无法获取 CpuLoad，为 -1，固定为 1
+        if (cpuScore > cpuProcessors) {
+            cpuScore = 1;
+        }
 
-        // Windows下无法获取CPU可用核心数，值固定为-1
-        cpuLoad = Math.max(0, cpuLoad);
-
-        return (int) (availableMemory * 2 + availableCPUCores);
+        return (int) (memScore + cpuScore);
     }
 
     /**
@@ -65,9 +68,17 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
      */
     public boolean available(double minCPUCores, double minMemorySpace, double minDiskSpace) {
 
-        double currentCpuCores = Math.max(cpuLoad * cpuProcessors, 0);
-        double currentMemory = jvmMaxMemory - jvmUsedMemory;
-        double currentDisk = diskTotal - diskUsed;
-        return currentCpuCores >= minCPUCores && currentMemory >= minMemorySpace && currentDisk >= minDiskSpace;
+        double availableMemory = jvmMaxMemory - jvmUsedMemory;
+        double availableDisk = diskTotal - diskUsed;
+
+        if (availableMemory < minMemorySpace || availableDisk < minDiskSpace) {
+            return false;
+        }
+
+        // cpuLoad 为负数代表无法获取，不判断。等于 0 为最理想情况，CPU 空载，不需要判断
+        if (cpuLoad <= 0 || minCPUCores <= 0) {
+            return true;
+        }
+        return minCPUCores < (cpuProcessors - cpuLoad);
     }
 }
