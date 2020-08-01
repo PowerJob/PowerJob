@@ -9,7 +9,7 @@ import lombok.Data;
  * @since 2020/4/30
  */
 @Data
-public class JobInstanceAlarmContent {
+public class JobInstanceAlarmContent implements AlarmContent {
     // 应用ID
     private long appId;
     // 任务ID

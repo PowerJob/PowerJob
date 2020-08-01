@@ -10,7 +10,7 @@ import lombok.Data;
  * @since 2020/6/12
  */
 @Data
-public class WorkflowInstanceAlarmContent {
+public class WorkflowInstanceAlarmContent implements AlarmContent {
 
     private String workflowName;
 

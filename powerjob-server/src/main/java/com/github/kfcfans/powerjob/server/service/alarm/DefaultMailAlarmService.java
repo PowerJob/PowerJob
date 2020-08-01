@@ -1,6 +1,5 @@
 package com.github.kfcfans.powerjob.server.service.alarm;
 
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.UserInfoDO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,13 +37,13 @@ public class DefaultMailAlarmService implements Alarmable {
 
     @Override
     public void onJobInstanceFailed(JobInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
-        String msg = String.format(JOB_INSTANCE_FAILED_CONTENT_PATTERN, JsonUtils.toJSONString(content));
+        String msg = String.format(JOB_INSTANCE_FAILED_CONTENT_PATTERN, content.fetchContent());
         sendMail(msg, targetUserList);
     }
 
     @Override
     public void onWorkflowInstanceFailed(WorkflowInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
-        String msg = String.format(WF_INSTANCE_FAILED_CONTENT_PATTERN, JsonUtils.toJSONString(content));
+        String msg = String.format(WF_INSTANCE_FAILED_CONTENT_PATTERN, content.fetchContent());
         sendMail(msg, targetUserList);
     }
 
