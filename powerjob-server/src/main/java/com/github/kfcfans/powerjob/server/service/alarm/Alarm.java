@@ -11,7 +11,9 @@ import org.apache.commons.lang3.StringUtils;
  * @author tjq
  * @since 2020/8/1
  */
-public interface AlarmContent extends OmsSerializable {
+public interface Alarm extends OmsSerializable {
+
+    String fetchTitle();
 
     default String fetchContent() {
         StringBuilder sb = new StringBuilder();

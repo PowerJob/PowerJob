@@ -31,26 +31,9 @@ public class DefaultMailAlarmService implements Alarmable {
     private String from;
     private static final String FROM_KEY = "spring.mail.username";
 
-    private static final String MAIL_TITLE = "PowerJob AlarmService";
-    private static final String JOB_INSTANCE_FAILED_CONTENT_PATTERN = "Job run failed, detail is: %s";
-    private static final String WF_INSTANCE_FAILED_CONTENT_PATTERN = "Workflow run failed, detail is: %s";
-
     @Override
-    public void onJobInstanceFailed(JobInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
-        String msg = String.format(JOB_INSTANCE_FAILED_CONTENT_PATTERN, content.fetchContent());
-        sendMail(msg, targetUserList);
-    }
-
-    @Override
-    public void onWorkflowInstanceFailed(WorkflowInstanceAlarmContent content, List<UserInfoDO> targetUserList) {
-        String msg = String.format(WF_INSTANCE_FAILED_CONTENT_PATTERN, content.fetchContent());
-        sendMail(msg, targetUserList);
-    }
-
-    private void sendMail(String msg, List<UserInfoDO> targetUserList) {
-
+    public void onFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
         initFrom();
-        log.debug("[OmsMailAlarmService] msg: {}, to: {}", msg, targetUserList);
         if (CollectionUtils.isEmpty(targetUserList) || javaMailSender == null || StringUtils.isEmpty(from)) {
             return;
         }
@@ -59,8 +42,8 @@ public class DefaultMailAlarmService implements Alarmable {
         try {
             sm.setFrom(from);
             sm.setTo(targetUserList.stream().map(UserInfoDO::getEmail).toArray(String[]::new));
-            sm.setSubject(MAIL_TITLE);
-            sm.setText(msg);
+            sm.setSubject(alarm.fetchTitle());
+            sm.setText(alarm.fetchContent());
 
             javaMailSender.send(sm);
         }catch (Exception e) {

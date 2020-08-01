@@ -20,7 +20,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowIn
 import com.github.kfcfans.powerjob.server.service.DispatchService;
 import com.github.kfcfans.powerjob.server.service.UserService;
 import com.github.kfcfans.powerjob.server.service.alarm.Alarmable;
-import com.github.kfcfans.powerjob.server.service.alarm.WorkflowInstanceAlarmContent;
+import com.github.kfcfans.powerjob.server.service.alarm.WorkflowInstanceAlarm;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.google.common.collect.LinkedListMultimap;
@@ -332,14 +332,14 @@ public class WorkflowInstanceManager {
         // 报警
         try {
             workflowInfoRepository.findById(wfInstance.getWorkflowId()).ifPresent(wfInfo -> {
-                WorkflowInstanceAlarmContent content = new WorkflowInstanceAlarmContent();
+                WorkflowInstanceAlarm content = new WorkflowInstanceAlarm();
 
                 BeanUtils.copyProperties(wfInfo, content);
                 BeanUtils.copyProperties(wfInstance, content);
                 content.setResult(result);
 
                 List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
-                omsCenterAlarmService.onWorkflowInstanceFailed(content, userList);
+                omsCenterAlarmService.onFailed(content, userList);
             });
         }catch (Exception ignore) {
         }
