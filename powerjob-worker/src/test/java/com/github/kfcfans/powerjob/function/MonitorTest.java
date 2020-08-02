@@ -4,11 +4,14 @@ import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SystemInfoUtils;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 测试监控指标
@@ -57,5 +60,19 @@ public class MonitorTest {
     public void testFetchMetrics() {
         SystemMetrics systemMetrics = SystemInfoUtils.getSystemMetrics();
         System.out.println(JsonUtils.toJSONString(systemMetrics));
+    }
+
+    @Test
+    public void testSortMetrics() {
+        SystemMetrics high = new SystemMetrics();
+        high.setScore(100);
+        SystemMetrics low = new SystemMetrics();
+        low.setScore(1);
+        List<SystemMetrics> list = Lists.newArrayList(high, low);
+        list.sort((o1, o2) -> o2.calculateScore() - o1.calculateScore());
+        System.out.println(list);
+
+        Collections.sort(list);
+        System.out.println(list);
     }
 }
