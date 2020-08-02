@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.persistence.config;
 
+import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
@@ -34,7 +35,7 @@ public class PowerJobPhysicalNamingStrategy extends SpringPhysicalNamingStrategy
     @Override
     public Identifier toPhysicalTableName(Identifier name, JdbcEnvironment jdbcEnvironment) {
 
-        String tablePrefix = PropertyUtils.getProperties().getProperty("oms.table-prefix");
+        String tablePrefix = PropertyUtils.getProperties().getProperty(PowerJobServerConfigKey.TABLE_PREFIX);
 
         String text = name.getText();
         String noDOText = StringUtils.endsWithIgnoreCase(text, "do") ? text.substring(0, text.length() - 2) : text;

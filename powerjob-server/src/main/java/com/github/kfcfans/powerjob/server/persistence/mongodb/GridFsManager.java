@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.persistence.mongodb;
 
+import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.mongodb.client.MongoDatabase;
@@ -13,10 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.util.Date;
 import java.util.Map;
@@ -30,18 +34,24 @@ import java.util.function.Consumer;
  */
 @Slf4j
 @Service
-public class GridFsManager {
+public class GridFsManager implements InitializingBean {
+
+    @Resource
+    private Environment environment;
 
     private MongoDatabase db;
+    private boolean available;
 
-    private Map<String, GridFSBucket> bucketCache = Maps.newConcurrentMap();
+    private final Map<String, GridFSBucket> bucketCache = Maps.newConcurrentMap();
 
     public static final String LOG_BUCKET = "log";
     public static final String CONTAINER_BUCKET = "container";
 
     @Autowired(required = false)
     public void setMongoTemplate(MongoTemplate mongoTemplate) {
-        this.db = mongoTemplate.getDb();
+        if (mongoTemplate != null) {
+            this.db = mongoTemplate.getDb();
+        }
     }
 
     /**
@@ -49,7 +59,7 @@ public class GridFsManager {
      * @return true：可用；false：不可用
      */
     public boolean available() {
-        return db != null;
+        return available;
     }
 
     /**
@@ -109,12 +119,12 @@ public class GridFsManager {
             ObjectId objectId = gridFSFile.getObjectId();
             try {
                 bucket.delete(objectId);
-                log.info("[GridFsHelper] deleted {}#{}", bucketName, objectId);
+                log.info("[GridFsManager] deleted {}#{}", bucketName, objectId);
             }catch (Exception e) {
-                log.error("[GridFsHelper] deleted {}#{} failed.", bucketName, objectId, e);
+                log.error("[GridFsManager] deleted {}#{} failed.", bucketName, objectId, e);
             }
         });
-        log.info("[GridFsHelper] clean bucket({}) successfully, delete all files before {}, using {}.", bucketName, date, sw.stop());
+        log.info("[GridFsManager] clean bucket({}) successfully, delete all files before {}, using {}.", bucketName, date, sw.stop());
     }
 
     public boolean exists(String bucketName, String fileName) {
@@ -130,5 +140,12 @@ public class GridFsManager {
 
     private GridFSBucket getBucket(String bucketName) {
         return bucketCache.computeIfAbsent(bucketName, ignore -> GridFSBuckets.create(db, bucketName));
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        String enable = environment.getProperty(PowerJobServerConfigKey.MONGODB_ENABLE, Boolean.FALSE.toString());
+        available = Boolean.TRUE.toString().equals(enable) && db != null;
+        log.info("[GridFsManager] available: {}, db: {}", available, db);
     }
 }

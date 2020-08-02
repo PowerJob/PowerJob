@@ -7,6 +7,7 @@ import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.akka.actors.FriendActor;
 import com.github.kfcfans.powerjob.server.akka.actors.ServerActor;
 import com.github.kfcfans.powerjob.server.akka.actors.ServerTroubleshootingActor;
+import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
@@ -44,7 +45,7 @@ public class OhMyServer {
         // 解析配置文件
         PropertyUtils.init();
         Properties properties = PropertyUtils.getProperties();
-        int port = Integer.parseInt(properties.getProperty("oms.akka.port", "10086"));
+        int port = Integer.parseInt(properties.getProperty(PowerJobServerConfigKey.AKKA_PORT, "10086"));
 
         // 启动 ActorSystem
         Map<String, Object> overrideConfig = Maps.newHashMap();
