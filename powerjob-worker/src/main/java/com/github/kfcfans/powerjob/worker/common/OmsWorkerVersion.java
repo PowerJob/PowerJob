@@ -28,10 +28,9 @@ public final class OmsWorkerVersion {
      * @see Package#getImplementationVersion()
      */
     public static String getVersion() {
-        if (StringUtils.isNotEmpty(CACHE)) {
-            return CACHE;
+        if (StringUtils.isEmpty(CACHE)) {
+            CACHE = determineSpringBootVersion();
         }
-        CACHE = determineSpringBootVersion();
         return CACHE;
     }
 
