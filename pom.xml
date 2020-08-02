@@ -6,10 +6,10 @@
 
     <groupId>com.github.kfcfans</groupId>
     <artifactId>powerjob</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <packaging>pom</packaging>
     <name>powerjob</name>
-    <url>https://github.com/KFCFans/PowerJob</url>
+    <url>http://www.powerjob.tech</url>
     <description>Distributed scheduling and execution framework</description>
     <licenses>
         <license>

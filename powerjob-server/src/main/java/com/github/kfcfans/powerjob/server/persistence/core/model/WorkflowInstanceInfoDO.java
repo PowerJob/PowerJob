@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.server.persistence.core.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -21,7 +22,8 @@ import java.util.Date;
 public class WorkflowInstanceInfoDO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     private Long id;
     // 任务所属应用的ID，冗余提高查询效率
     private Long appId;
@@ -35,10 +37,10 @@ public class WorkflowInstanceInfoDO {
     private Integer status;
 
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column
     private String dag;
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column
     private String result;
 
     // 实际触发时间

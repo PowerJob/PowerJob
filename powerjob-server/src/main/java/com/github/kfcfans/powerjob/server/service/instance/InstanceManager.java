@@ -12,7 +12,7 @@ import com.github.kfcfans.powerjob.server.service.DispatchService;
 import com.github.kfcfans.powerjob.server.service.InstanceLogService;
 import com.github.kfcfans.powerjob.server.service.UserService;
 import com.github.kfcfans.powerjob.server.service.alarm.Alarmable;
-import com.github.kfcfans.powerjob.server.service.alarm.JobInstanceAlarmContent;
+import com.github.kfcfans.powerjob.server.service.alarm.JobInstanceAlarm;
 import com.github.kfcfans.powerjob.server.service.timing.schedule.HashedWheelTimerHolder;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceManager;
 import lombok.extern.slf4j.Slf4j;
@@ -162,12 +162,12 @@ public class InstanceManager {
             }
 
             InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-            JobInstanceAlarmContent content = new JobInstanceAlarmContent();
+            JobInstanceAlarm content = new JobInstanceAlarm();
             BeanUtils.copyProperties(jobInfo, content);
             BeanUtils.copyProperties(instanceInfo, content);
 
             List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
-            omsCenterAlarmService.onJobInstanceFailed(content, userList);
+            omsCenterAlarmService.onFailed(content, userList);
         }
 
         // 主动移除缓存，减小内存占用

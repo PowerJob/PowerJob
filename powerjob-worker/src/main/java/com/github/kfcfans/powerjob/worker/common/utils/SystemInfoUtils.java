@@ -5,6 +5,8 @@ import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 
 /**
  * 系统信息工具，用于采集监控指标
@@ -14,26 +16,47 @@ import java.lang.management.OperatingSystemMXBean;
  */
 public class SystemInfoUtils {
 
+    private static final NumberFormat NF = NumberFormat.getNumberInstance();
+    static {
+        NF.setMaximumFractionDigits(4);
+        NF.setMinimumFractionDigits(4);
+        NF.setRoundingMode(RoundingMode.HALF_UP);
+    }
+
     // JMX bean can be accessed externally and is meant for management tools like hyperic ( or even nagios ) - It would delegate to Runtime anyway.
     private static final Runtime runtime = Runtime.getRuntime();
-    private static OperatingSystemMXBean osMXBean = ManagementFactory.getOperatingSystemMXBean();
+    private static final OperatingSystemMXBean osMXBean = ManagementFactory.getOperatingSystemMXBean();
 
     public static SystemMetrics getSystemMetrics() {
 
         SystemMetrics metrics = new SystemMetrics();
 
-        // CPU 信息
+        fillCPUInfo(metrics);
+        fillMemoryInfo(metrics);
+        fillDiskInfo(metrics);
+
+        // 在Worker完成分数计算，减小Server压力
+        metrics.calculateScore();
+        return metrics;
+    }
+
+    private static void fillCPUInfo(SystemMetrics metrics) {
         metrics.setCpuProcessors(osMXBean.getAvailableProcessors());
-        metrics.setCpuLoad(osMXBean.getSystemLoadAverage() / osMXBean.getAvailableProcessors());
+        metrics.setCpuLoad(miniDouble(osMXBean.getSystemLoadAverage()));
+    }
 
+    private static void fillMemoryInfo(SystemMetrics metrics) {
         // JVM内存信息(maxMemory指JVM能从操作系统获取的最大内存，即-Xmx参数设置的值，totalMemory指JVM当前持久的总内存)
-        metrics.setJvmMaxMemory(bytes2GB(runtime.maxMemory()));
+        long maxMemory = runtime.maxMemory();
+        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+        metrics.setJvmMaxMemory(bytes2GB(maxMemory));
         // 已使用内存：当前申请总量 - 当前空余量
-        metrics.setJvmUsedMemory(bytes2GB(runtime.totalMemory() - runtime.freeMemory()));
-        // 百分比，直接 * 100
-        metrics.setJvmMemoryUsage(1.0 * metrics.getJvmUsedMemory() / runtime.maxMemory());
+        metrics.setJvmUsedMemory(bytes2GB(usedMemory));
+        // 已用内存比例
+        metrics.setJvmMemoryUsage(miniDouble((double) usedMemory / maxMemory));
+    }
 
-        // 磁盘信息
+    private static void fillDiskInfo(SystemMetrics metrics) {
         long free = 0;
         long total = 0;
         File[] roots = File.listRoots();
@@ -44,16 +67,15 @@ public class SystemInfoUtils {
 
         metrics.setDiskUsed(bytes2GB(total - free));
         metrics.setDiskTotal(bytes2GB(total));
-        metrics.setDiskUsage(metrics.getDiskUsed() / metrics.getDiskTotal() * 1.0);
-
-        // 在Worker完成分数计算，减小Server压力
-        metrics.calculateScore();
-        return metrics;
+        metrics.setDiskUsage(miniDouble(metrics.getDiskUsed() / metrics.getDiskTotal()));
     }
 
-
     private static double bytes2GB(long bytes) {
-        return bytes / 1024.0 / 1024 / 1024;
+        return miniDouble(bytes / 1024.0 / 1024 / 1024);
+    }
+
+    private static double miniDouble(double origin) {
+        return Double.parseDouble(NF.format(origin));
     }
 
 }

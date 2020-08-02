@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 
@@ -144,6 +145,14 @@ public class CommonUtils {
         }catch (Exception ignore) {
         }
         return OmsConstant.NONE;
+    }
+
+    /**
+     * 生成 UUID
+     * @return uuid
+     */
+    public static String genUUID() {
+        return StringUtils.replace(UUID.randomUUID().toString(), "-", "");
     }
 
 }

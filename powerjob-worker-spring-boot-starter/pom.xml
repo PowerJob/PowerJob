@@ -5,16 +5,16 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>com.github.kfcfans</groupId>
-        <version>1.0.0</version>
+        <version>2.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-spring-boot-starter</artifactId>
-    <version>3.2.1</version>
+    <version>3.2.2</version>
     <packaging>jar</packaging>
 
     <properties>
-        <powerjob.worker.version>3.2.1</powerjob.worker.version>
+        <powerjob.worker.version>3.2.2</powerjob.worker.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
     </properties>
 

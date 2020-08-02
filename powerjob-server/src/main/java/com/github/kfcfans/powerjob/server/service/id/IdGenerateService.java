@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class IdGenerateService {
 
-    private SnowFlakeIdGenerator snowFlakeIdGenerator;
+    private final SnowFlakeIdGenerator snowFlakeIdGenerator;
 
     private static final int DATA_CENTER_ID = 0;
 

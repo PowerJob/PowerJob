@@ -9,7 +9,7 @@ import lombok.Data;
  * @since 2020/4/30
  */
 @Data
-public class JobInstanceAlarmContent {
+public class JobInstanceAlarm implements Alarm {
     // 应用ID
     private long appId;
     // 任务ID
@@ -43,4 +43,9 @@ public class JobInstanceAlarmContent {
     private Long finishedTime;
     // TaskTracker地址
     private String taskTrackerAddress;
+
+    @Override
+    public String fetchTitle() {
+        return "PowerJob AlarmService: Job Running Failed";
+    }
 }

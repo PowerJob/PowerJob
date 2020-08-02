@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.server.persistence.config;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.io.FileUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.io.File;
 
 /**
  * 多重数据源配置
@@ -34,14 +36,21 @@ public class MultiDatasourceConfig {
 
     @Bean("omsLocalDatasource")
     public DataSource initOmsLocalDatasource() {
+        String h2Path = OmsFileUtils.genH2WorkPath();
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(H2_DRIVER_CLASS_NAME);
-        config.setJdbcUrl(String.format(H2_JDBC_URL_PATTERN, OmsFileUtils.genH2Path()));
+        config.setJdbcUrl(String.format(H2_JDBC_URL_PATTERN, h2Path));
         config.setAutoCommit(true);
         // 池中最小空闲连接数量
         config.setMinimumIdle(H2_MIN_SIZE);
         // 池中最大连接数量
         config.setMaximumPoolSize(H2_MAX_ACTIVE_SIZE);
+
+        // JVM 关闭时删除文件
+        try {
+            FileUtils.forceDeleteOnExit(new File(h2Path));
+        }catch (Exception ignore) {
+        }
         return new HikariDataSource(config);
     }
 }
