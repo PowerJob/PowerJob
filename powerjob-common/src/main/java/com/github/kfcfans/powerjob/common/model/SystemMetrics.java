@@ -56,7 +56,8 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
             cpuScore = 1;
         }
 
-        return (int) (memScore + cpuScore);
+        score = (int) (memScore + cpuScore);
+        return score;
     }
 
     /**
