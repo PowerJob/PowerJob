@@ -47,11 +47,13 @@ public class SystemInfoUtils {
 
     private static void fillMemoryInfo(SystemMetrics metrics) {
         // JVM内存信息(maxMemory指JVM能从操作系统获取的最大内存，即-Xmx参数设置的值，totalMemory指JVM当前持久的总内存)
-        metrics.setJvmMaxMemory(bytes2GB(runtime.maxMemory()));
+        long maxMemory = runtime.maxMemory();
+        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+        metrics.setJvmMaxMemory(bytes2GB(maxMemory));
         // 已使用内存：当前申请总量 - 当前空余量
-        metrics.setJvmUsedMemory(bytes2GB(runtime.totalMemory() - runtime.freeMemory()));
+        metrics.setJvmUsedMemory(bytes2GB(usedMemory));
         // 已用内存比例
-        metrics.setJvmMemoryUsage(miniDouble(metrics.getJvmUsedMemory() / runtime.maxMemory()));
+        metrics.setJvmMemoryUsage(miniDouble((double) usedMemory / maxMemory));
     }
 
     private static void fillDiskInfo(SystemMetrics metrics) {

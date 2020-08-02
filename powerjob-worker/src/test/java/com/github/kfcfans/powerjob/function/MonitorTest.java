@@ -52,4 +52,10 @@ public class MonitorTest {
         System.out.println("heap used: " + memoryMXBean.getHeapMemoryUsage());
         System.out.println("noheap used: " + memoryMXBean.getNonHeapMemoryUsage());
     }
+
+    @Test
+    public void testFetchMetrics() {
+        SystemMetrics systemMetrics = SystemInfoUtils.getSystemMetrics();
+        System.out.println(JsonUtils.toJSONString(systemMetrics));
+    }
 }
