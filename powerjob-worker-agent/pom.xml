@@ -15,7 +15,7 @@
 
 
     <properties>
-        <powerjob.worker.version>3.2.2</powerjob.worker.version>
+        <powerjob.worker.version>3.2.2-bugfix</powerjob.worker.version>
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
 
