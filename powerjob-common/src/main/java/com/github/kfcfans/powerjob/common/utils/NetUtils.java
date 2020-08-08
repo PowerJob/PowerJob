@@ -17,6 +17,7 @@ limitations under the License.
 
 import com.github.kfcfans.powerjob.common.PowerJobDKey;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.*;
@@ -235,6 +236,10 @@ public class NetUtils {
             if (ignoreNetworkInterface(networkInterface)) { // ignore
                 continue;
             }
+            // 根据用户 -D 参数忽略网卡
+            if (ignoreInterfaceByConfig(networkInterface.getDisplayName())) {
+                continue;
+            }
             validNetworkInterfaces.add(networkInterface);
         }
         return validNetworkInterfaces;
@@ -284,5 +289,17 @@ public class NetUtils {
     public static boolean isPreferredNetworkInterface(NetworkInterface networkInterface) {
         String preferredNetworkInterface = System.getProperty(PowerJobDKey.PREFERRED_NETWORK_INTERFACE);
         return Objects.equals(networkInterface.getDisplayName(), preferredNetworkInterface);
+    }
+
+    static boolean ignoreInterfaceByConfig(String interfaceName) {
+        String regex = System.getProperty(PowerJobDKey.IGNORED_NETWORK_INTERFACE_REGEX);
+        if (StringUtils.isBlank(regex)) {
+            return false;
+        }
+        if (interfaceName.matches(regex)) {
+            log.info("[Net] ignore network interface: {} by regex({})", interfaceName, regex);
+            return true;
+        }
+        return false;
     }
 }

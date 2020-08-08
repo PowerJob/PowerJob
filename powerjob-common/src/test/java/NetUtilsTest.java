@@ -21,4 +21,10 @@ public class NetUtilsTest {
         System.out.println(NetUtils.getLocalHost());
     }
 
+    @Test
+    public void testIgnoredNetworkInterface() {
+        System.setProperty(PowerJobDKey.IGNORED_NETWORK_INTERFACE_REGEX, "utun.|llw.");
+        System.out.println(NetUtils.getLocalHost());
+    }
+
 }
