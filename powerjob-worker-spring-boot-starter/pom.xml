@@ -10,11 +10,11 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-spring-boot-starter</artifactId>
-    <version>3.2.2-bugfix</version>
+    <version>3.2.3</version>
     <packaging>jar</packaging>
 
     <properties>
-        <powerjob.worker.version>3.2.2-bugfix</powerjob.worker.version>
+        <powerjob.worker.version>3.2.3</powerjob.worker.version>
         <springboot.version>2.2.6.RELEASE</springboot.version>
     </properties>
 

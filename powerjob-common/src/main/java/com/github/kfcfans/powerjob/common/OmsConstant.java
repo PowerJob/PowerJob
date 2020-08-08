@@ -12,4 +12,7 @@ public class OmsConstant {
     public static final String TIME_PATTERN_PLUS = "yyyy-MM-dd HH:mm:ss.SSS";
 
     public static final String NONE = "N/A";
+
+    public static final String COMMA = ",";
+    public static final String LINE_SEPARATOR = "\r\n";
 }

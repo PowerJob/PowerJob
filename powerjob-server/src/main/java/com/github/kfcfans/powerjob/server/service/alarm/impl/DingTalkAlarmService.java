@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.service.alarm.impl;
 
+import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.OmsException;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
@@ -72,12 +73,13 @@ public class DingTalkAlarmService implements Alarmable {
             String userListStr = SJ.commaJoiner.skipNulls().join(userIds);
             List<DingTalkUtils.MarkdownEntity> markdownEntities = Lists.newLinkedList();
             markdownEntities.add(new DingTalkUtils.MarkdownEntity("server", NetUtils.getLocalHost()));
-            markdownEntities.add(new DingTalkUtils.MarkdownEntity("content", alarm.fetchContent()));
+            String content = alarm.fetchContent().replaceAll(OmsConstant.LINE_SEPARATOR, OmsConstant.COMMA);
+            markdownEntities.add(new DingTalkUtils.MarkdownEntity("content", content));
 
             try {
                 dingTalkUtils.sendMarkdownAsync(alarm.fetchTitle(), markdownEntities, userListStr, agentId);
             }catch (Exception e) {
-                log.error("[DingTalkAlarmService] send ding message failed, msg is {}", e.getMessage());
+                log.error("[DingTalkAlarmService] send ding message failed, reason is {}", e.getMessage());
             }
         }
     }

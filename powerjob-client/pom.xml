@@ -10,11 +10,11 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-client</artifactId>
-    <version>3.2.2</version>
+    <version>3.2.3</version>
     <packaging>jar</packaging>
 
     <properties>
-        <powerjob.common.version>3.2.2</powerjob.common.version>
+        <powerjob.common.version>3.2.3</powerjob.common.version>
         <junit.version>5.6.1</junit.version>
     </properties>
 

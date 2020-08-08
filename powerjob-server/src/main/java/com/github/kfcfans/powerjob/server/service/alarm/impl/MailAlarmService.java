@@ -49,7 +49,7 @@ public class MailAlarmService implements Alarmable {
 
             javaMailSender.send(sm);
         }catch (Exception e) {
-            log.error("[OmsMailAlarmService] send mail({}) failed, reason is {}", sm, e.getMessage());
+            log.error("[MailAlarmService] send mail failed, reason is {}", e.getMessage());
         }
     }
 
