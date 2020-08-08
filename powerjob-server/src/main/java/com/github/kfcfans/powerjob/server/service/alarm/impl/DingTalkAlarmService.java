@@ -29,7 +29,7 @@ import java.util.Set;
  * @since 2020/8/6
  */
 @Slf4j
-@Service("dingTalkAlarmService")
+@Service
 public class DingTalkAlarmService implements Alarmable {
 
     @Resource

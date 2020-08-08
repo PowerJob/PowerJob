@@ -22,7 +22,7 @@ import java.util.List;
  * @since 2020/4/30
  */
 @Slf4j
-@Service("mailAlarmService")
+@Service
 public class MailAlarmService implements Alarmable {
 
     @Resource
