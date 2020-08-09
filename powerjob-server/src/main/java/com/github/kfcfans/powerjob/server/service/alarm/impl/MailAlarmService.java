@@ -1,6 +1,8 @@
-package com.github.kfcfans.powerjob.server.service.alarm;
+package com.github.kfcfans.powerjob.server.service.alarm.impl;
 
 import com.github.kfcfans.powerjob.server.persistence.core.model.UserInfoDO;
+import com.github.kfcfans.powerjob.server.service.alarm.Alarm;
+import com.github.kfcfans.powerjob.server.service.alarm.Alarmable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -20,8 +22,8 @@ import java.util.List;
  * @since 2020/4/30
  */
 @Slf4j
-@Service("omsDefaultMailAlarmService")
-public class DefaultMailAlarmService implements Alarmable {
+@Service
+public class MailAlarmService implements Alarmable {
 
     @Resource
     private Environment environment;
@@ -47,7 +49,7 @@ public class DefaultMailAlarmService implements Alarmable {
 
             javaMailSender.send(sm);
         }catch (Exception e) {
-            log.error("[OmsMailAlarmService] send mail({}) failed, reason is {}", sm, e.getMessage());
+            log.error("[MailAlarmService] send mail failed, reason is {}", e.getMessage());
         }
     }
 

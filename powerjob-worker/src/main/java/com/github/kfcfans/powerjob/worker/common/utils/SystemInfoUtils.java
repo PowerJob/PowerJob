@@ -21,6 +21,8 @@ public class SystemInfoUtils {
         NF.setMaximumFractionDigits(4);
         NF.setMinimumFractionDigits(4);
         NF.setRoundingMode(RoundingMode.HALF_UP);
+        // 不按照千分位输出
+        NF.setGroupingUsed(false);
     }
 
     // JMX bean can be accessed externally and is meant for management tools like hyperic ( or even nagios ) - It would delegate to Runtime anyway.

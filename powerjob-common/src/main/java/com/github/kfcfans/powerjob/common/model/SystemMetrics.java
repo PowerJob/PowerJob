@@ -34,7 +34,8 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
 
     @Override
     public int compareTo(SystemMetrics that) {
-        return this.calculateScore() - that.calculateScore();
+        // 降序排列
+        return that.calculateScore() - this.calculateScore();
     }
 
     /**
@@ -56,7 +57,8 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
             cpuScore = 1;
         }
 
-        return (int) (memScore + cpuScore);
+        score = (int) (memScore + cpuScore);
+        return score;
     }
 
     /**
