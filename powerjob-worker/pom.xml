@@ -10,12 +10,12 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker</artifactId>
-    <version>3.2.2-bugfix</version>
+    <version>3.2.3</version>
     <packaging>jar</packaging>
 
     <properties>
         <spring.version>5.2.4.RELEASE</spring.version>
-        <powerjob.common.version>3.2.2</powerjob.common.version>
+        <powerjob.common.version>3.2.3</powerjob.common.version>
         <h2.db.version>1.4.200</h2.db.version>
         <hikaricp.version>3.4.2</hikaricp.version>
         <junit.version>5.6.1</junit.version>

@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.service.alarm;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.OmsSerializable;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +30,7 @@ public interface Alarm extends OmsSerializable {
                 }catch (Exception ignore) {
                 }
             }
-            sb.append(word).append("\n\r");
+            sb.append(word).append(OmsConstant.LINE_SEPARATOR);
         });
         return sb.toString();
     }

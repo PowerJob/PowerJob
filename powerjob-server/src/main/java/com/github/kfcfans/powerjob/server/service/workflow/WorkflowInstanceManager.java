@@ -19,7 +19,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowIn
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.service.DispatchService;
 import com.github.kfcfans.powerjob.server.service.UserService;
-import com.github.kfcfans.powerjob.server.service.alarm.Alarmable;
+import com.github.kfcfans.powerjob.server.service.alarm.AlarmCenter;
 import com.github.kfcfans.powerjob.server.service.alarm.WorkflowInstanceAlarm;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
@@ -61,9 +61,6 @@ public class WorkflowInstanceManager {
     private WorkflowInfoRepository workflowInfoRepository;
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
-
-    @Resource(name = "omsCenterAlarmService")
-    private Alarmable omsCenterAlarmService;
 
     private final SegmentLock segmentLock = new SegmentLock(16);
 
@@ -339,7 +336,7 @@ public class WorkflowInstanceManager {
                 content.setResult(result);
 
                 List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
-                omsCenterAlarmService.onFailed(content, userList);
+                AlarmCenter.alarmFailed(content, userList);
             });
         }catch (Exception ignore) {
         }
