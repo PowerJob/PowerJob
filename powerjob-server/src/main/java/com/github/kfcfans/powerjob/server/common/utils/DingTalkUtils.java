@@ -90,6 +90,7 @@ public class DingTalkUtils implements Closeable {
         if (execute.isSuccess()) {
             return execute.getUserid();
         }
+        log.info("[DingTalkUtils] fetch userId by mobile({}) failed,reason is {}.", mobile, execute.getErrmsg());
         throw new OmsException("fetch userId by phone number failed, reason is " + execute.getErrmsg());
     }
 

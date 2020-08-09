@@ -20,11 +20,12 @@ public class AlarmCenter {
 
     private static final ExecutorService POOL;
     private static final List<Alarmable> BEANS = Lists.newLinkedList();
+    private static final int THREAD_KEEP_ALIVE_TIME_M = 5;
 
     static {
         int cores = Runtime.getRuntime().availableProcessors();
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("AlarmPool-%d").build();
-        POOL = new ThreadPoolExecutor(cores, cores, 5, TimeUnit.MINUTES, Queues.newLinkedBlockingQueue(), factory);
+        POOL = new ThreadPoolExecutor(cores, cores, THREAD_KEEP_ALIVE_TIME_M, TimeUnit.MINUTES, Queues.newLinkedBlockingQueue(), factory);
     }
 
 
