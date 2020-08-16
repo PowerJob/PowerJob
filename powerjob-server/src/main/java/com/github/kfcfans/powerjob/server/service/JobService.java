@@ -70,7 +70,7 @@ public class JobService {
         jobInfoDO.setStatus(request.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
 
         if (jobInfoDO.getMaxWorkerCount() == null) {
-            jobInfoDO.setMaxInstanceNum(0);
+            jobInfoDO.setMaxWorkerCount(0);
         }
 
         // 转化报警用户列表
