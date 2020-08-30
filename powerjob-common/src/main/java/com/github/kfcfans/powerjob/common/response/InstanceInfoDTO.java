@@ -20,12 +20,16 @@ public class InstanceInfoDTO {
     private Long appId;
     // 任务实例ID
     private Long instanceId;
+    // 工作流实例ID
+    private Long wfInstanceId;
     // 任务实例参数
     private String instanceParams;
     /**
      * 任务状态 {@link InstanceStatus}
      */
     private int status;
+    // 该任务实例的类型，普通/工作流（InstanceType）
+    private Integer type;
     // 执行结果
     private String result;
     // 预计触发时间
