@@ -20,10 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -122,6 +119,9 @@ public class FrequentTaskTracker extends TaskTracker {
 
             history.add(subDetail);
         });
+
+        // 按 subInstanceId 排序 issue#63
+        history.sort((o1, o2) -> (int) (o2.getSubInstanceId() - o1.getSubInstanceId()));
 
         detail.setSubInstanceDetails(history);
         return detail;
