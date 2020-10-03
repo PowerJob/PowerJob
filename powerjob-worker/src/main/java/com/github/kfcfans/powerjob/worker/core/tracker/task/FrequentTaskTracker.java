@@ -123,6 +123,9 @@ public class FrequentTaskTracker extends TaskTracker {
             history.add(subDetail);
         });
 
+        // 按 subInstanceId 排序 issue#63
+        history.sort((o1, o2) -> (int) (o2.getSubInstanceId() - o1.getSubInstanceId()));
+
         detail.setSubInstanceDetails(history);
         return detail;
     }
