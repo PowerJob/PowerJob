@@ -207,7 +207,7 @@ public class OmsScheduleService {
             wfInfos.forEach(wfInfo -> {
 
                 // 1. 先生成调度记录，防止不调度的情况发生
-                Long wfInstanceId = workflowInstanceManager.create(wfInfo);
+                Long wfInstanceId = workflowInstanceManager.create(wfInfo, null);
 
                 // 2. 推入时间轮，准备调度执行
                 long delay = wfInfo.getNextTriggerTime() - System.currentTimeMillis();
@@ -215,7 +215,7 @@ public class OmsScheduleService {
                     log.warn("[Workflow-{}] workflow schedule delay, expect:{}, actual: {}", wfInfo.getId(), wfInfo.getNextTriggerTime(), System.currentTimeMillis());
                     delay = 0;
                 }
-                InstanceTimeWheelService.schedule(wfInstanceId, delay, () -> workflowInstanceManager.start(wfInfo, wfInstanceId));
+                InstanceTimeWheelService.schedule(wfInstanceId, delay, () -> workflowInstanceManager.start(wfInfo, wfInstanceId, null));
 
                 // 3. 重新计算下一次调度时间并更新
                 try {

@@ -349,16 +349,25 @@ public class OhMyClient {
 
     /**
      * 运行工作流
-     * @param workflowId workflowId
+     * @param workflowId 工作流ID
+     * @param initParams 启动参数
+     * @param delay 延迟时间，单位 MS
      * @return 工作流实例ID
-     * @throws Exception 异常
+     * @throws Exception 异常信息
      */
-    public ResultDTO<Long> runWorkflow(Long workflowId) throws Exception {
+    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delay) throws Exception {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
-                .add("appId", appId.toString());
+                .add("appId", appId.toString())
+                .add("delay", String.valueOf(delay));
+        if (StringUtils.isNotEmpty(initParams)) {
+            builder.add("initParams", initParams);
+        }
         String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
         return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+    public ResultDTO<Long> runWorkflow(Long workflowId) throws Exception {
+        return runWorkflow(workflowId, null, 0);
     }
 
     /* ************* Workflow Instance 区 ************* */

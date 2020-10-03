@@ -150,8 +150,8 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.RUN_WORKFLOW)
-    public ResultDTO<Long> runWorkflow(Long workflowId, Long appId) {
-        return ResultDTO.success(workflowService.runWorkflow(workflowId, appId));
+    public ResultDTO<Long> runWorkflow(Long workflowId, Long appId, @RequestParam(required = false) String initParams, @RequestParam(required = false) Long delay) {
+        return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, initParams, delay == null ? 0 : delay));
     }
 
     /* ************* Workflow Instance 区 ************* */

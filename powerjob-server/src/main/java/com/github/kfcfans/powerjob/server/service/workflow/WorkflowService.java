@@ -11,6 +11,7 @@ import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
+import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -130,15 +131,20 @@ public class WorkflowService {
      * 立即运行工作流
      * @param wfId 工作流ID
      * @param appId 所属应用ID
+     * @param initParams 启动参数
+     * @param delay 延迟时间
      * @return 该 workflow 实例的 instanceId（wfInstanceId）
      */
-    public Long runWorkflow(Long wfId, Long appId) {
+    public Long runWorkflow(Long wfId, Long appId, String initParams, long delay) {
 
         WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
-        Long wfInstanceId = workflowInstanceManager.create(wfInfo);
+        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams);
 
-        // 正式启动任务
-        workflowInstanceManager.start(wfInfo, wfInstanceId);
+        if (delay <= 0) {
+            workflowInstanceManager.start(wfInfo, wfInstanceId, initParams);
+        }else {
+            InstanceTimeWheelService.schedule(wfInstanceId, delay, () -> workflowInstanceManager.start(wfInfo, wfInstanceId, initParams));
+        }
         return wfInstanceId;
     }
 
