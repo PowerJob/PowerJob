@@ -108,7 +108,7 @@ public class OhMyClient {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
         String json = JsonUtils.toJSONStringUnsafe(request);
-        String post = postHA(OpenAPIConstant.SAVE_JOB, RequestBody.create(json, jsonType));
+        String post = postHA(OpenAPIConstant.SAVE_JOB, RequestBody.create(jsonType, json));
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
@@ -283,7 +283,7 @@ public class OhMyClient {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
         String json = JsonUtils.toJSONStringUnsafe(request);
-        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(json, jsonType));
+        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(jsonType, json));
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
