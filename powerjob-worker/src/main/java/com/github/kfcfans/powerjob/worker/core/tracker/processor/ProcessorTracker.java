@@ -318,12 +318,12 @@ public class ProcessorTracker {
                 break;
             default:
                 log.warn("[ProcessorTracker-{}] unknown processor type: {}.", instanceId, processorType);
-                throw new OmsException("unknown processor type of " + processorType);
+                throw new PowerJobException("unknown processor type of " + processorType);
         }
 
         if (processor == null) {
             log.warn("[ProcessorTracker-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
-            throw new OmsException("fetch Processor failed");
+            throw new PowerJobException("fetch Processor failed");
         }
     }
 

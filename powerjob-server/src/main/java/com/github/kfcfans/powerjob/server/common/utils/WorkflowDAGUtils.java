@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.server.common.utils;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.server.model.WorkflowDAG;
@@ -76,7 +76,7 @@ public class WorkflowDAGUtils {
         Map<Long, WorkflowDAG.Node> id2Node = Maps.newHashMap();
 
         if (PEWorkflowDAG.getNodes() == null || PEWorkflowDAG.getNodes().isEmpty()) {
-            throw new OmsException("empty graph");
+            throw new PowerJobException("empty graph");
         }
 
         // 创建节点
@@ -95,7 +95,7 @@ public class WorkflowDAGUtils {
             WorkflowDAG.Node to = id2Node.get(edge.getTo());
 
             if (from == null || to == null) {
-                throw new OmsException("Illegal Edge: " + JsonUtils.toJSONString(edge));
+                throw new PowerJobException("Illegal Edge: " + JsonUtils.toJSONString(edge));
             }
 
             from.getSuccessors().add(to);
@@ -106,7 +106,7 @@ public class WorkflowDAGUtils {
 
         // 合法性校验（至少存在一个顶点）
         if (rootIds.size() < 1) {
-            throw new OmsException("Illegal DAG: " + JsonUtils.toJSONString(PEWorkflowDAG));
+            throw new PowerJobException("Illegal DAG: " + JsonUtils.toJSONString(PEWorkflowDAG));
         }
 
         List<WorkflowDAG.Node> roots = Lists.newLinkedList();

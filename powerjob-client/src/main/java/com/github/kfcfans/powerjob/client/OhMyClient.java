@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.client;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
@@ -68,7 +68,7 @@ public class OhMyClient {
                         currentAddress = addr;
                         break;
                     }else {
-                        throw new OmsException(resultDTO.getMessage());
+                        throw new PowerJobException(resultDTO.getMessage());
                     }
                 }
             }catch (IOException ignore) {
@@ -76,7 +76,7 @@ public class OhMyClient {
         }
 
         if (StringUtils.isEmpty(currentAddress)) {
-            throw new OmsException("no server available");
+            throw new PowerJobException("no server available");
         }
         log.info("[OhMyClient] {}'s oms-client bootstrap successfully, using server: {}", appName, currentAddress);
     }
@@ -426,6 +426,6 @@ public class OhMyClient {
         }
 
         log.error("[OhMyClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
-        throw new OmsException("no server available when send post");
+        throw new PowerJobException("no server available when send post");
     }
 }

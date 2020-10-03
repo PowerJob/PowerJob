@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.service.ha;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.akka.requests.Ping;
@@ -56,7 +56,7 @@ public class ServerSelectService {
             // 无锁获取当前数据库中的Server
             Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(appId);
             if (!appInfoOpt.isPresent()) {
-                throw new OmsException(appId + " is not registered!");
+                throw new PowerJobException(appId + " is not registered!");
             }
             String appName = appInfoOpt.get().getAppName();
             String originServer = appInfoOpt.get().getCurrentServer();

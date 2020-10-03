@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.service.workflow;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.SystemInstanceResult;
 import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
@@ -43,7 +43,7 @@ public class WorkflowInstanceService {
     public void stopWorkflowInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         if (!WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
-            throw new OmsException("workflow instance already stopped");
+            throw new PowerJobException("workflow instance already stopped");
         }
         // 停止所有已启动且未完成的服务
         PEWorkflowDAG workflowDAG = JSONObject.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
@@ -80,7 +80,7 @@ public class WorkflowInstanceService {
     public WorkflowInstanceInfoDO fetchWfInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = wfInstanceInfoRepository.findByWfInstanceId(wfInstanceId).orElseThrow(() -> new IllegalArgumentException("can't find workflow instance by wfInstanceId: " + wfInstanceId));
         if (!Objects.equals(appId, wfInstance.getAppId())) {
-            throw new OmsException("Permission Denied!");
+            throw new PowerJobException("Permission Denied!");
         }
         return wfInstance;
     }

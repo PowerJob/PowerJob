@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.server.service.workflow;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.WorkflowInfoDTO;
@@ -42,7 +42,7 @@ public class WorkflowService {
         req.valid();
 
         if (!WorkflowDAGUtils.valid(req.getPEWorkflowDAG())) {
-            throw new OmsException("illegal DAG");
+            throw new PowerJobException("illegal DAG");
         }
 
         Long wfId = req.getId();
@@ -145,7 +145,7 @@ public class WorkflowService {
     private WorkflowInfoDO permissionCheck(Long wfId, Long appId) {
         WorkflowInfoDO wfInfo = workflowInfoRepository.findById(wfId).orElseThrow(() -> new IllegalArgumentException("can't find workflow by id: " + wfId));
         if (!wfInfo.getAppId().equals(appId)) {
-            throw new OmsException("Permission Denied!can't delete other appId's workflow!");
+            throw new PowerJobException("Permission Denied!can't delete other appId's workflow!");
         }
         return wfInfo;
     }

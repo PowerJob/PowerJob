@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.worker.container;
 
 import com.github.kfcfans.powerjob.common.ContainerConstant;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -106,7 +106,7 @@ public class OmsJarContainer implements OmsContainer {
 
             if (propertiesURLStream == null) {
                 log.error("[OmsJarContainer-{}] can't find {} in jar {}.", containerId, ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME, localJarFile.getPath());
-                throw new OmsException("invalid jar file because of no " + ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME);
+                throw new PowerJobException("invalid jar file because of no " + ContainerConstant.CONTAINER_PROPERTIES_FILE_NAME);
             }
 
             properties.load(propertiesURLStream);
@@ -115,7 +115,7 @@ public class OmsJarContainer implements OmsContainer {
         String packageName = properties.getProperty(ContainerConstant.CONTAINER_PACKAGE_NAME_KEY);
         if (StringUtils.isEmpty(packageName)) {
             log.error("[OmsJarContainer-{}] get package name failed, developer should't modify the properties file!", containerId);
-            throw new OmsException("invalid jar file");
+            throw new PowerJobException("invalid jar file");
         }
 
         // 加载用户类

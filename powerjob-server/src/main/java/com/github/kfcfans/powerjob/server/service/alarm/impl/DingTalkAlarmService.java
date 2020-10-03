@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.server.service.alarm.impl;
 
 import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.github.kfcfans.powerjob.server.common.SJ;
@@ -55,7 +55,7 @@ public class DingTalkAlarmService implements Alarmable {
                 String userId = mobile2UserIdCache.get(user.getPhone(), () -> {
                     try {
                         return dingTalkUtils.fetchUserIdByMobile(user.getPhone());
-                    } catch (OmsException ignore) {
+                    } catch (PowerJobException ignore) {
                         return EMPTY_TAG;
                     } catch (Exception ignore) {
                         return null;

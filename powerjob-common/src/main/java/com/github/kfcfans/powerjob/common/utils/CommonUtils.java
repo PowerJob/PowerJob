@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.common.utils;
 
 import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -121,11 +121,11 @@ public class CommonUtils {
 
     public static <T> T requireNonNull(T obj, String msg) {
         if (obj == null) {
-            throw new OmsException(msg);
+            throw new PowerJobException(msg);
         }
         if (obj instanceof String) {
             if (StringUtils.isEmpty((String) obj)) {
-                throw new OmsException(msg);
+                throw new PowerJobException(msg);
             }
         }
         return obj;
