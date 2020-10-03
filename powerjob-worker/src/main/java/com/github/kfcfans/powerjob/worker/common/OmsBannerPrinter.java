@@ -11,21 +11,28 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class OmsBannerPrinter {
 
-    private static final String BANNER = "\n ███████                                          ██          ██     \n" +
-            "░██░░░░██                                        ░██         ░██     \n" +
-            "░██   ░██  ██████  ███     ██  █████  ██████     ░██  ██████ ░██     \n" +
-            "░███████  ██░░░░██░░██  █ ░██ ██░░░██░░██░░█     ░██ ██░░░░██░██████ \n" +
+    private static final String BANNER = "" +
+            "\n" +
+            " ███████                                          ██          ██\n" +
+            "░██░░░░██                                        ░██         ░██\n" +
+            "░██   ░██  ██████  ███     ██  █████  ██████     ░██  ██████ ░██\n" +
+            "░███████  ██░░░░██░░██  █ ░██ ██░░░██░░██░░█     ░██ ██░░░░██░██████\n" +
             "░██░░░░  ░██   ░██ ░██ ███░██░███████ ░██ ░      ░██░██   ░██░██░░░██\n" +
             "░██      ░██   ░██ ░████░████░██░░░░  ░██    ██  ░██░██   ░██░██  ░██\n" +
-            "░██      ░░██████  ███░ ░░░██░░██████░███   ░░█████ ░░██████ ░██████ \n" +
-            "░░        ░░░░░░  ░░░    ░░░  ░░░░░░ ░░░     ░░░░░   ░░░░░░  ░░░░░   \n";
+            "░██      ░░██████  ███░ ░░░██░░██████░███   ░░█████ ░░██████ ░██████\n" +
+            "░░        ░░░░░░  ░░░    ░░░  ░░░░░░ ░░░     ░░░░░   ░░░░░░  ░░░░░\n" +
+            "\n" +
+            "* Maintainer: tengjiqi@gmail.com & PowerJob-Team\n" +
+            "* OfficialWebsite: http://www.powerjob.tech/\n" +
+            "* SourceCode: https://github.com/KFCFans/PowerJob\n" +
+            "\n";
 
     public static void print() {
         log.info(BANNER);
 
         String version = OmsWorkerVersion.getVersion();
         version = (version != null) ? " (v" + version + ")" : "";
-        log.info(":: OhMyScheduler Worker :: {}", version);
+        log.info(":: PowerJob Worker :: {}", version);
     }
 
 }
