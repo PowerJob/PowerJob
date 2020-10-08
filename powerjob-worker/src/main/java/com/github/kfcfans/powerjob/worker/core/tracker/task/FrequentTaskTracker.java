@@ -295,14 +295,11 @@ public class FrequentTaskTracker extends TaskTracker {
                                 newLastTask.setAddress(OhMyWorker.getWorkerAddress());
                                 submitTask(Lists.newArrayList(newLastTask));
                             }
-
                     }
                 }
-
                 // 舍去一切重试机制，反正超时就失败
-
-                log.debug("[TaskTracker-{}] check status using {}.", instanceId, stopwatch.stop());
             }
+            log.debug("[TaskTracker-{}] check status using {}.", instanceId, stopwatch);
         }
 
         private void reportStatus() {
