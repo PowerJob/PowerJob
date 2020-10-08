@@ -194,7 +194,7 @@ public class JobService {
             CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
             Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
             if (nextValidTime == null) {
-                throw new PowerJobException("invalid cron expression: " + jobInfoDO.getTimeExpression());
+                throw new PowerJobException("cron expression is out of date: " + jobInfoDO.getTimeExpression());
             }
             jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
         }else if (timeExpressionType == TimeExpressionType.API || timeExpressionType == TimeExpressionType.WORKFLOW) {
