@@ -153,15 +153,10 @@ public class FrequentTaskTracker extends TaskTracker {
             // 子任务实例ID
             Long subInstanceId = triggerTimes.incrementAndGet();
 
-            // 记录时间
-            SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
-            timeHolder.startTime = timeHolder.lastActiveTime = System.currentTimeMillis();
-            subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
-
-            // 执行记录缓存
+            // 执行记录缓存（只做展示，因此可以放在前面）
             SubInstanceInfo subInstanceInfo = new SubInstanceInfo();
             subInstanceInfo.status = TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue();
-            subInstanceInfo.startTime = timeHolder.startTime;
+            subInstanceInfo.startTime = System.currentTimeMillis();
             recentSubInstanceInfo.put(subInstanceId, subInstanceInfo);
 
             String myAddress = OhMyWorker.getWorkerAddress();
@@ -199,6 +194,11 @@ public class FrequentTaskTracker extends TaskTracker {
                 processFinishedSubInstance(subInstanceId, false, "LAUNCH_FAILED");
                 return;
             }
+
+            // 生成记录信息（必须保证持久化成功才能生成该记录，否则会导致 LAUNCH_FAILED 错误）
+            SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
+            timeHolder.startTime = timeHolder.lastActiveTime = System.currentTimeMillis();
+            subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
 
             dispatchTask(newRootTask, myAddress);
         }
