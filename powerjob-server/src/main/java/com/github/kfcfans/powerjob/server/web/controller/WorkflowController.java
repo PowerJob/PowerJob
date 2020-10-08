@@ -79,7 +79,7 @@ public class WorkflowController {
 
     @GetMapping("/run")
     public ResultDTO<Long> runWorkflow(Long workflowId, Long appId) {
-        return ResultDTO.success(workflowService.runWorkflow(workflowId, appId));
+        return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, null, 0));
     }
 
     private static PageResult<WorkflowInfoVO> convertPage(Page<WorkflowInfoDO> originPage) {

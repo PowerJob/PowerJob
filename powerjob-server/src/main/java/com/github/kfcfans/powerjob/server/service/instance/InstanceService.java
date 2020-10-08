@@ -3,7 +3,7 @@ package com.github.kfcfans.powerjob.server.service.instance;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.SystemInstanceResult;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
@@ -135,11 +135,11 @@ public class InstanceService {
     public void retryInstance(Long instanceId) {
         InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
         if (!InstanceStatus.finishedStatus.contains(instanceInfo.getStatus())) {
-            throw new OmsException("Only stopped instance can be retry!");
+            throw new PowerJobException("Only stopped instance can be retry!");
         }
         // 暂时不支持工作流任务的重试
         if (instanceInfo.getWfInstanceId() != null) {
-            throw new OmsException("Workflow's instance do not support retry!");
+            throw new PowerJobException("Workflow's instance do not support retry!");
         }
 
         instanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
@@ -152,7 +152,7 @@ public class InstanceService {
 
         // 派发任务
         Long jobId = instanceInfo.getJobId();
-        JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new OmsException("can't find job info by jobId: " + jobId));
+        JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new PowerJobException("can't find job info by jobId: " + jobId));
         dispatchService.redispatch(jobInfo, instanceId, instanceInfo.getRunningTimes());
     }
 
@@ -187,7 +187,7 @@ public class InstanceService {
                 log.info("[Instance-{}] cancel the instance successfully.", instanceId);
             }else {
                 log.warn("[Instance-{}] cancel the instance failed.", instanceId);
-                throw new OmsException("instance already up and running");
+                throw new PowerJobException("instance already up and running");
             }
 
         }catch (Exception e) {

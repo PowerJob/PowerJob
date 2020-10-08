@@ -91,7 +91,7 @@ public class FrequentTaskTracker extends TaskTracker {
         if (timeExpressionType == TimeExpressionType.FIX_RATE) {
             // 固定频率需要设置最小间隔
             if (timeParams < MIN_INTERVAL) {
-                throw new OmsException("time interval too small, please set the timeExpressionInfo >= 1000");
+                throw new PowerJobException("time interval too small, please set the timeExpressionInfo >= 1000");
             }
             scheduledPool.scheduleAtFixedRate(launcher, 1, timeParams, TimeUnit.MILLISECONDS);
         }else {
@@ -122,6 +122,9 @@ public class FrequentTaskTracker extends TaskTracker {
 
             history.add(subDetail);
         });
+
+        // 按 subInstanceId 排序 issue#63
+        history.sort((o1, o2) -> (int) (o2.getSubInstanceId() - o1.getSubInstanceId()));
 
         detail.setSubInstanceDetails(history);
         return detail;

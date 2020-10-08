@@ -8,6 +8,13 @@
      -->
     <property name="LOG_PATH" value="${user.home}/powerjob-server/logs"/>
 
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
     <!-- 系统所有异常日志（ERROR）双写 start -->
     <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/powerjob-server-error.log</file>
@@ -16,7 +23,7 @@
             <MaxHistory>7</MaxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -53,7 +60,7 @@
             <MaxHistory>7</MaxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <append>true</append>
@@ -61,6 +68,7 @@
     <!-- 系统主日志 日志 end -->
 
     <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DEFAULT_APPENDER"/>
         <appender-ref ref="ERROR_APPENDER"/>
     </root>

@@ -36,6 +36,11 @@ public class WorkflowInstanceInfoDO {
     // workflow 状态（WorkflowInstanceStatus）
     private Integer status;
 
+    // 工作流启动参数
+    @Lob
+    @Column
+    private String wfInitParams;
+
     @Lob
     @Column
     private String dag;

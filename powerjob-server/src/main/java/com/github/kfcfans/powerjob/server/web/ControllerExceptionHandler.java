@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.server.web;
 
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -25,7 +25,7 @@ public class ControllerExceptionHandler {
     public ResultDTO<Void> exceptionHandler(Exception e) {
 
         // 不是所有异常都需要打印完整堆栈，后续可以定义内部的Exception，便于判断
-        if (e instanceof IllegalArgumentException || e instanceof OmsException) {
+        if (e instanceof IllegalArgumentException || e instanceof PowerJobException) {
             log.warn("[ControllerException] http request failed, message is {}.", e.getMessage());
         } else if (e instanceof HttpMessageNotReadableException || e instanceof MethodArgumentTypeMismatchException) {
             log.warn("[ControllerException] invalid http request params, exception is {}.", e.getMessage());

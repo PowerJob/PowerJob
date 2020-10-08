@@ -4,46 +4,106 @@
       "name": "powerjob",
       "type": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties"
+    },
+    {
+      "name": "powerjob.worker",
+      "type": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "sourceMethod": "getWorker()"
     }
   ],
   "properties": [
     {
-      "name": "powerjob.app-name",
-      "type": "java.lang.String",
-      "description": "应用名称，需要提前在控制台注册，否则启动报错",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties"
+      "name": "powerjob.worker.akka-port",
+      "type": "java.lang.Integer",
+      "description": "启动 akka 端口",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
-      "name": "powerjob.max-result-length",
+      "name": "powerjob.worker.app-name",
+      "type": "java.lang.String",
+      "description": "应用名称，需要提前在控制台注册，否则启动报错",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+    },
+    {
+      "name": "powerjob.worker.enable-test-mode",
+      "type": "java.lang.Boolean",
+      "description": "启动测试模式，true情况下，不再尝试连接 server 并验证appName。 true -> 用于本地写单元测试调试； false -> 默认值，标准模式",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
+      "defaultValue": false
+    },
+    {
+      "name": "powerjob.worker.max-result-length",
       "type": "java.lang.Integer",
       "description": "最大返回值长度，超过会被截断 {@link ProcessResult}#msg 的最大长度",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
       "defaultValue": 8096
+    },
+    {
+      "name": "powerjob.worker.server-address",
+      "type": "java.lang.String",
+      "description": "调度服务器地址，ip:port 或 域名，多个用英文逗号分隔",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+    },
+    {
+      "name": "powerjob.worker.store-strategy",
+      "type": "com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy",
+      "description": "本地持久化方式，默认使用磁盘",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
       "name": "powerjob.akka-port",
       "type": "java.lang.Integer",
-      "description": "启动 akka 端口",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties"
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "deprecated": true,
+      "deprecation": {
+        "replacement": "powerjob.worker.akka-port"
+      }
     },
     {
-      "name": "powerjob.server-address",
+      "name": "powerjob.app-name",
       "type": "java.lang.String",
-      "description": "调度服务器地址，ip:port 或 域名，多值用英文逗号分隔",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties"
-    },
-    {
-      "name": "powerjob.store-strategy",
-      "type": "com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy",
-      "description": "本地持久化方式，默认使用磁盘",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties"
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "deprecated": true,
+      "deprecation": {
+        "replacement": "powerjob.worker.app-name"
+      }
     },
     {
       "name": "powerjob.enable-test-mode",
       "type": "java.lang.Boolean",
-      "description": "启动测试模式，true情况下，不再尝试连接 server 并验证appName。true -> 用于本地写单元测试调试； false -> 默认值，标准模式",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "defaultValue": false
+      "deprecated": true,
+      "deprecation": {
+        "replacement": "powerjob.worker.enable-test-mode"
+      }
+    },
+    {
+      "name": "powerjob.max-result-length",
+      "type": "java.lang.Integer",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "deprecated": true,
+      "deprecation": {
+        "replacement": "powerjob.worker.max-result-length"
+      }
+    },
+    {
+      "name": "powerjob.server-address",
+      "type": "java.lang.String",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "deprecated": true,
+      "deprecation": {
+        "replacement": "powerjob.worker.server-address"
+      }
+    },
+    {
+      "name": "powerjob.store-strategy",
+      "type": "com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy",
+      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "deprecated": true,
+      "deprecation": {
+        "replacement": "powerjob.worker.store-strategy"
+      }
     }
   ],
   "hints": []

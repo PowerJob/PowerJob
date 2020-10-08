@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.server.service;
 
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import org.springframework.stereotype.Service;
@@ -28,11 +28,11 @@ public class AppInfoService {
      */
     public Long assertApp(String appName, String password) {
 
-        AppInfoDO appInfo = appInfoRepository.findByAppName(appName).orElseThrow(() -> new OmsException("can't find appInfo by appName: " + appName));
+        AppInfoDO appInfo = appInfoRepository.findByAppName(appName).orElseThrow(() -> new PowerJobException("can't find appInfo by appName: " + appName));
         if (Objects.equals(appInfo.getPassword(), password)) {
             return appInfo.getId();
         }
-        throw new OmsException("password error!");
+        throw new PowerJobException("password error!");
     }
 
 }

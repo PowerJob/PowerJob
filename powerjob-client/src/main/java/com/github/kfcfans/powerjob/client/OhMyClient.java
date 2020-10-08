@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.client;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
@@ -68,7 +68,7 @@ public class OhMyClient {
                         currentAddress = addr;
                         break;
                     }else {
-                        throw new OmsException(resultDTO.getMessage());
+                        throw new PowerJobException(resultDTO.getMessage());
                     }
                 }
             }catch (IOException ignore) {
@@ -76,7 +76,7 @@ public class OhMyClient {
         }
 
         if (StringUtils.isEmpty(currentAddress)) {
-            throw new OmsException("no server available");
+            throw new PowerJobException("no server available");
         }
         log.info("[OhMyClient] {}'s oms-client bootstrap successfully, using server: {}", appName, currentAddress);
     }
@@ -108,7 +108,7 @@ public class OhMyClient {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
         String json = JsonUtils.toJSONStringUnsafe(request);
-        String post = postHA(OpenAPIConstant.SAVE_JOB, RequestBody.create(json, jsonType));
+        String post = postHA(OpenAPIConstant.SAVE_JOB, RequestBody.create(jsonType, json));
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
@@ -283,7 +283,7 @@ public class OhMyClient {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
         String json = JsonUtils.toJSONStringUnsafe(request);
-        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(json, jsonType));
+        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(jsonType, json));
         return JsonUtils.parseObject(post, ResultDTO.class);
     }
 
@@ -349,16 +349,25 @@ public class OhMyClient {
 
     /**
      * 运行工作流
-     * @param workflowId workflowId
+     * @param workflowId 工作流ID
+     * @param initParams 启动参数
+     * @param delayMS 延迟时间，单位毫秒 ms
      * @return 工作流实例ID
-     * @throws Exception 异常
+     * @throws Exception 异常信息
      */
-    public ResultDTO<Long> runWorkflow(Long workflowId) throws Exception {
+    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) throws Exception {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
-                .add("appId", appId.toString());
+                .add("appId", appId.toString())
+                .add("delay", String.valueOf(delayMS));
+        if (StringUtils.isNotEmpty(initParams)) {
+            builder.add("initParams", initParams);
+        }
         String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
         return JsonUtils.parseObject(post, ResultDTO.class);
+    }
+    public ResultDTO<Long> runWorkflow(Long workflowId) throws Exception {
+        return runWorkflow(workflowId, null, 0);
     }
 
     /* ************* Workflow Instance 区 ************* */
@@ -426,6 +435,6 @@ public class OhMyClient {
         }
 
         log.error("[OhMyClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
-        throw new OmsException("no server available when send post");
+        throw new PowerJobException("no server available when send post");
     }
 }
