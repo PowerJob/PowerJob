@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,14 @@ public class FrequentTaskTracker extends TaskTracker {
     }
 
     @Override
+    public void updateTaskStatus(Long subInstanceId, String taskId, int newStatus, long reportTime, @Nullable String result) {
+        super.updateTaskStatus(subInstanceId, taskId, newStatus, reportTime, result);
+        // 更新 LastActiveTime
+        SubInstanceTimeHolder timeHolder = subInstanceId2TimeHolder.get(subInstanceId);
+        timeHolder.lastActiveTime = Math.max(reportTime, timeHolder.lastActiveTime);
+    }
+
+    @Override
     public InstanceDetail fetchRunningStatus() {
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
@@ -144,15 +153,10 @@ public class FrequentTaskTracker extends TaskTracker {
             // 子任务实例ID
             Long subInstanceId = triggerTimes.incrementAndGet();
 
-            // 记录时间
-            SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
-            timeHolder.startTime = timeHolder.lastActiveTime = System.currentTimeMillis();
-            subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
-
-            // 执行记录缓存
+            // 执行记录缓存（只做展示，因此可以放在前面）
             SubInstanceInfo subInstanceInfo = new SubInstanceInfo();
             subInstanceInfo.status = TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue();
-            subInstanceInfo.startTime = timeHolder.startTime;
+            subInstanceInfo.startTime = System.currentTimeMillis();
             recentSubInstanceInfo.put(subInstanceId, subInstanceInfo);
 
             String myAddress = OhMyWorker.getWorkerAddress();
@@ -190,6 +194,11 @@ public class FrequentTaskTracker extends TaskTracker {
                 processFinishedSubInstance(subInstanceId, false, "LAUNCH_FAILED");
                 return;
             }
+
+            // 生成记录信息（必须保证持久化成功才能生成该记录，否则会导致 LAUNCH_FAILED 错误）
+            SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
+            timeHolder.startTime = timeHolder.lastActiveTime = System.currentTimeMillis();
+            subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
 
             dispatchTask(newRootTask, myAddress);
         }
@@ -243,9 +252,13 @@ public class FrequentTaskTracker extends TaskTracker {
                 long heartbeatTimeout = nowTS - timeHolder.lastActiveTime;
 
                 // 超时（包含总运行时间超时和心跳包超时），直接判定为失败
-                if (executeTimeout > instanceTimeoutMS || heartbeatTimeout > HEARTBEAT_TIMEOUT_MS) {
+                if (executeTimeout > instanceTimeoutMS) {
+                    onFinished(subInstanceId, false, "RUNNING_TIMEOUT", iterator);
+                    continue;
+                }
 
-                    onFinished(subInstanceId, false, "TIMEOUT", iterator);
+                if (heartbeatTimeout > HEARTBEAT_TIMEOUT_MS) {
+                    onFinished(subInstanceId, false, "HEARTBEAT_TIMEOUT", iterator);
                     continue;
                 }
 
@@ -295,14 +308,11 @@ public class FrequentTaskTracker extends TaskTracker {
                                 newLastTask.setAddress(OhMyWorker.getWorkerAddress());
                                 submitTask(Lists.newArrayList(newLastTask));
                             }
-
                     }
                 }
-
                 // 舍去一切重试机制，反正超时就失败
-
-                log.debug("[TaskTracker-{}] check status using {}.", instanceId, stopwatch.stop());
             }
+            log.debug("[TaskTracker-{}] check status using {}.", instanceId, stopwatch);
         }
 
         private void reportStatus() {
