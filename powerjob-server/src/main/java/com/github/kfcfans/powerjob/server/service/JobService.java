@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.service;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
@@ -78,7 +79,7 @@ public class JobService {
             jobInfoDO.setNotifyUserIds(SJ.commaJoiner.join(request.getNotifyUserIds()));
         }
 
-        refreshJob(jobInfoDO);
+        calculateNextTriggerTime(jobInfoDO);
         if (request.getId() == null) {
             jobInfoDO.setGmtCreate(new Date());
         }
@@ -143,7 +144,7 @@ public class JobService {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
 
         jobInfoDO.setStatus(SwitchableStatus.ENABLE.getV());
-        refreshJob(jobInfoDO);
+        calculateNextTriggerTime(jobInfoDO);
 
         jobInfoRepository.saveAndFlush(jobInfoDO);
     }
@@ -184,7 +185,7 @@ public class JobService {
         });
     }
 
-    private void refreshJob(JobInfoDO jobInfoDO) throws Exception {
+    private void calculateNextTriggerTime(JobInfoDO jobInfoDO) throws Exception {
         // 计算下次调度时间
         Date now = new Date();
         TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
@@ -192,6 +193,9 @@ public class JobService {
         if (timeExpressionType == TimeExpressionType.CRON) {
             CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
             Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
+            if (nextValidTime == null) {
+                throw new PowerJobException("invalid cron expression: " + jobInfoDO.getTimeExpression());
+            }
             jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
         }else if (timeExpressionType == TimeExpressionType.API || timeExpressionType == TimeExpressionType.WORKFLOW) {
             jobInfoDO.setTimeExpression(null);
