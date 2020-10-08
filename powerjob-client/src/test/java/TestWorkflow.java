@@ -104,7 +104,6 @@ public class TestWorkflow {
 
     @Test
     public void testRunWorkflowPlus() throws Exception {
-        System.out.println(ohMyClient.runWorkflow(1L, "this is init Params 1", 0));
-        System.out.println(ohMyClient.runWorkflow(1L, "this is init Params 2", 30));
+        System.out.println(ohMyClient.runWorkflow(1L, "this is init Params 2", 90000));
     }
 }

@@ -351,15 +351,15 @@ public class OhMyClient {
      * 运行工作流
      * @param workflowId 工作流ID
      * @param initParams 启动参数
-     * @param delay 延迟时间，单位 MS
+     * @param delayMS 延迟时间，单位毫秒 ms
      * @return 工作流实例ID
      * @throws Exception 异常信息
      */
-    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delay) throws Exception {
+    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) throws Exception {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
-                .add("delay", String.valueOf(delay));
+                .add("delay", String.valueOf(delayMS));
         if (StringUtils.isNotEmpty(initParams)) {
             builder.add("initParams", initParams);
         }
