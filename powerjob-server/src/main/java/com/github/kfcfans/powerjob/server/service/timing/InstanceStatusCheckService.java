@@ -171,7 +171,7 @@ public class InstanceStatusCheckService {
                 waitingWfInstanceList.forEach(wfInstance -> {
                     Optional<WorkflowInfoDO> workflowOpt = workflowInfoRepository.findById(wfInstance.getWorkflowId());
                     workflowOpt.ifPresent(workflowInfo -> {
-                        workflowInstanceManager.start(workflowInfo, wfInstance.getWfInstanceId());
+                        workflowInstanceManager.start(workflowInfo, wfInstance.getWfInstanceId(), wfInstance.getWfInitParams());
                         log.info("[Workflow-{}|{}] restart workflowInstance successfully~", workflowInfo.getId(), wfInstance.getWfInstanceId());
                     });
                 });

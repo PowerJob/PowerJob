@@ -1,15 +1,17 @@
 /*
  Navicat Premium Data Transfer
 
+ Source Server         : Local MySQL
  Source Server Type    : MySQL
- Source Server Version : 80020
- Source Schema         : powerjob-product
+ Source Server Version : 80021
+ Source Host           : localhost:3306
+ Source Schema         : powerjob-daily
 
  Target Server Type    : MySQL
- Target Server Version : 80020
+ Target Server Version : 80021
  File Encoding         : 65001
 
- Date: 23/06/2020 22:30:06
+ Date: 08/10/2020 12:39:10
 */
 
 SET NAMES utf8mb4;
@@ -28,7 +30,7 @@ CREATE TABLE `app_info` (
   `password` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `appNameUK` (`app_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for container_info
@@ -62,10 +64,10 @@ CREATE TABLE `instance_info` (
   `gmt_create` datetime(6) DEFAULT NULL,
   `gmt_modified` datetime(6) DEFAULT NULL,
   `instance_id` bigint DEFAULT NULL,
-  `instance_params` text,
+  `instance_params` longtext,
   `job_id` bigint DEFAULT NULL,
   `last_report_time` bigint DEFAULT NULL,
-  `result` text,
+  `result` longtext,
   `running_times` bigint DEFAULT NULL,
   `status` int DEFAULT NULL,
   `task_tracker_address` varchar(255) DEFAULT NULL,
@@ -75,7 +77,7 @@ CREATE TABLE `instance_info` (
   KEY `IDX5b1nhpe5je7gc5s1ur200njr7` (`job_id`),
   KEY `IDXjnji5lrr195kswk6f7mfhinrs` (`app_id`),
   KEY `IDXa98hq3yu0l863wuotdjl7noum` (`instance_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for job_info
@@ -101,7 +103,7 @@ CREATE TABLE `job_info` (
   `min_memory_space` double NOT NULL,
   `next_trigger_time` bigint DEFAULT NULL,
   `notify_user_ids` varchar(255) DEFAULT NULL,
-  `processor_info` text,
+  `processor_info` longtext,
   `processor_type` int DEFAULT NULL,
   `status` int DEFAULT NULL,
   `task_retry_num` int DEFAULT NULL,
@@ -109,7 +111,7 @@ CREATE TABLE `job_info` (
   `time_expression_type` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDXk2xprmn3lldmlcb52i36udll1` (`app_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for oms_lock
@@ -124,7 +126,7 @@ CREATE TABLE `oms_lock` (
   `ownerip` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `lockNameUK` (`lock_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for server_info
@@ -151,6 +153,8 @@ CREATE TABLE `user_info` (
   `password` varchar(255) DEFAULT NULL,
   `phone` varchar(255) DEFAULT NULL,
   `username` varchar(255) DEFAULT NULL,
+  `extra` varchar(255) DEFAULT NULL,
+  `web_hook` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -166,7 +170,7 @@ CREATE TABLE `workflow_info` (
   `max_wf_instance_num` int DEFAULT NULL,
   `next_trigger_time` bigint DEFAULT NULL,
   `notify_user_ids` varchar(255) DEFAULT NULL,
-  `pedag` text,
+  `pedag` longtext,
   `status` int DEFAULT NULL,
   `time_expression` varchar(255) DEFAULT NULL,
   `time_expression_type` int DEFAULT NULL,
@@ -174,7 +178,7 @@ CREATE TABLE `workflow_info` (
   `wf_name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX7uo5w0e3beeho3fnx9t7eiol3` (`app_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for workflow_instance_info
@@ -184,15 +188,16 @@ CREATE TABLE `workflow_instance_info` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `actual_trigger_time` bigint DEFAULT NULL,
   `app_id` bigint DEFAULT NULL,
-  `dag` text,
+  `dag` longtext,
   `finished_time` bigint DEFAULT NULL,
   `gmt_create` datetime(6) DEFAULT NULL,
   `gmt_modified` datetime(6) DEFAULT NULL,
-  `result` text,
+  `result` longtext,
   `status` int DEFAULT NULL,
+  `wf_init_params` longtext,
   `wf_instance_id` bigint DEFAULT NULL,
   `workflow_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

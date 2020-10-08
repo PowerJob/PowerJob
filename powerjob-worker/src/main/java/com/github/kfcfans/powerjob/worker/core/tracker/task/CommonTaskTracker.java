@@ -110,7 +110,7 @@ public class CommonTaskTracker extends TaskTracker {
             log.info("[TaskTracker-{}] create root task successfully.", instanceId);
         }else {
             log.error("[TaskTracker-{}] create root task failed.", instanceId);
-            throw new OmsException("create root task failed for instance: " + instanceId);
+            throw new PowerJobException("create root task failed for instance: " + instanceId);
         }
     }
 

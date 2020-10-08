@@ -29,7 +29,7 @@
         <file>${LOG_PATH}/powerjob-agent-error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>${LOG_PATH}/powerjob-agent-error.%d{yyyy-MM-dd}.log</FileNamePattern>
-            <MaxHistory>7</MaxHistory>
+            <MaxHistory>3</MaxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
@@ -49,7 +49,7 @@
         <file>${LOG_PATH}/powerjob-agent-application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <FileNamePattern>${LOG_PATH}/powerjob-agent-application.%d{yyyy-MM-dd}.log</FileNamePattern>
-            <MaxHistory>7</MaxHistory>
+            <MaxHistory>3</MaxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>

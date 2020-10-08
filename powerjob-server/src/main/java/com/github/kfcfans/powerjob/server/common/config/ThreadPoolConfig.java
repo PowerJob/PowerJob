@@ -27,8 +27,8 @@ public class ThreadPoolConfig {
     @Bean("omsTimingPool")
     public Executor getTimingPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
-        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);
+        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() * 16);
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 32);
         // use SynchronousQueue
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
@@ -44,8 +44,8 @@ public class ThreadPoolConfig {
     @Bean("omsBackgroundPool")
     public Executor initBackgroundPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
-        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 2);
+        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() * 8);
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 16);
         executor.setQueueCapacity(8192);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsBackgroundPool-");

@@ -7,7 +7,7 @@ import com.dingtalk.api.request.OapiMessageCorpconversationAsyncsendV2Request;
 import com.dingtalk.api.request.OapiUserGetByMobileRequest;
 import com.dingtalk.api.response.OapiGettokenResponse;
 import com.dingtalk.api.response.OapiUserGetByMobileResponse;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +52,7 @@ public class DingTalkUtils implements Closeable {
         refreshAccessToken(appKey, appSecret);
 
         if (StringUtils.isEmpty(accessToken)) {
-            throw new OmsException("fetch AccessToken failed, please check your appKey & appSecret");
+            throw new PowerJobException("fetch AccessToken failed, please check your appKey & appSecret");
         }
 
         scheduledPool = Executors.newSingleThreadScheduledExecutor();
@@ -91,7 +91,7 @@ public class DingTalkUtils implements Closeable {
             return execute.getUserid();
         }
         log.info("[DingTalkUtils] fetch userId by mobile({}) failed,reason is {}.", mobile, execute.getErrmsg());
-        throw new OmsException("fetch userId by phone number failed, reason is " + execute.getErrmsg());
+        throw new PowerJobException("fetch userId by phone number failed, reason is " + execute.getErrmsg());
     }
 
     public void sendMarkdownAsync(String title, List<MarkdownEntity> entities, String userList, Long agentId) throws Exception {

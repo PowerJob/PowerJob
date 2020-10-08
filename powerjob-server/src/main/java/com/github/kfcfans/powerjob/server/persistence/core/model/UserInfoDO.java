@@ -29,6 +29,11 @@ public class UserInfoDO {
     private String phone;
     // 邮箱地址
     private String email;
+    // webHook
+    private String webHook;
+
+    // 扩展字段
+    private String extra;
 
     private Date gmtCreate;
     private Date gmtModified;

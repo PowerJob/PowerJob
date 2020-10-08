@@ -3,7 +3,7 @@ package com.github.kfcfans.powerjob.common.utils;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kfcfans.powerjob.common.OmsException;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -54,6 +54,6 @@ public class JsonUtils {
         }catch (Exception e) {
             ExceptionUtils.rethrow(e);
         }
-        throw new OmsException("impossible");
+        throw new PowerJobException("impossible");
     }
 }

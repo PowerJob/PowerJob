@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +92,7 @@ public class FrequentTaskTracker extends TaskTracker {
         if (timeExpressionType == TimeExpressionType.FIX_RATE) {
             // 固定频率需要设置最小间隔
             if (timeParams < MIN_INTERVAL) {
-                throw new OmsException("time interval too small, please set the timeExpressionInfo >= 1000");
+                throw new PowerJobException("time interval too small, please set the timeExpressionInfo >= 1000");
             }
             scheduledPool.scheduleAtFixedRate(launcher, 1, timeParams, TimeUnit.MILLISECONDS);
         }else {
@@ -123,6 +124,9 @@ public class FrequentTaskTracker extends TaskTracker {
             history.add(subDetail);
         });
 
+        // 按 subInstanceId 排序 issue#63
+        history.sort((o1, o2) -> (int) (o2.getSubInstanceId() - o1.getSubInstanceId()));
+
         detail.setSubInstanceDetails(history);
         return detail;
     }
@@ -141,15 +145,10 @@ public class FrequentTaskTracker extends TaskTracker {
             // 子任务实例ID
             Long subInstanceId = triggerTimes.incrementAndGet();
 
-            // 记录时间
-            SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
-            timeHolder.startTime = timeHolder.lastActiveTime = System.currentTimeMillis();
-            subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
-
-            // 执行记录缓存
+            // 执行记录缓存（只做展示，因此可以放在前面）
             SubInstanceInfo subInstanceInfo = new SubInstanceInfo();
             subInstanceInfo.status = TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue();
-            subInstanceInfo.startTime = timeHolder.startTime;
+            subInstanceInfo.startTime = System.currentTimeMillis();
             recentSubInstanceInfo.put(subInstanceId, subInstanceInfo);
 
             String myAddress = OhMyWorker.getWorkerAddress();
@@ -174,7 +173,7 @@ public class FrequentTaskTracker extends TaskTracker {
             if (maxInstanceNum > 0) {
                 if (timeExpressionType == TimeExpressionType.FIX_RATE) {
                     if (subInstanceId2TimeHolder.size() > maxInstanceNum) {
-                        log.warn("[TaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
+                        log.warn("[FQTaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
                         processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
                         return;
                     }
@@ -183,10 +182,15 @@ public class FrequentTaskTracker extends TaskTracker {
 
             // 必须先持久化，持久化成功才能 dispatch，否则会导致后续报错（因为DB中没有这个taskId对应的记录，会各种报错）
             if (!taskPersistenceService.save(newRootTask)) {
-                log.error("[TaskTracker-{}] Launcher create new root task failed.", instanceId);
+                log.error("[FQTaskTracker-{}] Launcher create new root task failed.", instanceId);
                 processFinishedSubInstance(subInstanceId, false, "LAUNCH_FAILED");
                 return;
             }
+
+            // 生成记录信息（必须保证持久化成功才能生成该记录，否则会导致 LAUNCH_FAILED 错误）
+            SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
+            timeHolder.startTime = System.currentTimeMillis();
+            subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
 
             dispatchTask(newRootTask, myAddress);
         }
@@ -196,7 +200,7 @@ public class FrequentTaskTracker extends TaskTracker {
             try {
                 innerRun();
             }catch (Exception e) {
-                log.error("[TaskTracker-{}] launch task failed.", instanceId, e);
+                log.error("[FQTaskTracker-{}] launch task failed.", instanceId, e);
             }
         }
     }
@@ -205,8 +209,6 @@ public class FrequentTaskTracker extends TaskTracker {
      * 检查各个SubInstance的完成情况
      */
     private class Checker implements Runnable {
-
-        private static final long HEARTBEAT_TIMEOUT_MS = 60000;
 
         @Override
         public void run() {
@@ -219,7 +221,7 @@ public class FrequentTaskTracker extends TaskTracker {
                 checkStatus();
                 reportStatus();
             }catch (Exception e) {
-                log.warn("[TaskTracker-{}] check and report status failed.", instanceId, e);
+                log.warn("[FQTaskTracker-{}] check and report status failed.", instanceId, e);
             }
         }
 
@@ -237,12 +239,10 @@ public class FrequentTaskTracker extends TaskTracker {
                 SubInstanceTimeHolder timeHolder = entry.getValue();
 
                 long executeTimeout = nowTS - timeHolder.startTime;
-                long heartbeatTimeout = nowTS - timeHolder.lastActiveTime;
 
                 // 超时（包含总运行时间超时和心跳包超时），直接判定为失败
-                if (executeTimeout > instanceTimeoutMS || heartbeatTimeout > HEARTBEAT_TIMEOUT_MS) {
-
-                    onFinished(subInstanceId, false, "TIMEOUT", iterator);
+                if (executeTimeout > instanceTimeoutMS) {
+                    onFinished(subInstanceId, false, "RUNNING_TIMEOUT", iterator);
                     continue;
                 }
 
@@ -292,14 +292,11 @@ public class FrequentTaskTracker extends TaskTracker {
                                 newLastTask.setAddress(OhMyWorker.getWorkerAddress());
                                 submitTask(Lists.newArrayList(newLastTask));
                             }
-
                     }
                 }
-
                 // 舍去一切重试机制，反正超时就失败
-
-                log.debug("[TaskTracker-{}] check status using {}.", instanceId, stopwatch.stop());
             }
+            log.debug("[FQTaskTracker-{}] check status using {}.", instanceId, stopwatch);
         }
 
         private void reportStatus() {
@@ -374,7 +371,6 @@ public class FrequentTaskTracker extends TaskTracker {
 
     private static class SubInstanceTimeHolder {
         private long startTime;
-        private long lastActiveTime;
     }
 
 }
