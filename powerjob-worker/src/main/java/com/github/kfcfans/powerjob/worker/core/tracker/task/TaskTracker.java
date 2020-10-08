@@ -166,7 +166,7 @@ public abstract class TaskTracker {
                     lastReportTime = taskOpt.get().getLastReportTime();
                 }else {
                     // 理论上不存在这种情况，除非数据库异常
-                    log.error("[TaskTracker-{}] can't find task by pkey(instanceId={}&taskId={}).", instanceId, instanceId, taskId);
+                    log.error("[TaskTracker-{}-{}] can't find task by taskId={}.", instanceId, subInstanceId, taskId);
                 }
 
                 if (lastReportTime == null) {
@@ -176,8 +176,8 @@ public abstract class TaskTracker {
 
             // 过滤过期的请求（潜在的集群时间一致性需求，重试跨Worker时，时间不一致可能导致问题）
             if (lastReportTime > reportTime) {
-                log.warn("[TaskTracker-{}] receive expired(last {} > current {}) task status report(taskId={},newStatus={}), TaskTracker will drop this report.",
-                        instanceId, lastReportTime, reportTime, taskId, newStatus);
+                log.warn("[TaskTracker-{}-{}] receive expired(last {} > current {}) task status report(taskId={},newStatus={}), TaskTracker will drop this report.",
+                        instanceId, subInstanceId, lastReportTime, reportTime, taskId, newStatus);
                 return;
             }
 
@@ -215,7 +215,7 @@ public abstract class TaskTracker {
 
                         boolean retryTask = taskPersistenceService.updateTask(instanceId, taskId, updateEntity);
                         if (retryTask) {
-                            log.info("[TaskTracker-{}] task(taskId={}) process failed, TaskTracker will have a retry.", instanceId, taskId);
+                            log.info("[TaskTracker-{}-{}] task(taskId={}) process failed, TaskTracker will have a retry.", instanceId, subInstanceId, taskId);
                             return;
                         }
                     }
@@ -227,12 +227,12 @@ public abstract class TaskTracker {
             boolean updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, newStatus, reportTime, result);
 
             if (!updateResult) {
-                log.warn("[TaskTracker-{}] update task status failed, this task(taskId={}) may be processed repeatedly!", instanceId, taskId);
+                log.warn("[TaskTracker-{}-{}] update task status failed, this task(taskId={}) may be processed repeatedly!", instanceId, subInstanceId, taskId);
             }
 
         } catch (InterruptedException ignore) {
         } catch (Exception e) {
-            log.warn("[TaskTracker-{}] update task status failed.", instanceId, e);
+            log.warn("[TaskTracker-{}-{}] update task status failed.", instanceId, subInstanceId, e);
         } finally {
             segmentLock.unlock(lockId);
         }
