@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +103,14 @@ public class FrequentTaskTracker extends TaskTracker {
         scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 1, 2, TimeUnit.SECONDS);
         // 4. 启动状态检查器
         scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(Math.max(timeParams, 5000), 15000), TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void updateTaskStatus(Long subInstanceId, String taskId, int newStatus, long reportTime, @Nullable String result) {
+        super.updateTaskStatus(subInstanceId, taskId, newStatus, reportTime, result);
+        // 更新 LastActiveTime
+        SubInstanceTimeHolder timeHolder = subInstanceId2TimeHolder.get(subInstanceId);
+        timeHolder.lastActiveTime = Math.max(reportTime, timeHolder.lastActiveTime);
     }
 
     @Override
@@ -243,9 +252,13 @@ public class FrequentTaskTracker extends TaskTracker {
                 long heartbeatTimeout = nowTS - timeHolder.lastActiveTime;
 
                 // 超时（包含总运行时间超时和心跳包超时），直接判定为失败
-                if (executeTimeout > instanceTimeoutMS || heartbeatTimeout > HEARTBEAT_TIMEOUT_MS) {
+                if (executeTimeout > instanceTimeoutMS) {
+                    onFinished(subInstanceId, false, "RUNNING_TIMEOUT", iterator);
+                    continue;
+                }
 
-                    onFinished(subInstanceId, false, "TIMEOUT", iterator);
+                if (heartbeatTimeout > HEARTBEAT_TIMEOUT_MS) {
+                    onFinished(subInstanceId, false, "HEARTBEAT_TIMEOUT", iterator);
                     continue;
                 }
 

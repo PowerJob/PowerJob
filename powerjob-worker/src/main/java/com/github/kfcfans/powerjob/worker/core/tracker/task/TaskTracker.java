@@ -138,12 +138,13 @@ public abstract class TaskTracker {
     /**
      * 更新Task状态
      * V1.0.0 -> V1.0.1（e405e283ad7f97b0b4e5d369c7de884c0caf9192） 锁方案变更，从 synchronized (taskId.intern()) 修改为分段锁，能大大减少内存占用，损失的只有理论并发度而已
+     * @param subInstanceId 子任务实例ID
      * @param taskId task的ID（task为任务实例的执行单位）
      * @param newStatus task的新状态
      * @param reportTime 上报时间
      * @param result task的执行结果，未执行完成时为空
      */
-    public void updateTaskStatus(String taskId, int newStatus, long reportTime, @Nullable String result) {
+    public void updateTaskStatus(Long subInstanceId, String taskId, int newStatus, long reportTime, @Nullable String result) {
 
         if (finished.get()) {
             return;
@@ -278,7 +279,7 @@ public abstract class TaskTracker {
             List<TaskDO> unfinishedTask = TaskPersistenceService.INSTANCE.getAllUnFinishedTaskByAddress(instanceId, idlePtAddress);
             if (!CollectionUtils.isEmpty(unfinishedTask)) {
                 log.warn("[TaskTracker-{}] ProcessorTracker({}) is idle now but have unfinished tasks: {}", instanceId, idlePtAddress, unfinishedTask);
-                unfinishedTask.forEach(task -> updateTaskStatus(task.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), System.currentTimeMillis(), "SYSTEM: unreceived process result"));
+                unfinishedTask.forEach(task -> updateTaskStatus(task.getSubInstanceId(), task.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), System.currentTimeMillis(), "SYSTEM: unreceived process result"));
             }
         }
     }

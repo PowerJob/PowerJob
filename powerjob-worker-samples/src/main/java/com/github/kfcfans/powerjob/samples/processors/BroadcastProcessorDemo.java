@@ -36,6 +36,7 @@ public class BroadcastProcessorDemo extends BroadcastProcessor {
     public ProcessResult process(TaskContext taskContext) throws Exception {
         System.out.println("===== BroadcastProcessorDemo#process ======");
         taskContext.getOmsLogger().info("BroadcastProcessorDemo#process, current host: {}", NetUtils.getLocalHost());
+        Thread.sleep(45 * 1000);
         return new ProcessResult(true);
     }
 
