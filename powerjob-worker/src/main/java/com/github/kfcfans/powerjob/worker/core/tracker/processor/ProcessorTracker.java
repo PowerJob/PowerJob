@@ -63,7 +63,7 @@ public class ProcessorTracker {
     private ThreadPoolExecutor threadPool;
     private ScheduledExecutorService timingPool;
 
-    private static final int THREAD_POOL_QUEUE_MAX_SIZE = 100;
+    private static final int THREAD_POOL_QUEUE_MAX_SIZE = 128;
     // 长时间空闲的 ProcessorTracker 会发起销毁请求
     private static final long MAX_IDLE_TIME = 300000;
 

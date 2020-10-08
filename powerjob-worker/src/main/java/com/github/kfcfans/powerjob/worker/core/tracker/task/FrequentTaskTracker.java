@@ -106,14 +106,6 @@ public class FrequentTaskTracker extends TaskTracker {
     }
 
     @Override
-    public void updateTaskStatus(Long subInstanceId, String taskId, int newStatus, long reportTime, @Nullable String result) {
-        super.updateTaskStatus(subInstanceId, taskId, newStatus, reportTime, result);
-        // 更新 LastActiveTime
-        SubInstanceTimeHolder timeHolder = subInstanceId2TimeHolder.get(subInstanceId);
-        timeHolder.lastActiveTime = Math.max(reportTime, timeHolder.lastActiveTime);
-    }
-
-    @Override
     public InstanceDetail fetchRunningStatus() {
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
@@ -181,7 +173,7 @@ public class FrequentTaskTracker extends TaskTracker {
             if (maxInstanceNum > 0) {
                 if (timeExpressionType == TimeExpressionType.FIX_RATE) {
                     if (subInstanceId2TimeHolder.size() > maxInstanceNum) {
-                        log.warn("[TaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
+                        log.warn("[FQTaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
                         processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
                         return;
                     }
@@ -190,14 +182,14 @@ public class FrequentTaskTracker extends TaskTracker {
 
             // 必须先持久化，持久化成功才能 dispatch，否则会导致后续报错（因为DB中没有这个taskId对应的记录，会各种报错）
             if (!taskPersistenceService.save(newRootTask)) {
-                log.error("[TaskTracker-{}] Launcher create new root task failed.", instanceId);
+                log.error("[FQTaskTracker-{}] Launcher create new root task failed.", instanceId);
                 processFinishedSubInstance(subInstanceId, false, "LAUNCH_FAILED");
                 return;
             }
 
             // 生成记录信息（必须保证持久化成功才能生成该记录，否则会导致 LAUNCH_FAILED 错误）
             SubInstanceTimeHolder timeHolder = new SubInstanceTimeHolder();
-            timeHolder.startTime = timeHolder.lastActiveTime = System.currentTimeMillis();
+            timeHolder.startTime = System.currentTimeMillis();
             subInstanceId2TimeHolder.put(subInstanceId, timeHolder);
 
             dispatchTask(newRootTask, myAddress);
@@ -208,7 +200,7 @@ public class FrequentTaskTracker extends TaskTracker {
             try {
                 innerRun();
             }catch (Exception e) {
-                log.error("[TaskTracker-{}] launch task failed.", instanceId, e);
+                log.error("[FQTaskTracker-{}] launch task failed.", instanceId, e);
             }
         }
     }
@@ -217,8 +209,6 @@ public class FrequentTaskTracker extends TaskTracker {
      * 检查各个SubInstance的完成情况
      */
     private class Checker implements Runnable {
-
-        private static final long HEARTBEAT_TIMEOUT_MS = 60000;
 
         @Override
         public void run() {
@@ -231,7 +221,7 @@ public class FrequentTaskTracker extends TaskTracker {
                 checkStatus();
                 reportStatus();
             }catch (Exception e) {
-                log.warn("[TaskTracker-{}] check and report status failed.", instanceId, e);
+                log.warn("[FQTaskTracker-{}] check and report status failed.", instanceId, e);
             }
         }
 
@@ -249,16 +239,10 @@ public class FrequentTaskTracker extends TaskTracker {
                 SubInstanceTimeHolder timeHolder = entry.getValue();
 
                 long executeTimeout = nowTS - timeHolder.startTime;
-                long heartbeatTimeout = nowTS - timeHolder.lastActiveTime;
 
                 // 超时（包含总运行时间超时和心跳包超时），直接判定为失败
                 if (executeTimeout > instanceTimeoutMS) {
                     onFinished(subInstanceId, false, "RUNNING_TIMEOUT", iterator);
-                    continue;
-                }
-
-                if (heartbeatTimeout > HEARTBEAT_TIMEOUT_MS) {
-                    onFinished(subInstanceId, false, "HEARTBEAT_TIMEOUT", iterator);
                     continue;
                 }
 
@@ -312,7 +296,7 @@ public class FrequentTaskTracker extends TaskTracker {
                 }
                 // 舍去一切重试机制，反正超时就失败
             }
-            log.debug("[TaskTracker-{}] check status using {}.", instanceId, stopwatch);
+            log.debug("[FQTaskTracker-{}] check status using {}.", instanceId, stopwatch);
         }
 
         private void reportStatus() {
@@ -387,7 +371,6 @@ public class FrequentTaskTracker extends TaskTracker {
 
     private static class SubInstanceTimeHolder {
         private long startTime;
-        private long lastActiveTime;
     }
 
 }
