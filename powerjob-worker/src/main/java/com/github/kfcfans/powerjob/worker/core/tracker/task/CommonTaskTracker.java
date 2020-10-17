@@ -59,6 +59,12 @@ public class CommonTaskTracker extends TaskTracker {
         // 启动定时任务（任务派发 & 状态检查）
         scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 0, 5, TimeUnit.SECONDS);
         scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 10, 10, TimeUnit.SECONDS);
+
+        // 如果是 MR 任务，则需要启动执行器动态检测装置
+        ExecuteType executeType = ExecuteType.valueOf(req.getExecuteType());
+        if (executeType == ExecuteType.MAP || executeType == ExecuteType.MAP_REDUCE) {
+            scheduledPool.scheduleAtFixedRate(new WorkerDetector(), 1, 1, TimeUnit.MINUTES);
+        }
     }
 
     @Override
