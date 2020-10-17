@@ -61,17 +61,6 @@ public class ServerController {
         return ResultDTO.success(server);
     }
 
-    @GetMapping("/acquireWorkerList")
-    public ResultDTO<List<String>> acquireWorkerList(Long appId, Long jobId) {
-        Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(jobId);
-        JobInfoDO jobInfo = jobInfoOpt.orElseThrow(() -> new PowerJobException("can't find jobInfo by id: " + jobId));
-        if (!jobInfo.getAppId().equals(appId)) {
-            throw new PowerJobException("Permission denied!");
-        }
-        List<String> sortedAvailableWorker = WorkerManagerService.getSortedAvailableWorker(appId, jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
-        return ResultDTO.success(sortedAvailableWorker);
-    }
-
     @GetMapping("/hello")
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();

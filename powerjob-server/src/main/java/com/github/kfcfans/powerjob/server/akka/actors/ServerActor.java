@@ -2,18 +2,18 @@ package com.github.kfcfans.powerjob.server.akka.actors;
 
 import akka.actor.AbstractActor;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
-import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
-import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
-import com.github.kfcfans.powerjob.common.request.WorkerLogReportReq;
-import com.github.kfcfans.powerjob.common.request.WorkerNeedDeployContainerRequest;
+import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.github.kfcfans.powerjob.common.request.*;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
+import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.ContainerInfoDO;
+import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ContainerInfoRepository;
+import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.InstanceLogService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -41,6 +42,7 @@ public class ServerActor extends AbstractActor {
                 .match(TaskTrackerReportInstanceStatusReq.class, this::onReceiveTaskTrackerReportInstanceStatusReq)
                 .match(WorkerLogReportReq.class, this::onReceiveWorkerLogReportReq)
                 .match(WorkerNeedDeployContainerRequest.class, this::onReceiveWorkerNeedDeployContainerRequest)
+                .match(WorkerQueryExecutorClusterReq.class, this::onReceiveWorkerQueryExecutorClusterReq)
                 .matchAny(obj -> log.warn("[ServerActor] receive unknown request: {}.", obj))
                 .build();
     }
@@ -106,6 +108,33 @@ public class ServerActor extends AbstractActor {
             dpReq.setDownloadURL(downloadURL);
 
             askResponse.setData(JsonUtils.toBytes(dpReq));
+        }
+        getSender().tell(askResponse, getSelf());
+    }
+
+    /**
+     * 处理 worker 请求获取当前任务所有处理器节点的请求
+     * @param req jobId + appId
+     */
+    private void onReceiveWorkerQueryExecutorClusterReq(WorkerQueryExecutorClusterReq req) {
+
+        AskResponse askResponse;
+
+        Long jobId = req.getJobId();
+        Long appId = req.getAppId();
+
+        JobInfoRepository jobInfoRepository = SpringUtils.getBean(JobInfoRepository.class);
+        Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(jobId);
+        if (jobInfoOpt.isPresent()) {
+            JobInfoDO jobInfo = jobInfoOpt.get();
+            if (!jobInfo.getAppId().equals(appId)) {
+                askResponse = AskResponse.failed("Permission Denied!");
+            }else {
+                List<String> sortedAvailableWorker = WorkerManagerService.getSortedAvailableWorker(appId, jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
+                askResponse = AskResponse.succeed(sortedAvailableWorker);
+            }
+        }else {
+            askResponse = AskResponse.failed("can't find jobInfo by jobId: " + jobId);
         }
         getSender().tell(askResponse, getSelf());
     }
