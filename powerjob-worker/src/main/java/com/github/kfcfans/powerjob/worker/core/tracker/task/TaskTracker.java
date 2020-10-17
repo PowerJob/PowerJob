@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.worker.core.tracker.task;
 
 import akka.actor.ActorSelection;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
@@ -8,7 +9,10 @@ import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
+import com.github.kfcfans.powerjob.common.request.WorkerQueryExecutorClusterReq;
+import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
@@ -63,10 +67,10 @@ public abstract class TaskTracker {
     // 是否结束
     protected AtomicBoolean finished;
     // 上报时间缓存
-    private Cache<String, Long> taskId2LastReportTime;
+    private final Cache<String, Long> taskId2LastReportTime;
 
     // 分段锁
-    private SegmentLock segmentLock;
+    private final SegmentLock segmentLock;
     private static final int UPDATE_CONCURRENCY = 4;
 
     protected TaskTracker(ServerScheduleJobReq req) {
@@ -468,6 +472,37 @@ public abstract class TaskTracker {
             }
 
             log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch.stop());
+        }
+    }
+
+    /**
+     * 执行器动态上线（for 秒级任务和 MR 任务）
+     * 原则：server 查询得到的 执行器状态不会干预 worker 自己维护的状态，即只做新增，不做任何修改
+     */
+    protected class WorkerDetector implements Runnable {
+        @Override
+        public void run() {
+            String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
+            if (StringUtils.isEmpty(serverPath)) {
+                log.warn("[TaskTracker-{}] no server available, won't start worker detective!", instanceId);
+                return;
+            }
+            WorkerQueryExecutorClusterReq req = new WorkerQueryExecutorClusterReq(OhMyWorker.getAppId(), instanceInfo.getJobId());
+            AskResponse response = AkkaUtils.easyAsk(OhMyWorker.actorSystem.actorSelection(serverPath), req);
+            if (!response.isSuccess()) {
+                log.warn("[TaskTracker-{}] detective failed due to ask failed, message is {}", instanceId, response.getMessage());
+                return;
+            }
+            try {
+                List<String> workerList = JsonUtils.parseObject(response.getData(), new TypeReference<List<String>>() {});
+                workerList.forEach(address -> {
+                    if (ptStatusHolder.register(address)) {
+                        log.info("[TaskTracker-{}] detective new worker: {}", instanceId, address);
+                    }
+                });
+            }catch (Exception e) {
+                log.warn("[TaskTracker-{}] detective failed!", instanceId, e);
+            }
         }
     }
 

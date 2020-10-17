@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +84,7 @@ public class FrequentTaskTracker extends TaskTracker {
         // 1. 初始化定时调度线程池
         String poolName = String.format("ftttp-%d", req.getInstanceId()) + "-%d";
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat(poolName).build();
-        this.scheduledPool = Executors.newScheduledThreadPool(3, factory);
+        this.scheduledPool = Executors.newScheduledThreadPool(4, factory);
 
         // 2. 启动任务发射器
         launcher = new Launcher();
@@ -103,6 +102,8 @@ public class FrequentTaskTracker extends TaskTracker {
         scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 1, 2, TimeUnit.SECONDS);
         // 4. 启动状态检查器
         scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(Math.max(timeParams, 5000), 15000), TimeUnit.MILLISECONDS);
+        // 5. 启动执行器动态检测装置
+        scheduledPool.scheduleAtFixedRate(new WorkerDetector(), 1, 1, TimeUnit.MINUTES);
     }
 
     @Override

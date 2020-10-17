@@ -74,4 +74,20 @@ public class ProcessorTrackerStatusHolder {
         });
         return result;
     }
+
+    /**
+     * 注册新的执行节点
+     * @param address 新的执行节点地址
+     * @return true: 注册成功 / false：已存在
+     */
+    public boolean register(String address) {
+        ProcessorTrackerStatus pts = address2Status.get(address);
+        if (pts != null) {
+            return false;
+        }
+        pts = new ProcessorTrackerStatus();
+        pts.init(address);
+        address2Status.put(address, pts);
+        return true;
+    }
 }
