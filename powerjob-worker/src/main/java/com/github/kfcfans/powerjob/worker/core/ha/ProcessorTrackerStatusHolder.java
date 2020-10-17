@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.worker.core.ha;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
  * @author tjq
  * @since 2020/3/28
  */
+@Slf4j
 public class ProcessorTrackerStatusHolder {
 
     // ProcessorTracker的address(IP:Port) -> 状态
@@ -36,8 +38,14 @@ public class ProcessorTrackerStatusHolder {
      * 根据 ProcessorTracker 的心跳更新状态
      */
     public void updateStatus(ProcessorTrackerStatusReportReq heartbeatReq) {
-        ProcessorTrackerStatus processorTrackerStatus = address2Status.get(heartbeatReq.getAddress());
-        processorTrackerStatus.update(heartbeatReq);
+        // remove 前突然收到了 PT 心跳同时立即被派发才可能出现这种情况，0.001% 概率
+        ProcessorTrackerStatus pts = address2Status.computeIfAbsent(heartbeatReq.getAddress(), ignore-> {
+            log.warn("[ProcessorTrackerStatusHolder] unregistered worker's heartbeat request: {}", heartbeatReq);
+            ProcessorTrackerStatus processorTrackerStatus = new ProcessorTrackerStatus();
+            processorTrackerStatus.init(heartbeatReq.getAddress());
+            return processorTrackerStatus;
+        });
+        pts.update(heartbeatReq);
     }
 
     /**
@@ -89,5 +97,9 @@ public class ProcessorTrackerStatusHolder {
         pts.init(address);
         address2Status.put(address, pts);
         return true;
+    }
+
+    public void remove(List<String> addressList) {
+        addressList.forEach(address2Status::remove);
     }
 }

@@ -58,7 +58,7 @@ public class CommonTaskTracker extends TaskTracker {
 
         // 启动定时任务（任务派发 & 状态检查）
         scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 0, 5, TimeUnit.SECONDS);
-        scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 10, 10, TimeUnit.SECONDS);
+        scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 13, 13, TimeUnit.SECONDS);
 
         // 如果是 MR 任务，则需要启动执行器动态检测装置
         ExecuteType executeType = ExecuteType.valueOf(req.getExecuteType());
@@ -290,7 +290,11 @@ public class CommonTaskTracker extends TaskTracker {
             List<String> disconnectedPTs = ptStatusHolder.getAllDisconnectedProcessorTrackers();
             if (!disconnectedPTs.isEmpty()) {
                 log.warn("[TaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}.", instanceId, disconnectedPTs);
-                taskPersistenceService.updateLostTasks(disconnectedPTs);
+                boolean updateLostTasks = taskPersistenceService.updateLostTasks(disconnectedPTs);
+                if (updateLostTasks) {
+                    ptStatusHolder.remove(disconnectedPTs);
+                    log.warn("[TaskTracker-{}] detective some worker is offline: {}", instanceId, disconnectedPTs);
+                }
             }
         }
 
