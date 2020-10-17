@@ -290,10 +290,9 @@ public class CommonTaskTracker extends TaskTracker {
             List<String> disconnectedPTs = ptStatusHolder.getAllDisconnectedProcessorTrackers();
             if (!disconnectedPTs.isEmpty()) {
                 log.warn("[TaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}.", instanceId, disconnectedPTs);
-                boolean updateLostTasks = taskPersistenceService.updateLostTasks(disconnectedPTs);
-                if (updateLostTasks) {
+                if (taskPersistenceService.updateLostTasks(instanceId, disconnectedPTs, true)) {
                     ptStatusHolder.remove(disconnectedPTs);
-                    log.warn("[TaskTracker-{}] detective some worker is offline: {}", instanceId, disconnectedPTs);
+                    log.warn("[TaskTracker-{}] removed these ProcessorTracker from StatusHolder: {}", instanceId, disconnectedPTs);
                 }
             }
         }

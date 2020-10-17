@@ -228,6 +228,17 @@ public class FrequentTaskTracker extends TaskTracker {
 
         private void checkStatus() {
             Stopwatch stopwatch = Stopwatch.createStarted();
+
+            // worker 挂掉的任务直接置为失败
+            List<String> disconnectedPTs = ptStatusHolder.getAllDisconnectedProcessorTrackers();
+            if (!disconnectedPTs.isEmpty()) {
+                log.warn("[FQTaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}.", instanceId, disconnectedPTs);
+                if (taskPersistenceService.updateLostTasks(instanceId, disconnectedPTs, false)) {
+                    ptStatusHolder.remove(disconnectedPTs);
+                    log.warn("[FQTaskTracker-{}] removed these ProcessorTracker from StatusHolder: {}", instanceId, disconnectedPTs);
+                }
+            }
+
             ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
             long instanceTimeoutMS = instanceInfo.getInstanceTimeoutMS();
             long nowTS = System.currentTimeMillis();
