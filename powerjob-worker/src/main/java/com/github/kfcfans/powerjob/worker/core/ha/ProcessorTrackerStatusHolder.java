@@ -30,22 +30,26 @@ public class ProcessorTrackerStatusHolder {
         });
     }
 
+    /**
+     * 根据地址获取 ProcessorTracker 的状态
+     * @param address IP:Port
+     * @return status
+     */
     public ProcessorTrackerStatus getProcessorTrackerStatus(String address) {
-        return address2Status.get(address);
+        // remove 前突然收到了 PT 心跳同时立即被派发才可能出现这种情况，0.001% 概率
+        return address2Status.computeIfAbsent(address, ignore -> {
+            log.warn("[ProcessorTrackerStatusHolder] unregistered worker: {}", address);
+            ProcessorTrackerStatus processorTrackerStatus = new ProcessorTrackerStatus();
+            processorTrackerStatus.init(address);
+            return processorTrackerStatus;
+        });
     }
 
     /**
      * 根据 ProcessorTracker 的心跳更新状态
      */
     public void updateStatus(ProcessorTrackerStatusReportReq heartbeatReq) {
-        // remove 前突然收到了 PT 心跳同时立即被派发才可能出现这种情况，0.001% 概率
-        ProcessorTrackerStatus pts = address2Status.computeIfAbsent(heartbeatReq.getAddress(), ignore-> {
-            log.warn("[ProcessorTrackerStatusHolder] unregistered worker's heartbeat request: {}", heartbeatReq);
-            ProcessorTrackerStatus processorTrackerStatus = new ProcessorTrackerStatus();
-            processorTrackerStatus.init(heartbeatReq.getAddress());
-            return processorTrackerStatus;
-        });
-        pts.update(heartbeatReq);
+        getProcessorTrackerStatus(heartbeatReq.getAddress()).update(heartbeatReq);
     }
 
     /**
