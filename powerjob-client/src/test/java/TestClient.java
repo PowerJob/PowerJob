@@ -1,3 +1,4 @@
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.ProcessorType;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
@@ -5,7 +6,6 @@ import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.client.OhMyClient;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -46,13 +46,13 @@ public class TestClient {
         newJobInfo.setMinDiskSpace(1.3);
 
         ResultDTO<Long> resultDTO = ohMyClient.saveJob(newJobInfo);
-        System.out.println(JsonUtils.toJSONString(resultDTO));
+        System.out.println(JSONObject.toJSONString(resultDTO));
     }
 
     @Test
     public void testFetchJob() throws Exception {
         ResultDTO<JobInfoDTO> fetchJob = ohMyClient.fetchJob(1L);
-        System.out.println(JsonUtils.toJSONStringUnsafe(fetchJob));
+        System.out.println(JSONObject.toJSONString(fetchJob));
     }
 
     @Test
@@ -93,21 +93,21 @@ public class TestClient {
     @Test
     public void testCancelInstanceInTimeWheel() throws Exception {
         ResultDTO<Long> startRes = ohMyClient.runJob(15L, "start by OhMyClient", 20000);
-        System.out.println("runJob result: " + JsonUtils.toJSONString(startRes));
+        System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
         ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
-        System.out.println("cancelJob result: " + JsonUtils.toJSONString(cancelRes));
+        System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
     }
 
     @Test
     public void testCancelInstanceInDatabase() throws Exception {
         ResultDTO<Long> startRes = ohMyClient.runJob(15L, "start by OhMyClient", 2000000);
-        System.out.println("runJob result: " + JsonUtils.toJSONString(startRes));
+        System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
 
         // 手动重启 server，干掉时间轮中的调度数据
         TimeUnit.MINUTES.sleep(1);
 
         ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
-        System.out.println("cancelJob result: " + JsonUtils.toJSONString(cancelRes));
+        System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
     }
 
     @Test

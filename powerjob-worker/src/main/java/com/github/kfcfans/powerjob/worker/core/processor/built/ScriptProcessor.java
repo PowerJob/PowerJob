@@ -49,7 +49,7 @@ public abstract class ScriptProcessor implements BasicProcessor {
             throw new RuntimeException("create script file failed");
         }
 
-        // 如果是下载连接，则从网络获取
+        // 如果是下载链接，则从网络获取
         for (String protocol : DOWNLOAD_PROTOCOL) {
             if (processorInfo.startsWith(protocol)) {
                 FileUtils.copyURLToFile(new URL(processorInfo), script, 5000, 300000);
@@ -57,7 +57,7 @@ public abstract class ScriptProcessor implements BasicProcessor {
             }
         }
 
-        // 持久化到本地
+        // 非下载链接，为 processInfo 生成可执行文件
         try (FileWriter fw = new FileWriter(script); BufferedWriter bw = new BufferedWriter(fw)) {
             bw.write(processorInfo);
             bw.flush();

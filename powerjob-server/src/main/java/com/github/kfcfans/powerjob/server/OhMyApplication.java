@@ -21,7 +21,7 @@ public class OhMyApplication {
             "******************* PowerJob Tips *******************\n" +
             "如果应用无法启动，我们建议您仔细阅读以下文档来解决:\n" +
             "if server can't startup, we recommend that you read the documentation to find a solution:\n" +
-            "https://www.yuque.com/powerjob/guidence/xp5ygc#xMQC9\n" +
+            "https://www.yuque.com/powerjob/guidence/problem\n" +
             "******************* PowerJob Tips *******************\n\n";
 
     public static void main(String[] args) {

@@ -33,7 +33,7 @@ public class ProcessorTrackerStatus {
      */
     public void init(String address) {
         this.address = address;
-        this.lastActiveTime = System.currentTimeMillis();
+        this.lastActiveTime = - 1;
         this.remainTaskNum = 0;
         this.dispatched = false;
         this.connected = false;

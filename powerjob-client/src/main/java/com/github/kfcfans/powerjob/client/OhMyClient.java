@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
@@ -8,7 +9,6 @@ import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.*;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
@@ -62,7 +62,7 @@ public class OhMyClient {
             try {
                 String result = assertApp(appName, password, url);
                 if (StringUtils.isNotEmpty(result)) {
-                    ResultDTO resultDTO = JsonUtils.parseObject(result, ResultDTO.class);
+                    ResultDTO resultDTO = JSONObject.parseObject(result, ResultDTO.class);
                     if (resultDTO.isSuccess()) {
                         appId = Long.parseLong(resultDTO.getData().toString());
                         currentAddress = addr;
@@ -107,9 +107,9 @@ public class OhMyClient {
 
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
-        String json = JsonUtils.toJSONStringUnsafe(request);
+        String json = JSONObject.toJSONString(request);
         String post = postHA(OpenAPIConstant.SAVE_JOB, RequestBody.create(jsonType, json));
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -124,7 +124,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_JOB, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -139,7 +139,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DISABLE_JOB, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -154,7 +154,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.ENABLE_JOB, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -169,7 +169,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DELETE_JOB, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -190,7 +190,7 @@ public class OhMyClient {
             builder.add("instanceParams", instanceParams);
         }
         String post = postHA(OpenAPIConstant.RUN_JOB, builder.build());
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
     public ResultDTO<Long> runJob(Long jobId) throws Exception {
         return runJob(jobId, null, 0);
@@ -209,7 +209,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.STOP_INSTANCE, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -225,7 +225,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.CANCEL_INSTANCE, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -241,7 +241,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.RETRY_INSTANCE, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -255,7 +255,7 @@ public class OhMyClient {
                 .add("instanceId", instanceId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_INSTANCE_STATUS, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -269,7 +269,7 @@ public class OhMyClient {
                 .add("instanceId", instanceId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_INSTANCE_INFO, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /* ************* Workflow 区 ************* */
@@ -282,9 +282,9 @@ public class OhMyClient {
     public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws Exception {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
-        String json = JsonUtils.toJSONStringUnsafe(request);
+        String json = JSONObject.toJSONString(request);
         String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(jsonType, json));
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -299,7 +299,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_WORKFLOW, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -314,7 +314,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DISABLE_WORKFLOW, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -329,7 +329,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.ENABLE_WORKFLOW, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -344,7 +344,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DELETE_WORKFLOW, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -364,7 +364,7 @@ public class OhMyClient {
             builder.add("initParams", initParams);
         }
         String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
     public ResultDTO<Long> runWorkflow(Long workflowId) throws Exception {
         return runWorkflow(workflowId, null, 0);
@@ -383,7 +383,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.STOP_WORKFLOW_INSTANCE, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
     /**
@@ -398,7 +398,7 @@ public class OhMyClient {
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO, body);
-        return JsonUtils.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, ResultDTO.class);
     }
 
 
