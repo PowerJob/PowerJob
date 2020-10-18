@@ -35,12 +35,6 @@
             <groupId>com.github.kfcfans</groupId>
             <artifactId>powerjob-common</artifactId>
             <version>${powerjob.common.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.typesafe.akka</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Junit 测试 -->
@@ -54,6 +48,8 @@
 
     <build>
         <plugins>
+            <!-- 暂时放弃 shade，打 shade 包一定要非常干净，否则是更大的坑 -->
+            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -92,6 +88,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 
