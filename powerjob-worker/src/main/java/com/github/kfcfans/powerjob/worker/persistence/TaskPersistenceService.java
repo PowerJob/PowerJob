@@ -98,7 +98,7 @@ public class TaskPersistenceService {
      * 更新被派发到已经失联的 ProcessorTracker 的任务，重新执行
      * update task_info
      * set address = 'N/A', status = 0
-     * where address in () and status not in (5,6)
+     * where address in () and status not in (5,6) and instance_id = 277
      */
     public boolean updateLostTasks(Long instanceId, List<String> addressList, boolean retry) {
 
