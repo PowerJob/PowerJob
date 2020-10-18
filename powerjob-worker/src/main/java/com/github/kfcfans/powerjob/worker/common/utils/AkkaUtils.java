@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.worker.common.utils;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
@@ -45,13 +46,20 @@ public class AkkaUtils {
      */
     public static boolean reliableTransmit(ActorSelection remote, Object msg) {
         try {
-            CompletionStage<Object> ask = Patterns.ask(remote, msg, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-            AskResponse response = (AskResponse) ask.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-            return response.isSuccess();
+            return easyAsk(remote, msg).isSuccess();
         }catch (Exception e) {
             log.warn("[Oms-Transmitter] transmit {} failed, reason is {}", msg, e.toString());
         }
         return false;
+    }
+
+    public static AskResponse easyAsk(ActorSelection remote, Object msg) {
+        try {
+            CompletionStage<Object> ask = Patterns.ask(remote, msg, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
+            return (AskResponse) ask.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        }catch (Exception e) {
+            throw new PowerJobException(e);
+        }
     }
 
 }

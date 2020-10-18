@@ -5,6 +5,7 @@ import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskResult;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BroadcastProcessor;
+import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -34,9 +35,16 @@ public class BroadcastProcessorDemo extends BroadcastProcessor {
 
     @Override
     public ProcessResult process(TaskContext taskContext) throws Exception {
+        OmsLogger logger = taskContext.getOmsLogger();
         System.out.println("===== BroadcastProcessorDemo#process ======");
-        taskContext.getOmsLogger().info("BroadcastProcessorDemo#process, current host: {}", NetUtils.getLocalHost());
-        Thread.sleep(45 * 1000);
+        logger.info("BroadcastProcessorDemo#process, current host: {}", NetUtils.getLocalHost());
+        long sleepTime = 1000;
+        try {
+            sleepTime = Long.parseLong(taskContext.getJobParams());
+        }catch (Exception e) {
+            logger.warn("[BroadcastProcessor] parse sleep time failed!", e);
+        }
+        Thread.sleep(Math.max(sleepTime, 1000));
         return new ProcessResult(true);
     }
 

@@ -2,20 +2,26 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
+import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
+import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.powerjob.server.service.ha.ClusterStatusHolder;
 import com.github.kfcfans.powerjob.server.service.ha.ServerSelectService;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.taobao.api.internal.cluster.ClusterManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -34,8 +40,10 @@ public class ServerController {
     private ServerSelectService serverSelectService;
     @Resource
     private AppInfoRepository appInfoRepository;
+    @Resource
+    private JobInfoRepository jobInfoRepository;
 
-    @GetMapping("assert")
+    @GetMapping("/assert")
     public ResultDTO<Long> assertAppName(String appName) {
         Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
         return appInfoOpt.map(appInfoDO -> ResultDTO.success(appInfoDO.getId())).

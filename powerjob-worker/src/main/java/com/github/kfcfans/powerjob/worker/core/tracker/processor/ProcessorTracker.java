@@ -65,7 +65,7 @@ public class ProcessorTracker {
 
     private static final int THREAD_POOL_QUEUE_MAX_SIZE = 128;
     // 长时间空闲的 ProcessorTracker 会发起销毁请求
-    private static final long MAX_IDLE_TIME = 300000;
+    private static final long MAX_IDLE_TIME = 120000;
 
     // 当 ProcessorTracker 出现根本性错误（比如 Processor 创建失败，所有的任务直接失败）
     private boolean lethal = false;

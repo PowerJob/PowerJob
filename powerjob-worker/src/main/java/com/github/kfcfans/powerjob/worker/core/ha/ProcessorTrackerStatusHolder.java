@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.worker.core.ha;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
  * @author tjq
  * @since 2020/3/28
  */
+@Slf4j
 public class ProcessorTrackerStatusHolder {
 
     // ProcessorTracker的address(IP:Port) -> 状态
@@ -28,16 +30,26 @@ public class ProcessorTrackerStatusHolder {
         });
     }
 
+    /**
+     * 根据地址获取 ProcessorTracker 的状态
+     * @param address IP:Port
+     * @return status
+     */
     public ProcessorTrackerStatus getProcessorTrackerStatus(String address) {
-        return address2Status.get(address);
+        // remove 前突然收到了 PT 心跳同时立即被派发才可能出现这种情况，0.001% 概率
+        return address2Status.computeIfAbsent(address, ignore -> {
+            log.warn("[ProcessorTrackerStatusHolder] unregistered worker: {}", address);
+            ProcessorTrackerStatus processorTrackerStatus = new ProcessorTrackerStatus();
+            processorTrackerStatus.init(address);
+            return processorTrackerStatus;
+        });
     }
 
     /**
      * 根据 ProcessorTracker 的心跳更新状态
      */
     public void updateStatus(ProcessorTrackerStatusReportReq heartbeatReq) {
-        ProcessorTrackerStatus processorTrackerStatus = address2Status.get(heartbeatReq.getAddress());
-        processorTrackerStatus.update(heartbeatReq);
+        getProcessorTrackerStatus(heartbeatReq.getAddress()).update(heartbeatReq);
     }
 
     /**
@@ -73,5 +85,25 @@ public class ProcessorTrackerStatusHolder {
             }
         });
         return result;
+    }
+
+    /**
+     * 注册新的执行节点
+     * @param address 新的执行节点地址
+     * @return true: 注册成功 / false：已存在
+     */
+    public boolean register(String address) {
+        ProcessorTrackerStatus pts = address2Status.get(address);
+        if (pts != null) {
+            return false;
+        }
+        pts = new ProcessorTrackerStatus();
+        pts.init(address);
+        address2Status.put(address, pts);
+        return true;
+    }
+
+    public void remove(List<String> addressList) {
+        addressList.forEach(address2Status::remove);
     }
 }

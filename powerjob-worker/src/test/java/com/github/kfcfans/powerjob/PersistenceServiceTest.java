@@ -73,7 +73,7 @@ public class PersistenceServiceTest {
     @Test
     public void testUpdateLostTasks() throws Exception {
         Thread.sleep(1000);
-        boolean success = taskPersistenceService.updateLostTasks(Lists.newArrayList(NetUtils.getLocalHost()));
+        boolean success = taskPersistenceService.updateLostTasks(10086L, Lists.newArrayList(NetUtils.getLocalHost()), true);
         System.out.println("updateLostTasks: " + success);
     }
 

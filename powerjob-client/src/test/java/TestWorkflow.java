@@ -1,3 +1,4 @@
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.client.OhMyClient;
 import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.ProcessorType;
@@ -5,7 +6,6 @@ import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ public class TestWorkflow {
         base.setProcessorInfo("com.github.kfcfans.powerjob.samples.workflow.WorkflowStandaloneProcessor");
 
         for (int i = 0; i < 5; i++) {
-            SaveJobInfoRequest request = JsonUtils.parseObject(JsonUtils.toBytes(base), SaveJobInfoRequest.class);
+            SaveJobInfoRequest request = JSONObject.parseObject(JSONObject.toJSONBytes(base), SaveJobInfoRequest.class);
             request.setJobName(request.getJobName() + i);
             System.out.println(ohMyClient.saveJob(request));
         }
