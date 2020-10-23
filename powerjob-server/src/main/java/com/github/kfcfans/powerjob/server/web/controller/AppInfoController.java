@@ -48,12 +48,18 @@ public class AppInfoController {
         if (id == null) {
             appInfoDO = new AppInfoDO();
             appInfoDO.setGmtCreate(new Date());
-        }else {
+        } else {
             appInfoDO = appInfoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by id:" + id));
         }
-        BeanUtils.copyProperties(req, appInfoDO);
+        String appName = req.getAppName();
+        if (StringUtils.isNotBlank(appName)) {
+            appInfoDO.setAppName(appName);
+        }
+        String password = req.getPassword();
+        if (StringUtils.isNotBlank(password)) {
+            appInfoDO.setPassword(password);
+        }
         appInfoDO.setGmtModified(new Date());
-
         appInfoRepository.saveAndFlush(appInfoDO);
         return ResultDTO.success(null);
     }
@@ -75,7 +81,7 @@ public class AppInfoController {
         Pageable limit = PageRequest.of(0, MAX_APP_NUM);
         if (StringUtils.isEmpty(condition)) {
             result = appInfoRepository.findAll(limit).getContent();
-        }else {
+        } else {
             result = appInfoRepository.findByAppNameLike("%" + condition + "%", limit).getContent();
         }
         return ResultDTO.success(convert(result));
