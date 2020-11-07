@@ -33,5 +33,5 @@ public class RemoteConstant {
 
     /* ************************ OTHERS ************************ */
     public static final String EMPTY_ADDRESS = "N/A";
-    public static final long DEFAULT_TIMEOUT_MS = 3000;
+    public static final long DEFAULT_TIMEOUT_MS = 5000;
 }

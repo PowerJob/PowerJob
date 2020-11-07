@@ -64,6 +64,7 @@ public class TestWorkflow {
         req.setEnable(true);
         req.setTimeExpressionType(TimeExpressionType.API);
 
+        System.out.println("req ->" + JSONObject.toJSON(req));
         System.out.println(ohMyClient.saveWorkflow(req));
     }
 

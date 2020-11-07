@@ -9,6 +9,7 @@ import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.*;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
+import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
@@ -283,7 +284,8 @@ public class OhMyClient {
     public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws PowerJobException {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
-        String json = JSONObject.toJSONString(request);
+        // 中坑记录：用 FastJSON 序列化会导致 Server 接收时 pEWorkflowDAG 为 null，无语.jpg
+        String json = JsonUtils.toJSONStringUnsafe(request);
         String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(jsonType, json));
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }

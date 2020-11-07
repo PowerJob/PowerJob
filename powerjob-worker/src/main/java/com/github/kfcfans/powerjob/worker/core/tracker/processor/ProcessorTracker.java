@@ -323,7 +323,7 @@ public class ProcessorTracker {
 
         if (processor == null) {
             log.warn("[ProcessorTracker-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
-            throw new PowerJobException("fetch Processor failed");
+            throw new PowerJobException("fetch Processor failed, please check your processorType and processorInfo config");
         }
     }
 

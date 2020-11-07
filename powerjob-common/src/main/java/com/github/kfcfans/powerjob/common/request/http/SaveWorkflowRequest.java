@@ -6,6 +6,7 @@ import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ import java.util.List;
  * @since 2020/5/26
  */
 @Data
-public class SaveWorkflowRequest {
+public class SaveWorkflowRequest implements Serializable {
 
     private Long id;
 

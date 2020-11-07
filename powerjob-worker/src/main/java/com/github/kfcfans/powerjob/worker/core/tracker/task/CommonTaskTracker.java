@@ -236,8 +236,8 @@ public class CommonTaskTracker extends TaskTracker {
                 try {
                     AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                     serverAccepted = askResponse.isSuccess();
-                }catch (Exception ignore) {
-                    log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, result);
+                }catch (Exception e) {
+                    log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, result, e);
                 }
 
                 // 服务器未接受上报，则等待下次重新上报

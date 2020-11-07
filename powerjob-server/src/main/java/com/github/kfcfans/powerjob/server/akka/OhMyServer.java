@@ -97,8 +97,8 @@ public class OhMyServer {
     }
 
     /**
-     * ASK 其他 powejob-server，要求 AskResponse 中的 Data 为 String
-     * @param address 其他 powejob-server 的地址（ip:port）
+     * ASK 其他 powerjob-server，要求 AskResponse 中的 Data 为 String
+     * @param address 其他 powerjob-server 的地址（ip:port）
      * @param request 请求
      * @return 返回值 OR 异常
      */
@@ -106,7 +106,7 @@ public class OhMyServer {
         CompletionStage<Object> askCS = Patterns.ask(getFriendActor(address), request, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
         AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get();
         if (askResponse.isSuccess()) {
-            return askResponse.getDataAsString();
+            return askResponse.parseDataAsString();
         }
         throw new PowerJobException("remote server process failed:" + askResponse.getMessage());
     }

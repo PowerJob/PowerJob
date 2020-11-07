@@ -142,7 +142,7 @@ public class JobService {
                 dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
             });
         }
-        log.info("[Job-{}] run job successfully, params= {}, instanceId={}", jobInfo.getId(), instanceParams, instanceId);
+        log.info("[Job-{}] run job successfully, params={}, instanceId={}", jobInfo.getId(), instanceParams, instanceId);
         return instanceId;
     }
 
