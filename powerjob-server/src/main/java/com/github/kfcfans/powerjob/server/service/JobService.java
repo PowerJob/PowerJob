@@ -236,6 +236,15 @@ public class JobService {
         if (jobInfoDO.getMaxInstanceNum() == null) {
             jobInfoDO.setMaxInstanceNum(0);
         }
+        if (jobInfoDO.getConcurrency() == null) {
+            jobInfoDO.setConcurrency(0);
+        }
+        if (jobInfoDO.getInstanceRetryNum() == null) {
+            jobInfoDO.setInstanceRetryNum(0);
+        }
+        if (jobInfoDO.getTaskRetryNum() == null) {
+            jobInfoDO.setTaskRetryNum(0);
+        }
     }
 
 }
