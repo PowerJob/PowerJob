@@ -26,6 +26,8 @@ public class WorkflowInstanceInfoVO {
 
     // workflow 状态（WorkflowInstanceStatus）
     private Integer status;
+    // 工作流启动参数
+    private String wfInitParams;
 
     private PEWorkflowDAG pEWorkflowDAG;
     private String result;
