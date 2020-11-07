@@ -29,8 +29,12 @@ public class JsonUtils {
         return null;
     }
 
-    public static String toJSONStringUnsafe(Object obj) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(obj);
+    public static String toJSONStringUnsafe(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        }catch (Exception e) {
+            throw new PowerJobException(e);
+        }
     }
 
     public static byte[] toBytes(Object obj) {

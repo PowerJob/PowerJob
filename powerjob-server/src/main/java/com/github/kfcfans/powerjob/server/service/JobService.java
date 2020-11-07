@@ -5,11 +5,15 @@ import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
+import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.akka.requests.RunJobOrWorkflowReq;
 import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
+import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
@@ -22,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -43,6 +48,9 @@ public class JobService {
     private JobInfoRepository jobInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
+
+    @Resource
+    private AppInfoRepository appInfoRepository;
 
     /**
      * 保存/修改任务
@@ -70,9 +78,8 @@ public class JobService {
         jobInfoDO.setTimeExpressionType(request.getTimeExpressionType().getV());
         jobInfoDO.setStatus(request.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
 
-        if (jobInfoDO.getMaxWorkerCount() == null) {
-            jobInfoDO.setMaxWorkerCount(0);
-        }
+        // 填充默认值，非空保护防止 NPE
+        fillDefaultValue(jobInfoDO);
 
         // 转化报警用户列表
         if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
@@ -103,12 +110,30 @@ public class JobService {
      */
     public long runJob(Long jobId, String instanceParams, long delay) {
 
-        log.info("[Job-{}] try to run job, instanceParams={},delay={} ms.", jobId, instanceParams, delay);
-
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
+
+        AppInfoDO appInfo = appInfoRepository.findById(jobInfo.getAppId()).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by appId: " + jobInfo.getAppId()));
+        String targetServer = appInfo.getCurrentServer();
+
+        if (Objects.equals(targetServer, OhMyServer.getActorSystemAddress())) {
+            return realRunJob(jobInfo, instanceParams, delay);
+        }
+
+        // 转发请求
+        log.info("[Job-{}] redirect run request[params={}] to target server: {}", jobId, instanceParams, targetServer);
+        RunJobOrWorkflowReq req = new RunJobOrWorkflowReq(RunJobOrWorkflowReq.JOB, jobId, delay, instanceParams, jobInfo.getAppId());
+        try {
+            return Long.parseLong(OhMyServer.askFriend(targetServer, req));
+        }catch (Exception e) {
+            log.error("[Job-{}] redirect run request[params={}] to target server[{}] failed!", jobId, instanceParams, targetServer);
+            throw new PowerJobException("redirect run request failed!", e);
+        }
+    }
+
+    private long realRunJob(JobInfoDO jobInfo, String instanceParams, long delay) {
+        log.info("[Job-{}] try to run job, instanceParams={},delay={} ms.", jobInfo.getId(), instanceParams, delay);
         Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, null, System.currentTimeMillis() + Math.max(delay, 0));
         instanceInfoRepository.flush();
-
         if (delay <= 0) {
             dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
         }else {
@@ -116,7 +141,7 @@ public class JobService {
                 dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
             });
         }
-        log.info("[Job-{}] run job successfully, instanceId={}", jobId, instanceId);
+        log.info("[Job-{}] run job successfully, params={}, instanceId={}", jobInfo.getId(), instanceParams, instanceId);
         return instanceId;
     }
 
@@ -202,6 +227,24 @@ public class JobService {
         }
         // 重写最后修改时间
         jobInfoDO.setGmtModified(now);
+    }
+
+    private void fillDefaultValue(JobInfoDO jobInfoDO) {
+        if (jobInfoDO.getMaxWorkerCount() == null) {
+            jobInfoDO.setMaxWorkerCount(0);
+        }
+        if (jobInfoDO.getMaxInstanceNum() == null) {
+            jobInfoDO.setMaxInstanceNum(0);
+        }
+        if (jobInfoDO.getConcurrency() == null) {
+            jobInfoDO.setConcurrency(5);
+        }
+        if (jobInfoDO.getInstanceRetryNum() == null) {
+            jobInfoDO.setInstanceRetryNum(0);
+        }
+        if (jobInfoDO.getTaskRetryNum() == null) {
+            jobInfoDO.setTaskRetryNum(0);
+        }
     }
 
 }

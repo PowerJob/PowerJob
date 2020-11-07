@@ -68,7 +68,7 @@ public class DispatchService {
 
         // 检查当前任务是否被取消
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-        if (instanceInfo.getStatus() == CANCELED.getV()) {
+        if ( CANCELED.getV() == instanceInfo.getStatus()) {
             log.info("[Dispatcher-{}|{}] cancel dispatch due to instance has been canceled", jobId, instanceId);
             return;
         }

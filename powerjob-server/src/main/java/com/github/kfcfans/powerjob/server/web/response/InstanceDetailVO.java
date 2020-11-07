@@ -34,6 +34,8 @@ public class InstanceDetailVO {
     private String result;
     // TaskTracker地址
     private String taskTrackerAddress;
+    // 启动参数
+    private String instanceParams;
 
     // MR或BD任务专用
     private InstanceDetailVO.TaskDetail taskDetail;
