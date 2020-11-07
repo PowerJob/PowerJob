@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Workflow 服务
@@ -149,12 +150,12 @@ public class WorkflowService {
 
         AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by appId: " + appId));
 
-        String targetServer = OhMyServer.getActorSystemAddress();
-        if (targetServer.equals(appInfo.getCurrentServer())) {
+        String targetServer = appInfo.getCurrentServer();
+        if (Objects.equals(targetServer, OhMyServer.getActorSystemAddress())) {
             return realRunWorkflow(wfInfo, initParams, delay);
         }
 
-        log.info("[WorkflowService-{}] redirect run request to target server: {}", wfId, targetServer);
+        log.info("[WorkflowService-{}] redirect run request[initParams={}] to target server: {}", wfId, initParams, targetServer);
         // 转发请求
         RunJobOrWorkflowReq req = new RunJobOrWorkflowReq(RunJobOrWorkflowReq.WORKFLOW, wfId, delay, initParams, appId);
         try {

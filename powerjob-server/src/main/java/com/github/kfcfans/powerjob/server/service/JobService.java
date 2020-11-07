@@ -120,7 +120,7 @@ public class JobService {
         }
 
         // 转发请求
-        log.info("[Job-{}] redirect run request to target server: {}", jobId, targetServer);
+        log.info("[Job-{}] redirect run request[params={}] to target server: {}", jobId, instanceParams, targetServer);
         RunJobOrWorkflowReq req = new RunJobOrWorkflowReq(RunJobOrWorkflowReq.JOB, jobId, delay, instanceParams, jobInfo.getAppId());
         try {
             return Long.parseLong(OhMyServer.askFriend(targetServer, req));
@@ -237,7 +237,7 @@ public class JobService {
             jobInfoDO.setMaxInstanceNum(0);
         }
         if (jobInfoDO.getConcurrency() == null) {
-            jobInfoDO.setConcurrency(0);
+            jobInfoDO.setConcurrency(5);
         }
         if (jobInfoDO.getInstanceRetryNum() == null) {
             jobInfoDO.setInstanceRetryNum(0);
