@@ -53,4 +53,8 @@ public class AskResponse implements OmsSerializable {
         return JsonUtils.parseObject(data, clz);
     }
 
+    public String getDataAsString() {
+        return new String(data, StandardCharsets.UTF_8);
+    }
+
 }
