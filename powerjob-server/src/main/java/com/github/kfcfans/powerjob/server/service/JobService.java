@@ -78,9 +78,8 @@ public class JobService {
         jobInfoDO.setTimeExpressionType(request.getTimeExpressionType().getV());
         jobInfoDO.setStatus(request.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
 
-        if (jobInfoDO.getMaxWorkerCount() == null) {
-            jobInfoDO.setMaxWorkerCount(0);
-        }
+        // 填充默认值，非空保护防止 NPE
+        fillDefaultValue(jobInfoDO);
 
         // 转化报警用户列表
         if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
@@ -228,6 +227,15 @@ public class JobService {
         }
         // 重写最后修改时间
         jobInfoDO.setGmtModified(now);
+    }
+
+    private void fillDefaultValue(JobInfoDO jobInfoDO) {
+        if (jobInfoDO.getMaxWorkerCount() == null) {
+            jobInfoDO.setMaxWorkerCount(0);
+        }
+        if (jobInfoDO.getMaxInstanceNum() == null) {
+            jobInfoDO.setMaxInstanceNum(0);
+        }
     }
 
 }
