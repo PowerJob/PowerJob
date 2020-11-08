@@ -248,6 +248,7 @@ public class InstanceService {
             if (askResponse.isSuccess()) {
                 InstanceDetail instanceDetail = askResponse.getData(InstanceDetail.class);
                 instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());
+                instanceDetail.setInstanceParams(instanceInfoDO.getInstanceParams());
                 return instanceDetail;
             }else {
                 log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, the message is {}.", instanceId, askResponse.getMessage());

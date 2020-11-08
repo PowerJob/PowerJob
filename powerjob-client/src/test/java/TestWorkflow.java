@@ -22,6 +22,8 @@ public class TestWorkflow {
 
     private static OhMyClient ohMyClient;
 
+    private static final long WF_ID = 1;
+
     @BeforeAll
     public static void initClient() throws Exception {
         ohMyClient = new OhMyClient("127.0.0.1:7700", "powerjob-agent-test", "123");
@@ -64,32 +66,33 @@ public class TestWorkflow {
         req.setEnable(true);
         req.setTimeExpressionType(TimeExpressionType.API);
 
+        System.out.println("req ->" + JSONObject.toJSON(req));
         System.out.println(ohMyClient.saveWorkflow(req));
     }
 
     @Test
     public void testDisableWorkflow() throws Exception {
-        System.out.println(ohMyClient.disableWorkflow(4L));
+        System.out.println(ohMyClient.disableWorkflow(WF_ID));
     }
 
     @Test
     public void testDeleteWorkflow() throws Exception {
-        System.out.println(ohMyClient.deleteWorkflow(4L));
+        System.out.println(ohMyClient.deleteWorkflow(WF_ID));
     }
 
     @Test
     public void testEnableWorkflow() throws Exception {
-        System.out.println(ohMyClient.enableWorkflow(4L));
+        System.out.println(ohMyClient.enableWorkflow(WF_ID));
     }
 
     @Test
     public void testFetchWorkflowInfo() throws Exception {
-        System.out.println(ohMyClient.fetchWorkflow(5L));
+        System.out.println(ohMyClient.fetchWorkflow(WF_ID));
     }
 
     @Test
     public void testRunWorkflow() throws Exception {
-        System.out.println(ohMyClient.runWorkflow(5L));
+        System.out.println(ohMyClient.runWorkflow(WF_ID));
     }
 
     @Test
@@ -104,6 +107,6 @@ public class TestWorkflow {
 
     @Test
     public void testRunWorkflowPlus() throws Exception {
-        System.out.println(ohMyClient.runWorkflow(1L, "this is init Params 2", 90000));
+        System.out.println(ohMyClient.runWorkflow(WF_ID, "this is init Params 2", 90000));
     }
 }

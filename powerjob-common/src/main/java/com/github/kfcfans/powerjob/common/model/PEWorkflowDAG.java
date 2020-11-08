@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
-public class PEWorkflowDAG {
+public class PEWorkflowDAG implements Serializable {
 
     // DAG 图（点线表示法）
     private List<Node> nodes;
@@ -30,7 +31,7 @@ public class PEWorkflowDAG {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Node {
+    public static class Node implements Serializable {
         private Long jobId;
         private String jobName;
 
@@ -50,7 +51,7 @@ public class PEWorkflowDAG {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Edge {
+    public static class Edge implements Serializable {
         private Long from;
         private Long to;
     }

@@ -2,13 +2,14 @@ package com.github.kfcfans.powerjob.client;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.*;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
+import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
@@ -20,6 +21,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+import static com.github.kfcfans.powerjob.client.TypeStore.*;
+
 /**
  * OpenAPI 客户端
  *
@@ -27,7 +30,6 @@ import java.util.Objects;
  * @since 2020/4/15
  */
 @Slf4j
-@SuppressWarnings("rawtypes, unchecked")
 public class OhMyClient {
 
     private Long appId;
@@ -62,9 +64,9 @@ public class OhMyClient {
             try {
                 String result = assertApp(appName, password, url);
                 if (StringUtils.isNotEmpty(result)) {
-                    ResultDTO resultDTO = JSONObject.parseObject(result, ResultDTO.class);
+                    ResultDTO<Long> resultDTO = JSONObject.parseObject(result, LONG_RESULT_TYPE);
                     if (resultDTO.isSuccess()) {
-                        appId = Long.parseLong(resultDTO.getData().toString());
+                        appId = resultDTO.getData();
                         currentAddress = addr;
                         break;
                     }else {
@@ -101,75 +103,75 @@ public class OhMyClient {
      * 保存任务（包括创建与修改）
      * @param request 任务详细参数
      * @return 创建的任务ID
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Long> saveJob(SaveJobInfoRequest request) throws Exception {
+    public ResultDTO<Long> saveJob(SaveJobInfoRequest request) throws PowerJobException {
 
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
         String json = JSONObject.toJSONString(request);
         String post = postHA(OpenAPIConstant.SAVE_JOB, RequestBody.create(jsonType, json));
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
 
     /**
      * 根据 jobId 查询任务信息
      * @param jobId 任务ID
      * @return 任务详细信息
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<JobInfoDTO> fetchJob(Long jobId) throws Exception {
+    public ResultDTO<JobInfoDTO> fetchJob(Long jobId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_JOB, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, JOB_RESULT_TYPE);
     }
 
     /**
      * 禁用某个任务
      * @param jobId 任务ID
      * @return 标准返回对象
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> disableJob(Long jobId) throws Exception {
+    public ResultDTO<Void> disableJob(Long jobId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DISABLE_JOB, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
      * 启用某个任务
      * @param jobId 任务ID
      * @return 标准返回对象
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> enableJob(Long jobId) throws Exception {
+    public ResultDTO<Void> enableJob(Long jobId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.ENABLE_JOB, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
      * 删除某个任务
      * @param jobId 任务ID
      * @return 标准返回对象
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> deleteJob(Long jobId) throws Exception {
+    public ResultDTO<Void> deleteJob(Long jobId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DELETE_JOB, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
@@ -178,9 +180,9 @@ public class OhMyClient {
      * @param instanceParams 任务实例的参数
      * @param delayMS 延迟时间，单位毫秒
      * @return 任务实例ID（instanceId）
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) throws Exception {
+    public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) throws PowerJobException {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
@@ -190,9 +192,9 @@ public class OhMyClient {
             builder.add("instanceParams", instanceParams);
         }
         String post = postHA(OpenAPIConstant.RUN_JOB, builder.build());
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
-    public ResultDTO<Long> runJob(Long jobId) throws Exception {
+    public ResultDTO<Long> runJob(Long jobId) throws PowerJobException {
         return runJob(jobId, null, 0);
     }
 
@@ -201,15 +203,15 @@ public class OhMyClient {
      * 停止应用实例
      * @param instanceId 应用实例ID
      * @return true 停止成功，false 停止失败
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> stopInstance(Long instanceId) throws Exception {
+    public ResultDTO<Void> stopInstance(Long instanceId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.STOP_INSTANCE, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
@@ -217,15 +219,15 @@ public class OhMyClient {
      * 接口使用条件：调用接口时间与待取消任务的预计执行时间有一定时间间隔，否则不保证可靠性！
      * @param instanceId 任务实例ID
      * @return true 代表取消成功，false 取消失败
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> cancelInstance(Long instanceId) throws Exception {
+    public ResultDTO<Void> cancelInstance(Long instanceId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.CANCEL_INSTANCE, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
@@ -233,43 +235,43 @@ public class OhMyClient {
      * 只有完成状态（成功、失败、手动停止、被取消）的任务才能被重试，且暂不支持工作流内任务实例的重试
      * @param instanceId 任务实例ID
      * @return true 代表取消成功，false 取消失败
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> retryInstance(Long instanceId) throws Exception {
+    public ResultDTO<Void> retryInstance(Long instanceId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.RETRY_INSTANCE, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
      * 查询任务实例状态
      * @param instanceId 应用实例ID
      * @return {@link InstanceStatus} 的枚举值
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) throws Exception {
+    public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_INSTANCE_STATUS, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, INTEGER_RESULT_TYPE);
     }
 
     /**
      * 查询任务实例的信息
      * @param instanceId 任务实例ID
      * @return 任务实例信息
-     * @throws Exception 潜在的异常
+     * @throws PowerJobException 潜在的异常
      */
-    public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) throws Exception {
+    public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_INSTANCE_INFO, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, INSTANCE_RESULT_TYPE);
     }
 
     /* ************* Workflow 区 ************* */
@@ -277,74 +279,75 @@ public class OhMyClient {
      * 保存工作流（包括创建和修改）
      * @param request 创建/修改 Workflow 请求
      * @return 工作流ID
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws Exception {
+    public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws PowerJobException {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
-        String json = JSONObject.toJSONString(request);
+        // 中坑记录：用 FastJSON 序列化会导致 Server 接收时 pEWorkflowDAG 为 null，无语.jpg
+        String json = JsonUtils.toJSONStringUnsafe(request);
         String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(jsonType, json));
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
 
     /**
      * 根据 workflowId 查询工作流信息
      * @param workflowId workflowId
      * @return 工作流信息
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId) throws Exception {
+    public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_WORKFLOW, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, WF_RESULT_TYPE);
     }
 
     /**
      * 禁用某个工作流
      * @param workflowId 工作流ID
      * @return 标准返回对象
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> disableWorkflow(Long workflowId) throws Exception {
+    public ResultDTO<Void> disableWorkflow(Long workflowId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DISABLE_WORKFLOW, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
      * 启用某个工作流
      * @param workflowId workflowId
      * @return 标准返回对象
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> enableWorkflow(Long workflowId) throws Exception {
+    public ResultDTO<Void> enableWorkflow(Long workflowId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.ENABLE_WORKFLOW, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
      * 删除某个工作流
      * @param workflowId workflowId
      * @return 标准返回对象
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> deleteWorkflow(Long workflowId) throws Exception {
+    public ResultDTO<Void> deleteWorkflow(Long workflowId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.DELETE_WORKFLOW, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
@@ -353,9 +356,9 @@ public class OhMyClient {
      * @param initParams 启动参数
      * @param delayMS 延迟时间，单位毫秒 ms
      * @return 工作流实例ID
-     * @throws Exception 异常信息
+     * @throws PowerJobException 异常信息
      */
-    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) throws Exception {
+    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) throws PowerJobException {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
@@ -364,9 +367,9 @@ public class OhMyClient {
             builder.add("initParams", initParams);
         }
         String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
-    public ResultDTO<Long> runWorkflow(Long workflowId) throws Exception {
+    public ResultDTO<Long> runWorkflow(Long workflowId) throws PowerJobException {
         return runWorkflow(workflowId, null, 0);
     }
 
@@ -375,30 +378,30 @@ public class OhMyClient {
      * 停止应用实例
      * @param wfInstanceId 工作流实例ID
      * @return true 停止成功 ； false 停止失败
-     * @throws Exception 异常
+     * @throws PowerJobException 异常
      */
-    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) throws Exception {
+    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.STOP_WORKFLOW_INSTANCE, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
     }
 
     /**
      * 查询任务实例的信息
      * @param wfInstanceId 任务实例ID
      * @return 任务实例信息
-     * @throws Exception 潜在的异常
+     * @throws PowerJobException 潜在的异常
      */
-    public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) throws Exception {
+    public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) throws PowerJobException {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
                 .add("appId", appId.toString())
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO, body);
-        return JSONObject.parseObject(post, ResultDTO.class);
+        return JSONObject.parseObject(post, WF_INSTANCE_RESULT_TYPE);
     }
 
 
@@ -412,7 +415,7 @@ public class OhMyClient {
             if (StringUtils.isNotEmpty(res)) {
                 return res;
             }
-        }catch (Exception e) {
+        }catch (IOException e) {
             log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
         }
 
@@ -429,7 +432,7 @@ public class OhMyClient {
                     currentAddress = addr;
                     return res;
                 }
-            }catch (Exception e) {
+            }catch (IOException e) {
                 log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
             }
         }
