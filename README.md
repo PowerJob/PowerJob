@@ -62,7 +62,7 @@ PS：感谢文档翻译平台[breword](https://www.breword.com/)对本项目英�
 # 接入登记
 [点击进行接入登记，为 PowerJob 的发展贡献自己的力量！](https://github.com/KFCFans/PowerJob/issues/6)
 
-感谢以下接入用户的大力支持！ღ( ´・ᴗ・` )
+ღ( ´・ᴗ・\` )ღ 感谢以下接入用户的大力支持 ღ( ´・ᴗ・\` )ღ
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/user.png" alt="PowerJob User" title="PowerJob User"/>
