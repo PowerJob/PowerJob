@@ -52,7 +52,7 @@ PowerJob 的设计目标为企业级的分布式任务调度平台，即成为�
 | DAG工作流      | 不支持                   | 不支持                                   | 支持                                              | **支持**                                   |
 
 
-# 文档
+# 官方文档
 **[中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)**
 
 **[Document](https://www.yuque.com/powerjob/en/xrdoqw)**
@@ -66,6 +66,15 @@ PS：感谢文档翻译平台[breword](https://www.breword.com/)对本项目英�
 * [执行器架构设计](https://yq.aliyun.com/articles/704121?spm=a2c4e.11153959.teamhomeleft.97.371960c9qhB1mB)：这篇文章反而不太认同，感觉我个人的设计更符合Yarn的“架构”。
 * [MapReduce模型](https://yq.aliyun.com/articles/706820?spm=a2c4e.11153959.teamhomeleft.83.6a0560c9bZEnZq)：想法很Cool，大数据处理框架都是处理器向数据移动，但对于传统Java应用来说，数据向处理器移动也未尝不可，这样还能使框架的实现变得简单很多。
 * [广播执行](https://yq.aliyun.com/articles/716203?spm=a2c4e.11153959.teamhomeleft.40.371960c9qhB1mB)：运行清理日志脚本什么的，也太实用了8～
+
+# 接入登记
+[点击进行接入登记，为 PowerJob 的发展贡献自己的力量](https://github.com/KFCFans/PowerJob/issues/6)
+
+感谢以下接入用户的大力支持！
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/powerjob_user.png" alt="PowerJob" title="PowerJob"/>
+</p>
 
 # 其他
 * 开源许可证：Apache License, Version 2.0
