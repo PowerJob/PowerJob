@@ -26,7 +26,7 @@ PowerJob（原OhMyScheduler）是全新一代分布式调度与计算框架，�
 * 有定时执行需求的业务场景：如每天凌晨全量同步数据、生成业务报表等。
 * 有需要全部机器一同执行的业务场景：如使用广播执行模式清理集群日志。
 * 有需要分布式处理的业务场景：比如需要更新一大批数据，单机执行耗时非常长，可以使用Map/MapReduce处理器完成任务的分发，调动整个集群加速计算。
-* 有需要延迟执行某些任务的业务场景：比如订单过期处理等。
+* 有需要**延迟执行**某些任务的业务场景：比如订单过期处理等。
 
 ### 设计目标
 PowerJob 的设计目标为企业级的分布式任务调度平台，即成为公司内部的**任务调度中间件**。整个公司统一部署调度中心 powerjob-server，旗下所有业务线应用只需要依赖 `powerjob-worker` 即可接入调度中心获取任务调度与分布式计算能力。
@@ -43,7 +43,7 @@ PowerJob 的设计目标为企业级的分布式任务调度平台，即成为�
 | -------------- | ------------------------ | ---------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------ |
 | 定时类型       | CRON                     | CRON                                     | CRON、固定频率、固定延迟、OpenAPI                 | **CRON、固定频率、固定延迟、OpenAPI**                        |
 | 任务类型       | 内置Java                 | 内置Java、GLUE Java、Shell、Python等脚本 | 内置Java、外置Java（FatJar）、Shell、Python等脚本 | **内置Java、外置Java（容器）、Shell、Python等脚本**          |
-| 分布式任务     | 无                       | 静态分片                                 | MapReduce动态分片                                 | **MapReduce动态分片**                                        |
+| 分布式计算     | 无                       | 静态分片                                 | MapReduce动态分片                                 | **MapReduce动态分片**                                        |
 | 在线任务治理   | 不支持                   | 支持                                     | 支持                                              | **支持**                                                     |
 | 日志白屏化     | 不支持                   | 支持                                     | 不支持                                            | **支持**                                                     |
 | 调度方式及性能 | 基于数据库锁，有性能瓶颈 | 基于数据库锁，有性能瓶颈                 | 不详                                              | **无锁化设计，性能强劲无上限**                               |
@@ -59,21 +59,13 @@ PowerJob 的设计目标为企业级的分布式任务调度平台，即成为�
 
 PS：感谢文档翻译平台[breword](https://www.breword.com/)对本项目英文文档翻译做出的巨大贡献！
 
-# 参考
->Alibaba SchedulerX 2.0
-
-* [Akka 框架](https://yq.aliyun.com/articles/709946?spm=a2c4e.11153959.teamhomeleft.67.6a0560c9bZEnZq)：不得不说，akka-remote简化了相当大一部分的网络通讯代码。
-* [执行器架构设计](https://yq.aliyun.com/articles/704121?spm=a2c4e.11153959.teamhomeleft.97.371960c9qhB1mB)：这篇文章反而不太认同，感觉我个人的设计更符合Yarn的“架构”。
-* [MapReduce模型](https://yq.aliyun.com/articles/706820?spm=a2c4e.11153959.teamhomeleft.83.6a0560c9bZEnZq)：想法很Cool，大数据处理框架都是处理器向数据移动，但对于传统Java应用来说，数据向处理器移动也未尝不可，这样还能使框架的实现变得简单很多。
-* [广播执行](https://yq.aliyun.com/articles/716203?spm=a2c4e.11153959.teamhomeleft.40.371960c9qhB1mB)：运行清理日志脚本什么的，也太实用了8～
-
 # 接入登记
-[点击进行接入登记，为 PowerJob 的发展贡献自己的力量](https://github.com/KFCFans/PowerJob/issues/6)
+[点击进行接入登记，为 PowerJob 的发展贡献自己的力量！](https://github.com/KFCFans/PowerJob/issues/6)
 
-感谢以下接入用户的大力支持！
+感谢以下接入用户的大力支持！ღ( ´・ᴗ・` )
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/powerjob_user.png" alt="PowerJob" title="PowerJob"/>
+<img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/user.png" alt="PowerJob User" title="PowerJob User"/>
 </p>
 
 # 其他
