@@ -1,9 +1,6 @@
 package com.github.kfcfans.powerjob.common.utils;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -34,7 +31,12 @@ public class HttpUtils {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             if (response.code() == HTTP_SUCCESS_CODE) {
-                return Objects.requireNonNull(response.body()).string();
+                ResponseBody body = response.body();
+                if (body == null) {
+                    return null;
+                }else {
+                    return body.string();
+                }
             }
         }
         return null;
