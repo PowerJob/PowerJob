@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.common.utils;
 
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -41,7 +42,8 @@ public class HttpUtils {
 
     private static String execute(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
-            if (response.code() == HTTP_SUCCESS_CODE) {
+            int responseCode = response.code();
+            if (responseCode == HTTP_SUCCESS_CODE) {
                 ResponseBody body = response.body();
                 if (body == null) {
                     return null;
@@ -49,8 +51,8 @@ public class HttpUtils {
                     return body.string();
                 }
             }
+            throw new PowerJobException(String.format("http request failed,code=%d", responseCode));
         }
-        return null;
     }
 
 }
