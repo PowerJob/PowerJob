@@ -25,6 +25,9 @@ import java.util.List;
 @Service
 public class WebHookAlarmService implements Alarmable {
 
+    private static final String HTTP_PROTOCOL_PREFIX = "http://";
+    private static final String HTTPS_PROTOCOL_PREFIX = "https://";
+
     @Override
     public void onFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
         if (CollectionUtils.isEmpty(targetUserList)) {
@@ -34,6 +37,11 @@ public class WebHookAlarmService implements Alarmable {
             String webHook = user.getWebHook();
             if (StringUtils.isEmpty(webHook)) {
                 return;
+            }
+
+            // 自动添加协议头
+            if (!webHook.startsWith(HTTP_PROTOCOL_PREFIX) && !webHook.startsWith(HTTPS_PROTOCOL_PREFIX)) {
+                webHook = HTTP_PROTOCOL_PREFIX + webHook;
             }
 
             MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
