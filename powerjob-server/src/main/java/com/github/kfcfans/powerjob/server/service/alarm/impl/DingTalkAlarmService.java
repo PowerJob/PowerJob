@@ -51,10 +51,14 @@ public class DingTalkAlarmService implements Alarmable {
         }
         Set<String> userIds = Sets.newHashSet();
         targetUserList.forEach(user -> {
+            String phone = user.getPhone();
+            if (StringUtils.isEmpty(phone)) {
+                return;
+            }
             try {
-                String userId = mobile2UserIdCache.get(user.getPhone(), () -> {
+                String userId = mobile2UserIdCache.get(phone, () -> {
                     try {
-                        return dingTalkUtils.fetchUserIdByMobile(user.getPhone());
+                        return dingTalkUtils.fetchUserIdByMobile(phone);
                     } catch (PowerJobException ignore) {
                         return EMPTY_TAG;
                     } catch (Exception ignore) {

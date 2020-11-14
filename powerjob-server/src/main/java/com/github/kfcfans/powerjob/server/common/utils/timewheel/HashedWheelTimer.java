@@ -159,7 +159,7 @@ public class HashedWheelTimer implements Timer {
 
         @Override
         public boolean isDone() {
-            return startTime == FINISHED;
+            return status == FINISHED;
         }
     }
 

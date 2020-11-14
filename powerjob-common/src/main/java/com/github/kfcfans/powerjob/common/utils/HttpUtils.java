@@ -1,12 +1,9 @@
 package com.github.kfcfans.powerjob.common.utils;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import com.github.kfcfans.powerjob.common.PowerJobException;
+import okhttp3.*;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,12 +29,7 @@ public class HttpUtils {
                 .get()
                 .url(url)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (response.code() == HTTP_SUCCESS_CODE) {
-                return Objects.requireNonNull(response.body()).string();
-            }
-        }
-        return null;
+        return execute(request);
     }
 
     public static String post(String url, RequestBody requestBody) throws IOException {
@@ -45,12 +37,22 @@ public class HttpUtils {
                 .post(requestBody)
                 .url(url)
                 .build();
+        return execute(request);
+    }
+
+    private static String execute(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
-            if (response.code() == HTTP_SUCCESS_CODE) {
-                return Objects.requireNonNull(response.body()).string();
+            int responseCode = response.code();
+            if (responseCode == HTTP_SUCCESS_CODE) {
+                ResponseBody body = response.body();
+                if (body == null) {
+                    return null;
+                }else {
+                    return body.string();
+                }
             }
+            throw new PowerJobException(String.format("http request failed,code=%d", responseCode));
         }
-        return null;
     }
 
 }

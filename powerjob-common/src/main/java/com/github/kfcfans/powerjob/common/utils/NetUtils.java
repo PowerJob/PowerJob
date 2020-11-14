@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.emptyList;
@@ -34,12 +35,20 @@ import static java.util.Collections.emptyList;
  */
 @Slf4j
 public class NetUtils {
+
+    // returned port range is [30000, 39999]
+    private static final int RND_PORT_START = 30000;
+    private static final int RND_PORT_END = 65535;
     
     private static volatile String HOST_ADDRESS;
     private static final String LOCALHOST_VALUE = "127.0.0.1";
     private static volatile InetAddress LOCAL_ADDRESS = null;
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
     private static final String ANYHOST_VALUE = "0.0.0.0";
+
+    public static int getRandomPort() {
+        return ThreadLocalRandom.current().nextInt(RND_PORT_START, RND_PORT_END);
+    }
 
     /**
      * 获取本机 IP 地址
