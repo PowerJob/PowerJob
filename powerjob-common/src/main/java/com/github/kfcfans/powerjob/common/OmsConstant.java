@@ -15,4 +15,6 @@ public class OmsConstant {
 
     public static final String COMMA = ",";
     public static final String LINE_SEPARATOR = "\r\n";
+
+    public static final String JSON_MEDIA_TYPE = "application/json; charset=utf-8";
 }

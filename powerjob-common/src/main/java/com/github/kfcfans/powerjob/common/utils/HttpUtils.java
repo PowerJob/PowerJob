@@ -3,7 +3,6 @@ package com.github.kfcfans.powerjob.common.utils;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,6 +28,18 @@ public class HttpUtils {
                 .get()
                 .url(url)
                 .build();
+        return execute(request);
+    }
+
+    public static String post(String url, RequestBody requestBody) throws IOException {
+        Request request = new Request.Builder()
+                .post(requestBody)
+                .url(url)
+                .build();
+        return execute(request);
+    }
+
+    private static String execute(Request request) throws IOException {
         try (Response response = client.newCall(request).execute()) {
             if (response.code() == HTTP_SUCCESS_CODE) {
                 ResponseBody body = response.body();
@@ -37,19 +48,6 @@ public class HttpUtils {
                 }else {
                     return body.string();
                 }
-            }
-        }
-        return null;
-    }
-
-    public static String post(String url, RequestBody requestBody) throws IOException {
-        Request request = new Request.Builder()
-                .post(requestBody)
-                .url(url)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (response.code() == HTTP_SUCCESS_CODE) {
-                return Objects.requireNonNull(response.body()).string();
             }
         }
         return null;

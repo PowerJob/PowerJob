@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.client;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
@@ -283,7 +284,7 @@ public class OhMyClient {
      */
     public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws PowerJobException {
         request.setAppId(appId);
-        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
         // 中坑记录：用 FastJSON 序列化会导致 Server 接收时 pEWorkflowDAG 为 null，无语.jpg
         String json = JsonUtils.toJSONStringUnsafe(request);
         String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(jsonType, json));
