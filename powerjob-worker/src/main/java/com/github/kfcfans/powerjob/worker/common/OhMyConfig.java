@@ -1,12 +1,12 @@
 package com.github.kfcfans.powerjob.worker.common;
 
 import com.github.kfcfans.powerjob.common.RemoteConstant;
+import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.google.common.collect.Lists;
-import lombok.Data;
+import lombok.Setter;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,7 +15,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/3/16
  */
-@Data
+@Setter
 public class OhMyConfig {
     /**
      * 应用名称
@@ -48,4 +48,35 @@ public class OhMyConfig {
      * true -> 用于本地写单元测试调试； false -> 默认值，标准模式
      */
     private boolean enableTestMode = false;
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public int getPort() {
+        if (port > 0) {
+            return port;
+        }
+        return NetUtils.getRandomPort();
+    }
+
+    public List<String> getServerAddress() {
+        return serverAddress;
+    }
+
+    public StoreStrategy getStoreStrategy() {
+        return storeStrategy;
+    }
+
+    public int getMaxResultLength() {
+        return maxResultLength;
+    }
+
+    public Object getUserContext() {
+        return userContext;
+    }
+
+    public boolean isEnableTestMode() {
+        return enableTestMode;
+    }
 }
