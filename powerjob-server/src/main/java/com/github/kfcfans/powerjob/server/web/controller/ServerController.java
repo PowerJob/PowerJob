@@ -2,26 +2,21 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
-import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
-import com.github.kfcfans.powerjob.server.service.ha.ClusterStatusHolder;
 import com.github.kfcfans.powerjob.server.service.ha.ServerSelectService;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
-import com.taobao.api.internal.cluster.ClusterManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -52,13 +47,7 @@ public class ServerController {
 
     @GetMapping("/acquire")
     public ResultDTO<String> acquireServer(Long appId, String currentServer) {
-
-        // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
-        if (OhMyServer.getActorSystemAddress().equals(currentServer)) {
-            return ResultDTO.success(currentServer);
-        }
-        String server = serverSelectService.getServer(appId);
-        return ResultDTO.success(server);
+        return ResultDTO.success(serverSelectService.getServer(appId, currentServer));
     }
 
     @GetMapping("/hello")
