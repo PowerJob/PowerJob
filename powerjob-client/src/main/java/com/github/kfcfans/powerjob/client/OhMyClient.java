@@ -56,7 +56,7 @@ public class OhMyClient {
      */
     public OhMyClient(List<String> addressList, String appName, String password) {
 
-        CommonUtils.requireNonNull(addressList, "domain can't be null!");
+        CommonUtils.requireNonNull(addressList, "addressList can't be null!");
         CommonUtils.requireNonNull(appName, "appName can't be null");
 
         allAddress = addressList;
@@ -81,7 +81,7 @@ public class OhMyClient {
         if (StringUtils.isEmpty(currentAddress)) {
             throw new PowerJobException("no server available");
         }
-        log.info("[OhMyClient] {}'s oms-client bootstrap successfully, using server: {}", appName, currentAddress);
+        log.info("[OhMyClient] {}'s OhMyClient bootstrap successfully, using server: {}", appName, currentAddress);
     }
 
     private static String assertApp(String appName, String password, String url) throws IOException {

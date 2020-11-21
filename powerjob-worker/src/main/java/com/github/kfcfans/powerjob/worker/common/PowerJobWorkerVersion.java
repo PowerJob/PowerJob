@@ -17,7 +17,7 @@ import java.util.jar.JarFile;
  * @author tjq
  * @since 2020/5/11
  */
-public final class OmsWorkerVersion {
+public final class PowerJobWorkerVersion {
 
     private static String CACHE = null;
 
@@ -29,17 +29,17 @@ public final class OmsWorkerVersion {
      */
     public static String getVersion() {
         if (StringUtils.isEmpty(CACHE)) {
-            CACHE = determineSpringBootVersion();
+            CACHE = determinePowerJobVersion();
         }
         return CACHE;
     }
 
-    private static String determineSpringBootVersion() {
-        String implementationVersion = OmsWorkerVersion.class.getPackage().getImplementationVersion();
+    private static String determinePowerJobVersion() {
+        String implementationVersion = PowerJobWorkerVersion.class.getPackage().getImplementationVersion();
         if (implementationVersion != null) {
             return implementationVersion;
         }
-        CodeSource codeSource = OmsWorkerVersion.class.getProtectionDomain().getCodeSource();
+        CodeSource codeSource = PowerJobWorkerVersion.class.getProtectionDomain().getCodeSource();
         if (codeSource == null) {
             return null;
         }

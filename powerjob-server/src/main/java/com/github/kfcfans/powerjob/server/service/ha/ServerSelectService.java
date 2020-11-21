@@ -12,6 +12,7 @@ import com.github.kfcfans.powerjob.server.service.lock.LockService;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,17 +39,25 @@ public class ServerSelectService {
     @Resource
     private AppInfoRepository appInfoRepository;
 
+    @Value("${oms.accurate.select.server.percentage}")
+    private int accurateSelectServerPercentage;
+
     private static final int RETRY_TIMES = 10;
     private static final long PING_TIMEOUT_MS = 1000;
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
-    /**
-     * 获取某个应用对应的Server
-     *
-     * @param appId 应用ID
-     * @return 当前可用的Server
-     */
-    public String getServer(Long appId) {
+
+    public String getServer(Long appId, String currentServer) {
+        if (!accurate()) {
+            // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
+            if (OhMyServer.getActorSystemAddress().equals(currentServer)) {
+                return currentServer;
+            }
+        }
+        return getServer0(appId);
+    }
+
+    private String getServer0(Long appId) {
 
         Set<String> downServerCache = Sets.newHashSet();
 
@@ -95,7 +105,7 @@ public class ServerSelectService {
                 lockService.unlock(lockName);
             }
         }
-        throw new RuntimeException("server elect failed for app " + appId);
+        throw new PowerJobException("server elect failed for app " + appId);
     }
 
     /**
@@ -113,6 +123,10 @@ public class ServerSelectService {
             return false;
         }
 
+        if (OhMyServer.getActorSystemAddress().equals(serverAddress)) {
+            return true;
+        }
+
         Ping ping = new Ping();
         ping.setCurrentTime(System.currentTimeMillis());
 
@@ -127,5 +141,9 @@ public class ServerSelectService {
         }
         downServerCache.add(serverAddress);
         return false;
+    }
+
+    private boolean accurate() {
+        return ThreadLocalRandom.current().nextInt(100) < accurateSelectServerPercentage;
     }
 }

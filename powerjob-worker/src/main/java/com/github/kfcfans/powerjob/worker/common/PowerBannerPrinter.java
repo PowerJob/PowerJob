@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2020/5/11
  */
 @Slf4j
-public final class OmsBannerPrinter {
+public final class PowerBannerPrinter {
 
     private static final String BANNER = "" +
             "\n" +
@@ -30,7 +30,7 @@ public final class OmsBannerPrinter {
     public static void print() {
         log.info(BANNER);
 
-        String version = OmsWorkerVersion.getVersion();
+        String version = PowerJobWorkerVersion.getVersion();
         version = (version != null) ? " (v" + version + ")" : "";
         log.info(":: PowerJob Worker :: {}", version);
     }

@@ -50,60 +50,6 @@
       "type": "com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy",
       "description": "本地持久化方式，默认使用磁盘",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
-    },
-    {
-      "name": "powerjob.akka-port",
-      "type": "java.lang.Integer",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "deprecated": true,
-      "deprecation": {
-        "replacement": "powerjob.worker.akka-port"
-      }
-    },
-    {
-      "name": "powerjob.app-name",
-      "type": "java.lang.String",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "deprecated": true,
-      "deprecation": {
-        "replacement": "powerjob.worker.app-name"
-      }
-    },
-    {
-      "name": "powerjob.enable-test-mode",
-      "type": "java.lang.Boolean",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "deprecated": true,
-      "deprecation": {
-        "replacement": "powerjob.worker.enable-test-mode"
-      }
-    },
-    {
-      "name": "powerjob.max-result-length",
-      "type": "java.lang.Integer",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "deprecated": true,
-      "deprecation": {
-        "replacement": "powerjob.worker.max-result-length"
-      }
-    },
-    {
-      "name": "powerjob.server-address",
-      "type": "java.lang.String",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "deprecated": true,
-      "deprecation": {
-        "replacement": "powerjob.worker.server-address"
-      }
-    },
-    {
-      "name": "powerjob.store-strategy",
-      "type": "com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "deprecated": true,
-      "deprecation": {
-        "replacement": "powerjob.worker.store-strategy"
-      }
     }
   ],
   "hints": []
