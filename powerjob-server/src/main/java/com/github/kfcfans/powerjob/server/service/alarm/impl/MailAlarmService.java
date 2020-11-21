@@ -50,7 +50,7 @@ public class MailAlarmService implements Alarmable {
 
             javaMailSender.send(sm);
         }catch (Exception e) {
-            log.error("[MailAlarmService] send mail failed, reason is {}", e.getMessage());
+            log.warn("[MailAlarmService] send mail failed, reason is {}", e.getMessage());
         }
     }
 

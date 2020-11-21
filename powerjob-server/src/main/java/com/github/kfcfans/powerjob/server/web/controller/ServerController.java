@@ -8,7 +8,6 @@ import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.ha.ServerSelectService;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,8 +34,6 @@ public class ServerController {
     private ServerSelectService serverSelectService;
     @Resource
     private AppInfoRepository appInfoRepository;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
 
     @GetMapping("/assert")
     public ResultDTO<Long> assertAppName(String appName) {

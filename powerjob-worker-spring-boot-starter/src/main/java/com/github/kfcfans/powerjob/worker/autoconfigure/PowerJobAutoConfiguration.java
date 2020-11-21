@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.worker.autoconfigure;
 
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
@@ -37,8 +38,14 @@ public class PowerJobAutoConfiguration {
 
         // 1. 创建配置文件
         OhMyConfig config = new OhMyConfig();
-        // 可以不显式设置，默认值 27777
-        config.setPort(worker.getAkkaPort());
+
+        // 端口配置，支持随机端口
+        int port = worker.getAkkaPort();
+        if (port <= 0) {
+            port = NetUtils.getRandomPort();
+        }
+        config.setPort(port);
+
         // appName，需要提前在控制台注册，否则启动报错
         config.setAppName(worker.getAppName());
         config.setServerAddress(serverAddress);
