@@ -1,6 +1,5 @@
 package com.github.kfcfans.powerjob.server.test;
 
-import com.github.kfcfans.powerjob.server.OhMyApplication;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.HashedWheelTimer;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
@@ -11,9 +10,11 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 工具类测试
@@ -91,5 +92,12 @@ public class UtilsTest {
         String appName = "powerjob-server ";
         System.out.println(StringUtils.containsWhitespace(goodAppName));
         System.out.println(StringUtils.containsWhitespace(appName));
+    }
+
+    @Test
+    public void filterTest() {
+        List<String> test = Lists.newArrayList("A", "B", null, "C", null);
+        List<String> list = test.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        System.out.println(list);
     }
 }

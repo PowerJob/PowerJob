@@ -4,9 +4,9 @@ import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.google.common.collect.Lists;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,7 +15,8 @@ import java.util.List;
  * @author tjq
  * @since 2020/3/16
  */
-@Data
+@Getter
+@Setter
 public class OhMyConfig {
     /**
      * 应用名称

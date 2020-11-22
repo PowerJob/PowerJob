@@ -15,6 +15,7 @@ public class ModifyUserInfoRequest {
 
     private String username;
     private String password;
+    private String webHook;
 
     // 手机号
     private String phone;

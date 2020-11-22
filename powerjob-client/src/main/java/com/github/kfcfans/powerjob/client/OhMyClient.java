@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.client;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
@@ -55,7 +56,7 @@ public class OhMyClient {
      */
     public OhMyClient(List<String> addressList, String appName, String password) {
 
-        CommonUtils.requireNonNull(addressList, "domain can't be null!");
+        CommonUtils.requireNonNull(addressList, "addressList can't be null!");
         CommonUtils.requireNonNull(appName, "appName can't be null");
 
         allAddress = addressList;
@@ -80,7 +81,7 @@ public class OhMyClient {
         if (StringUtils.isEmpty(currentAddress)) {
             throw new PowerJobException("no server available");
         }
-        log.info("[OhMyClient] {}'s oms-client bootstrap successfully, using server: {}", appName, currentAddress);
+        log.info("[OhMyClient] {}'s OhMyClient bootstrap successfully, using server: {}", appName, currentAddress);
     }
 
     private static String assertApp(String appName, String password, String url) throws IOException {
@@ -283,7 +284,7 @@ public class OhMyClient {
      */
     public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws PowerJobException {
         request.setAppId(appId);
-        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
         // 中坑记录：用 FastJSON 序列化会导致 Server 接收时 pEWorkflowDAG 为 null，无语.jpg
         String json = JsonUtils.toJSONStringUnsafe(request);
         String post = postHA(OpenAPIConstant.SAVE_WORKFLOW, RequestBody.create(jsonType, json));

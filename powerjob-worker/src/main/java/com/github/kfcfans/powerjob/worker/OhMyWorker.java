@@ -20,7 +20,7 @@ import com.github.kfcfans.powerjob.worker.background.OmsLogHandler;
 import com.github.kfcfans.powerjob.worker.background.ServerDiscoveryService;
 import com.github.kfcfans.powerjob.worker.background.WorkerHealthReporter;
 import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
-import com.github.kfcfans.powerjob.worker.common.OmsBannerPrinter;
+import com.github.kfcfans.powerjob.worker.common.PowerBannerPrinter;
 import com.github.kfcfans.powerjob.worker.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
 import com.google.common.base.Stopwatch;
@@ -80,7 +80,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyWorker] start to initialize OhMyWorker...");
         try {
-            OmsBannerPrinter.print();
+            PowerBannerPrinter.print();
             // 校验 appName
             if (!config.isEnableTestMode()) {
                 appId = assertAppName();

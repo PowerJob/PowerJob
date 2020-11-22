@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 邮件通知服务
@@ -43,13 +44,13 @@ public class MailAlarmService implements Alarmable {
         SimpleMailMessage sm = new SimpleMailMessage();
         try {
             sm.setFrom(from);
-            sm.setTo(targetUserList.stream().map(UserInfoDO::getEmail).toArray(String[]::new));
+            sm.setTo(targetUserList.stream().map(UserInfoDO::getEmail).filter(Objects::nonNull).toArray(String[]::new));
             sm.setSubject(alarm.fetchTitle());
             sm.setText(alarm.fetchContent());
 
             javaMailSender.send(sm);
         }catch (Exception e) {
-            log.error("[MailAlarmService] send mail failed, reason is {}", e.getMessage());
+            log.warn("[MailAlarmService] send mail failed, reason is {}", e.getMessage());
         }
     }
 
