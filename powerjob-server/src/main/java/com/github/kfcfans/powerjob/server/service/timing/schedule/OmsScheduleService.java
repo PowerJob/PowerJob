@@ -193,7 +193,7 @@ public class OmsScheduleService {
             wfInfos.forEach(wfInfo -> {
 
                 // 1. 先生成调度记录，防止不调度的情况发生
-                Long wfInstanceId = workflowInstanceManager.create(wfInfo, null);
+                Long wfInstanceId = workflowInstanceManager.create(wfInfo, null, wfInfo.getNextTriggerTime());
 
                 // 2. 推入时间轮，准备调度执行
                 long delay = wfInfo.getNextTriggerTime() - System.currentTimeMillis();

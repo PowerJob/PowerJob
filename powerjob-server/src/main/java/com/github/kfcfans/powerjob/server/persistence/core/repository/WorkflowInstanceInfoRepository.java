@@ -30,5 +30,5 @@ public interface WorkflowInstanceInfoRepository extends JpaRepository<WorkflowIn
     int countByWorkflowIdAndStatusIn(Long workflowId, List<Integer> status);
 
     // 状态检查
-    List<WorkflowInstanceInfoDO> findByAppIdInAndStatusAndGmtModifiedBefore(List<Long> appIds, int status, Date before);
+    List<WorkflowInstanceInfoDO> findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(List<Long> appIds, int status, long time);
 }

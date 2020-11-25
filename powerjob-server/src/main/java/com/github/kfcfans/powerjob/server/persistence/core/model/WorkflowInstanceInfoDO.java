@@ -48,6 +48,8 @@ public class WorkflowInstanceInfoDO {
     @Column
     private String result;
 
+    // 预计触发时间
+    private Long expectedTriggerTime;
     // 实际触发时间
     private Long actualTriggerTime;
     // 结束时间
