@@ -24,7 +24,8 @@ public enum WorkflowInstanceStatus {
 
     // 广义的运行状态
     public static final List<Integer> generalizedRunningStatus = Lists.newArrayList(WAITING.v, RUNNING.v);
-
+    // 结束状态
+    public static final List<Integer> finishedStatus = Lists.newArrayList(FAILED.v, SUCCEED.v, STOPPED.v);
 
     private int v;
     private String des;

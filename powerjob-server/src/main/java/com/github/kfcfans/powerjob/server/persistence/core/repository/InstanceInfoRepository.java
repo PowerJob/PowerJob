@@ -71,6 +71,6 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     // 结果只能用 int 接收
     @Modifying
     @Transactional
-    @Query(value = "delete from InstanceInfoDO where gmtModified < ?1")
-    int deleteAllByGmtModifiedBefore(Date time);
+    @Query(value = "delete from InstanceInfoDO where gmtModified < ?1 and status in ?2")
+    int deleteAllByGmtModifiedBeforeAndStatusIn(Date time, List<Integer> status);
 }
