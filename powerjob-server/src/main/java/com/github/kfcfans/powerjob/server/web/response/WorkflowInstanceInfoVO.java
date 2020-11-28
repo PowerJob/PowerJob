@@ -51,7 +51,9 @@ public class WorkflowInstanceInfoVO {
         vo.setWorkflowId(String.valueOf(wfInstanceDO.getWorkflowId()));
 
         // 格式化时间
-        vo.setExpectedTriggerTime(DateFormatUtils.format(wfInstanceDO.getExpectedTriggerTime(), OmsConstant.TIME_PATTERN));
+        if (wfInstanceDO.getExpectedTriggerTime() != null) {
+            vo.setExpectedTriggerTime(DateFormatUtils.format(wfInstanceDO.getExpectedTriggerTime(), OmsConstant.TIME_PATTERN));
+        }
         vo.setActualTriggerTime(DateFormatUtils.format(wfInstanceDO.getActualTriggerTime(), OmsConstant.TIME_PATTERN));
         if (wfInstanceDO.getFinishedTime() == null) {
             vo.setFinishedTime(OmsConstant.NONE);
