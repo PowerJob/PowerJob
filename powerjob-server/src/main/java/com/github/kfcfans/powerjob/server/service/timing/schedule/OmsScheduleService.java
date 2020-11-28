@@ -220,6 +220,9 @@ public class OmsScheduleService {
             try {
                 // 查询所有的秒级任务（只包含ID）
                 List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
+                if (CollectionUtils.isEmpty(jobIds)) {
+                    return;
+                }
                 // 查询日志记录表中是否存在相关的任务
                 List<Long> runningJobIdList = instanceInfoRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.generalizedRunningStatus);
                 Set<Long> runningJobIdSet = Sets.newHashSet(runningJobIdList);
