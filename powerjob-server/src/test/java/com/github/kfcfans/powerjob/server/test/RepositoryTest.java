@@ -1,6 +1,8 @@
 package com.github.kfcfans.powerjob.server.test;
 
+import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
@@ -104,12 +106,12 @@ public class RepositoryTest {
 
     @Test
     public void testDeleteInstanceInfo() {
-        instanceInfoRepository.deleteAllByGmtModifiedBefore(new Date());
+        instanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(new Date(), InstanceStatus.finishedStatus);
     }
 
     @Test
     public void testDeleteWorkflowInstanceInfo() {
-        workflowInstanceInfoRepository.deleteAllByGmtModifiedBefore(new Date());
+        workflowInstanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(new Date(), WorkflowInstanceStatus.finishedStatus);
     }
 
 }
