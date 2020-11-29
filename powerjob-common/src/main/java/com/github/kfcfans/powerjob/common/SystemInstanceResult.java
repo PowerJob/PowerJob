@@ -11,7 +11,7 @@ public class SystemInstanceResult {
     /* *********** 普通instance 专用 *********** */
 
     // 同时运行的任务实例数过多
-    public static final String TOO_MUCH_INSTANCE = "too much instance(%d>%d)";
+    public static final String TOO_MANY_INSTANCES = "too many instances(%d>%d)";
     // 无可用worker
     public static final String NO_WORKER_AVAILABLE = "no worker available";
     // 任务执行超时

@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.common.config;
 
+import com.github.kfcfans.powerjob.server.common.RejectedExecutionHandlerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,11 +34,7 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsTimingPool-");
-        executor.setRejectedExecutionHandler((r, e) -> {
-            log.warn("[OmsTimingService] timing pool can't schedule job immediately, maybe some job using too much cpu times.");
-            // 定时任务优先级较高，不惜一些代价都需要继续执行，开线程继续干～
-            new Thread(r).start();
-        });
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun("PowerJobTimingPool"));
         return executor;
     }
 
@@ -49,7 +46,7 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(8192);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsBackgroundPool-");
-        executor.setRejectedExecutionHandler(new LogOnRejected());
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newReject("PowerJobBackgroundPool"));
         return executor;
     }
 
@@ -63,11 +60,4 @@ public class ThreadPoolConfig {
         return scheduler;
     }
 
-    private static final class LogOnRejected implements RejectedExecutionHandler {
-
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor p) {
-            log.error("[OmsThreadPool] Task({}) rejected from pool({}).", r, p);
-        }
-    }
 }

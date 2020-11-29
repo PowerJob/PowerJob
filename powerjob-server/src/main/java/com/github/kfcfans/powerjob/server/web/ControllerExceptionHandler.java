@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.server.web;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.messaging.handler.annotation.support.MethodArgumentTypeMismatchException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -34,6 +35,6 @@ public class ControllerExceptionHandler {
         } else {
             log.error("[ControllerException] http request failed.", e);
         }
-        return ResultDTO.failed(e.getMessage());
+        return ResultDTO.failed(ExceptionUtils.getMessage(e));
     }
 }

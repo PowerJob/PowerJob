@@ -2,18 +2,17 @@
 <!-- 生产环境日志 -->
 <configuration>
 
+    <!--默认配置-->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <!--配置控制台(Console)-->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
     <!--
         日志路径，注意权限问题，否则无法打印日志。
         大坑记录：`~/logs`不会在用户目录下创建文件夹，而是在项目目录下创建名为~的文件夹
      -->
     <property name="LOG_PATH" value="${user.home}/powerjob-server/logs"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
-            <charset>utf8</charset>
-        </encoder>
-    </appender>
 
     <!-- 系统所有异常日志（ERROR）双写 start -->
     <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">

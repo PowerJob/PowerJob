@@ -1,5 +1,7 @@
 package com.github.kfcfans.powerjob.server.service.timing;
 
+import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
@@ -128,7 +130,7 @@ public class CleanService {
         }
         try {
             Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
-            int num = instanceInfoRepository.deleteAllByGmtModifiedBefore(t);
+            int num = instanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(t, InstanceStatus.finishedStatus);
             log.info("[CleanService] deleted {} instanceInfo records whose modify time before {}.", num, t);
         }catch (Exception e) {
             log.warn("[CleanService] clean instanceInfo failed.", e);
@@ -142,7 +144,7 @@ public class CleanService {
         }
         try {
             Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
-            int num = workflowInstanceInfoRepository.deleteAllByGmtModifiedBefore(t);
+            int num = workflowInstanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(t, WorkflowInstanceStatus.finishedStatus);
             log.info("[CleanService] deleted {} workflow instanceInfo records whose modify time before {}.", num, t);
         }catch (Exception e) {
             log.warn("[CleanService] clean workflow instanceInfo failed.", e);

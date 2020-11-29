@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.common.utils.timewheel;
 
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import com.github.kfcfans.powerjob.server.common.RejectedExecutionHandlerFactory;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -66,9 +67,9 @@ public class HashedWheelTimer implements Timer {
             ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("HashedWheelTimer-Executor-%d").build();
             BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(16);
             int core = Math.max(Runtime.getRuntime().availableProcessors(), processThreadNum);
-            taskProcessPool = new ThreadPoolExecutor(core, 2 * core,
+            taskProcessPool = new ThreadPoolExecutor(core, 4 * core,
                     60, TimeUnit.SECONDS,
-                    queue, threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+                    queue, threadFactory, RejectedExecutionHandlerFactory.newCallerRun("PowerJobTimeWheelPool"));
         }
 
         startTime = System.currentTimeMillis();
@@ -171,6 +172,11 @@ public class HashedWheelTimer implements Timer {
         public void expireTimerTasks(long currentTick) {
 
             removeIf(timerFuture -> {
+
+                // processCanceledTasks 后外部操作取消任务会导致 BUCKET 中仍存在 CANCELED 任务的情况
+                if (timerFuture.status == HashedWheelTimerFuture.CANCELED) {
+                    return true;
+                }
 
                 if (timerFuture.status != HashedWheelTimerFuture.WAITING) {
                     log.warn("[HashedWheelTimer] impossible, please fix the bug");
