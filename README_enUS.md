@@ -13,11 +13,8 @@
 - Have you ever felt upset when scheduling tasks suddenly terminated without any warning?
 - Have you ever felt helpless when batches of business tasks require handling?
 - Have you ever felt depressed about tasks that carry with complex dependencies?
-- Well, PowerJob is there for you, it is the choice of a new generation.
-- It is a powerful, business-oriented scheduling framework that provides distributed computing ability.
-- Based on Akka architecture, it makes everything with scheduling easier.
-- Just with several steps, PowerJob could be deployed and work for you!
-- Source code of PowerJob is released under Apache License 2.0, it is totally free! 
+
+Well, PowerJob is there for you, it is the choice of a new generation.It is a powerful, business-oriented scheduling framework that provides distributed computing ability.Based on Akka architecture, it makes everything with scheduling easier.Just with several steps, PowerJob could be deployed and work for you!
 
 # Introduction
 
@@ -48,7 +45,7 @@
 | Online task management             | Unsupported                                               | Supported                                                 | Supported                                                     | **Supported**                                                  |
 | Online logging                     | Unsupported                                               | Supported                                                 | Unsupported                                                  | **Supported**                                                      |
 | Scheduling methods and performance | Based on database lock, there is a performance bottleneck | Based on database lock, there is a performance bottleneck | Unknown                                                      | **Lock-free design, powerful performance without upper limit**   |
-| Alarm monitoring                   | Unsupported                                               | Email                                                      | SMS                                                          | **Email, SMS, Dingtalk. An interface is provided for customization.** |
+| Alarm monitoring                   | Unsupported                                               | Email                                                      | SMS                                                          | **Email, WebHook, Dingtalk. An interface is provided for customization.** |
 | System dependence                  | Any relational database (MySQL, Oracle ...) supported by JDBC      | MySQL                                                     | RMB (free during public beta, hey, help to advertise)   | **Any relational database (MySQL, Oracle ...) supported by Spring Data Jpa** |
 | workflow                           | Unsupported                                               | Unsupported                                               | Supported                                                     | **Supported**               |
  
