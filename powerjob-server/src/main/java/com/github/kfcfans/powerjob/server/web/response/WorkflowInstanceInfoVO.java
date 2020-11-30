@@ -32,6 +32,8 @@ public class WorkflowInstanceInfoVO {
     private PEWorkflowDAG pEWorkflowDAG;
     private String result;
 
+    // 预计触发时间
+    private String expectedTriggerTime;
     // 实际触发时间（需要格式化为人看得懂的时间）
     private String actualTriggerTime;
     // 结束时间（同理，需要格式化）
@@ -49,6 +51,9 @@ public class WorkflowInstanceInfoVO {
         vo.setWorkflowId(String.valueOf(wfInstanceDO.getWorkflowId()));
 
         // 格式化时间
+        if (wfInstanceDO.getExpectedTriggerTime() != null) {
+            vo.setExpectedTriggerTime(DateFormatUtils.format(wfInstanceDO.getExpectedTriggerTime(), OmsConstant.TIME_PATTERN));
+        }
         vo.setActualTriggerTime(DateFormatUtils.format(wfInstanceDO.getActualTriggerTime(), OmsConstant.TIME_PATTERN));
         if (wfInstanceDO.getFinishedTime() == null) {
             vo.setFinishedTime(OmsConstant.NONE);

@@ -168,7 +168,7 @@ public class WorkflowService {
 
     private Long realRunWorkflow(WorkflowInfoDO wfInfo, String initParams, long delay) {
         log.info("[WorkflowService-{}] try to run workflow, initParams={},delay={} ms.", wfInfo.getId(), initParams, delay);
-        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams);
+        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay);
         if (delay <= 0) {
             workflowInstanceManager.start(wfInfo, wfInstanceId, initParams);
         }else {

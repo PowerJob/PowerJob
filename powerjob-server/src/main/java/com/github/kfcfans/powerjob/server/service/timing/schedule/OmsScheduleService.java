@@ -193,7 +193,7 @@ public class OmsScheduleService {
             wfInfos.forEach(wfInfo -> {
 
                 // 1. 先生成调度记录，防止不调度的情况发生
-                Long wfInstanceId = workflowInstanceManager.create(wfInfo, null);
+                Long wfInstanceId = workflowInstanceManager.create(wfInfo, null, wfInfo.getNextTriggerTime());
 
                 // 2. 推入时间轮，准备调度执行
                 long delay = wfInfo.getNextTriggerTime() - System.currentTimeMillis();
@@ -220,6 +220,9 @@ public class OmsScheduleService {
             try {
                 // 查询所有的秒级任务（只包含ID）
                 List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
+                if (CollectionUtils.isEmpty(jobIds)) {
+                    return;
+                }
                 // 查询日志记录表中是否存在相关的任务
                 List<Long> runningJobIdList = instanceInfoRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.generalizedRunningStatus);
                 Set<Long> runningJobIdSet = Sets.newHashSet(runningJobIdList);

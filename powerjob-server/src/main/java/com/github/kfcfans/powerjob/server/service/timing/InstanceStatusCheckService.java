@@ -162,7 +162,7 @@ public class InstanceStatusCheckService {
         // 重试长时间处于 WAITING 状态的工作流实例
         long threshold = System.currentTimeMillis() - WORKFLOW_WAITING_TIMEOUT_MS;
         Lists.partition(allAppIds, MAX_BATCH_NUM).forEach(partAppIds -> {
-            List<WorkflowInstanceInfoDO> waitingWfInstanceList = workflowInstanceInfoRepository.findByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, WorkflowInstanceStatus.WAITING.getV(), new Date(threshold));
+            List<WorkflowInstanceInfoDO> waitingWfInstanceList = workflowInstanceInfoRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, WorkflowInstanceStatus.WAITING.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingWfInstanceList)) {
 
                 List<Long> wfInstanceIds = waitingWfInstanceList.stream().map(WorkflowInstanceInfoDO::getWfInstanceId).collect(Collectors.toList());

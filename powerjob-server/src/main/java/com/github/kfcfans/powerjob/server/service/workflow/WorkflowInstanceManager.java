@@ -68,9 +68,10 @@ public class WorkflowInstanceManager {
      * 创建工作流任务实例
      * @param wfInfo 工作流任务元数据（描述信息）
      * @param initParams 启动参数
+     * @param expectTriggerTime 预计执行时间
      * @return wfInstanceId
      */
-    public Long create(WorkflowInfoDO wfInfo, String initParams) {
+    public Long create(WorkflowInfoDO wfInfo, String initParams, Long expectTriggerTime) {
 
         Long wfId = wfInfo.getId();
         Long wfInstanceId = idGenerateService.allocate();
@@ -82,6 +83,7 @@ public class WorkflowInstanceManager {
         newWfInstance.setWfInstanceId(wfInstanceId);
         newWfInstance.setWorkflowId(wfId);
         newWfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());
+        newWfInstance.setExpectedTriggerTime(expectTriggerTime);
         newWfInstance.setActualTriggerTime(System.currentTimeMillis());
         newWfInstance.setWfInitParams(initParams);
 
