@@ -67,8 +67,8 @@ Application password: 123
 **[中文文档](https://www.yuque.com/powerjob/product)**
 
 # User Registration
-[Click to register as PowerJob client and contribute to PowerJob!](https://github.com/KFCFans/PowerJob/issues/6)  
-ღ( ´・ᴗ・\` )ღ Many thanks to the following registered clients. ღ( ´・ᴗ・\` )ღ
+[Click to register as PowerJob user and contribute to PowerJob!](https://github.com/KFCFans/PowerJob/issues/6)  
+ღ( ´・ᴗ・\` )ღ Many thanks to the following registered users. ღ( ´・ᴗ・\` )ღ
 <p style="text-align: center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/user.png" alt="PowerJob User" title="PowerJob User"/>
 </p>
