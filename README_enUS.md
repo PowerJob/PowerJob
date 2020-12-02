@@ -58,7 +58,7 @@ Application password: 123
 | Online logging                     | Unsupported                                               | Supported                                                 | Unsupported                                                  | **Supported**                                                      |
 | Scheduling methods and performance | Based on database lock, there is a performance bottleneck | Based on database lock, there is a performance bottleneck | Unknown                                                      | **Lock-free design, powerful performance without upper limit**   |
 | Alarm monitoring                   | Unsupported                                               | Email                                                      | SMS                                                         | **Email, WebHook, DingTalk. An interface is provided for customization.** |
-| System dependence                  | Any relational database (MySQL, Oracle ...) supported by JDBC      | MySQL                                            | RMB (Public Beta version for free, hey, helping to advertise) | **Any relational database (MySQL, Oracle ...) supported by Spring Data Jpa** |
+| System dependence                  | Any relational database (MySQL, Oracle ...) supported by JDBC      | MySQL                                            | RMB (Public Beta version for free, hey, helping to promote) | **Any relational database (MySQL, Oracle ...) supported by Spring Data Jpa** |
 | workflow                           | Unsupported                                               | Unsupported                                               | Supported                                                    | **Supported**               |
  
 # Document
