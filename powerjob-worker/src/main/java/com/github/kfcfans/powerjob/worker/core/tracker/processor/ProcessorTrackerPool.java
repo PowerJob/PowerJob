@@ -40,7 +40,7 @@ public class ProcessorTrackerPool {
         return processorTracker;
     }
 
-    public static List<ProcessorTracker> removeProcessorTracker(Long instanceId) {
+    public static synchronized List<ProcessorTracker> removeProcessorTracker(Long instanceId) {
 
         List<ProcessorTracker> res = Lists.newLinkedList();
         Map<String, ProcessorTracker> ttAddress2Pt = processorTrackerPool.remove(instanceId);
