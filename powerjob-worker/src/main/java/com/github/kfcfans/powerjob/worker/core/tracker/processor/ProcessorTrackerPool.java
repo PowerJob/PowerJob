@@ -25,22 +25,17 @@ public class ProcessorTrackerPool {
     /**
      * 获取 ProcessorTracker，如果不存在则创建
      */
-    public static ProcessorTracker getProcessorTracker(Long instanceId, String address, Supplier<ProcessorTracker> creator) {
+    public static synchronized ProcessorTracker getProcessorTracker(Long instanceId, String address, Supplier<ProcessorTracker> creator) {
 
         ProcessorTracker processorTracker = processorTrackerPool.getOrDefault(instanceId, Collections.emptyMap()).get(address);
         if (processorTracker == null) {
-            synchronized (ProcessorTrackerPool.class) {
-                processorTracker = processorTrackerPool.getOrDefault(instanceId, Collections.emptyMap()).get(address);
-                if (processorTracker == null) {
-                    processorTracker = creator.get();
-                    processorTrackerPool.computeIfAbsent(instanceId, ignore -> Maps.newHashMap()).put(address, processorTracker);
-                }
-            }
+            processorTracker = creator.get();
+            processorTrackerPool.computeIfAbsent(instanceId, ignore -> Maps.newHashMap()).put(address, processorTracker);
         }
         return processorTracker;
     }
 
-    public static List<ProcessorTracker> removeProcessorTracker(Long instanceId) {
+    public static synchronized List<ProcessorTracker> removeProcessorTracker(Long instanceId) {
 
         List<ProcessorTracker> res = Lists.newLinkedList();
         Map<String, ProcessorTracker> ttAddress2Pt = processorTrackerPool.remove(instanceId);
