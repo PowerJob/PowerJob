@@ -1,17 +1,26 @@
 package com.github.kfcfans.powerjob.server.service;
 
 import akka.actor.ActorSelection;
+import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.*;
+import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
+import com.github.kfcfans.powerjob.common.response.AskResponse;
+import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.akka.requests.FriendQueryWorkerClusterStatusReq;
+import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceMetadataService;
+import com.github.kfcfans.powerjob.server.web.response.WorkerStatusVO;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -20,9 +29,14 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.github.kfcfans.powerjob.common.InstanceStatus.*;
 
@@ -43,6 +57,9 @@ public class DispatchService {
     private InstanceMetadataService instanceMetadataService;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
+
+    @Resource
+    private AppInfoRepository appInfoRepository;
 
     private static final Splitter commaSplitter = Splitter.on(",");
 
@@ -93,8 +110,35 @@ public class DispatchService {
             }
         }
 
-        // 获取当前所有可用的Worker
-        List<String> allAvailableWorker = WorkerManagerService.getSortedAvailableWorker(jobInfo.getAppId(), jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
+        AppInfoDO appInfo = appInfoRepository.findById(jobInfo.getAppId()).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by appId: " + jobInfo.getAppId()));
+
+        Map<String, SystemMetrics> address2Metrics = Maps.newConcurrentMap() ;
+
+        // 重定向到指定 Server 获取集群信息
+        FriendQueryWorkerClusterStatusReq req1 = new FriendQueryWorkerClusterStatusReq(appInfo.getId());
+        try {
+            String server = appInfo.getCurrentServer();
+            ActorSelection friendActor = OhMyServer.getFriendActor(server);
+            CompletionStage<Object> askCS = Patterns.ask(friendActor, req1, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
+            AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
+            if (askResponse.isSuccess()) {
+                Map address2Info = askResponse.getData(Map.class);
+
+                address2Info.forEach((address, m) -> {
+                    try {
+                        SystemMetrics metrics = JsonUtils.parseObject(JsonUtils.toJSONString(m), SystemMetrics.class);
+                        address2Metrics.put(String.valueOf(address), metrics);
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        }catch (Exception e) {
+            log.error("[SystemInfoController] listWorker for appId:{} failed, exception is {}", e.toString());
+        }
+
+        List<String> allAvailableWorker = WorkerManagerService.getSortedAvailableWorkerRemote(address2Metrics, appInfo.getAppName(), jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
 
         // 筛选指定的机器
         List<String> finalWorkers = Lists.newLinkedList();
