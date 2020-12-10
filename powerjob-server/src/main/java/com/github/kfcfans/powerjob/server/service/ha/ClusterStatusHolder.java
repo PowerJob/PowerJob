@@ -38,7 +38,14 @@ public class ClusterStatusHolder {
         address2ActiveTime = Maps.newConcurrentMap();
         containerId2Infos = Maps.newConcurrentMap();
     }
-
+    
+     /**
+     * 更新 worker 机器的状态，远程获取的数据注入
+     */
+    public void updateStatus(Map<String, SystemMetrics> address2MetricsSingle){
+        address2MetricsSingle.forEach((address, metrics) -> address2Metrics.put(address, metrics));
+    }
+    
     /**
      * 更新 worker 机器的状态
      */
@@ -81,6 +88,31 @@ public class ClusterStatusHolder {
                 log.info("[ClusterStatusHolder] worker(address={},metrics={}) was filtered because of timeout, last active time is {}.", address, metrics, address2ActiveTime.get(address));
                 return;
             }
+            // 判断指标
+            if (metrics.available(minCPUCores, minMemorySpace, minDiskSpace)) {
+                workers.add(address);
+            }else {
+                log.info("[ClusterStatusHolder] worker(address={},metrics={}) was filtered by config(minCPUCores={},minMemory={},minDiskSpace={})", address, metrics, minCPUCores, minMemorySpace, minDiskSpace);
+            }
+        });
+
+        // 按机器健康度排序
+        workers.sort((o1, o2) -> address2Metrics.get(o2).calculateScore() - address2Metrics.get(o1).calculateScore());
+
+        return workers;
+    }
+
+     /**
+     * 获取当前所有可用的 Worker（远程搜索）
+     * @param minCPUCores 最低CPU核心数量
+     * @param minMemorySpace 最低内存可用空间，单位GB
+     * @param minDiskSpace 最低磁盘可用空间，单位GB
+     * @return List<Worker>
+     */
+    public List<String> getSortedAvailableWorkerRemote(double minCPUCores, double minMemorySpace, double minDiskSpace) {
+        List<String> workers = Lists.newLinkedList();
+
+        address2Metrics.forEach((address, metrics) -> {
             // 判断指标
             if (metrics.available(minCPUCores, minMemorySpace, minDiskSpace)) {
                 workers.add(address);
