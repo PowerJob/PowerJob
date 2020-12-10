@@ -45,6 +45,15 @@ public class WorkerManagerService {
     }
 
     /**
+     * 获取有序的当前所有可用的Worker地址（远程获取可用Worker，按得分高低排序，排在前面的健康度更高）
+     */
+    public static List<String> getSortedAvailableWorkerRemote(Map<String, SystemMetrics> address2Metrics, String appName, double minCPUCores, double minMemorySpace, double minDiskSpace) {
+        ClusterStatusHolder clusterStatusHolder = new ClusterStatusHolder(String.valueOf(appName));
+        clusterStatusHolder.updateStatus(address2Metrics);
+        return clusterStatusHolder.getSortedAvailableWorkerRemote(minCPUCores, minMemorySpace, minDiskSpace);
+    }
+
+    /**
      * 清理不需要的worker信息
      * @param usingAppIds 需要维护的appId，其余的数据将被删除
      */
