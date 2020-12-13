@@ -68,8 +68,8 @@ public class InstanceController {
     }
 
     @GetMapping("/retry")
-    public ResultDTO<Void> retryInstance(Long instanceId) {
-        instanceService.retryInstance(instanceId);
+    public ResultDTO<Void> retryInstance(String appId, Long instanceId) {
+        instanceService.retryInstance(Long.valueOf(appId), instanceId);
         return ResultDTO.success(null);
     }
 
