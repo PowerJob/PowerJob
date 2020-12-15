@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -52,6 +53,7 @@ public class JobInfoDO {
     // 执行器信息（可能需要存储整个脚本文件）
     @Lob
     @Column
+    @Type(type ="org.hibernate.type.StringType")
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */

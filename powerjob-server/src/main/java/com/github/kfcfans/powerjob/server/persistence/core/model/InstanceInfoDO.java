@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -36,6 +37,7 @@ public class InstanceInfoDO {
     // 任务实例参数
     @Lob
     @Column
+    @Type(type ="org.hibernate.type.StringType")
     private String instanceParams;
 
     // 该任务实例的类型，普通/工作流（InstanceType）
@@ -49,6 +51,7 @@ public class InstanceInfoDO {
     // 执行结果（允许存储稍大的结果）
     @Lob
     @Column
+    @Type(type ="org.hibernate.type.StringType")
     private String result;
     // 预计触发时间
     private Long expectedTriggerTime;

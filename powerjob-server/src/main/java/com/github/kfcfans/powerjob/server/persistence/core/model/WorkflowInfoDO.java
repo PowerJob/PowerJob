@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -35,6 +36,7 @@ public class WorkflowInfoDO {
     // 工作流的DAG图信息（点线式DAG的json）
     @Lob
     @Column
+    @Type(type ="org.hibernate.type.StringType")
     private String peDAG;
 
     /* ************************** 定时参数 ************************** */

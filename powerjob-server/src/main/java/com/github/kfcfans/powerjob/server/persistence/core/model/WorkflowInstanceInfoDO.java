@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -39,13 +40,16 @@ public class WorkflowInstanceInfoDO {
     // 工作流启动参数
     @Lob
     @Column
+    @Type(type ="org.hibernate.type.StringType")
     private String wfInitParams;
 
     @Lob
     @Column
+    @Type(type ="org.hibernate.type.StringType")
     private String dag;
     @Lob
     @Column
+    @Type(type ="org.hibernate.type.StringType")
     private String result;
 
     // 预计触发时间
