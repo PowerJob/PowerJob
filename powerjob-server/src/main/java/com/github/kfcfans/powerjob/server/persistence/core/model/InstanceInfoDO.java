@@ -37,7 +37,7 @@ public class InstanceInfoDO {
     // 任务实例参数
     @Lob
     @Column
-    @Type(type ="org.hibernate.type.StringType")
+    @Type(type = TypeDefConstant.STRING_TYPE)
     private String instanceParams;
 
     // 该任务实例的类型，普通/工作流（InstanceType）
@@ -51,7 +51,7 @@ public class InstanceInfoDO {
     // 执行结果（允许存储稍大的结果）
     @Lob
     @Column
-    @Type(type ="org.hibernate.type.StringType")
+    @Type(type = TypeDefConstant.STRING_TYPE)
     private String result;
     // 预计触发时间
     private Long expectedTriggerTime;

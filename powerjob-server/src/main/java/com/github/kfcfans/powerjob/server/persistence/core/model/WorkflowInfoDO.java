@@ -36,7 +36,7 @@ public class WorkflowInfoDO {
     // 工作流的DAG图信息（点线式DAG的json）
     @Lob
     @Column
-    @Type(type ="org.hibernate.type.StringType")
+    @Type(type = TypeDefConstant.STRING_TYPE)
     private String peDAG;
 
     /* ************************** 定时参数 ************************** */

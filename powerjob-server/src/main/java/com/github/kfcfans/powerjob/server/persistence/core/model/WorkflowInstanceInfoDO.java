@@ -40,16 +40,16 @@ public class WorkflowInstanceInfoDO {
     // 工作流启动参数
     @Lob
     @Column
-    @Type(type ="org.hibernate.type.StringType")
+    @Type(type = TypeDefConstant.STRING_TYPE)
     private String wfInitParams;
 
     @Lob
     @Column
-    @Type(type ="org.hibernate.type.StringType")
+    @Type(type = TypeDefConstant.STRING_TYPE)
     private String dag;
     @Lob
     @Column
-    @Type(type ="org.hibernate.type.StringType")
+    @Type(type = TypeDefConstant.STRING_TYPE)
     private String result;
 
     // 预计触发时间

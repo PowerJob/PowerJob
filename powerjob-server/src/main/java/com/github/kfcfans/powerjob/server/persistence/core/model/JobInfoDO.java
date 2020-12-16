@@ -53,7 +53,7 @@ public class JobInfoDO {
     // 执行器信息（可能需要存储整个脚本文件）
     @Lob
     @Column
-    @Type(type ="org.hibernate.type.StringType")
+    @Type(type = TypeDefConstant.STRING_TYPE)
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */
