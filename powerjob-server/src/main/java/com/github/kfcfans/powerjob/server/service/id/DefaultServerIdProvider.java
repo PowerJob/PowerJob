@@ -1,39 +1,37 @@
 package com.github.kfcfans.powerjob.server.service.id;
 
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import com.github.kfcfans.powerjob.server.extension.ServerIdProvider;
 import com.github.kfcfans.powerjob.server.persistence.core.model.ServerInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ServerInfoRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 /**
+ * 默认服务器 ID 生成策略，不适用于 Server 频繁重启且变化 IP 的场景
  * @author user
  */
+@Slf4j
+@Service
 public class DefaultServerIdProvider implements ServerIdProvider {
-  private final ServerInfoRepository serverInfoRepository;
 
-  private volatile Long id;
+    private final Long id;
 
-  public DefaultServerIdProvider(ServerInfoRepository serverInfoRepository) {
-    this.serverInfoRepository = serverInfoRepository;
-  }
+    public DefaultServerIdProvider(ServerInfoRepository serverInfoRepository) {
+        String ip = NetUtils.getLocalHost();
+        ServerInfoDO server = serverInfoRepository.findByIp(ip);
 
-  @Override
-  public long serverId() {
-    if (id == null) {
-      synchronized (this) {
-        if (id == null) {
-          String ip = NetUtils.getLocalHost();
-          ServerInfoDO server = serverInfoRepository.findByIp(ip);
-
-          if (server == null) {
+        if (server == null) {
             ServerInfoDO newServerInfo = new ServerInfoDO(ip);
             server = serverInfoRepository.saveAndFlush(newServerInfo);
-          }
-
-          id = server.getId();
         }
-      }
+        this.id = server.getId();
+
+        log.info("[DefaultServerIdProvider] address:{},id:{}", ip, id);
     }
 
-    return id;
-  }
+    @Override
+    public long getServerId() {
+        return id;
+    }
 }

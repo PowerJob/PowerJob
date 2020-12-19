@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.service.alarm;
 
+import com.github.kfcfans.powerjob.server.extension.Alarmable;
 import com.github.kfcfans.powerjob.server.persistence.core.model.UserInfoDO;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
