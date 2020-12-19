@@ -5,6 +5,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.ServerInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ServerInfoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,18 +25,10 @@ public class IdGenerateService {
     private static final int DATA_CENTER_ID = 0;
 
     @Autowired
-    public IdGenerateService(ServerInfoRepository serverInfoRepository) {
-
-        String ip = NetUtils.getLocalHost();
-        ServerInfoDO server = serverInfoRepository.findByIp(ip);
-
-        if (server == null) {
-            ServerInfoDO newServerInfo = new ServerInfoDO(ip);
-            server = serverInfoRepository.saveAndFlush(newServerInfo);
-        }
-
-        Long id = server.getId();
+    public IdGenerateService(@Qualifier("serverIdProvider") ServerIdProvider serverIdProvider) {
+        long id = serverIdProvider.serverId();
         snowFlakeIdGenerator = new SnowFlakeIdGenerator(DATA_CENTER_ID, id);
+        String ip = NetUtils.getLocalHost();
 
         log.info("[IdGenerateService] init snowflake for server(address={}) by machineId({}).", ip, id);
     }
