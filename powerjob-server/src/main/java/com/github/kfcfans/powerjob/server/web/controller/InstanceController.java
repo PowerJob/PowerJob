@@ -17,6 +17,7 @@ import com.github.kfcfans.powerjob.server.web.request.QueryInstanceRequest;
 import com.github.kfcfans.powerjob.server.web.response.InstanceDetailVO;
 import com.github.kfcfans.powerjob.server.web.response.InstanceInfoVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -90,6 +92,24 @@ public class InstanceController {
 
         File file = instanceLogService.downloadInstanceLog(instanceId);
         OmsFileUtils.file2HttpResponse(file, response);
+    }
+
+    @GetMapping("/downloadLog4Console")
+    public void downloadLog4Console(Long appId, Long instanceId , HttpServletResponse response) throws Exception {
+        // 获取内部下载链接
+        String downloadUrl = instanceLogService.fetchDownloadUrl(appId, instanceId);
+        // 先下载到本机
+        String logFilePath = OmsFileUtils.genTemporaryWorkPath() + String.format("powerjob-%s-%s.log", appId, instanceId);
+        File logFile = new File(logFilePath);
+
+        try {
+            FileUtils.copyURLToFile(new URL(downloadUrl), logFile);
+
+            // 再推送到浏览器
+            OmsFileUtils.file2HttpResponse(logFile, response);
+        } finally {
+            FileUtils.forceDelete(logFile);
+        }
     }
 
     @PostMapping("/list")
