@@ -62,7 +62,7 @@ public class DesignateServerAspect {
         }
 
         if (appId == null) {
-            throw new PowerJobException("can't find appId in params!");
+            throw new PowerJobException("can't find appId in params for:" + signature.toString());
         }
 
         // 获取执行机器

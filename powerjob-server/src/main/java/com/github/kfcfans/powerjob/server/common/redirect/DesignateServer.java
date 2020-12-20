@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 执行服务器运行
+ * 需要在指定的服务器运行
  * 注意：该注解所在方法的参数必须为对象，不可以是 long 等基本类型
  *
  * @author tjq
