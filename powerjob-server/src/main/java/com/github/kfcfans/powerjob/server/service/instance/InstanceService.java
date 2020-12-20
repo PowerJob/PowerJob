@@ -13,6 +13,7 @@ import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
+import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
@@ -132,7 +133,11 @@ public class InstanceService {
      * 重试任务（只有结束的任务运行重试）
      * @param instanceId 任务实例ID
      */
-    public void retryInstance(Long instanceId) {
+    @DesignateServer(appIdParameterName = "appId")
+    public void retryInstance(Long appId, Long instanceId) {
+
+        log.info("[Instance-{}] retry instance in appId: {}", instanceId, appId);
+
         InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
         if (!InstanceStatus.finishedStatus.contains(instanceInfo.getStatus())) {
             throw new PowerJobException("Only stopped instance can be retry!");

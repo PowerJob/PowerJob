@@ -24,6 +24,7 @@ import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -96,10 +97,10 @@ public class ProcessorTracker {
             initProcessor();
 
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
-        }catch (Throwable e) {
-            log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, e);
+        } catch (Throwable t) {
+            log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, t);
             lethal = true;
-            lethalReason = e.toString();
+            lethalReason = ExceptionUtils.getMessage(t);
         }
     }
 
@@ -291,7 +292,7 @@ public class ProcessorTracker {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
                     }catch (Exception e) {
-                        log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, e.toString());
+                        log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, ExceptionUtils.getMessage(e));
                     }
                 }
                 // 反射加载

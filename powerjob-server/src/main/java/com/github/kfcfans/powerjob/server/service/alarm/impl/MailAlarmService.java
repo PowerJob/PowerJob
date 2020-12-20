@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.service.alarm.impl;
 
 import com.github.kfcfans.powerjob.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.powerjob.server.service.alarm.Alarm;
-import com.github.kfcfans.powerjob.server.service.alarm.Alarmable;
+import com.github.kfcfans.powerjob.server.extension.Alarmable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;

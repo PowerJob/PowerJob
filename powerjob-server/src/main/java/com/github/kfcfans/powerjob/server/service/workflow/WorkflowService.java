@@ -5,15 +5,12 @@ import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.WorkflowInfoDTO;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
-import com.github.kfcfans.powerjob.server.akka.requests.RunJobOrWorkflowReq;
 import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.common.utils.WorkflowDAGUtils;
-import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
-import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * Workflow 服务
@@ -34,8 +30,6 @@ import java.util.Objects;
 @Service
 public class WorkflowService {
 
-    @Resource
-    private AppInfoRepository appInfoRepository;
     @Resource
     private WorkflowInstanceManager workflowInstanceManager;
     @Resource
@@ -144,29 +138,12 @@ public class WorkflowService {
      * @param delay 延迟时间
      * @return 该 workflow 实例的 instanceId（wfInstanceId）
      */
-    public Long runWorkflow(Long wfId, Long appId, String initParams, long delay) {
+    @DesignateServer(appIdParameterName = "appId")
+    public Long runWorkflow(Long wfId, Long appId, String initParams, Long delay) {
 
+        delay = delay == null ? 0 : delay;
         WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
 
-        AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by appId: " + appId));
-
-        String targetServer = appInfo.getCurrentServer();
-        if (Objects.equals(targetServer, OhMyServer.getActorSystemAddress())) {
-            return realRunWorkflow(wfInfo, initParams, delay);
-        }
-
-        log.info("[WorkflowService-{}] redirect run request[initParams={}] to target server: {}", wfId, initParams, targetServer);
-        // 转发请求
-        RunJobOrWorkflowReq req = new RunJobOrWorkflowReq(RunJobOrWorkflowReq.WORKFLOW, wfId, delay, initParams, appId);
-        try {
-            return Long.valueOf(OhMyServer.askFriend(targetServer, req));
-        }catch (Exception e) {
-            log.error("[WorkflowService-{}] redirect run request[params={}] to target server[{}] failed!", wfId, initParams, targetServer);
-            throw new PowerJobException("redirect run request failed!", e);
-        }
-    }
-
-    private Long realRunWorkflow(WorkflowInfoDO wfInfo, String initParams, long delay) {
         log.info("[WorkflowService-{}] try to run workflow, initParams={},delay={} ms.", wfInfo.getId(), initParams, delay);
         Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay);
         if (delay <= 0) {
