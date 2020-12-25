@@ -18,6 +18,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;
 import java.util.Map;
@@ -51,6 +52,11 @@ public class OhMyServer {
         PropertyUtils.init();
         Properties properties = PropertyUtils.getProperties();
         int port = Integer.parseInt(properties.getProperty(PowerJobServerConfigKey.AKKA_PORT, "10086"));
+        String portFromJVM = System.getProperty(PowerJobServerConfigKey.AKKA_PORT);
+        if (StringUtils.isNotEmpty(portFromJVM)) {
+            log.info("[OhMyWorker] use port from jvm params: {}", portFromJVM);
+            port = Integer.parseInt(portFromJVM);
+        }
 
         // 启动 ActorSystem
         Map<String, Object> overrideConfig = Maps.newHashMap();

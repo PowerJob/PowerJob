@@ -1,18 +1,19 @@
 package com.github.kfcfans.powerjob.server.akka.actors;
 
 import akka.actor.AbstractActor;
-import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.server.akka.requests.FriendQueryWorkerClusterStatusReq;
 import com.github.kfcfans.powerjob.server.akka.requests.Ping;
-import com.github.kfcfans.powerjob.server.akka.requests.RunJobOrWorkflowReq;
+import com.github.kfcfans.powerjob.server.akka.requests.RemoteProcessReq;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
-import com.github.kfcfans.powerjob.server.service.JobService;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
-import com.github.kfcfans.powerjob.server.service.workflow.WorkflowService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -27,7 +28,7 @@ public class FriendActor extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Ping.class, this::onReceivePing)
-                .match(RunJobOrWorkflowReq.class, this::onReceiveFriendResendRunRequest)
+                .match(RemoteProcessReq.class, this::onReceiveRemoteProcessReq)
                 .match(FriendQueryWorkerClusterStatusReq.class, this::onReceiveFriendQueryWorkerClusterStatusReq)
                 .matchAny(obj -> log.warn("[FriendActor] receive unknown request: {}.", obj))
                 .build();
@@ -49,26 +50,39 @@ public class FriendActor extends AbstractActor {
         getSender().tell(askResponse, getSelf());
     }
 
-    /**
-     * 处理 run 转发
-     */
-    private void onReceiveFriendResendRunRequest(RunJobOrWorkflowReq req) {
+    private void onReceiveRemoteProcessReq(RemoteProcessReq req) {
+
+        AskResponse response = new AskResponse();
+        response.setSuccess(true);
         try {
-            Long resultId;
-            switch (req.getType()) {
-                case RunJobOrWorkflowReq.WORKFLOW:
-                    resultId = SpringUtils.getBean(WorkflowService.class).runWorkflow(req.getId(), req.getAppId(), req.getParams(), req.getDelay());
-                    break;
-                case RunJobOrWorkflowReq.JOB:
-                    resultId = SpringUtils.getBean(JobService.class).runJob(req.getId(), req.getParams(), req.getDelay());
-                    break;
-                default:
-                    throw new PowerJobException("unknown type: " + req.getType());
+
+            Object[] args = req.getArgs();
+            String[] parameterTypes = req.getParameterTypes();
+            Class<?>[] parameters = new Class[parameterTypes.length];
+
+            for (int i = 0; i < parameterTypes.length; i++) {
+                parameters[i] = Class.forName(parameterTypes[i]);
+                Object arg = args[i];
+                if (arg != null) {
+                    args[i] = JSONObject.parseObject(JSONObject.toJSONBytes(arg), parameters[i]);
+                }
             }
-            getSender().tell(AskResponse.succeed(String.valueOf(resultId)), getSelf());
-        } catch (Exception e) {
-            log.error("[FriendActor] process run request [{}] failed!", req, e);
-            getSender().tell(AskResponse.failed(e.getMessage()), getSelf());
+
+            Class<?> clz = Class.forName(req.getClassName());
+
+            Object bean = SpringUtils.getBean(clz);
+            Method method = ReflectionUtils.findMethod(clz, req.getMethodName(), parameters);
+
+            assert method != null;
+            Object invokeResult = ReflectionUtils.invokeMethod(method, bean, args);
+
+            response.setData(JSONObject.toJSONBytes(invokeResult));
+
+        } catch (Throwable t) {
+            log.error("[FriendActor] process remote request[{}] failed!", req, t);
+            response.setSuccess(false);
+            response.setMessage(ExceptionUtils.getMessage(t));
         }
+        getSender().tell(response, getSelf());
     }
 }

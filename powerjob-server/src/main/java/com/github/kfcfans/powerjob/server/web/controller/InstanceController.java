@@ -3,7 +3,6 @@ package com.github.kfcfans.powerjob.server.web.controller;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.powerjob.server.persistence.PageResult;
 import com.github.kfcfans.powerjob.server.persistence.StringPage;
@@ -19,7 +18,6 @@ import com.github.kfcfans.powerjob.server.web.response.InstanceDetailVO;
 import com.github.kfcfans.powerjob.server.web.response.InstanceInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,8 +44,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/instance")
 public class InstanceController {
 
-    @Value("${server.port}")
-    private int port;
+
 
     @Resource
     private InstanceService instanceService;
@@ -68,8 +65,8 @@ public class InstanceController {
     }
 
     @GetMapping("/retry")
-    public ResultDTO<Void> retryInstance(Long instanceId) {
-        instanceService.retryInstance(instanceId);
+    public ResultDTO<Void> retryInstance(String appId, Long instanceId) {
+        instanceService.retryInstance(Long.valueOf(appId), instanceId);
         return ResultDTO.success(null);
     }
 
@@ -79,32 +76,13 @@ public class InstanceController {
     }
 
     @GetMapping("/log")
-    public ResultDTO<StringPage> getInstanceLog(Long instanceId, Long index, HttpServletResponse response) {
-
-        String targetServer = getTargetServer(instanceId);
-
-        // 转发HTTP请求（如果使用Akka，则需要传输两次，而转发HTTP请求只需要传输一次"大"数据包）
-        if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
-            String ip = targetServer.split(":")[0];
-            String url = String.format("http://%s:%s/instance/log?instanceId=%d&index=%d", ip, port, instanceId, index);
-            try {
-                response.sendRedirect(url);
-                return ResultDTO.success(StringPage.simple("redirecting..."));
-            }catch (Exception e) {
-                log.warn("[Instance-{}] redirect request to url[{}] failed, please ensure all server has the same http port!", instanceId, url, e);
-                return ResultDTO.failed(e);
-            }
-        }
-
-        return ResultDTO.success(instanceLogService.fetchInstanceLog(instanceId, index));
+    public ResultDTO<StringPage> getInstanceLog(Long appId, Long instanceId, Long index) {
+        return ResultDTO.success(instanceLogService.fetchInstanceLog(appId, instanceId, index));
     }
 
     @GetMapping("/downloadLogUrl")
-    public ResultDTO<String> getDownloadUrl(Long instanceId) {
-        String targetServer = getTargetServer(instanceId);
-        String ip = targetServer.split(":")[0];
-        String url = "http://" + ip + ":" + port + "/instance/downloadLog?instanceId=" + instanceId;
-        return ResultDTO.success(url);
+    public ResultDTO<String> getDownloadUrl(Long appId, Long instanceId) {
+        return ResultDTO.success(instanceLogService.fetchDownloadUrl(appId, instanceId));
     }
 
     @GetMapping("/downloadLog")

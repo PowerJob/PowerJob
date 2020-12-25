@@ -30,10 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -239,7 +236,10 @@ public class OmsScheduleService {
                 }
 
                 log.info("[FrequentScheduler] These frequent jobs will be scheduled： {}.", notRunningJobIds);
-                notRunningJobIds.forEach(jobId -> jobService.runJob(jobId, null, 0));
+                notRunningJobIds.forEach(jobId -> {
+                    Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(jobId);
+                    jobInfoOpt.ifPresent(jobInfoDO -> jobService.runJob(jobInfoDO.getAppId(), jobId, null, 0L));
+                });
             }catch (Exception e) {
                 log.error("[FrequentScheduler] schedule frequent job failed.", e);
             }

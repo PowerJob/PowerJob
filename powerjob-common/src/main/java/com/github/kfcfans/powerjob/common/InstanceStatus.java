@@ -24,8 +24,8 @@ public enum InstanceStatus {
     CANCELED(9, "取消"),
     STOPPED(10, "手动停止");
 
-    private int v;
-    private String des;
+    private final int v;
+    private final String des;
 
     // 广义的运行状态
     public static final List<Integer> generalizedRunningStatus = Lists.newArrayList(WAITING_DISPATCH.v, WAITING_WORKER_RECEIVE.v, RUNNING.v);

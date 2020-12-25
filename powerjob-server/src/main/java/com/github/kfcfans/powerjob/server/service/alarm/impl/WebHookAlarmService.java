@@ -5,7 +5,7 @@ import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.powerjob.server.service.alarm.Alarm;
-import com.github.kfcfans.powerjob.server.service.alarm.Alarmable;
+import com.github.kfcfans.powerjob.server.extension.Alarmable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
