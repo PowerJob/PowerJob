@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.common.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,12 +10,10 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import javax.annotation.Resource;
-
 import static springfox.documentation.builders.PathSelectors.any;
 
 /**
- * Swagger UI 配置
+ * Configuration class for Swagger UI.
  *
  * @author tjq
  * @author Jiang Jining
@@ -24,18 +23,25 @@ import static springfox.documentation.builders.PathSelectors.any;
 @EnableSwagger2
 public class SwaggerConfig {
     
-    @Resource
-    private BuildProperties buildProperties;
+    private final BuildProperties buildProperties;
+    
+    public SwaggerConfig(@Autowired(required = false) final BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
     
     @Bean
     public Docket createRestApi() {
+        String version = "3.3.3";
+        if (buildProperties != null) {
+            version = buildProperties.getVersion();
+        }
         // apiInfo()用来创建该Api的基本信息（这些基本信息会展现在文档页面中
         ApiInfo apiInfo = new ApiInfoBuilder()
                 .title("PowerJob")
                 .description("Distributed scheduling and computing framework.")
                 .license("Apache Licence 2")
                 .termsOfServiceUrl("https://github.com/KFCFans/PowerJob")
-                .version(buildProperties.getVersion())
+                .version(version)
                 .build();
         
         return new Docket(DocumentationType.SWAGGER_2)
