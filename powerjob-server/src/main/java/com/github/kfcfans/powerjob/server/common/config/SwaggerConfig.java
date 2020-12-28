@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.common.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
@@ -31,9 +32,9 @@ public class SwaggerConfig {
     
     @Bean
     public Docket createRestApi() {
-        String version = "3.3.3";
+        String version = "Unknown";
         if (buildProperties != null) {
-            version = buildProperties.getVersion();
+            version = StringUtils.trimToEmpty(buildProperties.getVersion());
         }
         // apiInfo()用来创建该Api的基本信息（这些基本信息会展现在文档页面中
         ApiInfo apiInfo = new ApiInfoBuilder()
