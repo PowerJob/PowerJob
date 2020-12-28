@@ -34,7 +34,10 @@ public class SwaggerConfig {
     public Docket createRestApi() {
         String version = "Unknown";
         if (buildProperties != null) {
-            version = StringUtils.trimToEmpty(buildProperties.getVersion());
+            String pomVersion = buildProperties.getVersion();
+            if (StringUtils.isNotBlank(pomVersion)) {
+                version = pomVersion;
+            }
         }
         // apiInfo()用来创建该Api的基本信息（这些基本信息会展现在文档页面中
         ApiInfo apiInfo = new ApiInfoBuilder()
