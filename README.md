@@ -1,6 +1,6 @@
 English | [简体中文](./README_zhCN.md)
 
-<p style="text-align: center">
+<p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
 </p>
 
