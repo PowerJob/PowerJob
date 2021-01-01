@@ -64,7 +64,7 @@ Application password: 123
 | workflow                           | Unsupported                                               | Unsupported                                               | Supported                                                    | **Supported**               |
  
 # Document
-**[GitHub Wiki](https://github.com/KFCFans/PowerJob/wiki)**
+**[Docs](https://www.yuque.com/powerjob/en/introduce)**
 
 **[中文文档](https://www.yuque.com/powerjob/product)**
 
