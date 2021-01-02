@@ -120,7 +120,7 @@ public class CleanService {
             // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
             boolean lock = lockService.lock(deleteFsLock, 10 * 60 * 1000);
             if (!lock) {
-                log.info("[GridFsManager] deleted task is running, it's ok to return.");
+                log.info("[GridFsManager] deleted task is running, just return.");
                 return;
             }
             Stopwatch stopwatch = Stopwatch.createStarted();
