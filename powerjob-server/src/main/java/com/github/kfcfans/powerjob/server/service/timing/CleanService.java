@@ -7,6 +7,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceIn
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.service.lock.LockService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,8 @@ public class CleanService {
     private InstanceInfoRepository instanceInfoRepository;
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
+    @Resource
+    private LockService lockService;
 
     @Value("${oms.instanceinfo.retention}")
     private int instanceInfoRetentionDay;
@@ -113,11 +116,20 @@ public class CleanService {
             return;
         }
         if (gridFsManager.available()) {
+            String deleteFsLock = "deleteFsLock";
+            // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
+            boolean lock = lockService.lock(deleteFsLock, 10 * 60 * 1000);
+            if (!lock) {
+                log.info("[GridFsManager] deleted task is running, it's ok to return.");
+                return;
+            }
             Stopwatch stopwatch = Stopwatch.createStarted();
             try {
                 gridFsManager.deleteBefore(bucketName, day);
             }catch (Exception e) {
                 log.warn("[CleanService] clean remote bucket({}) failed.", bucketName, e);
+            }finally {
+                lockService.unlock(deleteFsLock);
             }
             log.info("[CleanService] clean remote bucket({}) successfully, using {}.", bucketName, stopwatch.stop());
         }

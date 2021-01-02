@@ -1,7 +1,6 @@
 package com.github.kfcfans.powerjob.server.persistence.mongodb;
 
 import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
-import com.github.kfcfans.powerjob.server.service.lock.LockService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.mongodb.client.MongoDatabase;
@@ -39,8 +38,6 @@ public class GridFsManager implements InitializingBean {
 
     @Resource
     private Environment environment;
-    @Resource
-    private LockService lockService;
 
     private MongoDatabase db;
     private boolean available;
@@ -110,22 +107,9 @@ public class GridFsManager implements InitializingBean {
      * @param day 日期偏移量，单位 天
      */
     public void deleteBefore(String bucketName, int day) {
-        String deleteFsLock = "deleteFsLock";
-        // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
-        boolean lock = lockService.lock(deleteFsLock, 10 * 60 * 1000);
-        if (!lock) {
-            log.info("[GridFsManager] deleted task is running, it's ok to return.");
-            return;
-        }
-        try{
-            deleteHistoryFile(bucketName, day);
-        }finally {
-            lockService.unlock(deleteFsLock);
-        }
-    }
 
-    private void deleteHistoryFile(String bucketName, int day) {
         Stopwatch sw = Stopwatch.createStarted();
+
         Date date = DateUtils.addDays(new Date(), -day);
         GridFSBucket bucket = getBucket(bucketName);
         Bson filter = Filters.lt("uploadDate", date);
