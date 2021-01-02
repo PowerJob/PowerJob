@@ -80,7 +80,7 @@ public class CleanService {
         // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
         boolean lock = lockService.lock(HISTORY_DELETE_LOCK, 10 * 60 * 1000);
         if (!lock) {
-            log.info("[GridFsManager] deleted task is running, just return.");
+            log.info("task is already running, just return.");
             return;
         }
         try {
