@@ -7,6 +7,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceIn
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.service.lock.LockService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,8 @@ public class CleanService {
     private InstanceInfoRepository instanceInfoRepository;
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
+    @Resource
+    private LockService lockService;
 
     @Value("${oms.instanceinfo.retention}")
     private int instanceInfoRetentionDay;
@@ -51,6 +54,8 @@ public class CleanService {
     // 每天凌晨3点定时清理
     private static final String CLEAN_TIME_EXPRESSION = "0 0 3 * * ?";
 
+    private static final String HISTORY_DELETE_LOCK = "history_delete";
+
 
     @Async("omsTimingPool")
     @Scheduled(cron = CLEAN_TIME_EXPRESSION)
@@ -59,18 +64,35 @@ public class CleanService {
         // 释放本地缓存
         WorkerManagerService.cleanUp();
 
-        // 删除数据库运行记录
-        cleanInstanceLog();
-        cleanWorkflowInstanceLog();
-
         // 释放磁盘空间
         cleanLocal(OmsFileUtils.genLogDirPath(), instanceInfoRetentionDay);
         cleanLocal(OmsFileUtils.genContainerJarPath(), localContainerRetentionDay);
         cleanLocal(OmsFileUtils.genTemporaryPath(), TEMPORARY_RETENTION_DAY);
 
-        // 删除 GridFS 过期文件
-        cleanRemote(GridFsManager.LOG_BUCKET, instanceInfoRetentionDay);
-        cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
+        // 删除数据库历史的数据
+        cleanOneServer();
+    }
+
+    /**
+     * 只能一台server清理的操作统一到这里执行
+     */
+    private void cleanOneServer() {
+        // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
+        boolean lock = lockService.lock(HISTORY_DELETE_LOCK, 10 * 60 * 1000);
+        if (!lock) {
+            log.info("task is already running, just return.");
+            return;
+        }
+        try {
+            // 删除数据库运行记录
+            cleanInstanceLog();
+            cleanWorkflowInstanceLog();
+            // 删除 GridFS 过期文件
+            cleanRemote(GridFsManager.LOG_BUCKET, instanceInfoRetentionDay);
+            cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
+        }finally {
+            lockService.unlock(HISTORY_DELETE_LOCK);
+        }
     }
 
     @VisibleForTesting
