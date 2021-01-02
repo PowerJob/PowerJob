@@ -54,7 +54,7 @@ public class CleanService {
     // 每天凌晨3点定时清理
     private static final String CLEAN_TIME_EXPRESSION = "0 0 3 * * ?";
 
-    private static final String HISTORY_DELETE_LOCK = "history_delete";
+    private static final String HISTORY_DELETE_LOCK = "history_delete_lock";
 
 
     @Async("omsTimingPool")
@@ -70,17 +70,17 @@ public class CleanService {
         cleanLocal(OmsFileUtils.genTemporaryPath(), TEMPORARY_RETENTION_DAY);
 
         // 删除数据库历史的数据
-        cleanOneServer();
+        cleanByOneServer();
     }
 
     /**
      * 只能一台server清理的操作统一到这里执行
      */
-    private void cleanOneServer() {
+    private void cleanByOneServer() {
         // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
         boolean lock = lockService.lock(HISTORY_DELETE_LOCK, 10 * 60 * 1000);
         if (!lock) {
-            log.info("task is already running, just return.");
+            log.info("[CleanService] clean job is already running, just return.");
             return;
         }
         try {
@@ -90,7 +90,7 @@ public class CleanService {
             // 删除 GridFS 过期文件
             cleanRemote(GridFsManager.LOG_BUCKET, instanceInfoRetentionDay);
             cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
-        }finally {
+        } finally {
             lockService.unlock(HISTORY_DELETE_LOCK);
         }
     }
@@ -113,7 +113,7 @@ public class CleanService {
         }
 
         // 计算最大偏移量
-        long maxOffset = day * 24 * 60 * 60 * 1000;
+        long maxOffset = day * 24 * 60 * 60 * 1000L;
 
         for (File f : logFiles) {
             long offset = System.currentTimeMillis() - f.lastModified();
