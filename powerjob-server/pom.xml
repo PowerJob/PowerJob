@@ -214,6 +214,7 @@
                 <executions>
                     <execution>
                         <goals>
+                            <goal>build-info</goal>
                             <goal>repackage</goal><!--可以把依赖的包都打包到生成的Jar包中-->
                         </goals>
                     </execution>
