@@ -20,6 +20,8 @@ public class InstanceLogContent implements OmsSerializable {
     private long instanceId;
     // 日志提交时间
     private long logTime;
+    // 级别
+    private int logLevel;
     // 日志内容
     private String logContent;
 }

@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.worker.log;
 
 /**
- * OhMyScheduler 在线日志，直接上报到 Server，可在控制台直接查看
+ * PowerJob 在线日志，直接上报到 Server，可在控制台直接查看
  *
  * @author tjq
  * @since 2020/4/21

@@ -1,8 +1,7 @@
 package com.github.kfcfans.powerjob.worker.common.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-
-import java.util.Objects;
 
 /**
  * Spring ApplicationContext 工具类
@@ -10,6 +9,7 @@ import java.util.Objects;
  * @author tjq
  * @since 2020/3/16
  */
+@Slf4j
 public class SpringUtils {
 
     private static boolean supportSpringBean = false;
@@ -43,7 +43,9 @@ public class SpringUtils {
         // 小写转大写
         char[] cs = beanName.toCharArray();
         cs[0] += 32;
-        return (T) context.getBean(String.valueOf(cs));
+        String beanName0 = String.valueOf(cs);
+        log.warn("[SpringUtils] can't get ClassLoader from context[{}], try to load by beanName:{}", context, beanName0);
+        return (T) context.getBean(beanName0);
     }
 
 }

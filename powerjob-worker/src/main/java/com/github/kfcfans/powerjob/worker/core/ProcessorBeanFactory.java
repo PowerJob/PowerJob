@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.worker.core;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Map;
 
@@ -37,7 +38,8 @@ public class ProcessorBeanFactory {
                 return (BasicProcessor) clz.getDeclaredConstructor().newInstance();
 
             }catch (Exception e) {
-                log.warn("[ProcessorBeanFactory] load local Processor(className = {}) failed, reason is {}", className, e.getMessage());
+                log.warn("[ProcessorBeanFactory] load local Processor(className = {}) failed.", className, e);
+                ExceptionUtils.rethrow(e);
             }
             return null;
         });

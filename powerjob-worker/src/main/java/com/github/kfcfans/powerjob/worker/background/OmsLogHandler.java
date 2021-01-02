@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.worker.background;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.powerjob.common.LogLevel;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.model.InstanceLogContent;
 import com.github.kfcfans.powerjob.common.request.WorkerLogReportReq;
@@ -48,14 +49,14 @@ public class OmsLogHandler {
      * @param instanceId 任务实例ID
      * @param logContent 日志内容
      */
-    public void submitLog(long instanceId, String logContent) {
+    public void submitLog(long instanceId, LogLevel logLevel, String logContent) {
 
         if (logQueue.size() > REPORT_SIZE) {
             // 线程的生命周期是个不可循环的过程，一个线程对象结束了不能再次start，只能一直创建和销毁
             new Thread(logSubmitter).start();
         }
 
-        InstanceLogContent tuple = new InstanceLogContent(instanceId, System.currentTimeMillis(), logContent);
+        InstanceLogContent tuple = new InstanceLogContent(instanceId, System.currentTimeMillis(), logLevel.getV(), logContent);
         logQueue.offer(tuple);
     }
 

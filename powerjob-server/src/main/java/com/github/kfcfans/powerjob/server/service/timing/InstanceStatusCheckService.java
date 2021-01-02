@@ -60,7 +60,7 @@ public class InstanceStatusCheckService {
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
     @Async("omsTimingPool")
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedDelay = 10000)
     public void timingStatusCheck() {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -115,7 +115,7 @@ public class InstanceStatusCheckService {
             threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
             List<InstanceInfoDO> waitingWorkerReceiveInstances = instanceInfoRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingWorkerReceiveInstances)) {
-                log.warn("[InstanceStatusChecker] instances({}) didn't receive any reply from worker.", waitingWorkerReceiveInstances);
+                log.warn("[InstanceStatusChecker] find one instance didn't receive any reply from worker, try to redispatch: {}", waitingWorkerReceiveInstances);
                 waitingWorkerReceiveInstances.forEach(instance -> {
                     // 重新派发
                     JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);

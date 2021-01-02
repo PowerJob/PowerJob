@@ -24,6 +24,7 @@ import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -54,8 +55,10 @@ public class ProcessorTracker {
     private OmsLogger omsLogger;
     // ProcessResult 上报失败的重试队列
     private Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
-    // 上一次空闲时间
+    // 上一次空闲时间（用于闲置判定）
     private long lastIdleTime;
+    // 上次完成任务数量（用于闲置判定）
+    private long lastCompletedTaskCount;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
@@ -87,6 +90,7 @@ public class ProcessorTracker {
             this.omsLogger = new OmsServerLogger(instanceId);
             this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
             this.lastIdleTime = -1L;
+            this.lastCompletedTaskCount = 0L;
 
             // 初始化 线程池，TimingPool 启动的任务会检查 ThreadPool，所以必须先初始化线程池，否则NPE
             initThreadPool();
@@ -96,10 +100,10 @@ public class ProcessorTracker {
             initProcessor();
 
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
-        }catch (Throwable e) {
-            log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, e);
+        } catch (Throwable t) {
+            log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, t);
             lethal = true;
-            lethalReason = e.toString();
+            lethalReason = ExceptionUtils.getMessage(t);
         }
     }
 
@@ -238,8 +242,9 @@ public class ProcessorTracker {
             }
 
             // 判断线程池活跃状态，长时间空闲则上报 TaskTracker 请求检查
-            if (threadPool.getActiveCount() > 0) {
+            if (threadPool.getActiveCount() > 0 || threadPool.getCompletedTaskCount() > lastCompletedTaskCount) {
                 lastIdleTime = -1;
+                lastCompletedTaskCount = threadPool.getCompletedTaskCount();
             }else {
                 if (lastIdleTime == -1) {
                     lastIdleTime = System.currentTimeMillis();
@@ -291,7 +296,7 @@ public class ProcessorTracker {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
                     }catch (Exception e) {
-                        log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, e.toString());
+                        log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, ExceptionUtils.getMessage(e));
                     }
                 }
                 // 反射加载
