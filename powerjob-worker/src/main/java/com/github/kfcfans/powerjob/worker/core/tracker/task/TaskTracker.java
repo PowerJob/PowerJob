@@ -119,7 +119,7 @@ public abstract class TaskTracker {
                 case FIX_DELAY:return new FrequentTaskTracker(req);
                 default:return new CommonTaskTracker(req);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.warn("[TaskTracker-{}] create TaskTracker from request({}) failed.", req.getInstanceId(), req, e);
 
             // 直接发送失败请求
