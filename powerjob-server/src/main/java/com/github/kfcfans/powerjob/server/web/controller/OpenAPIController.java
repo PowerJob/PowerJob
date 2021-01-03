@@ -122,9 +122,6 @@ public class OpenAPIController {
     /* ************* Workflow 区 ************* */
     @PostMapping(OpenAPIConstant.SAVE_WORKFLOW)
     public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) throws Exception {
-        if (request.getId() != null) {
-            checkJobIdValid(request.getId(), request.getAppId());
-        }
         return ResultDTO.success(workflowService.saveWorkflow(request));
     }
 

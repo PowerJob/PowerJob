@@ -56,8 +56,7 @@ public class CommonTaskTracker extends TaskTracker {
         // 持久化根任务
         persistenceRootTask();
 
-        // 启动定时任务（任务派发 & 状态检查）
-        scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 0, 5, TimeUnit.SECONDS);
+        // 开启定时状态检查
         scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 13, 13, TimeUnit.SECONDS);
 
         // 如果是 MR 任务，则需要启动执行器动态检测装置
@@ -65,6 +64,9 @@ public class CommonTaskTracker extends TaskTracker {
         if (executeType == ExecuteType.MAP || executeType == ExecuteType.MAP_REDUCE) {
             scheduledPool.scheduleAtFixedRate(new WorkerDetector(), 1, 1, TimeUnit.MINUTES);
         }
+
+        // 最后启动任务派发器，否则会出现 TaskTracker 还未创建完毕 ProcessorTracker 已开始汇报状态的情况
+        scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 10, 5000, TimeUnit.MILLISECONDS);
     }
 
     @Override

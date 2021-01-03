@@ -133,7 +133,7 @@ public class OmsScheduleService {
 
                 // 1. 批量写日志表
                 Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
-                log.info("[CronScheduler] These cron jobs will be scheduled： {}.", jobInfos);
+                log.info("[CronScheduler] These cron jobs will be scheduled: {}.", jobInfos);
 
                 jobInfos.forEach(jobInfo -> {
                     Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), null, null, jobInfo.getNextTriggerTime());

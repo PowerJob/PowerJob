@@ -55,8 +55,10 @@ public class ProcessorTracker {
     private OmsLogger omsLogger;
     // ProcessResult 上报失败的重试队列
     private Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
-    // 上一次空闲时间
+    // 上一次空闲时间（用于闲置判定）
     private long lastIdleTime;
+    // 上次完成任务数量（用于闲置判定）
+    private long lastCompletedTaskCount;
 
     private String taskTrackerAddress;
     private ActorSelection taskTrackerActorRef;
@@ -88,6 +90,7 @@ public class ProcessorTracker {
             this.omsLogger = new OmsServerLogger(instanceId);
             this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
             this.lastIdleTime = -1L;
+            this.lastCompletedTaskCount = 0L;
 
             // 初始化 线程池，TimingPool 启动的任务会检查 ThreadPool，所以必须先初始化线程池，否则NPE
             initThreadPool();
@@ -239,8 +242,9 @@ public class ProcessorTracker {
             }
 
             // 判断线程池活跃状态，长时间空闲则上报 TaskTracker 请求检查
-            if (threadPool.getActiveCount() > 0) {
+            if (threadPool.getActiveCount() > 0 || threadPool.getCompletedTaskCount() > lastCompletedTaskCount) {
                 lastIdleTime = -1;
+                lastCompletedTaskCount = threadPool.getCompletedTaskCount();
             }else {
                 if (lastIdleTime == -1) {
                     lastIdleTime = System.currentTimeMillis();
@@ -264,6 +268,7 @@ public class ProcessorTracker {
                     req.setReportTime(System.currentTimeMillis());
                     if (!AkkaUtils.reliableTransmit(taskTrackerActorRef, req)) {
                         statusReportRetryQueue.add(req);
+                        log.warn("[ProcessorRunnable-{}] retry report finished task status failed: {}", instanceId, req);
                         return;
                     }
                 }
