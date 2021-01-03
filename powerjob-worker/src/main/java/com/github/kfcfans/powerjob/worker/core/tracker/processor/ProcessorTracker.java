@@ -268,6 +268,7 @@ public class ProcessorTracker {
                     req.setReportTime(System.currentTimeMillis());
                     if (!AkkaUtils.reliableTransmit(taskTrackerActorRef, req)) {
                         statusReportRetryQueue.add(req);
+                        log.warn("[ProcessorRunnable-{}] retry report finished task status failed: {}", instanceId, req);
                         return;
                     }
                 }

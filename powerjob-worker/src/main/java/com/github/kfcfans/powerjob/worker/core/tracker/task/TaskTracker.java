@@ -301,7 +301,7 @@ public abstract class TaskTracker {
             return;
         }
 
-        log.info("[TaskTracker-{}] finished broadcast's preProcess.", instanceId);
+        log.info("[TaskTracker-{}-{}] finished broadcast's preProcess, preExecuteSuccess:{},preTaskId:{},result:{}", instanceId, subInstanceId, preExecuteSuccess, preTaskId, result);
 
         // 生成集群子任务
         if (preExecuteSuccess) {
@@ -316,7 +316,7 @@ public abstract class TaskTracker {
             }
             submitTask(subTaskList);
         }else {
-            log.debug("[TaskTracker-{}] BroadcastTask failed because of preProcess failed, preProcess result={}.", instanceId, result);
+            log.warn("[TaskTracker-{}-{}] BroadcastTask failed because of preProcess failed, preProcess result={}.", instanceId, subInstanceId, result);
         }
     }
 
