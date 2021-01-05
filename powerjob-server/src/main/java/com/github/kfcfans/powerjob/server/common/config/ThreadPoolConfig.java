@@ -28,8 +28,8 @@ public class ThreadPoolConfig {
     @Bean("omsTimingPool")
     public Executor getTimingPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() * 16);
-        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 32);
+        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 4);
         // use SynchronousQueue
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);

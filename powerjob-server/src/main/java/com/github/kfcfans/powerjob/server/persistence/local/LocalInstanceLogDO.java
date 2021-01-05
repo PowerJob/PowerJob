@@ -29,6 +29,10 @@ public class LocalInstanceLogDO {
      */
     private Long logTime;
     /**
+     * 日志级别 {@link com.github.kfcfans.powerjob.common.LogLevel}
+     */
+    private Integer logLevel;
+    /**
      * 日志内容
      */
     @Lob

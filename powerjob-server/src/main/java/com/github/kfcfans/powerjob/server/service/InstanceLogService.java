@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.service;
 
+import com.github.kfcfans.powerjob.common.LogLevel;
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.InstanceLogContent;
@@ -320,12 +321,16 @@ public class InstanceLogService {
 
 
     /**
-     * 拼接日志 -> 2020-04-29 22:07:10.059 192.168.1.1:2777 INFO XXX
+     * 拼接日志 -> 2020-04-29 22:07:10.059 [192.168.1.1:2777] INFO XXX
      * @param instanceLog 日志对象
      * @return 字符串
      */
     private static String convertLog(LocalInstanceLogDO instanceLog) {
-        return String.format("%s [%s] -%s", dateFormat.format(instanceLog.getLogTime()), instanceLog.getWorkerAddress(), instanceLog.getLogContent());
+        return String.format("%s [%s] %s %s",
+                dateFormat.format(instanceLog.getLogTime()),
+                instanceLog.getWorkerAddress(),
+                LogLevel.genLogLevelString(instanceLog.getLogLevel()),
+                instanceLog.getLogContent());
     }
 
 

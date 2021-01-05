@@ -32,7 +32,7 @@ public class SwaggerConfig {
     
     @Bean
     public Docket createRestApi() {
-        String version = "Unknown";
+        String version = "unknown";
         if (buildProperties != null) {
             String pomVersion = buildProperties.getVersion();
             if (StringUtils.isNotBlank(pomVersion)) {

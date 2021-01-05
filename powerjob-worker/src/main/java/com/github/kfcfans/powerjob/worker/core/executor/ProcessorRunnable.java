@@ -177,9 +177,9 @@ public class ProcessorRunnable implements Runnable {
             if (!success) {
                 // 插入重试队列，等待重试
                 statusReportRetryQueue.add(req);
-                log.warn("[ProcessorRunnable-{}] report task(id={},status={},result={}) failed.", task.getInstanceId(), task.getTaskId(), status, result);
+                log.warn("[ProcessorRunnable-{}] report task(id={},status={},result={}) failed, will retry later", task.getInstanceId(), task.getTaskId(), status, result);
             }
-        }else {
+        } else {
             taskTrackerActor.tell(req, null);
         }
     }
