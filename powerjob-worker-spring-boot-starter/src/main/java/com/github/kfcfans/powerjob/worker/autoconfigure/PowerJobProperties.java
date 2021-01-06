@@ -120,7 +120,7 @@ public class PowerJobProperties {
          */
         private String serverAddress;
         /**
-         * Local store strategy for H2.
+         * Local store strategy for H2 database. {@code disk} or {@code memory}.
          */
         private StoreStrategy storeStrategy = StoreStrategy.DISK;
         /**
@@ -131,9 +131,8 @@ public class PowerJobProperties {
         /**
          * If test mode is set as true, Powerjob-worker no longer connects to the server or validates appName.
          * Test mode is used for conditions that your worker does not need to run the codes, i.e. when you
-         * write junit tests in local environment.
-         * true  ---> Test mode enabled.
-         * false ---> Normal mode.
+         * write junit tests in local environment. {@code true} means test mode is enabled. {@code false} means
+         * normal mode is applied.
          */
         private boolean enableTestMode = false;
     }
