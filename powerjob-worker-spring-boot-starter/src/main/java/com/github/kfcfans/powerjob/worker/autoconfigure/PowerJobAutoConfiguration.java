@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * PowerJob 自动装配
+ * Auto configuration class for PowerJob-worker.
  *
  * @author songyinyin
  * @since 2020/7/26 16:37
@@ -32,30 +32,46 @@ public class PowerJobAutoConfiguration {
 
         PowerJobProperties.Worker worker = properties.getWorker();
 
-        // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port），请勿添加任何前缀（http://）
+        /*
+         * Address(es) of PowerJob-server node(s). Do not mistake for ActorSystem port. Do not add
+         * any prefix, i.e. http://.
+         */
         CommonUtils.requireNonNull(worker.getServerAddress(), "serverAddress can't be empty!");
         List<String> serverAddress = Arrays.asList(worker.getServerAddress().split(","));
 
-        // 1. 创建配置文件
+        /*
+         * Create OhMyConfig object for setting properties.
+         */
         OhMyConfig config = new OhMyConfig();
-
-        // 端口配置，支持随机端口
+        /*
+        * Configuration of worker port. Random port is enabled when port is set with non-positive number.
+        */
         int port = worker.getAkkaPort();
         if (port <= 0) {
             port = NetUtils.getRandomPort();
         }
         config.setPort(port);
-
-        // appName，需要提前在控制台注册，否则启动报错
+        /*
+         * appName, name of the application. Applications should be registered in advance to prevent
+         * reporting error. This property should be the same with what you entered for appName when
+         * getting registered.
+         */
         config.setAppName(worker.getAppName());
         config.setServerAddress(serverAddress);
-        // 如果没有大型 Map/MapReduce 的需求，建议使用内存来加速计算
-        // 有大型 Map/MapReduce 需求，可能产生大量子任务（Task）的场景，请使用 DISK，否则妥妥的 OutOfMemory
+        /*
+         * For non-Map/MapReduce tasks, {@code memory} is recommended for speeding up calculation.
+         * Map/MapReduce tasks may produce batches of subtasks, which could lead to OutOfMemory
+         * exception or error, {@code disk} should be applied.
+         */
         config.setStoreStrategy(worker.getStoreStrategy());
-        // 启动测试模式，true情况下，不再尝试连接 server 并验证appName
+        /*
+         * When enabledTestMode is set as true, PowerJob-worker no longer connects to PowerJob-server
+         * or validate appName.
+         */
         config.setEnableTestMode(worker.isEnableTestMode());
-
-        // 2. 创建 Worker 对象，设置配置文件
+        /*
+         * Create OhMyWorker object and set properties.
+         */
         OhMyWorker ohMyWorker = new OhMyWorker();
         ohMyWorker.setConfig(config);
         return ohMyWorker;
