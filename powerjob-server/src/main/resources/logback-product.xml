@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
-<!-- 生产环境日志 -->
+<!-- Configuration for production environment. -->
 <configuration>
 
-    <!--默认配置-->
+    <!-- Default configuration. -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <!--配置控制台(Console)-->
+    <!-- Configuration for console. -->
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
     <!--
-        日志路径，注意权限问题，否则无法打印日志。
-        大坑记录：`~/logs`不会在用户目录下创建文件夹，而是在项目目录下创建名为~的文件夹
-     -->
+        Log path, pay attention to permission, logs may be unable to generate.
+        Bug recording: Setting `~/logs`, is unable to create folder in user home directory,
+        a folder with the name ~ is created in project folder.
+    -->
     <property name="LOG_PATH" value="${user.home}/powerjob-server/logs"/>
 
-
-    <!-- 系统所有异常日志（ERROR）双写 start -->
+    <!-- Configuration for ERROR logs. All error logs will write twice. -->
     <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/powerjob-server-error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -31,9 +31,9 @@
             <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
-    <!-- 系统所有异常日志（ERROR）双写 end -->
+    <!-- End of configuration for ERROR logs. -->
 
-    <!-- web 访问日志 start -->
+    <!-- Configuration for Web services. -->
     <appender name="WEB_LOG_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/powerjob-server-web.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -49,9 +49,9 @@
     <logger name="WEB_LOG" level="INFO" additivity="false">
         <appender-ref ref="WEB_LOG_APPENDER"/>
     </logger>
-    <!-- web 访问日志 日志 end -->
+    <!-- End of configuration for Web services. -->
 
-    <!-- 系统主日志 start -->
+    <!-- Configuration for system logs. -->
     <appender name="DEFAULT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/powerjob-server-application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -64,7 +64,7 @@
         </encoder>
         <append>true</append>
     </appender>
-    <!-- 系统主日志 日志 end -->
+    <!-- End of configuration for system logs. -->
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

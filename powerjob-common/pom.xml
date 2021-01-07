@@ -76,7 +76,7 @@
             <version>${commons.io.version}</version>
         </dependency>
 
-        <!-- Junit 测试 -->
+        <!-- Junit tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

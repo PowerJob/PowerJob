@@ -87,7 +87,7 @@
                             <testTarget>${java.version}</testTarget>
                         </configuration>
                     </plugin>
-                    <!-- 打包源码 -->
+                    <!-- Package source codes -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -121,9 +121,9 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven-javadoc-plugin.version}</version>
                         <configuration>
-                            <!-- JavaDoc 编译错误不影响正常构建 -->
+                            <!-- Prevent JavaDoc error from affecting building project. -->
                             <failOnError>false</failOnError>
-                            <!-- 非严格模式...以后要好好按格式写注释啊... -->
+                            <!-- Non-strict mode -->
                             <additionalJOption>-Xdoclint:none</additionalJOption>
                         </configuration>
                         <executions>
@@ -164,7 +164,7 @@
             </distributionManagement>
         </profile>
 
-        <!-- 本地使用 -->
+        <!-- Local profile -->
         <profile>
             <id>dev</id>
             <activation>
@@ -173,7 +173,7 @@
 
             <build>
                 <plugins>
-                    <!-- 编译插件 -->
+                    <!-- Maven compiler plugin -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
@@ -185,7 +185,7 @@
                             <testTarget>${java.version}</testTarget>
                         </configuration>
                     </plugin>
-                    <!-- 编辑 MANIFEST.MF -->
+                    <!-- Edit MANIFEST.MF -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
