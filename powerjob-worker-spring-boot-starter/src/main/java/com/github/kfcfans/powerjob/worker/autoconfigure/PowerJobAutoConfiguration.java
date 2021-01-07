@@ -33,7 +33,7 @@ public class PowerJobAutoConfiguration {
         PowerJobProperties.Worker worker = properties.getWorker();
 
         /*
-         * Address(es) of PowerJob-server node(s). Do not mistake for ActorSystem port. Do not add
+         * Address of PowerJob-server node(s). Do not mistake for ActorSystem port. Do not add
          * any prefix, i.e. http://.
          */
         CommonUtils.requireNonNull(worker.getServerAddress(), "serverAddress can't be empty!");
@@ -44,8 +44,8 @@ public class PowerJobAutoConfiguration {
          */
         OhMyConfig config = new OhMyConfig();
         /*
-        * Configuration of worker port. Random port is enabled when port is set with non-positive number.
-        */
+         * Configuration of worker port. Random port is enabled when port is set with non-positive number.
+         */
         int port = worker.getAkkaPort();
         if (port <= 0) {
             port = NetUtils.getRandomPort();
@@ -53,8 +53,8 @@ public class PowerJobAutoConfiguration {
         config.setPort(port);
         /*
          * appName, name of the application. Applications should be registered in advance to prevent
-         * reporting error. This property should be the same with what you entered for appName when
-         * getting registered.
+         * error. This property should be the same with what you entered for appName when getting
+         * registered.
          */
         config.setAppName(worker.getAppName());
         config.setServerAddress(serverAddress);

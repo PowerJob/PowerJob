@@ -22,7 +22,7 @@
     {
       "name": "powerjob.worker.app-name",
       "type": "java.lang.String",
-      "description": "name of application. Register in PowerJob-console to prevent error.",
+      "description": "Name of application. Register in PowerJob-console to prevent error.",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
@@ -42,7 +42,7 @@
     {
       "name": "powerjob.worker.server-address",
       "type": "java.lang.String",
-      "description": "PowerJob-server node address(es), ip:port or domain, multiple addresses should be separated with comma",
+      "description": "PowerJob-server node(s) address. Ip:port or domain, multiple addresses should be separated with comma",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
