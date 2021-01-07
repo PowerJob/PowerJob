@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 测试 Client
+ * Test cases for {@link OhMyClient}
  *
  * @author tjq
  * @since 2020/4/15
@@ -110,7 +110,7 @@ public class TestClient {
         ResultDTO<Long> startRes = ohMyClient.runJob(15L, "start by OhMyClient", 2000000);
         System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
 
-        // 手动重启 server，干掉时间轮中的调度数据
+        // Restart server manually and clear all the data in time wheeler.
         TimeUnit.MINUTES.sleep(1);
 
         ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());

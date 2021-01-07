@@ -25,7 +25,7 @@ import java.util.Objects;
 import static com.github.kfcfans.powerjob.client.TypeStore.*;
 
 /**
- * OpenAPI 客户端
+ * OpenAPI Client.
  *
  * @author tjq
  * @since 2020/4/15
@@ -40,9 +40,9 @@ public class OhMyClient {
     private static final String URL_PATTERN = "http://%s%s%s";
 
     /**
-     * 初始化 OhMyClient 客户端
+     * Init OhMyClient with domain, appName and password.
      * @param domain 比如 www.powerjob-server.com（内网域名，自行完成 DNS & Proxy）
-     * @param appName 负责的应用名称
+     * @param appName name of the application
      */
     public OhMyClient(String domain, String appName, String password) {
         this(Lists.newArrayList(domain), appName, password);
@@ -50,9 +50,9 @@ public class OhMyClient {
 
 
     /**
-     * 初始化 OhMyClient 客户端
-     * @param addressList IP:Port 列表
-     * @param appName 负责的应用名称
+     * nit OhMyClient with server address, appName and password.
+     * @param addressList IP:Port address list
+     * @param appName name of the application
      */
     public OhMyClient(List<String> addressList, String appName, String password) {
 
@@ -199,7 +199,7 @@ public class OhMyClient {
         return runJob(jobId, null, 0);
     }
 
-    /* ************* Instance 区 ************* */
+    /* ************* Instance API list ************* */
     /**
      * 停止应用实例
      * @param instanceId 应用实例ID
@@ -275,7 +275,7 @@ public class OhMyClient {
         return JSONObject.parseObject(post, INSTANCE_RESULT_TYPE);
     }
 
-    /* ************* Workflow 区 ************* */
+    /* ************* Workflow API list ************* */
     /**
      * 保存工作流（包括创建和修改）
      * @param request 创建/修改 Workflow 请求
@@ -374,7 +374,7 @@ public class OhMyClient {
         return runWorkflow(workflowId, null, 0);
     }
 
-    /* ************* Workflow Instance 区 ************* */
+    /* ************* Workflow Instance API list ************* */
     /**
      * 停止应用实例
      * @param wfInstanceId 工作流实例ID
