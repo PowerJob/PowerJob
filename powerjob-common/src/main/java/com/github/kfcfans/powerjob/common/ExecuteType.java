@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 任务执行类型
+ * Execution type.
  *
  * @author tjq
  * @since 2020/3/17
@@ -12,8 +12,17 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ExecuteType {
+    /**
+     * Standalone type of task.
+     */
     STANDALONE(1, "单机执行"),
+    /**
+     * Broadcast type of task.
+     */
     BROADCAST(2, "广播执行"),
+    /**
+     * MapReduce type of task.
+     */
     MAP_REDUCE(3, "MapReduce"),
     MAP(4, "Map");
 

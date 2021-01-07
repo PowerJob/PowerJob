@@ -25,7 +25,7 @@ import java.util.Objects;
 import static com.github.kfcfans.powerjob.client.TypeStore.*;
 
 /**
- * OpenAPI Client.
+ * OhMyClient, the client for OpenAPI.
  *
  * @author tjq
  * @since 2020/4/15
