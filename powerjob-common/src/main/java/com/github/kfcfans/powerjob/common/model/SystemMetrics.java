@@ -4,7 +4,7 @@ import com.github.kfcfans.powerjob.common.OmsSerializable;
 import lombok.Data;
 
 /**
- * Class for system metrics .
+ * Class for system metrics.
  *
  * @author tjq
  * @since 2020/3/25
