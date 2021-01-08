@@ -4,7 +4,7 @@ import com.github.kfcfans.powerjob.common.OmsSerializable;
 import lombok.Data;
 
 /**
- * 系统指标
+ * Class for system metrics .
  *
  * @author tjq
  * @since 2020/3/25
@@ -12,49 +12,77 @@ import lombok.Data;
 @Data
 public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics> {
 
-    // CPU核心数量
+    /**
+     * CPU processor num.
+     */
     private int cpuProcessors;
-    // CPU负载（负载 和 使用率 是两个完全不同的概念，Java 无法获取 CPU 使用率，只能获取负载）
+    /**
+     * Percent of CPU load.
+     */
     private double cpuLoad;
 
-    // 内存（单位 GB）
+    /**
+     * Memory that is used by JVM, in GB.
+     */
     private double jvmUsedMemory;
+    /**
+     * Max memory that JVM can use, in GB.
+     */
     private double jvmMaxMemory;
-    // 内存占用（0.X，非百分比）
+    /**
+     * Ratio of memory that JVM uses to total memory, 0.X,
+     * the value is between 0 and 1.
+     */
     private double jvmMemoryUsage;
 
-    // 磁盘（单位 GB）
+    /**
+     * Total used disk space, in GB.
+     */
     private double diskUsed;
+    /**
+     * Total disk space, in GB.
+     */
     private double diskTotal;
-    // 磁盘占用（0.X，非百分比）
+    /**
+     * Used disk ratio.
+     */
     private double diskUsage;
 
-    // 缓存分数
+    /**
+     * Score of cache.
+     */
     private int score;
 
+    /**
+     * Override compareTo.
+     *
+     * @param that the metrics that is to be compared with current.
+     * @return {@code int}
+     */
     @Override
     public int compareTo(SystemMetrics that) {
-        // 降序排列
+        // Sort by metrics in descending order.
         return that.calculateScore() - this.calculateScore();
     }
 
     /**
-     * 计算得分情况，内存 & CPU (磁盘不参与计算)
-     * @return 得分情况
+     * Calculate score, based on CPU and memory info.
+     *
+     * @return score
      */
     public int calculateScore() {
 
-        if (score > 0) {
-            return score;
-        }
+                if (score > 0) {
+                    return score;
+                }
 
-        // 对于 TaskTracker 来说，内存是任务顺利完成的关键，因此内存 2 块钱 1GB
-        double memScore = (jvmMaxMemory - jvmUsedMemory) * 2;
-        // CPU 剩余负载，1 块钱 1 斤
-        double cpuScore = cpuProcessors - cpuLoad;
-        // Indian Windows 无法获取 CpuLoad，为 -1，固定为 1
-        if (cpuScore > cpuProcessors) {
-            cpuScore = 1;
+                // Memory is vital to TaskTracker, so we set the multiplier factor as 2.
+                double memScore = (jvmMaxMemory - jvmUsedMemory) * 2;
+                // Calculate the remaining load of CPU. Multiplier is set as 1.
+                double cpuScore = cpuProcessors - cpuLoad;
+                // Windows can not fetch CPU load, set cpuScore as 1.
+                if (cpuScore > cpuProcessors) {
+                    cpuScore = 1;
         }
 
         score = (int) (memScore + cpuScore);
@@ -62,11 +90,12 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
     }
 
     /**
-     * 该机器是否可用
-     * @param minCPUCores 判断标准之最低可用CPU核心数量
+     * Judge if the machine is available.
+     *
+     * @param minCPUCores Minimum available CPU cores.
      * @param minMemorySpace 判断标准之最低可用内存
-     * @param minDiskSpace 判断标准之最低可用磁盘空间
-     * @return 是否可用
+     * @param minDiskSpace Minimum disk space 判断标准之最低可用磁盘空间
+     * @return {@code boolean} whether the machine is available.
      */
     public boolean available(double minCPUCores, double minMemorySpace, double minDiskSpace) {
 
@@ -77,7 +106,8 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
             return false;
         }
 
-        // cpuLoad 为负数代表无法获取，不判断。等于 0 为最理想情况，CPU 空载，不需要判断
+        // Negative number means being unable to fetch CPU info, return true.
+        // 0 indicates the CPU is free, which is the optimal condition.
         if (cpuLoad <= 0 || minCPUCores <= 0) {
             return true;
         }

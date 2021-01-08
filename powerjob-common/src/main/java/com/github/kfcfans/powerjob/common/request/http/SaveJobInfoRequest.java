@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * 创建/修改 JobInfo 请求
+ * Save or modify {@link com.github.kfcfans.powerjob.common.response.JobInfoDTO}
  *
  * @author tjq
  * @since 2020/3/30
@@ -17,68 +17,122 @@ import java.util.List;
 @Data
 public class SaveJobInfoRequest {
 
-    // 任务ID（jobId），null -> 插入，否则为更新
+    /**
+     * id of the job. set null to save or non-null to update the job.
+     */
     private Long id;
-    /* ************************** 任务基本信息 ************************** */
-    // 任务名称
+    /* ************************** Base info of related job. ************************** */
+
+    /**
+     * Name of the job.
+     */
     private String jobName;
-    // 任务描述
+    /**
+     * Description of the job.
+     */
     private String jobDescription;
-    // 任务所属的应用ID（Client无需填写该参数，自动填充）
+    /**
+     * Related id of the application. There is not need to set this property
+     * in PowerJob-client, as it would be set automatically.
+     */
     private Long appId;
-    // 任务自带的参数
+    /**
+     * Params that these jobs carry with when they are created.
+     */
     private String jobParams;
 
-    /* ************************** 定时参数 ************************** */
-    // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
+    /* ************************** Timing param. ************************** */
+    /**
+     * Time expression type.
+     */
     private TimeExpressionType timeExpressionType;
-    // 时间表达式，CRON/NULL/LONG/LONG
+    /**
+     * Time expression.
+     */
     private String timeExpression;
 
 
-    /* ************************** 执行方式 ************************** */
-    // 执行类型，单机/广播/MR
+    /* ************************** Execution type. ************************** */
+    /**
+     * Execution type, {@code standalone}, {@code broadcast} or {@code Map/MapReduce}
+     */
     private ExecuteType executeType;
-    // 执行器类型，Java/Shell
+    /**
+     * Processor type, {@code Java}, {@code Python} or {@code Shell}.
+     */
     private ProcessorType processorType;
-    // 执行器信息
+    /**
+     * Processor info.
+     */
     private String processorInfo;
 
 
-    /* ************************** 运行时配置 ************************** */
-    // 最大同时运行任务数，0 代表不限
+    /* ************************** Running instance setting. ************************** */
+    /**
+     * Maximum instance setting num. {@code 0} means there is no restriction.
+     */
     private Integer maxInstanceNum = 0;
-    // 并发度，同时执行的线程数量
+    /**
+     * Concurrency setting. Number of threads that run simultaneously.
+     */
     private Integer concurrency = 5;
-    // 任务整体超时时间
+    /**
+     * Max instance running time setting. {@code 0L} means there is no restriction.
+     */
     private Long instanceTimeLimit = 0L;
 
-    /* ************************** 重试配置 ************************** */
+    /* ************************** Retrial setting. ************************** */
+    /**
+     * Instance retry number setting.
+     */
     private Integer instanceRetryNum = 0;
+    /**
+     * Task retry number setting.
+     */
     private Integer taskRetryNum = 0;
 
-    /* ************************** 繁忙机器配置 ************************** */
-    // 最低CPU核心数量，0代表不限
+    /* ************************** Busy Machine setting. ************************** */
+    /**
+     * Minimum CPU required. {@code 0} means there is no restriction.
+     */
     private double minCpuCores = 0;
-    // 最低内存空间，单位 GB，0代表不限
+    /**
+     * Minimum memory required, in GB.
+     */
     private double minMemorySpace = 0;
-    // 最低磁盘空间，单位 GB，0代表不限
+    /**
+     * Minimum disk space, in GB. {@code 0} means there is no restriction.
+     */
     private double minDiskSpace = 0;
 
-    // 1 正常运行，2 停止（不再调度）
+    /**
+     * {@code 1} indicates that the worker node is running well,
+     * {@code 2} indicates that the worker node has been inactive
+     * and future tasks will not be assigned to the node.
+     */
     private boolean enable = true;
 
 
-    /* ************************** 集群配置 ************************** */
-    // 指定机器运行，空代表不限，非空则只会使用其中的机器运行（多值逗号分割）
+    /* ************************** PowerJob-worker cluster property ************************** */
+    /**
+     * Designated PowerJob-worker nodes. Blank value indicates that there is
+     * no limit. Non-blank value means to run the corresponding machine(s) only.
+     */
     private String designatedWorkers;
-    // 最大机器数量
+    /**
+     * Max count of PowerJob-worker nodes.
+     */
     private Integer maxWorkerCount = 0;
 
-    // 报警用户ID列表
+    /**
+     * The id list of the users that need to be notified.
+     */
     private List<Long> notifyUserIds;
 
 
+    /**
+     * Check non-null properties.
+     */
     public void valid() {
         CommonUtils.requireNonNull(jobName, "jobName can't be empty");
         CommonUtils.requireNonNull(appId, "appId can't be empty");

@@ -3,7 +3,7 @@ package com.github.kfcfans.powerjob.common.model;
 import lombok.Data;
 
 /**
- * The class for Git Repository.
+ * The class for Git Repository info.
  *
  * @author tjq
  * @since 2020/5/17

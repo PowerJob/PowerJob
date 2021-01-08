@@ -13,8 +13,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Point & Edge DAG 表示法
- * 点 + 线，易于表达和传播
+ * Points & edges for DAG, making it easier to describe or transfer.
  *
  * @author tjq
  * @since 2020/5/26
@@ -23,11 +22,18 @@ import java.util.List;
 @NoArgsConstructor
 public class PEWorkflowDAG implements Serializable {
 
-    // DAG 图（点线表示法）
+    /**
+     * Nodes of DAG diagram.
+     */
     private List<Node> nodes;
+    /**
+     * Edges of DAG diagram.
+     */
     private List<Edge> edges;
 
-    // 点
+    /**
+     * Point.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -35,7 +41,9 @@ public class PEWorkflowDAG implements Serializable {
         private Long jobId;
         private String jobName;
 
-        // 运行时参数，图定义不需要
+        /**
+         * Instance running param, which is not required by DAG.
+         */
         @JsonSerialize(using= ToStringSerializer.class)
         private Long instanceId;
         private Integer status;
@@ -47,7 +55,9 @@ public class PEWorkflowDAG implements Serializable {
         }
     }
 
-    // 边 jobId -> jobId
+    /**
+     * Edge formed by two job ids.
+     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
