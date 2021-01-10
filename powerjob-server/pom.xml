@@ -10,13 +10,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>3.4.2</version>
+    <version>3.4.3</version>
     <packaging>jar</packaging>
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.3.4.RELEASE</springboot.version>
-        <powerjob.common.version>3.4.2</powerjob.common.version>
+        <powerjob.common.version>3.4.3</powerjob.common.version>
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
         <mysql.version>8.0.19</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
