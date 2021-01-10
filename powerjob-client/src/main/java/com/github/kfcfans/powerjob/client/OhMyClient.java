@@ -192,7 +192,7 @@ public class OhMyClient {
         String post = postHA(OpenAPIConstant.RUN_JOB, builder.build());
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
-    public ResultDTO<Long> runJob(Long jobId) throws PowerJobException {
+    public ResultDTO<Long> runJob(Long jobId) {
         return runJob(jobId, null, 0);
     }
 
@@ -357,7 +357,7 @@ public class OhMyClient {
         String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
-    public ResultDTO<Long> runWorkflow(Long workflowId) throws PowerJobException {
+    public ResultDTO<Long> runWorkflow(Long workflowId) {
         return runWorkflow(workflowId, null, 0);
     }
 
@@ -367,7 +367,7 @@ public class OhMyClient {
      * @param wfInstanceId workflow instanceId
      * @return Standard return object
      */
-    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) throws PowerJobException {
+    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
                 .add("appId", appId.toString())
@@ -424,6 +424,6 @@ public class OhMyClient {
         }
 
         log.error("[OhMyClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
-        throw new PowerJobException("no server available when send post");
+        throw new PowerJobException("no server available when send post request");
     }
 }
