@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.List;
 
 /**
- * 时间表达式类型
+ * Scheduling time strategies
  *
  * @author tjq
  * @since 2020/3/30
@@ -18,7 +18,9 @@ public enum TimeExpressionType {
 
     API(1),
     CRON(2),
+    // FIXED_RATE
     FIX_RATE(3),
+    // FIXED_DELAY
     FIX_DELAY(4),
     WORKFLOW(5);
 

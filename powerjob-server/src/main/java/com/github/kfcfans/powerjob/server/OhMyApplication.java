@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * SpringBoot entry.
+ * powerjob-server entry
  *
  * @author tjq
  * @since 2020/3/29
@@ -26,10 +26,9 @@ public class OhMyApplication {
 
     public static void main(String[] args) {
 
-        // Print tips before starting.
         pre();
 
-        // Init ActorSystem
+        // Init ActorSystem first
         OhMyServer.init();
 
         // Start SpringBoot application.

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * Detailed info of task instances.
+ * Detailed info of job instances.
  *
  * @author tjq
  * @since 2020/4/11
@@ -32,17 +32,14 @@ public class InstanceDetail implements OmsSerializable {
      * Status of the task instance.
      */
     private Integer status;
-    // 任务执行结果（可能不存在）
     /**
      * Execution result, which may be null.
      */
     private String result;
-    // TaskTracker地址
     /**
      * Task tracker address.
      */
     private String taskTrackerAddress;
-    // 启动参数
     /**
      * Param string that is passed to an instance when it is initialized.
      */

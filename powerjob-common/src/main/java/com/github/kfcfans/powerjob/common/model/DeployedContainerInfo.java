@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * The class for deployed container.
+ * Deployed Container Information
  *
  * @author tjq
  * @since 2020/5/18
@@ -29,7 +29,7 @@ public class DeployedContainerInfo implements OmsSerializable {
      */
     private long deployedTime;
     /**
-     * Address of the server. Report is not required.
+     * No need to report to the server
      */
     private String workerAddress;
 }

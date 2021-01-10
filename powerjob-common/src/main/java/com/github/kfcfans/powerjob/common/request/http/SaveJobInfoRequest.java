@@ -18,7 +18,7 @@ import java.util.List;
 public class SaveJobInfoRequest {
 
     /**
-     * id of the job. set null to save or non-null to update the job.
+     * id of the job. set null to create or non-null to update the job.
      */
     private Long id;
     /* ************************** Base info of related job. ************************** */
@@ -105,11 +105,6 @@ public class SaveJobInfoRequest {
      */
     private double minDiskSpace = 0;
 
-    /**
-     * {@code 1} indicates that the worker node is running well,
-     * {@code 2} indicates that the worker node has been inactive
-     * and future tasks will not be assigned to the node.
-     */
     private boolean enable = true;
 
 
@@ -117,6 +112,7 @@ public class SaveJobInfoRequest {
     /**
      * Designated PowerJob-worker nodes. Blank value indicates that there is
      * no limit. Non-blank value means to run the corresponding machine(s) only.
+     * example: 192.168.1.1:27777,192.168.1.2:27777
      */
     private String designatedWorkers;
     /**

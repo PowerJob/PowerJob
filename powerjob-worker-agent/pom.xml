@@ -50,6 +50,7 @@
     </dependencies>
 
 
+    <!-- 谁说SpringBoot的打包插件只能给SpringBoot用的？省的我写一堆配置还有BUG... -->
     <build>
         <plugins>
             <plugin>
