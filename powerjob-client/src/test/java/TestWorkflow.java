@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 /**
- * 测试 Client（workflow部分）
+ * Test cases for {@link OhMyClient} workflow.
  *
  * @author tjq
  * @since 2020/6/2

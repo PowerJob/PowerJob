@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 
 /**
- * PowerJob 配置项
+ * PowerJob properties configuration class.
  *
  * @author songyinyin
  * @since 2020/7/26 16:37
@@ -90,37 +90,49 @@ public class PowerJobProperties {
     }
 
 
-
     /**
-     * 客户端 配置项
+     * Powerjob worker configuration properties.
      */
     @Setter
     @Getter
     public static class Worker {
         /**
-         * 应用名称，需要提前在控制台注册，否则启动报错
+         * Name of application, String type. Total length of this property should be no more than 255
+         * characters. This is one of the required properties when registering a new application. This
+         * property should be assigned with the same value as what you entered for the appName.
          */
         private String appName;
         /**
-         * 启动 akka 端口
+         * Akka port of Powerjob-worker, optional value. Default value of this property is 27777.
+         * If multiple PowerJob-worker nodes were deployed, different, unique ports should be assigned.
          */
         private int akkaPort = RemoteConstant.DEFAULT_WORKER_PORT;
         /**
-         * 调度服务器地址，ip:port 或 域名，多个用英文逗号分隔
+         * Address(es) of Powerjob-server node(s). Ip:port or domain.
+         * Example of single Powerjob-server node:
+         * <p>
+         * 127.0.0.1:7700
+         * </p>
+         * Example of Powerjob-server cluster:
+         * <p>
+         * 192.168.0.10:7700,192.168.0.11:7700,192.168.0.12:7700
+         * </p>
          */
         private String serverAddress;
         /**
-         * 本地持久化方式，默认使用磁盘
+         * Local store strategy for H2 database. {@code disk} or {@code memory}.
          */
         private StoreStrategy storeStrategy = StoreStrategy.DISK;
         /**
-         * 最大返回值长度，超过会被截断
-         * {@link ProcessResult}#msg 的最大长度
+         * Max length of response result. Result that is longer than the value will be truncated.
+         * {@link ProcessResult} max length for #msg
          */
         private int maxResultLength = 8096;
         /**
-         * 启动测试模式，true情况下，不再尝试连接 server 并验证appName。
-         * true -> 用于本地写单元测试调试； false -> 默认值，标准模式
+         * If test mode is set as true, Powerjob-worker no longer connects to the server or validates appName.
+         * Test mode is used for conditions that your worker does not need to run the codes, i.e. when you
+         * write junit tests in local environment. {@code true} means test mode is enabled. {@code false} means
+         * normal mode is applied.
          */
         private boolean enableTestMode = false;
     }

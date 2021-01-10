@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.worker.autoconfigure;
 
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -16,7 +16,7 @@ class PowerJobAutoConfigurationTest {
     void testAutoConfiguration() {
         ConfigurableApplicationContext run = SpringApplication.run(PowerJobAutoConfigurationTest.class);
         OhMyWorker worker = run.getBean(OhMyWorker.class);
-        Assert.assertNotNull(worker);
+        Assertions.assertNotNull(worker);
     }
 
 }
