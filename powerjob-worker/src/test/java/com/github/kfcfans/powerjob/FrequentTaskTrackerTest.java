@@ -41,13 +41,13 @@ public class FrequentTaskTrackerTest {
 
     @Test
     public void testFixRateJob() throws Exception {
-        remoteTaskTracker.tell(TestUtils.genServerScheduleJobReq(ExecuteType.STANDALONE, TimeExpressionType.FIX_RATE), null);
+        remoteTaskTracker.tell(TestUtils.genServerScheduleJobReq(ExecuteType.STANDALONE, TimeExpressionType.FIXED_RATE), null);
         Thread.sleep(5000000);
     }
 
     @Test
     public void testFixDelayJob() throws Exception {
-        remoteTaskTracker.tell(TestUtils.genServerScheduleJobReq(ExecuteType.MAP_REDUCE, TimeExpressionType.FIX_DELAY), null);
+        remoteTaskTracker.tell(TestUtils.genServerScheduleJobReq(ExecuteType.MAP_REDUCE, TimeExpressionType.FIXED_DELAY), null);
         Thread.sleep(5000000);
     }
 }

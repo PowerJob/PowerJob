@@ -24,7 +24,7 @@ public final class PowerBannerPrinter {
             "\n" +
             "* Maintainer: tengjiqi@gmail.com & PowerJob-Team\n" +
             "* OfficialWebsite: http://www.powerjob.tech/\n" +
-            "* SourceCode: https://github.com/KFCFans/PowerJob\n" +
+            "* SourceCode: https://github.com/PowerJob/PowerJob\n" +
             "\n";
 
     public static void print() {

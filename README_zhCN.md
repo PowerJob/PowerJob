@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/KFCFans/PowerJob/actions"><img src="https://github.com/KFCFans/PowerJob/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master" alt="actions"></a>
+<a href="https://github.com/PowerJob/PowerJob/actions"><img src="https://github.com/PowerJob/PowerJob/workflows/Java%20CI%20with%20Maven/badge.svg?branch=master" alt="actions"></a>
 <a href="https://search.maven.org/search?q=com.github.kfcfans"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.github.kfcfans/powerjob-worker"></a>
-<a href="https://github.com/KFCFans/PowerJob/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/kfcfans/powerjob?color=%23E59866"></a>
-<a href="https://github.com/KFCFans/PowerJob/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/PowerJob" alt="LICENSE"></a>
+<a href="https://github.com/PowerJob/PowerJob/releases"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/kfcfans/powerjob?color=%23E59866"></a>
+<a href="https://github.com/PowerJob/PowerJob/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/PowerJob" alt="LICENSE"></a>
 </p>
 
 PowerJob（原OhMyScheduler）是全新一代分布式调度与计算框架，能让您轻松完成作业的调度与繁杂任务的分布式计算。
@@ -62,7 +62,7 @@ PowerJob 的设计目标为企业级的分布式任务调度平台，即成为�
 PS：感谢文档翻译平台[breword](https://www.breword.com/)对本项目英文文档翻译做出的巨大贡献！
 
 # 接入登记
-[点击进行接入登记，为 PowerJob 的发展贡献自己的力量！](https://github.com/KFCFans/PowerJob/issues/6)
+[点击进行接入登记，为 PowerJob 的发展贡献自己的力量！](https://github.com/PowerJob/PowerJob/issues/6)
 
 ღ( ´・ᴗ・\` )ღ 感谢以下接入用户的大力支持 ღ( ´・ᴗ・\` )ღ
 

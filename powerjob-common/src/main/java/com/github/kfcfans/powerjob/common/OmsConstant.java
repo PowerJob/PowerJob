@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.common;
 
 /**
- * 公共常量
+ * Common constants.
  *
  * @author tjq
  * @since 2020/5/31

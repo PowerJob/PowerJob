@@ -44,7 +44,7 @@ public class SwaggerConfig {
                 .title("PowerJob")
                 .description("Distributed scheduling and computing framework.")
                 .license("Apache Licence 2")
-                .termsOfServiceUrl("https://github.com/KFCFans/PowerJob")
+                .termsOfServiceUrl("https://github.com/PowerJob/PowerJob")
                 .version(version)
                 .build();
         

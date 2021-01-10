@@ -32,8 +32,8 @@ public class TestUtils {
         req.setTimeExpressionType(timeExpressionType.name());
         switch (timeExpressionType) {
             case CRON:req.setTimeExpression("0 * * * * ? ");
-            case FIX_RATE:
-            case FIX_DELAY:req.setTimeExpression("5000");
+            case FIXED_RATE:
+            case FIXED_DELAY:req.setTimeExpression("5000");
         }
 
         switch (executeType) {

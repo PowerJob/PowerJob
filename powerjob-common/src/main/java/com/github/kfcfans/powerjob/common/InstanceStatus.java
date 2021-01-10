@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.List;
 
 /**
- * 任务运行状态
+ * Status of the job instance
  *
  * @author tjq
  * @since 2020/3/17
