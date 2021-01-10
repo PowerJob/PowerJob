@@ -1,10 +1,10 @@
 package com.github.kfcfans.powerjob.worker.common.constants;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * 任务状态，task_info 表中 status 字段的枚举值
@@ -23,10 +23,10 @@ public enum TaskStatus {
     WORKER_PROCESS_FAILED(5, "worker执行失败"),
     WORKER_PROCESS_SUCCESS(6, "worker执行成功");
 
-    public static final List<Integer> finishedStatus = Lists.newArrayList(WORKER_PROCESS_FAILED.value, WORKER_PROCESS_SUCCESS.value);
+    public static final Set<Integer> finishedStatus = Sets.newHashSet(WORKER_PROCESS_FAILED.value, WORKER_PROCESS_SUCCESS.value);
 
-    private int value;
-    private String des;
+    private final int value;
+    private final String des;
 
     public static TaskStatus of(int v) {
         for (TaskStatus taskStatus : values()) {

@@ -4,7 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.github.kfcfans.powerjob.common.response.*;
 
 /**
- * 类型工厂
+ * TypeReference store.
  *
  * @author tjq
  * @since 11/7/20

@@ -10,5 +10,5 @@ ${AnsiColor.GREEN}
 ${AnsiColor.BRIGHT_RED}
 * Maintainer: tengjiqi@gmail.com & PowerJob-Team
 * OfficialWebsite: http://www.powerjob.tech/
-* SourceCode: https://github.com/KFCFans/PowerJob
+* SourceCode: https://github.com/PowerJob/PowerJob
 * PoweredBy:  SpringBoot${spring-boot.formatted-version} & Akka (v2.6.4)

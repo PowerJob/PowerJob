@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 已部署的容器信息
+ * Deployed Container Information
  *
  * @author tjq
  * @since 2020/5/18
@@ -16,12 +16,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeployedContainerInfo implements OmsSerializable {
 
-    // 容器ID
+    /**
+     * Id of the container.
+     */
     private Long containerId;
-    // 版本
+    /**
+     * Version of the container.
+     */
     private String version;
-    // 部署时间
+    /**
+     * Deploy timestamp.
+     */
     private long deployedTime;
-    // 机器地址（无需上报）
+    /**
+     * No need to report to the server
+     */
     private String workerAddress;
 }

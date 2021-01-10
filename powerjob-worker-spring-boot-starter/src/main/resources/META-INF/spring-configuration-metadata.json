@@ -16,39 +16,39 @@
     {
       "name": "powerjob.worker.akka-port",
       "type": "java.lang.Integer",
-      "description": "启动 akka 端口",
+      "description": "Akka port of PowerJob-worker",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
       "name": "powerjob.worker.app-name",
       "type": "java.lang.String",
-      "description": "应用名称，需要提前在控制台注册，否则启动报错",
+      "description": "Name of application. Register in PowerJob-console to prevent error.",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
       "name": "powerjob.worker.enable-test-mode",
       "type": "java.lang.Boolean",
-      "description": "启动测试模式，true情况下，不再尝试连接 server 并验证appName。 true -> 用于本地写单元测试调试； false -> 默认值，标准模式",
+      "description": "Whether to enable test mode. In test mode, worker will not connect to server.",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
       "defaultValue": false
     },
     {
       "name": "powerjob.worker.max-result-length",
       "type": "java.lang.Integer",
-      "description": "最大返回值长度，超过会被截断 {@link ProcessResult}#msg 的最大长度",
+      "description": "Max length for {@link ProcessResult}#msg, result longer than this property will be truncated.",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
       "defaultValue": 8096
     },
     {
       "name": "powerjob.worker.server-address",
       "type": "java.lang.String",
-      "description": "调度服务器地址，ip:port 或 域名，多个用英文逗号分隔",
+      "description": "PowerJob-server node(s) address. Ip:port or domain, multiple addresses should be separated with comma",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
       "name": "powerjob.worker.store-strategy",
       "type": "com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy",
-      "description": "本地持久化方式，默认使用磁盘",
+      "description": "Local store strategy, disk or memory",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     }
   ],

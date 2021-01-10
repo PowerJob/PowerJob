@@ -3,19 +3,27 @@ package com.github.kfcfans.powerjob.common.model;
 import lombok.Data;
 
 /**
- * Git代码库信息
+ * The class for Git Repository info.
  *
  * @author tjq
  * @since 2020/5/17
  */
 @Data
 public class GitRepoInfo {
-    // 仓库地址
+    /**
+     * Address of Git repository.
+     */
     private String repo;
-    // 分支名称
+    /**
+     * Name of the branch.
+     */
     private String branch;
-    // 用户名
+    /**
+     * username of Git.
+     */
     private String username;
-    // 密码
+    /**
+     * Password of Git.
+     */
     private String password;
 }
