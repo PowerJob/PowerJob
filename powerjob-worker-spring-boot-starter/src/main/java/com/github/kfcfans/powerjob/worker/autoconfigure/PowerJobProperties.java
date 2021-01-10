@@ -130,9 +130,7 @@ public class PowerJobProperties {
         private int maxResultLength = 8096;
         /**
          * If test mode is set as true, Powerjob-worker no longer connects to the server or validates appName.
-         * Test mode is used for conditions that your worker does not need to run the codes, i.e. when you
-         * write junit tests in local environment. {@code true} means test mode is enabled. {@code false} means
-         * normal mode is applied.
+         * Test mode is used for conditions that your have no powerjob-server in your develop env so you can't startup the application
          */
         private boolean enableTestMode = false;
     }
