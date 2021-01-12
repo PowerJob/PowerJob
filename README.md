@@ -65,7 +65,7 @@ Application password: 123
 # Document
 **[Docs](https://www.yuque.com/powerjob/en/introduce)**
 
-**[中文文档](https://www.yuque.com/powerjob/product)**
+**[中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)**
 
 # User Registration
 [Click to register as PowerJob user and contribute to PowerJob!](https://github.com/PowerJob/PowerJob/issues/6)  
