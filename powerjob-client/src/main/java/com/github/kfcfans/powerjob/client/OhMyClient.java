@@ -41,8 +41,9 @@ public class OhMyClient {
 
     /**
      * Init OhMyClient with domain, appName and password.
-     * @param domain 比如 www.powerjob-server.com（内网域名，自行完成 DNS & Proxy）
+     * @param domain like powerjob-server.apple-inc.com (Intranet Domain)
      * @param appName name of the application
+     * @param password password of the application
      */
     public OhMyClient(String domain, String appName, String password) {
         this(Lists.newArrayList(domain), appName, password);
@@ -50,9 +51,10 @@ public class OhMyClient {
 
 
     /**
-     * nit OhMyClient with server address, appName and password.
-     * @param addressList IP:Port address list
+     * Init OhMyClient with server address, appName and password.
+     * @param addressList IP:Port address list, like 192.168.1.1:7700
      * @param appName name of the application
+     * @param password password of the application
      */
     public OhMyClient(List<String> addressList, String appName, String password) {
 
@@ -79,7 +81,7 @@ public class OhMyClient {
         }
 
         if (StringUtils.isEmpty(currentAddress)) {
-            throw new PowerJobException("no server available");
+            throw new PowerJobException("no server available for OhMyClient");
         }
         log.info("[OhMyClient] {}'s OhMyClient bootstrap successfully, using server: {}", appName, currentAddress);
     }
@@ -101,12 +103,12 @@ public class OhMyClient {
     /* ************* Job 区 ************* */
 
     /**
-     * 保存任务（包括创建与修改）
-     * @param request 任务详细参数
-     * @return 创建的任务ID
-     * @throws PowerJobException 异常
+     * Save one Job
+     * When an ID exists in SaveJobInfoRequest, it is an update operation. Otherwise, it is a crate operation.
+     * @param request Job meta info
+     * @return jobId
      */
-    public ResultDTO<Long> saveJob(SaveJobInfoRequest request) throws PowerJobException {
+    public ResultDTO<Long> saveJob(SaveJobInfoRequest request) {
 
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
@@ -116,12 +118,11 @@ public class OhMyClient {
     }
 
     /**
-     * 根据 jobId 查询任务信息
-     * @param jobId 任务ID
-     * @return 任务详细信息
-     * @throws PowerJobException 异常
+     * Query JobInfo by jobId
+     * @param jobId jobId
+     * @return Job meta info
      */
-    public ResultDTO<JobInfoDTO> fetchJob(Long jobId) throws PowerJobException {
+    public ResultDTO<JobInfoDTO> fetchJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
@@ -131,12 +132,11 @@ public class OhMyClient {
     }
 
     /**
-     * 禁用某个任务
-     * @param jobId 任务ID
-     * @return 标准返回对象
-     * @throws PowerJobException 异常
+     * Disable one Job by jobId
+     * @param jobId jobId
+     * @return Standard return object
      */
-    public ResultDTO<Void> disableJob(Long jobId) throws PowerJobException {
+    public ResultDTO<Void> disableJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
@@ -146,12 +146,11 @@ public class OhMyClient {
     }
 
     /**
-     * 启用某个任务
-     * @param jobId 任务ID
-     * @return 标准返回对象
-     * @throws PowerJobException 异常
+     * Enable one job by jobId
+     * @param jobId jobId
+     * @return Standard return object
      */
-    public ResultDTO<Void> enableJob(Long jobId) throws PowerJobException {
+    public ResultDTO<Void> enableJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
@@ -161,12 +160,11 @@ public class OhMyClient {
     }
 
     /**
-     * 删除某个任务
-     * @param jobId 任务ID
-     * @return 标准返回对象
-     * @throws PowerJobException 异常
+     * Delete one job by jobId
+     * @param jobId jobId
+     * @return Standard return object
      */
-    public ResultDTO<Void> deleteJob(Long jobId) throws PowerJobException {
+    public ResultDTO<Void> deleteJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
@@ -176,14 +174,13 @@ public class OhMyClient {
     }
 
     /**
-     * 运行某个任务
-     * @param jobId 任务ID
-     * @param instanceParams 任务实例的参数
-     * @param delayMS 延迟时间，单位毫秒
-     * @return 任务实例ID（instanceId）
-     * @throws PowerJobException 异常
+     * Run a job once
+     * @param jobId ID of the job to be run
+     * @param instanceParams Runtime parameters of the job (TaskContext#instanceParams)
+     * @param delayMS Delay time（Milliseconds）
+     * @return instanceId
      */
-    public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) throws PowerJobException {
+    public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("jobId", jobId.toString())
                 .add("appId", appId.toString())
@@ -195,18 +192,17 @@ public class OhMyClient {
         String post = postHA(OpenAPIConstant.RUN_JOB, builder.build());
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
-    public ResultDTO<Long> runJob(Long jobId) throws PowerJobException {
+    public ResultDTO<Long> runJob(Long jobId) {
         return runJob(jobId, null, 0);
     }
 
     /* ************* Instance API list ************* */
     /**
-     * 停止应用实例
-     * @param instanceId 应用实例ID
-     * @return true 停止成功，false 停止失败
-     * @throws PowerJobException 异常
+     * Stop one job instance
+     * @param instanceId instanceId
+     * @return Standard return object
      */
-    public ResultDTO<Void> stopInstance(Long instanceId) throws PowerJobException {
+    public ResultDTO<Void> stopInstance(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .add("appId", appId.toString())
@@ -216,13 +212,12 @@ public class OhMyClient {
     }
 
     /**
-     * 取消任务实例
-     * 接口使用条件：调用接口时间与待取消任务的预计执行时间有一定时间间隔，否则不保证可靠性！
-     * @param instanceId 任务实例ID
-     * @return true 代表取消成功，false 取消失败
-     * @throws PowerJobException 异常
+     * Cancel a job instance that is not yet running
+     * Notice：There is a time interval between the call interface time and the expected execution time of the job instance to be cancelled, otherwise reliability is not guaranteed
+     * @param instanceId instanceId
+     * @return Standard return object
      */
-    public ResultDTO<Void> cancelInstance(Long instanceId) throws PowerJobException {
+    public ResultDTO<Void> cancelInstance(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .add("appId", appId.toString())
@@ -232,13 +227,12 @@ public class OhMyClient {
     }
 
     /**
-     * 重试任务实例
-     * 只有完成状态（成功、失败、手动停止、被取消）的任务才能被重试，且暂不支持工作流内任务实例的重试
-     * @param instanceId 任务实例ID
-     * @return true 代表取消成功，false 取消失败
-     * @throws PowerJobException 异常
+     * Retry failed job instance
+     * Notice: Only job instance with completion status (success, failure, manually stopped, cancelled) can be retried, and retries of job instances within workflows are not supported yet.
+     * @param instanceId instanceId
+     * @return Standard return object
      */
-    public ResultDTO<Void> retryInstance(Long instanceId) throws PowerJobException {
+    public ResultDTO<Void> retryInstance(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .add("appId", appId.toString())
@@ -248,12 +242,11 @@ public class OhMyClient {
     }
 
     /**
-     * 查询任务实例状态
-     * @param instanceId 应用实例ID
-     * @return {@link InstanceStatus} 的枚举值
-     * @throws PowerJobException 异常
+     * Query status about a job instance
+     * @param instanceId instanceId
+     * @return {@link InstanceStatus}
      */
-    public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) throws PowerJobException {
+    public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .build();
@@ -262,12 +255,11 @@ public class OhMyClient {
     }
 
     /**
-     * 查询任务实例的信息
-     * @param instanceId 任务实例ID
-     * @return 任务实例信息
-     * @throws PowerJobException 潜在的异常
+     * Query detail about a job instance
+     * @param instanceId instanceId
+     * @return instance detail
      */
-    public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) throws PowerJobException {
+    public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
                 .build();
@@ -277,12 +269,12 @@ public class OhMyClient {
 
     /* ************* Workflow API list ************* */
     /**
-     * 保存工作流（包括创建和修改）
-     * @param request 创建/修改 Workflow 请求
-     * @return 工作流ID
-     * @throws PowerJobException 异常
+     * Save one workflow
+     * When an ID exists in SaveWorkflowRequest, it is an update operation. Otherwise, it is a crate operation.
+     * @param request Workflow meta info
+     * @return workflowId
      */
-    public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) throws PowerJobException {
+    public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
         // 中坑记录：用 FastJSON 序列化会导致 Server 接收时 pEWorkflowDAG 为 null，无语.jpg
@@ -292,12 +284,11 @@ public class OhMyClient {
     }
 
     /**
-     * 根据 workflowId 查询工作流信息
+     * Query Workflow by workflowId
      * @param workflowId workflowId
-     * @return 工作流信息
-     * @throws PowerJobException 异常
+     * @return Workflow meta info
      */
-    public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId) throws PowerJobException {
+    public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
@@ -307,12 +298,11 @@ public class OhMyClient {
     }
 
     /**
-     * 禁用某个工作流
-     * @param workflowId 工作流ID
-     * @return 标准返回对象
-     * @throws PowerJobException 异常
+     * Disable Workflow by workflowId
+     * @param workflowId workflowId
+     * @return Standard return object
      */
-    public ResultDTO<Void> disableWorkflow(Long workflowId) throws PowerJobException {
+    public ResultDTO<Void> disableWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
@@ -322,12 +312,11 @@ public class OhMyClient {
     }
 
     /**
-     * 启用某个工作流
+     * Enable Workflow by workflowId
      * @param workflowId workflowId
-     * @return 标准返回对象
-     * @throws PowerJobException 异常
+     * @return Standard return object
      */
-    public ResultDTO<Void> enableWorkflow(Long workflowId) throws PowerJobException {
+    public ResultDTO<Void> enableWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
@@ -337,12 +326,11 @@ public class OhMyClient {
     }
 
     /**
-     * 删除某个工作流
+     * Delete Workflow by workflowId
      * @param workflowId workflowId
-     * @return 标准返回对象
-     * @throws PowerJobException 异常
+     * @return Standard return object
      */
-    public ResultDTO<Void> deleteWorkflow(Long workflowId) throws PowerJobException {
+    public ResultDTO<Void> deleteWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
@@ -352,14 +340,13 @@ public class OhMyClient {
     }
 
     /**
-     * 运行工作流
-     * @param workflowId 工作流ID
-     * @param initParams 启动参数
-     * @param delayMS 延迟时间，单位毫秒 ms
-     * @return 工作流实例ID
-     * @throws PowerJobException 异常信息
+     * Run a workflow once
+     * @param workflowId workflowId
+     * @param initParams workflow startup parameters
+     * @param delayMS Delay time（Milliseconds）
+     * @return workflow instanceId
      */
-    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) throws PowerJobException {
+    public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
@@ -370,18 +357,17 @@ public class OhMyClient {
         String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
-    public ResultDTO<Long> runWorkflow(Long workflowId) throws PowerJobException {
+    public ResultDTO<Long> runWorkflow(Long workflowId) {
         return runWorkflow(workflowId, null, 0);
     }
 
     /* ************* Workflow Instance API list ************* */
     /**
-     * 停止应用实例
-     * @param wfInstanceId 工作流实例ID
-     * @return true 停止成功 ； false 停止失败
-     * @throws PowerJobException 异常
+     * Stop one workflow instance
+     * @param wfInstanceId workflow instanceId
+     * @return Standard return object
      */
-    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) throws PowerJobException {
+    public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
                 .add("appId", appId.toString())
@@ -391,12 +377,11 @@ public class OhMyClient {
     }
 
     /**
-     * 查询任务实例的信息
-     * @param wfInstanceId 任务实例ID
-     * @return 任务实例信息
-     * @throws PowerJobException 潜在的异常
+     * Query detail about a workflow instance
+     * @param wfInstanceId workflow instanceId
+     * @return detail about a workflow
      */
-    public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) throws PowerJobException {
+    public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
                 .add("appId", appId.toString())
@@ -439,6 +424,6 @@ public class OhMyClient {
         }
 
         log.error("[OhMyClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
-        throw new PowerJobException("no server available when send post");
+        throw new PowerJobException("no server available when send post request");
     }
 }

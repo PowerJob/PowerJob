@@ -115,8 +115,8 @@ public abstract class TaskTracker {
         try {
             TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
             switch (timeExpressionType) {
-                case FIX_RATE:
-                case FIX_DELAY:return new FrequentTaskTracker(req);
+                case FIXED_RATE:
+                case FIXED_DELAY:return new FrequentTaskTracker(req);
                 default:return new CommonTaskTracker(req);
             }
         } catch (Exception e) {

@@ -19,8 +19,8 @@
         </license>
     </licenses>
     <scm>
-        <url>https://github.com/KFCFans/PowerJob</url>
-        <connection>https://github.com/KFCFans/PowerJob.git</connection>
+        <url>https://github.com/PowerJob/PowerJob</url>
+        <connection>https://github.com/PowerJob/PowerJob.git</connection>
     </scm>
 
     <developers>

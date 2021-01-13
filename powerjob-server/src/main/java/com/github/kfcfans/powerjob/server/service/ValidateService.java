@@ -33,8 +33,8 @@ public class ValidateService {
             case API: return Lists.newArrayList(OmsConstant.NONE);
             case WORKFLOW: return Lists.newArrayList("VALID: depends on workflow");
             case CRON: return calculateCronExpression(timeExpression);
-            case FIX_RATE: return calculateFixRate(timeExpression);
-            case FIX_DELAY: return Lists.newArrayList("VALID: depends on execution cost time");
+            case FIXED_RATE: return calculateFixRate(timeExpression);
+            case FIXED_DELAY: return Lists.newArrayList("VALID: depends on execution cost time");
         }
         // impossible
         return Collections.emptyList();

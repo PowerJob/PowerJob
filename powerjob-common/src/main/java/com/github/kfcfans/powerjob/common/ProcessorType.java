@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 处理器类型
+ * Task Processor Type
  *
  * @author tjq
  * @since 2020/3/23
@@ -18,8 +18,8 @@ public enum ProcessorType {
     PYTHON(3, "Python脚本"),
     JAVA_CONTAINER(4, "Java容器");
 
-    private int v;
-    private String des;
+    private final int v;
+    private final String des;
 
     public static ProcessorType of(int v) {
         for (ProcessorType type : values()) {

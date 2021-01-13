@@ -7,7 +7,7 @@ import lombok.ToString;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * 请求返回的结果对象
+ * The result object returned by the request
  *
  * @author tjq
  * @since 2020/3/30
@@ -18,9 +18,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public class ResultDTO<T> implements OmsSerializable {
 
     private boolean success;
-    // 数据（success为 true 时存在）
     private T data;
-    // 错误信息（success为 false 时存在）
     private String message;
 
     public static <T> ResultDTO<T> success(T data) {

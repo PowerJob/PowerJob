@@ -10,7 +10,7 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * Worker 配置文件
+ * The powerjob-worker's configuration
  *
  * @author tjq
  * @since 2020/3/16
@@ -19,34 +19,38 @@ import java.util.List;
 @Setter
 public class OhMyConfig {
     /**
-     * 应用名称
+     * AppName, recommend to use the name of this project
+     * Applications should be registered by powerjob-console in advance to prevent error.
      */
     private String appName;
     /**
-     * 启动端口
+     * Worker port
+     * Random port is enabled when port is set with non-positive number.
      */
     private int port = RemoteConstant.DEFAULT_WORKER_PORT;
     /**
-     * 调度服务器地址，ip:port 或 域名
+     * Address of powerjob-server node(s)
+     * Do not mistake for ActorSystem port. Do not add any prefix, i.e. http://.
      */
     private List<String> serverAddress = Lists.newArrayList();
     /**
-     * 本地持久化方式，默认使用磁盘
-     */
-    private StoreStrategy storeStrategy = StoreStrategy.DISK;
-    /**
-     * 最大返回值长度，超过会被截断
-     * {@link ProcessResult}#msg 的最大长度
+     * Max length of response result. Result that is longer than the value will be truncated.
+     * {@link ProcessResult} max length for #msg
      */
     private int maxResultLength = 8096;
     /**
-     * 用户自定义上下文对象，该值会被透传到 TaskContext#userContext 属性
-     * 使用场景：容器脚本Java处理器需要使用oms-worker宿主应用的Spring Bean，可在此处传入 ApplicationContext，在Processor中获取 bean
+     * User-defined context object, which is passed through to the TaskContext#userContext property
+     * Usage Scenarios: The container Java processor needs to use the Spring bean of the host application, where you can pass in the ApplicationContext and get the bean in the Processor
      */
     private Object userContext;
     /**
-     * 启动测试模式，true情况下，不再尝试连接 server 并验证appName
-     * true -> 用于本地写单元测试调试； false -> 默认值，标准模式
+     * Internal persistence method, DISK or MEMORY
+     * Normally you don't need to care about this configuration
+     */
+    private StoreStrategy storeStrategy = StoreStrategy.DISK;
+    /**
+     * If test mode is set as true, Powerjob-worker no longer connects to the server or validates appName.
+     * Test mode is used for conditions that your have no powerjob-server in your develop env so you can't startup the application
      */
     private boolean enableTestMode = false;
 }
