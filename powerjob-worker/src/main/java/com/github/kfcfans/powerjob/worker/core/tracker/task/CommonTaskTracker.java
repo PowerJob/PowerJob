@@ -57,7 +57,7 @@ public class CommonTaskTracker extends TaskTracker {
         persistenceRootTask();
 
         // 开启定时状态检查
-        scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 13, 13, TimeUnit.SECONDS);
+        scheduledPool.scheduleWithFixedDelay(new StatusCheckRunnable(), 3, 13, TimeUnit.SECONDS);
 
         // 如果是 MR 任务，则需要启动执行器动态检测装置
         ExecuteType executeType = ExecuteType.valueOf(req.getExecuteType());
