@@ -24,6 +24,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 任务服务
@@ -89,10 +90,11 @@ public class JobService {
     }
 
     public JobInfoDTO fetchJob(Long jobId) {
-        JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId));
-        JobInfoDTO jobInfoDTO = new JobInfoDTO();
-        BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
-        return jobInfoDTO;
+        return convert(jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId)));
+    }
+
+    public List<JobInfoDTO> fetchAllJob(Long appId) {
+        return jobInfoRepository.findByAppId(appId).stream().map(JobService::convert).collect(Collectors.toList());
     }
 
     /**
@@ -223,6 +225,12 @@ public class JobService {
         if (jobInfoDO.getTaskRetryNum() == null) {
             jobInfoDO.setTaskRetryNum(0);
         }
+    }
+
+    private static JobInfoDTO convert(JobInfoDO jobInfoDO) {
+        JobInfoDTO jobInfoDTO = new JobInfoDTO();
+        BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
+        return jobInfoDTO;
     }
 
 }

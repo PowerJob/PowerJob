@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
+import com.github.kfcfans.powerjob.common.request.http.JobQuery;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.server.service.AppInfoService;
 import com.github.kfcfans.powerjob.server.service.CacheService;
@@ -14,6 +15,7 @@ import com.github.kfcfans.powerjob.common.response.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 开放接口（OpenAPI）控制器，对接 oms-client
@@ -58,6 +60,16 @@ public class OpenAPIController {
     public ResultDTO<JobInfoDTO> fetchJob(Long jobId, Long appId) {
         checkJobIdValid(jobId, appId);
         return ResultDTO.success(jobService.fetchJob(jobId));
+    }
+
+    @PostMapping(OpenAPIConstant.FETCH_ALL_JOB)
+    public ResultDTO<List<JobInfoDTO>> fetchAllJob(Long appId) {
+        return ResultDTO.success(jobService.fetchAllJob(appId));
+    }
+
+    @PostMapping(OpenAPIConstant.Query_JOB)
+    public ResultDTO<List<JobInfoDTO>> queryJob(@RequestBody JobQuery jobQuery) {
+        return ResultDTO.failed("developing");
     }
 
     @PostMapping(OpenAPIConstant.DELETE_JOB)

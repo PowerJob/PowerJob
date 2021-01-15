@@ -32,4 +32,6 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
 
     long countByAppIdAndStatusNot(long appId, int status);
 
+    List<JobInfoDO> findByAppId(Long appId);
+
 }

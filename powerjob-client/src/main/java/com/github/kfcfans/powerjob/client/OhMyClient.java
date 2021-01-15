@@ -5,6 +5,7 @@ import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.github.kfcfans.powerjob.common.request.http.JobQuery;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.*;
@@ -129,6 +130,31 @@ public class OhMyClient {
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_JOB, body);
         return JSONObject.parseObject(post, JOB_RESULT_TYPE);
+    }
+
+    /**
+     * Query all JobInfo
+     * @return All JobInfo
+     */
+    public ResultDTO<List<JobInfoDTO>> fetchAllJob() {
+        RequestBody body = new FormBody.Builder()
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.FETCH_ALL_JOB, body);
+        return JSONObject.parseObject(post, LIST_JOB_RESULT_TYPE);
+    }
+
+    /**
+     * Query JobInfo by query
+     * @param jobQuery JobQuery
+     * @return JobInfo
+     */
+    public ResultDTO<List<JobInfoDTO>> queryJob(JobQuery jobQuery) {
+        jobQuery.appIdEq(appId);
+        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        String json = JSONObject.toJSONString(jobQuery);
+        String post = postHA(OpenAPIConstant.Query_JOB, RequestBody.create(jsonType, json));
+        return JSONObject.parseObject(post, LIST_JOB_RESULT_TYPE);
     }
 
     /**
