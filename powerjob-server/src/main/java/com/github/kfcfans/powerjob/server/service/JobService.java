@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.service;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.github.kfcfans.powerjob.common.PowerQuery;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
@@ -9,6 +10,7 @@ import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
+import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
@@ -17,6 +19,7 @@ import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -95,6 +98,11 @@ public class JobService {
 
     public List<JobInfoDTO> fetchAllJob(Long appId) {
         return jobInfoRepository.findByAppId(appId).stream().map(JobService::convert).collect(Collectors.toList());
+    }
+
+    public List<JobInfoDTO> queryJob(PowerQuery powerQuery) {
+        Specification<JobInfoDO> specification = QueryConvertUtils.autoConvert(powerQuery);
+        return jobInfoRepository.findAll(specification).stream().map(JobService::convert).collect(Collectors.toList());
     }
 
     /**

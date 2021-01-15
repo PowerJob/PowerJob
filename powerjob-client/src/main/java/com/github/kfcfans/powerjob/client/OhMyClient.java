@@ -1,11 +1,7 @@
 package com.github.kfcfans.powerjob.client;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.OpenAPIConstant;
-import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.request.http.JobQuery;
+import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.*;
@@ -146,13 +142,13 @@ public class OhMyClient {
 
     /**
      * Query JobInfo by query
-     * @param jobQuery JobQuery
+     * @param powerQuery JobQuery
      * @return JobInfo
      */
-    public ResultDTO<List<JobInfoDTO>> queryJob(JobQuery jobQuery) {
-        jobQuery.appIdEq(appId);
+    public ResultDTO<List<JobInfoDTO>> queryJob(PowerQuery powerQuery) {
+        powerQuery.setAppIdEq(appId);
         MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
-        String json = JSONObject.toJSONString(jobQuery);
+        String json = JsonUtils.toJSONStringUnsafe(powerQuery);
         String post = postHA(OpenAPIConstant.Query_JOB, RequestBody.create(jsonType, json));
         return JSONObject.parseObject(post, LIST_JOB_RESULT_TYPE);
     }

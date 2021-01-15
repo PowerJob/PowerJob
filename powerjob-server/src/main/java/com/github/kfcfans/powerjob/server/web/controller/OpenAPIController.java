@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
-import com.github.kfcfans.powerjob.common.request.http.JobQuery;
+import com.github.kfcfans.powerjob.common.PowerQuery;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.server.service.AppInfoService;
 import com.github.kfcfans.powerjob.server.service.CacheService;
@@ -68,8 +68,8 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.Query_JOB)
-    public ResultDTO<List<JobInfoDTO>> queryJob(@RequestBody JobQuery jobQuery) {
-        return ResultDTO.failed("developing");
+    public ResultDTO<List<JobInfoDTO>> queryJob(@RequestBody PowerQuery powerQuery) {
+        return ResultDTO.success(jobService.queryJob(powerQuery));
     }
 
     @PostMapping(OpenAPIConstant.DELETE_JOB)
