@@ -40,6 +40,8 @@ public class TaskDO {
     private Long lastModifiedTime;
     // ProcessorTracker 最后上报时间
     private Long lastReportTime;
+    // 最大同时运行任务数，默认 1在秒级任务时代表最大同时运行的子任务数
+    private Integer maxInstanceNum;
 
     public String getUpdateSQL() {
         StringBuilder sb = new StringBuilder();

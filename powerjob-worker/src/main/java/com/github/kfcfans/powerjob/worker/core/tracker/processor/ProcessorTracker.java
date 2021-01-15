@@ -72,6 +72,9 @@ public class ProcessorTracker {
     private boolean lethal = false;
     private String lethalReason;
 
+    // 最大同时运行任务数，默认 1在秒级任务时代表最大同时运行的子任务数
+    private Integer maxInstanceNum;
+
     /**
      * 创建 ProcessorTracker（其实就是创建了个执行用的线程池 T_T）
      */
@@ -79,6 +82,7 @@ public class ProcessorTracker {
         try {
             // 赋值
             this.startTime = System.currentTimeMillis();
+            this.maxInstanceNum = request.getMaxInstanceNum();
             this.instanceInfo = request.getInstanceInfo();
             this.instanceId = request.getInstanceInfo().getInstanceId();
             this.taskTrackerAddress = request.getTaskTrackerAddress();
@@ -341,6 +345,15 @@ public class ProcessorTracker {
         // 脚本类自带线程池，不过为了少一点逻辑判断，还是象征性分配一个线程
         if (processorType == ProcessorType.PYTHON || processorType == ProcessorType.SHELL) {
             return 1;
+        }
+        // 针对配制了秒级任务、单机执行和内置JAVA处理器这个场景时子任务的最大并发数用运行时配置里面的最大实例数
+        // 当设置为1时由于单机的线程池只有一条线程所以就算外面提交了多个任务也能保证是串行运行
+        if (TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType())) {
+            if (executeType == ExecuteType.STANDALONE && processorType == ProcessorType.EMBEDDED_JAVA) {
+                if (maxInstanceNum != 0) {
+                    return maxInstanceNum;
+                }
+            }
         }
         return 2;
     }

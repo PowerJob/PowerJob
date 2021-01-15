@@ -32,6 +32,8 @@ public class TaskTrackerStartTaskReq implements OmsSerializable {
 
     // 秒级任务专用
     private long subInstanceId;
+    // 最大同时运行任务数，默认 1在秒级任务时代表最大同时运行的子任务数
+    private Integer maxInstanceNum;
 
 
     /**
@@ -48,5 +50,6 @@ public class TaskTrackerStartTaskReq implements OmsSerializable {
 
         this.taskCurrentRetryNums = task.getFailedCnt();
         this.subInstanceId = task.getSubInstanceId();
+        this.maxInstanceNum = task.getMaxInstanceNum();
     }
 }
