@@ -16,7 +16,7 @@ public class OpenAPIConstant {
     public static final String SAVE_JOB = "/saveJob";
     public static final String FETCH_JOB = "/fetchJob";
     public static final String FETCH_ALL_JOB = "/fetchAllJob";
-    public static final String Query_JOB = "/queryJob";
+    public static final String QUERY_JOB = "/queryJob";
     public static final String DISABLE_JOB = "/disableJob";
     public static final String ENABLE_JOB = "/enableJob";
     public static final String DELETE_JOB = "/deleteJob";

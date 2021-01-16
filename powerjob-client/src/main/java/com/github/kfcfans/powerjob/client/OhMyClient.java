@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
+import com.github.kfcfans.powerjob.common.request.query.JobInfoQuery;
 import com.github.kfcfans.powerjob.common.response.*;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
@@ -108,7 +109,7 @@ public class OhMyClient {
     public ResultDTO<Long> saveJob(SaveJobInfoRequest request) {
 
         request.setAppId(appId);
-        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
         String json = JSONObject.toJSONString(request);
         String post = postHA(OpenAPIConstant.SAVE_JOB, RequestBody.create(jsonType, json));
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
@@ -141,15 +142,15 @@ public class OhMyClient {
     }
 
     /**
-     * Query JobInfo by query
+     * Query JobInfo by PowerQuery
      * @param powerQuery JobQuery
      * @return JobInfo
      */
-    public ResultDTO<List<JobInfoDTO>> queryJob(PowerQuery powerQuery) {
+    public ResultDTO<List<JobInfoDTO>> queryJob(JobInfoQuery powerQuery) {
         powerQuery.setAppIdEq(appId);
-        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
         String json = JsonUtils.toJSONStringUnsafe(powerQuery);
-        String post = postHA(OpenAPIConstant.Query_JOB, RequestBody.create(jsonType, json));
+        String post = postHA(OpenAPIConstant.QUERY_JOB, RequestBody.create(jsonType, json));
         return JSONObject.parseObject(post, LIST_JOB_RESULT_TYPE);
     }
 
@@ -287,14 +288,6 @@ public class OhMyClient {
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_INSTANCE_INFO, body);
         return JSONObject.parseObject(post, INSTANCE_RESULT_TYPE);
-    }
-
-    public ResultDTO<List<InstanceInfoDTO>> queryInstanceInfo(PowerQuery powerQuery) {
-        powerQuery.setAppIdEq(appId);
-        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
-        String json = JsonUtils.toJSONStringUnsafe(powerQuery);
-        String post = postHA(OpenAPIConstant.QUERY_INSTANCE, RequestBody.create(jsonType, json));
-        return JSONObject.parseObject(post, LIST_INSTANCE_RESULT_TYPE);
     }
 
     /* ************* Workflow API list ************* */
