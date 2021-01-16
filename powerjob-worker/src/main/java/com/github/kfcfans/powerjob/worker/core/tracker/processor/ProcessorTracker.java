@@ -340,12 +340,15 @@ public class ProcessorTracker {
         ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
         ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
 
-        if (executeType == ExecuteType.MAP_REDUCE) {
+        if (executeType == ExecuteType.MAP_REDUCE || executeType == ExecuteType.MAP) {
             return instanceInfo.getThreadConcurrency();
         }
         // 脚本类自带线程池，不过为了少一点逻辑判断，还是象征性分配一个线程
         if (processorType == ProcessorType.PYTHON || processorType == ProcessorType.SHELL) {
             return 1;
+        }
+        if (TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType())) {
+            return instanceInfo.getThreadConcurrency();
         }
         return 2;
     }
