@@ -1,3 +1,5 @@
+package com.github.kfcfans.powerjob.client.test;
+
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.client.OhMyClient;
 import com.github.kfcfans.powerjob.common.ExecuteType;
@@ -7,7 +9,6 @@ import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.google.common.collect.Lists;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -18,16 +19,9 @@ import java.util.List;
  * @author tjq
  * @since 2020/6/2
  */
-public class TestWorkflow {
-
-    private static OhMyClient ohMyClient;
+class TestWorkflow extends ClientInitializer {
 
     private static final long WF_ID = 1;
-
-    @BeforeAll
-    public static void initClient() throws Exception {
-        ohMyClient = new OhMyClient("127.0.0.1:7700", "powerjob-agent-test", "123");
-    }
 
     @Test
     public void initTestData() throws Exception {

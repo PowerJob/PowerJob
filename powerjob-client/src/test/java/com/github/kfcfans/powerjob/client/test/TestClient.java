@@ -1,3 +1,5 @@
+package com.github.kfcfans.powerjob.client.test;
+
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.ProcessorType;
@@ -17,16 +19,9 @@ import java.util.concurrent.TimeUnit;
  * @author tjq
  * @since 2020/4/15
  */
-public class TestClient {
-
-    private static OhMyClient ohMyClient;
+class TestClient extends ClientInitializer {
 
     public static final long JOB_ID = 4L;
-
-    @BeforeAll
-    public static void initClient() throws Exception {
-        ohMyClient = new OhMyClient("127.0.0.1:7700", "powerjob-agent-test", "123");
-    }
 
     @Test
     public void testSaveJob() throws Exception {

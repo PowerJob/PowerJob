@@ -22,6 +22,7 @@ public class SystemInstanceResult {
     public static final String UNKNOWN_BUG = "unknown bug";
     // TaskTracker 长时间未上报
     public static final String REPORT_TIMEOUT = "worker report timeout, maybe TaskTracker down";
+    public static final String CAN_NOT_FIND_JOB_INFO = "can't find job info";
 
     /* *********** workflow 专用 *********** */
     public static final String MIDDLE_JOB_FAILED = "middle job failed";

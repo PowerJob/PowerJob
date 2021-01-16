@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.server.persistence.core.repository;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/1
  */
-public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Long> {
+public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Long>, JpaSpecificationExecutor<InstanceInfoDO> {
 
     /**
      * 统计当前JOB有多少实例正在运行
