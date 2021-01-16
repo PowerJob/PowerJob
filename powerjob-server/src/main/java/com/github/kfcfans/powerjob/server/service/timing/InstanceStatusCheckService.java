@@ -96,7 +96,7 @@ public class InstanceStatusCheckService {
             long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
             List<InstanceInfoDO> waitingDispatchInstances = instanceInfoRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
             if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
-                log.warn("[InstanceStatusChecker] instances({}) is not triggered as expected.", waitingDispatchInstances);
+                log.warn("[InstanceStatusChecker] find some instance which is not triggered as expected: {}", waitingDispatchInstances);
                 waitingDispatchInstances.forEach(instance -> {
 
                     // 过滤因为失败重试而改成 WAITING_DISPATCH 状态的任务实例
@@ -105,9 +105,13 @@ public class InstanceStatusCheckService {
                         return;
                     }
 
-                    // 重新派发(orElseGet用于消除编译器警告...)
-                    JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
-                    dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), 0);
+                    Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(instance.getJobId());
+                    if (jobInfoOpt.isPresent()) {
+                        dispatchService.redispatch(jobInfoOpt.get(), instance.getInstanceId(), 0);
+                    } else {
+                        log.warn("[InstanceStatusChecker] can't find job by jobId[{}], so redispatch failed, failed instance: {}", instance.getJobId(), instance);
+                        updateFailedInstance(instance, SystemInstanceResult.CAN_NOT_FIND_JOB_INFO);
+                    }
                 });
             }
 
@@ -136,7 +140,7 @@ public class InstanceStatusCheckService {
 
                     // 如果任务已关闭，则不进行重试，将任务置为失败即可；秒级任务也直接置为失败，由派发器重新调度
                     if (switchableStatus != SwitchableStatus.ENABLE || TimeExpressionType.frequentTypes.contains(timeExpressionType.getV())) {
-                        updateFailedInstance(instance);
+                        updateFailedInstance(instance, SystemInstanceResult.REPORT_TIMEOUT);
                         return;
                     }
 
@@ -144,7 +148,7 @@ public class InstanceStatusCheckService {
                     if (instance.getRunningTimes() < jobInfoDO.getInstanceRetryNum()) {
                         dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
                     }else {
-                        updateFailedInstance(instance);
+                        updateFailedInstance(instance, SystemInstanceResult.REPORT_TIMEOUT);
                     }
 
                 });
@@ -182,14 +186,14 @@ public class InstanceStatusCheckService {
     /**
      * 处理上报超时而失败的任务实例
      */
-    private void updateFailedInstance(InstanceInfoDO instance) {
+    private void updateFailedInstance(InstanceInfoDO instance, String result) {
 
-        log.warn("[InstanceStatusCheckService] detected instance(instanceId={},jobId={})'s TaskTracker report timeout,this instance is considered a failure.", instance.getInstanceId(), instance.getJobId());
+        log.warn("[InstanceStatusChecker] instance[{}] failed due to {}, instanceInfo: {}", instance.getInstanceId(), result, instance);
 
         instance.setStatus(InstanceStatus.FAILED.getV());
         instance.setFinishedTime(System.currentTimeMillis());
         instance.setGmtModified(new Date());
-        instance.setResult(SystemInstanceResult.REPORT_TIMEOUT);
+        instance.setResult(result);
         instanceInfoRepository.saveAndFlush(instance);
 
         instanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, SystemInstanceResult.REPORT_TIMEOUT);

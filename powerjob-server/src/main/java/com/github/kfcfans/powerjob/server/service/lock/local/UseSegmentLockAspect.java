@@ -33,7 +33,11 @@ public class UseSegmentLockAspect {
         });
 
         int index = AOPUtils.parseSpEl(AOPUtils.parseMethod(point), point.getArgs(), useSegmentLock.key(), Integer.class, 1);
-        segmentLock.lockInterruptibleSafe(index);
-        return point.proceed();
+        try {
+            segmentLock.lockInterruptibleSafe(index);
+            return point.proceed();
+        } finally {
+            segmentLock.unlock(index);
+        }
     }
 }
