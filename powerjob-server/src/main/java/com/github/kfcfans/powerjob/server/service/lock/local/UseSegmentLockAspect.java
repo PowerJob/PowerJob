@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 /**
- * Description
+ * aspect for @UseSegmentLock
  *
  * @author tjq
  * @since 1/16/21
