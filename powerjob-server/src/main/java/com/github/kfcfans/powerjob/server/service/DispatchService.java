@@ -10,6 +10,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceIn
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceMetadataService;
+import com.github.kfcfans.powerjob.server.service.lock.local.UseSegmentLock;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -46,6 +47,7 @@ public class DispatchService {
 
     private static final Splitter commaSplitter = Splitter.on(",");
 
+    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId().intValue()", concurrencyLevel = 1024)
     public void redispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
         dispatch(jobInfo, instanceId, currentRunningTimes, instanceInfo.getInstanceParams(), instanceInfo.getWfInstanceId());
@@ -59,6 +61,7 @@ public class DispatchService {
      * @param instanceParams 实例的运行参数，API触发方式专用
      * @param wfInstanceId 工作流任务实例ID，workflow 任务专用
      */
+    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId().intValue()", concurrencyLevel = 1024)
     public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams, Long wfInstanceId) {
         Long jobId = jobInfo.getId();
         log.info("[Dispatcher-{}|{}] start to dispatch job: {};instancePrams: {}.", jobId, instanceId, jobInfo, instanceParams);
