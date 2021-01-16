@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.server.common.utils;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.PowerQuery;
 import com.google.common.collect.Lists;
@@ -26,9 +26,10 @@ public class QueryConvertUtils {
 
         return (Specification<T>) (root, query, cb) -> {
             List<Predicate> predicates = Lists.newLinkedList();
-            Field[ ] fields = query.getClass().getDeclaredFields();
+            Field[] fields = powerQuery.getClass().getDeclaredFields();
             try {
                 for (Field field : fields) {
+                    field.setAccessible(true);
                     String fieldName = field.getName();
                     Object fieldValue = field.get(powerQuery);
                     if (fieldValue == null) {
@@ -42,10 +43,10 @@ public class QueryConvertUtils {
                         predicates.add(cb.notEqual(root.get(colName), fieldValue));
                     } else if (fieldName.endsWith(PowerQuery.LIKE)) {
                         String colName = StringUtils.substringBeforeLast(fieldName, PowerQuery.LIKE);
-                        predicates.add(cb.like(root.get(colName), (String) fieldValue));
+                        predicates.add(cb.like(root.get(colName), convertLikeParams(fieldValue)));
                     } else if (fieldName.endsWith(PowerQuery.NOT_LIKE)) {
                         String colName = StringUtils.substringBeforeLast(fieldName, PowerQuery.NOT_LIKE);
-                        predicates.add(cb.notLike(root.get(colName), (String) fieldValue));
+                        predicates.add(cb.notLike(root.get(colName), convertLikeParams(fieldValue)));
                     } else if (fieldName.endsWith(PowerQuery.LESS_THAN)) {
                         String colName = StringUtils.substringBeforeLast(fieldName, PowerQuery.LESS_THAN);
                         predicates.add(cb.lessThan(root.get(colName), (Comparable)fieldValue));
@@ -60,10 +61,10 @@ public class QueryConvertUtils {
                         predicates.add(cb.greaterThanOrEqualTo(root.get(colName), (Comparable)fieldValue));
                     } else if (fieldName.endsWith(PowerQuery.IN)) {
                         String colName = StringUtils.substringBeforeLast(fieldName, PowerQuery.IN);
-                        predicates.add(root.get(colName).in(fieldValue));
+                        predicates.add(root.get(colName).in(convertInParams(fieldValue)));
                     } else if (fieldName.endsWith(PowerQuery.NOT_IN)) {
                         String colName = StringUtils.substringBeforeLast(fieldName, PowerQuery.NOT_IN);
-                        predicates.add(cb.not(root.get(colName).in(fieldValue)));
+                        predicates.add(cb.not(root.get(colName).in(convertInParams(fieldValue))));
                     } else if (fieldName.endsWith(PowerQuery.IS_NULL)) {
                         String colName = StringUtils.substringBeforeLast(fieldName, PowerQuery.IS_NULL);
                         predicates.add(cb.isNull(root.get(colName)));
@@ -73,16 +74,31 @@ public class QueryConvertUtils {
                     }
                 }
             } catch (Exception e) {
-                log.warn("[QueryConvertUtils] convert failed for query: {}", JSON.toJSON(query));
+                log.warn("[QueryConvertUtils] convert failed for query: {}", query, e);
                 throw new PowerJobException("convert query object failed, maybe you should redesign your query object!");
+            }
+
+            if (powerQuery.getAppIdEq() != null) {
+                predicates.add(cb.equal(root.get("appId"), powerQuery.getAppIdEq()));
             }
 
             return query.where(predicates.toArray(new Predicate[0])).getRestriction();
         };
     }
 
-    public static void main(String[] args) {
-        String s = "appIdEq";
-        System.out.println(StringUtils.substringBeforeLast(s, "Eq"));
+    private static String convertLikeParams(Object o) {
+        String s = (String) o;
+        if (!s.startsWith("%")) {
+            s = "%" + s;
+        }
+        if (!s.endsWith("%")) {
+            s = s + "%";
+        }
+        return s;
+    }
+
+    private static Object[] convertInParams(Object o) {
+        // FastJSON, 永远滴神！
+        return JSONArray.parseArray(JSONArray.toJSONString(o)).toArray();
     }
 }

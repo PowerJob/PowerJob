@@ -131,6 +131,11 @@ public class OpenAPIController {
         return ResultDTO.success(instanceService.getInstanceInfo(instanceId));
     }
 
+    @PostMapping(OpenAPIConstant.QUERY_INSTANCE)
+    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody PowerQuery powerQuery) {
+        return ResultDTO.success(instanceService.queryInstanceInfo(powerQuery));
+    }
+
     /* ************* Workflow 区 ************* */
     @PostMapping(OpenAPIConstant.SAVE_WORKFLOW)
     public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) throws Exception {

@@ -289,6 +289,14 @@ public class OhMyClient {
         return JSONObject.parseObject(post, INSTANCE_RESULT_TYPE);
     }
 
+    public ResultDTO<List<InstanceInfoDTO>> queryInstanceInfo(PowerQuery powerQuery) {
+        powerQuery.setAppIdEq(appId);
+        MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+        String json = JsonUtils.toJSONStringUnsafe(powerQuery);
+        String post = postHA(OpenAPIConstant.QUERY_INSTANCE, RequestBody.create(jsonType, json));
+        return JSONObject.parseObject(post, LIST_INSTANCE_RESULT_TYPE);
+    }
+
     /* ************* Workflow API list ************* */
     /**
      * Save one workflow
