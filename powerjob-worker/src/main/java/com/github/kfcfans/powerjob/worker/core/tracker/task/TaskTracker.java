@@ -115,11 +115,11 @@ public abstract class TaskTracker {
         try {
             TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
             switch (timeExpressionType) {
-                case FIX_RATE:
-                case FIX_DELAY:return new FrequentTaskTracker(req);
+                case FIXED_RATE:
+                case FIXED_DELAY:return new FrequentTaskTracker(req);
                 default:return new CommonTaskTracker(req);
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.warn("[TaskTracker-{}] create TaskTracker from request({}) failed.", req.getInstanceId(), req, e);
 
             // 直接发送失败请求
@@ -301,7 +301,7 @@ public abstract class TaskTracker {
             return;
         }
 
-        log.info("[TaskTracker-{}] finished broadcast's preProcess.", instanceId);
+        log.info("[TaskTracker-{}-{}] finished broadcast's preProcess, preExecuteSuccess:{},preTaskId:{},result:{}", instanceId, subInstanceId, preExecuteSuccess, preTaskId, result);
 
         // 生成集群子任务
         if (preExecuteSuccess) {
@@ -316,7 +316,7 @@ public abstract class TaskTracker {
             }
             submitTask(subTaskList);
         }else {
-            log.debug("[TaskTracker-{}] BroadcastTask failed because of preProcess failed, preProcess result={}.", instanceId, result);
+            log.warn("[TaskTracker-{}-{}] BroadcastTask failed because of preProcess failed, preProcess result={}.", instanceId, subInstanceId, result);
         }
     }
 
@@ -446,7 +446,7 @@ public abstract class TaskTracker {
 
             // 3. 避免大查询，分批派发任务
             long currentDispatchNum = 0;
-            long maxDispatchNum = availablePtIps.size() * instanceInfo.getThreadConcurrency() * 2;
+            long maxDispatchNum = availablePtIps.size() * instanceInfo.getThreadConcurrency() * 2L;
             AtomicInteger index = new AtomicInteger(0);
 
             // 4. 循环查询数据库，获取需要派发的任务

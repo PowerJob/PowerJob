@@ -11,13 +11,13 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * 启动类
+ * powerjob-worker-agent entry
  *
  * @author tjq
  * @since 2020/5/20
  */
 @Slf4j
-@Command(name = "OhMyAgent", mixinStandardHelpOptions = true, version = "1.2.0", description = "OhMyScheduler-Worker agent")
+@Command(name = "OhMyAgent", mixinStandardHelpOptions = true, version = "3.4.3", description = "powerjob-worker agent")
 public class MainApplication implements Runnable {
 
     @Option(names = {"-a", "--app"}, description = "worker-agent's name", required = true)

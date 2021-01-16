@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 任务实例日志对象
+ * Log instance model.
  *
  * @author tjq
  * @since 2020/4/21
@@ -16,11 +16,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InstanceLogContent implements OmsSerializable {
 
-    // 实例ID
+    /**
+     * Id of instance.
+     */
     private long instanceId;
-    // 日志提交时间
+    /**
+     * Submitted time of the log.
+     */
     private long logTime;
-    // 日志内容
+    /**
+     * Level of the log.
+     */
+    private int logLevel;
+    /**
+     * Content of the log.
+     */
     private String logContent;
 }
 

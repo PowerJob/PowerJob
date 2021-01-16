@@ -314,7 +314,7 @@ public class WorkflowInstanceManager {
     }
 
     /**
-     * 允许任务实例
+     * 运行任务实例
      * 需要将创建和运行任务实例分离，否则在秒失败情况下，会发生DAG覆盖更新的问题
      * @param jobId 任务ID
      * @param instanceId 任务实例ID

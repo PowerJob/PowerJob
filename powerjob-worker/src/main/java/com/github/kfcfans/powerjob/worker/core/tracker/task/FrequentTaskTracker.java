@@ -88,7 +88,7 @@ public class FrequentTaskTracker extends TaskTracker {
 
         // 2. 启动任务发射器
         launcher = new Launcher();
-        if (timeExpressionType == TimeExpressionType.FIX_RATE) {
+        if (timeExpressionType == TimeExpressionType.FIXED_RATE) {
             // 固定频率需要设置最小间隔
             if (timeParams < MIN_INTERVAL) {
                 throw new PowerJobException("time interval too small, please set the timeExpressionInfo >= 1000");
@@ -173,7 +173,7 @@ public class FrequentTaskTracker extends TaskTracker {
 
             // 判断是否超出最大执行实例数
             if (maxInstanceNum > 0) {
-                if (timeExpressionType == TimeExpressionType.FIX_RATE) {
+                if (timeExpressionType == TimeExpressionType.FIXED_RATE) {
                     if (subInstanceId2TimeHolder.size() >= maxInstanceNum) {
                         log.warn("[FQTaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
                         processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
@@ -369,7 +369,7 @@ public class FrequentTaskTracker extends TaskTracker {
         taskPersistenceService.deleteAllSubInstanceTasks(instanceId, subInstanceId);
 
         // FIX_DELAY 则调度下次任务
-        if (timeExpressionType == TimeExpressionType.FIX_DELAY) {
+        if (timeExpressionType == TimeExpressionType.FIXED_DELAY) {
             scheduledPool.schedule(launcher, timeParams, TimeUnit.MILLISECONDS);
         }
     }

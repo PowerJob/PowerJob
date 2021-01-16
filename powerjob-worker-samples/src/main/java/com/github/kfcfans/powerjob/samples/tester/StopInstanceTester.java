@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 测试用户反馈的无法停止实例的问题
- * https://github.com/KFCFans/PowerJob/issues/37
+ * https://github.com/PowerJob/PowerJob/issues/37
  *
  * @author tjq
  * @since 2020/7/30

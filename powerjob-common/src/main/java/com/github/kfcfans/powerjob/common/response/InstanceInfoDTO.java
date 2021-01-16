@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * instanceInfo 对外输出对象
+ * instanceInfo Network transmission object
  *
  * @author tjq
  * @since 2020/5/14
