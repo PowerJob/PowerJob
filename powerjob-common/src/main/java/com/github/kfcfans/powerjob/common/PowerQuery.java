@@ -1,11 +1,16 @@
 package com.github.kfcfans.powerjob.common;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * PowerJob Query interface
  *
  * @author tjq
  * @since 2021/1/15
  */
+@Getter
+@Setter
 public abstract class PowerQuery {
 
     public static String EQUAL = "Eq";
@@ -33,12 +38,4 @@ public abstract class PowerQuery {
     public static String IS_NOT_NULL = "IsNotNull";
 
     private Long appIdEq;
-
-    public Long getAppIdEq() {
-        return appIdEq;
-    }
-
-    public void setAppIdEq(Long appIdEq) {
-        this.appIdEq = appIdEq;
-    }
 }

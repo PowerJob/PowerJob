@@ -22,7 +22,7 @@ import java.util.List;
 @SuppressWarnings("unchecked, rawtypes")
 public class QueryConvertUtils {
 
-    public static <T> Specification<T> autoConvert(PowerQuery powerQuery) {
+    public static <T> Specification<T> toSpecification(PowerQuery powerQuery) {
 
         return (Specification<T>) (root, query, cb) -> {
             List<Predicate> predicates = Lists.newLinkedList();

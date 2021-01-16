@@ -101,7 +101,7 @@ public class JobService {
     }
 
     public List<JobInfoDTO> queryJob(PowerQuery powerQuery) {
-        Specification<JobInfoDO> specification = QueryConvertUtils.autoConvert(powerQuery);
+        Specification<JobInfoDO> specification = QueryConvertUtils.toSpecification(powerQuery);
         return jobInfoRepository.findAll(specification).stream().map(JobService::convert).collect(Collectors.toList());
     }
 

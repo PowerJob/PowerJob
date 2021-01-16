@@ -203,7 +203,7 @@ public class InstanceService {
 
     public List<InstanceInfoDTO> queryInstanceInfo(PowerQuery powerQuery) {
         return instanceInfoRepository
-                .findAll(QueryConvertUtils.autoConvert(powerQuery))
+                .findAll(QueryConvertUtils.toSpecification(powerQuery))
                 .stream()
                 .map(InstanceService::directConvert)
                 .collect(Collectors.toList());
