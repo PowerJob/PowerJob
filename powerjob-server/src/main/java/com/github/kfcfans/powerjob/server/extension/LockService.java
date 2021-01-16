@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.service.lock;
+package com.github.kfcfans.powerjob.server.extension;
 
 /**
  * 锁服务，所有方法都不允许抛出任何异常！
@@ -14,7 +14,7 @@ public interface LockService {
      * @param maxLockTime 最长持有锁的时间，单位毫秒（ms）
      * @return true -> 获取到锁，false -> 未获取到锁
      */
-    boolean lock(String name, long maxLockTime);
+    boolean tryLock(String name, long maxLockTime);
 
     /**
      * 释放锁

@@ -7,7 +7,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceIn
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
-import com.github.kfcfans.powerjob.server.service.lock.LockService;
+import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +78,7 @@ public class CleanService {
      */
     private void cleanByOneServer() {
         // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
-        boolean lock = lockService.lock(HISTORY_DELETE_LOCK, 10 * 60 * 1000);
+        boolean lock = lockService.tryLock(HISTORY_DELETE_LOCK, 10 * 60 * 1000);
         if (!lock) {
             log.info("[CleanService] clean job is already running, just return.");
             return;
