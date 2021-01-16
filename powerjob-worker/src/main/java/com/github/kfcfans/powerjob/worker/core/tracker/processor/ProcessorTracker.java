@@ -343,14 +343,12 @@ public class ProcessorTracker {
         if (executeType == ExecuteType.MAP_REDUCE || executeType == ExecuteType.MAP) {
             return instanceInfo.getThreadConcurrency();
         }
-        boolean exeStandalone = executeType == ExecuteType.STANDALONE;
-        boolean fixedJob = TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType());
-        if (exeStandalone && fixedJob) {
-            return instanceInfo.getThreadConcurrency();
-        }
         // 脚本类自带线程池，不过为了少一点逻辑判断，还是象征性分配一个线程
         if (processorType == ProcessorType.PYTHON || processorType == ProcessorType.SHELL) {
             return 1;
+        }
+        if (TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType())) {
+            return instanceInfo.getThreadConcurrency();
         }
         return 2;
     }
