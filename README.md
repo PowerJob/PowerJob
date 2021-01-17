@@ -1,4 +1,4 @@
-English | [简体中文](./README_zhCN.md)
+### English | [简体中文](./README_zhCN.md)
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
@@ -11,73 +11,59 @@ English | [简体中文](./README_zhCN.md)
 <a href="https://github.com/PowerJob/PowerJob/blob/master/LICENSE"><img src="https://img.shields.io/github/license/KFCFans/PowerJob" alt="LICENSE"></a>
 </p>
 
-- Have you ever wondered how cron jobs could be organized orderly? 
-- Have you ever felt upset about tasks that carry with complex dependencies?
-- Have you ever felt helpless when scheduling tasks suddenly terminated without any warning?
-- Have you ever felt depressed when batches of business tasks need to be processed in a distributed manner?
+[PowerJob](https://github.com/PowerJob/PowerJob) is an open-source distributed computing and job scheduling framework which allows developers to easily schedule tasks in their own application.
 
-Well, PowerJob is there for you, it is the choice of a new generation. It is a powerful, business-oriented scheduling framework that provides distributed computing ability. Based on Akka architecture, it makes everything with scheduling easier. Just with several steps, PowerJob could be deployed and work for you!
+Refer to [PowerJob Introduction](https://www.yuque.com/powerjob/en/introduce) for detailed information.
 
 # Introduction
 
 ### Features
--   Simple to use: PowerJob provides a friendly front-end Web that allows developers to visually manage tasks, monitor tasks, and view logs online.
--   Complete timing strategy:  PowerJob supports four different scheduling strategies, including CRON expression, fixed frequency timing, fixed delay timing as well as the Open API.
--   Various execution modes: PowerJob supports four execution modes: stand-alone, broadcast, Map, and MapReduce. **It's worth mentioning the Map and MapReduce modes. With several lines of codes, developers could take full advantage of PowerJob's distributed computing ability**.
--   Complete workflow support: PowerJob supports DAG(Directed acyclic graph) based online task configuration. Developers could arrange tasks on the console, while data could be transferred among tasks on the flow.
--   Extensive executor support: PowerJob supports multiple processors, including Spring Beans, ordinary Java objects, Shell, Python and so on.
--   Simple in dependency: PowerJob aims to be simple in dependency. The only dependency is merely database (MySQL / Oracle / MS SQLServer ...), with MongoDB being the extra dependency for storing large log files.
--   High availability and performance: Unlike traditional job-scheduling frameworks that rely on database locks, PowerJob server is lock-free. PowerJob supports unlimited horizontal expansion. It's easy to achieve high availability and performance by deploying as many PowerJob server instances as you need.
--   Quick failover and recovery support: Whenever any task failed, PowerJob server would retry according to the configured strategy. As long as there were enough nodes in the cluster, the failed tasks could execute successfully finally.
+- **Friendly UI:** [Front-end](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123) page is provided and developers can manage their task, monitor the status, check the logs online, etc.
+
+- **Abundant Timing Strategies:** Four timing strategies are supported, including CRON expression, fixed rate, fixed delay and OpenAPI which allows you to define your own scheduling policies, such as delaying execution.
+
+- **Multiple Execution Mode:** Four execution modes are supported, including stand-alone, broadcast, Map and MapReduce. Distributed computing resource could be utilized in MapReduce mode, try the magic out [here](https://www.yuque.com/powerjob/en/za1d96#9YOnV)!
+
+- **Workflow(DAG) Support:** Both job dependency management and data communications between jobs are supported.
+
+- **Extensive Processor Support:** Developers can write their processors in Java, Shell, Python, and will subsequently support multilingual scheduling via HTTP.
+
+- **Powerful Disaster Tolerance:** As long as there are enough computing nodes, configurable retry policies make it possible for your task to be executed and finished successfully.
+
+- **High Availability & High Performance:**  PowerJob supports unlimited horizontal expansion. It's easy to achieve high availability and performance by deploying as many PowerJob server and worker nodes.
 
 ### Applicable scenes
 
--   Scenarios with timed tasks: such as full synchronization of data at midnight, generating business reports at desired time.
--   Scenarios that require all machines to run tasks simultaneously: such as log cleanup.
--   Scenarios that require distributed processing: For example, a large amount of data requires updating, while the stand-alone execution takes quite a lot of time. The Map/MapReduce mode could be applied in which the workers would join the cluster for PowerJob server to dispatch, to speed up the time-consuming process, therefore improving the computing ability of the whole cluster.
--   **Scenarios with delayed tasks**: For instance, disposal of overdue orders.
-
-### Design goals
-
-PowerJob aims to be an enterprise scheduling middleware. By deploying PowerJob-server as the scheduling center,
-all the applications could gain scheduling and distributed computing ability relying on PowerJob-worker.
+- Timed tasks, for example, allocating e-coupons on 9 AM every morning.
+- Broadcast tasks, for example, broadcasting to the cluster to clear logs.
+- MapReduce tasks, for example, speeding up certain job like updating large amounts of data.
+- Delayed tasks, for example, processing overdue orders.
+- Customized tasks, triggered with [OpenAPI](https://www.yuque.com/powerjob/en/openapi).
 
 ### Online trial
+- Address: [try.powerjob.tech](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123)
+- Recommended to read the documentation first: [here](https://www.yuque.com/powerjob/en/trial)
 
-Trial address: [Online Trial Address](http://try.powerjob.tech/)  
-Application name: powerjob-agent-test  
-Application password: 123
-
-### Comparison with similar products
-
-|                                    | QuartZ                                                    | PowerJob                                                |
-| ---------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------ |
-| Timing type                        | CRON                                                      | **CRON, fixed frequency, fixed delay, OpenAPI**                  |
-| Task type                          | Built-in Java                                             | **Built-in Java, external Java (JVM Container), Shell, Python and other scripts** |
-| Distributed strategy               | Unsupported                                               | **MapReduce dynamic sharding**                                   |
-| Online task management             | Unsupported                                               | **Supported**                                                  |
-| Online logging                     | Unsupported                                               | **Supported**                                                      |
-| Scheduling methods and performance | Based on database lock, there is a performance bottleneck | **Lock-free design, high performance without upper limit**   |
-| Alarm monitoring                   | Unsupported                                               | **Email, WebHook, DingTalk. An interface is provided for customization.** |
-| System dependence                  | Any relational database (MySQL, Oracle ...) supported by JDBC      | **Any relational database (MySQL, Oracle ...) supported by Spring Data Jpa** |
-| workflow                           | Unsupported                                               | **Supported**               |
- 
-# Document
+# Documents
 **[Docs](https://www.yuque.com/powerjob/en/introduce)**
 
-**[中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)**
+**[中文文档](https://www.yuque.com/powerjob/guidence/intro)**
 
-# User Registration
-[Click to register as PowerJob user and contribute to PowerJob!](https://github.com/PowerJob/PowerJob/issues/6)  
+# Known Users
+[Click to register as PowerJob user!](https://github.com/PowerJob/PowerJob/issues/6)  
 ღ( ´・ᴗ・\` )ღ Many thanks to the following registered users. ღ( ´・ᴗ・\` )ღ
 <p style="text-align: center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/user.png" alt="PowerJob User" title="PowerJob User"/>
 </p>
 
+# License
+
+PowerJob is released under Apache License 2.0. Please refer to [License](./LICENSE) for details.
 
 # Others
--   Welcome to the Gitter Community: [LINK](https://gitter.im/PowerJob/community)
--   PowerJob is permanently open source software(Apache License, Version 2.0), please feel free to try, deploy and put into production!
--   Welcome to contribute to PowerJob, both Pull Requests and Issues are precious. 
--   Please STAR PowerJob if it is valuable. ~ = ￣ω￣ =
--   Do you need any help or want to propose suggestions? Please raise Github issues or contact the Author @KFCFans-> `tengjiqi@gmail.com` directly.
+
+- Any developer interested in getting more involved in PowerJob may join our [Gitter Community](https://gitter.im/PowerJob/community) and make [contributions](https://github.com/PowerJob/PowerJob/pulls)!
+
+- Reach out to me through email **tengjiqi@gmail.com**. Any issues or questions are welcomed on [Issues](https://github.com/PowerJob/PowerJob/issues).
+
+- Look forward to your opinions. Response may be late but not denied.

@@ -173,7 +173,7 @@ public class FrequentTaskTracker extends TaskTracker {
             // 判断是否超出最大执行实例数
             if (maxInstanceNum > 0) {
                 if (timeExpressionType == TimeExpressionType.FIXED_RATE) {
-                    if (subInstanceId2TimeHolder.size() > maxInstanceNum) {
+                    if (subInstanceId2TimeHolder.size() >= maxInstanceNum) {
                         log.warn("[FQTaskTracker-{}] cancel to launch the subInstance({}) due to too much subInstance is running.", instanceId, subInstanceId);
                         processFinishedSubInstance(subInstanceId, false, "TOO_MUCH_INSTANCE");
                         return;

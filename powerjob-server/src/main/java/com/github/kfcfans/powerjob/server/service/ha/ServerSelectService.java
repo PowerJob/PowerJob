@@ -8,7 +8,7 @@ import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.akka.requests.Ping;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.powerjob.server.service.lock.LockService;
+import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +76,7 @@ public class ServerSelectService {
 
             // 无可用Server，重新进行Server选举，需要加锁
             String lockName = String.format(SERVER_ELECT_LOCK, appId);
-            boolean lockStatus = lockService.lock(lockName, 30000);
+            boolean lockStatus = lockService.tryLock(lockName, 30000);
             if (!lockStatus) {
                 try {
                     Thread.sleep(500);

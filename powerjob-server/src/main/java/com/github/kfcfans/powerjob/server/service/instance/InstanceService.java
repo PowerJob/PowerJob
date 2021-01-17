@@ -2,10 +2,7 @@ package com.github.kfcfans.powerjob.server.service.instance;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.SystemInstanceResult;
+import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
@@ -14,6 +11,7 @@ import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
 import com.github.kfcfans.powerjob.server.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
 import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
+import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
@@ -28,8 +26,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.github.kfcfans.powerjob.common.InstanceStatus.RUNNING;
 import static com.github.kfcfans.powerjob.common.InstanceStatus.STOPPED;
@@ -201,16 +201,21 @@ public class InstanceService {
         }
     }
 
+    public List<InstanceInfoDTO> queryInstanceInfo(PowerQuery powerQuery) {
+        return instanceInfoRepository
+                .findAll(QueryConvertUtils.toSpecification(powerQuery))
+                .stream()
+                .map(InstanceService::directConvert)
+                .collect(Collectors.toList());
+    }
+
     /**
      * 获取任务实例的信息
      * @param instanceId 任务实例ID
      * @return 任务实例的信息
      */
     public InstanceInfoDTO getInstanceInfo(Long instanceId) {
-        InstanceInfoDO instanceInfoDO = fetchInstanceInfo(instanceId);
-        InstanceInfoDTO instanceInfoDTO = new InstanceInfoDTO();
-        BeanUtils.copyProperties(instanceInfoDO, instanceInfoDTO);
-        return instanceInfoDTO;
+        return directConvert(fetchInstanceInfo(instanceId));
     }
 
     /**
@@ -275,5 +280,11 @@ public class InstanceService {
             throw new IllegalArgumentException("invalid instanceId: " + instanceId);
         }
         return instanceInfoDO;
+    }
+
+    private static InstanceInfoDTO directConvert(InstanceInfoDO instanceInfoDO) {
+        InstanceInfoDTO instanceInfoDTO = new InstanceInfoDTO();
+        BeanUtils.copyProperties(instanceInfoDO, instanceInfoDTO);
+        return instanceInfoDTO;
     }
 }

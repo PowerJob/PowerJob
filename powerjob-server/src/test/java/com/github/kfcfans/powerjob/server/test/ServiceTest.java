@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.server.test;
 
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
-import com.github.kfcfans.powerjob.server.service.lock.LockService;
+import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.service.timing.CleanService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,8 +32,8 @@ public class ServiceTest {
     public void testLockService() {
         String lockName = "myLock";
 
-        lockService.lock(lockName, 10000);
-        lockService.lock(lockName, 10000);
+        lockService.tryLock(lockName, 10000);
+        lockService.tryLock(lockName, 10000);
         lockService.unlock(lockName);
     }
 

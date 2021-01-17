@@ -3,6 +3,8 @@ package com.github.kfcfans.powerjob.client;
 import com.alibaba.fastjson.TypeReference;
 import com.github.kfcfans.powerjob.common.response.*;
 
+import java.util.List;
+
 /**
  * TypeReference store.
  *
@@ -19,7 +21,11 @@ public class TypeStore {
 
     public static final TypeReference<ResultDTO<JobInfoDTO>> JOB_RESULT_TYPE = new TypeReference<ResultDTO<JobInfoDTO>>(){};
 
+    public static final TypeReference<ResultDTO<List<JobInfoDTO>>> LIST_JOB_RESULT_TYPE = new TypeReference<ResultDTO<List<JobInfoDTO>>>(){};
+
     public static final TypeReference<ResultDTO<InstanceInfoDTO>> INSTANCE_RESULT_TYPE = new TypeReference<ResultDTO<InstanceInfoDTO>>() {};
+
+    public static final TypeReference<ResultDTO<List<InstanceInfoDTO>>> LIST_INSTANCE_RESULT_TYPE = new TypeReference<ResultDTO<List<InstanceInfoDTO>>>(){};
 
     public static final TypeReference<ResultDTO<WorkflowInfoDTO>> WF_RESULT_TYPE = new TypeReference<ResultDTO<WorkflowInfoDTO>>() {};
 

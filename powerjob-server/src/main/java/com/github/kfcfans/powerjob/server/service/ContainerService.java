@@ -18,7 +18,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.ContainerInfoDO
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ContainerInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
-import com.github.kfcfans.powerjob.server.service.lock.LockService;
+import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.web.request.SaveContainerInfoRequest;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -209,7 +209,7 @@ public class ContainerService {
         String deployLock = "containerDeployLock-" + containerId;
         RemoteEndpoint.Async remote = session.getAsyncRemote();
         // 最长部署时间：10分钟
-        boolean lock = lockService.lock(deployLock, 10 * 60 * 1000);
+        boolean lock = lockService.tryLock(deployLock, 10 * 60 * 1000);
         if (!lock) {
             remote.sendText("SYSTEM: acquire deploy lock failed, maybe other user is deploying, please wait until the running deploy task finished.");
             return;
