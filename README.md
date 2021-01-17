@@ -13,22 +13,24 @@
 
 [PowerJob](https://github.com/PowerJob/PowerJob) is an open-source distributed computing and job scheduling framework which allows developers to easily schedule tasks in their own application.
 
-Refer to [Quick Started Tutorial](https://www.yuque.com/powerjob/en/quickstart) for detailed information.
+Refer to [PowerJob Introduction](https://www.yuque.com/powerjob/en/introduce) for detailed information.
 
 # Introduction
 
 ### Features
 - **Friendly UI:** [Front-end](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123) page is provided and developers can manage their task, monitor the status, check the logs online, etc.
 
-- **Abundant Timing Strategies:** Four timing strategies are supported, including CRON expression, fixed rate, fixed delay and OpenAPI.
+- **Abundant Timing Strategies:** Four timing strategies are supported, including CRON expression, fixed rate, fixed delay and OpenAPI which allows you to define your own scheduling policies, such as delaying execution.
 
 - **Multiple Execution Mode:** Four execution modes are supported, including stand-alone, broadcast, Map and MapReduce. Distributed computing resource could be utilized in MapReduce mode, try the magic out [here](https://www.yuque.com/powerjob/en/za1d96#9YOnV)!
 
-- **DAG Job Flow Support:** Both job dependency management and data communications between jobs are supported.
+- **Workflow(DAG) Support:** Both job dependency management and data communications between jobs are supported.
 
 - **Extensive Processor Support:** Developers can write their processors in Java, Shell, Python, and will subsequently support multilingual scheduling via HTTP.
 
-- **Disaster Tolerance Support:** As long as there are enough computing nodes, configurable retry policies make it possible for your task to be executed and finished successfully.  
+- **Powerful Disaster Tolerance:** As long as there are enough computing nodes, configurable retry policies make it possible for your task to be executed and finished successfully.
+
+- **High Availability & High Performance:**  PowerJob supports unlimited horizontal expansion. It's easy to achieve high availability and performance by deploying as many PowerJob server and worker nodes.
 
 ### Applicable scenes
 
@@ -45,7 +47,7 @@ Refer to [Quick Started Tutorial](https://www.yuque.com/powerjob/en/quickstart) 
 # Documents
 **[Docs](https://www.yuque.com/powerjob/en/introduce)**
 
-**[中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)**
+**[中文文档](https://www.yuque.com/powerjob/guidence/intro)**
 
 # Known Users
 [Click to register as PowerJob user!](https://github.com/PowerJob/PowerJob/issues/6)  
