@@ -21,4 +21,6 @@ public class PowerJobDKey {
      */
     public static final String IGNORED_NETWORK_INTERFACE_REGEX = "powerjob.network.interface.ignored";
 
+    public static final String WORKER_STATUS_CHECK_PERIOD = "powerjob.worker.status-check.normal.period";
+
 }

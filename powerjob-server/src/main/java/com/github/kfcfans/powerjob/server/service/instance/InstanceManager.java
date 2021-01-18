@@ -162,7 +162,10 @@ public class InstanceManager {
             InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
             JobInstanceAlarm content = new JobInstanceAlarm();
             BeanUtils.copyProperties(jobInfo, content);
-            BeanUtils.copyProperties(instanceInfo, content);
+            // 清理数据库后可能导致 instanceInfo 为空，进而导致 NPE
+            if (instanceInfo != null) {
+                BeanUtils.copyProperties(instanceInfo, content);
+            }
 
             List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
             AlarmCenter.alarmFailed(content, userList);

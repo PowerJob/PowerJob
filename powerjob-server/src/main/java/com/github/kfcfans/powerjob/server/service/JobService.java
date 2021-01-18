@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.service;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.github.kfcfans.powerjob.common.PowerQuery;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
@@ -9,6 +10,7 @@ import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
+import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
@@ -17,6 +19,7 @@ import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -24,6 +27,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 任务服务
@@ -89,10 +93,16 @@ public class JobService {
     }
 
     public JobInfoDTO fetchJob(Long jobId) {
-        JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId));
-        JobInfoDTO jobInfoDTO = new JobInfoDTO();
-        BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
-        return jobInfoDTO;
+        return convert(jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId)));
+    }
+
+    public List<JobInfoDTO> fetchAllJob(Long appId) {
+        return jobInfoRepository.findByAppId(appId).stream().map(JobService::convert).collect(Collectors.toList());
+    }
+
+    public List<JobInfoDTO> queryJob(PowerQuery powerQuery) {
+        Specification<JobInfoDO> specification = QueryConvertUtils.toSpecification(powerQuery);
+        return jobInfoRepository.findAll(specification).stream().map(JobService::convert).collect(Collectors.toList());
     }
 
     /**
@@ -223,6 +233,12 @@ public class JobService {
         if (jobInfoDO.getTaskRetryNum() == null) {
             jobInfoDO.setTaskRetryNum(0);
         }
+    }
+
+    private static JobInfoDTO convert(JobInfoDO jobInfoDO) {
+        JobInfoDTO jobInfoDTO = new JobInfoDTO();
+        BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
+        return jobInfoDTO;
     }
 
 }

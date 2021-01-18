@@ -4,6 +4,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/1
  */
-public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
+public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long>, JpaSpecificationExecutor<JobInfoDO> {
 
 
     // 调度专用
@@ -31,5 +32,7 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long> {
     long countByAppIdAndStatusAndIdIn(Long appId, int status, List<Long> jobIds);
 
     long countByAppIdAndStatusNot(long appId, int status);
+
+    List<JobInfoDO> findByAppId(Long appId);
 
 }

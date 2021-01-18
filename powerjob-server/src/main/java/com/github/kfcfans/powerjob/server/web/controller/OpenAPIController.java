@@ -2,7 +2,9 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
+import com.github.kfcfans.powerjob.common.PowerQuery;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
+import com.github.kfcfans.powerjob.common.request.query.JobInfoQuery;
 import com.github.kfcfans.powerjob.server.service.AppInfoService;
 import com.github.kfcfans.powerjob.server.service.CacheService;
 import com.github.kfcfans.powerjob.server.service.JobService;
@@ -14,6 +16,7 @@ import com.github.kfcfans.powerjob.common.response.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 开放接口（OpenAPI）控制器，对接 oms-client
@@ -58,6 +61,16 @@ public class OpenAPIController {
     public ResultDTO<JobInfoDTO> fetchJob(Long jobId, Long appId) {
         checkJobIdValid(jobId, appId);
         return ResultDTO.success(jobService.fetchJob(jobId));
+    }
+
+    @PostMapping(OpenAPIConstant.FETCH_ALL_JOB)
+    public ResultDTO<List<JobInfoDTO>> fetchAllJob(Long appId) {
+        return ResultDTO.success(jobService.fetchAllJob(appId));
+    }
+
+    @PostMapping(OpenAPIConstant.QUERY_JOB)
+    public ResultDTO<List<JobInfoDTO>> queryJob(@RequestBody JobInfoQuery powerQuery) {
+        return ResultDTO.success(jobService.queryJob(powerQuery));
     }
 
     @PostMapping(OpenAPIConstant.DELETE_JOB)
@@ -117,6 +130,11 @@ public class OpenAPIController {
     @PostMapping(OpenAPIConstant.FETCH_INSTANCE_INFO)
     public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) {
         return ResultDTO.success(instanceService.getInstanceInfo(instanceId));
+    }
+
+    @PostMapping(OpenAPIConstant.QUERY_INSTANCE)
+    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody PowerQuery powerQuery) {
+        return ResultDTO.success(instanceService.queryInstanceInfo(powerQuery));
     }
 
     /* ************* Workflow 区 ************* */

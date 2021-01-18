@@ -15,6 +15,8 @@ public class OpenAPIConstant {
     /* ************* JOB 区 ************* */
     public static final String SAVE_JOB = "/saveJob";
     public static final String FETCH_JOB = "/fetchJob";
+    public static final String FETCH_ALL_JOB = "/fetchAllJob";
+    public static final String QUERY_JOB = "/queryJob";
     public static final String DISABLE_JOB = "/disableJob";
     public static final String ENABLE_JOB = "/enableJob";
     public static final String DELETE_JOB = "/deleteJob";
@@ -26,6 +28,7 @@ public class OpenAPIConstant {
     public static final String RETRY_INSTANCE = "/retryInstance";
     public static final String FETCH_INSTANCE_STATUS = "/fetchInstanceStatus";
     public static final String FETCH_INSTANCE_INFO = "/fetchInstanceInfo";
+    public static final String QUERY_INSTANCE = "/queryInstance";
 
     /* ************* Workflow 区 ************* */
     public static final String SAVE_WORKFLOW = "/saveWorkflow";

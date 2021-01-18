@@ -1,4 +1,4 @@
-English | [简体中文](./README_zhCN.md)
+### English | [简体中文](./README_zhCN.md)
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
@@ -13,22 +13,24 @@ English | [简体中文](./README_zhCN.md)
 
 [PowerJob](https://github.com/PowerJob/PowerJob) is an open-source distributed computing and job scheduling framework which allows developers to easily schedule tasks in their own application.
 
-Refer to [Quick Started Tutorial](https://www.yuque.com/powerjob/en/baz8y6) for detailed information.
+Refer to [PowerJob Introduction](https://www.yuque.com/powerjob/en/introduce) for detailed information.
 
 # Introduction
 
 ### Features
-- **Friendly UI:** [Front-end](http://try.powerjob.tech/#/welcome) page is provided and developers can manage their task, monitor the status, check the logs online, etc.
+- **Friendly UI:** [Front-end](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123) page is provided and developers can manage their task, monitor the status, check the logs online, etc.
 
-- **Abundant Timing Strategies:** Four timing strategies are supported, including CRON expression, fixed rate, fixed delay and OpenAPI.
+- **Abundant Timing Strategies:** Four timing strategies are supported, including CRON expression, fixed rate, fixed delay and OpenAPI which allows you to define your own scheduling policies, such as delaying execution.
 
-- **Multiple Execution Mode:** Four execution modes are supported, including stand-alone, broadcast, Map and MapReduce. Distributed computing resource could be utilized in MapReduce mode, try the magic out [here](http://try.powerjob.tech/)!
+- **Multiple Execution Mode:** Four execution modes are supported, including stand-alone, broadcast, Map and MapReduce. Distributed computing resource could be utilized in MapReduce mode, try the magic out [here](https://www.yuque.com/powerjob/en/za1d96#9YOnV)!
 
-- **DAG Job Flow Support:** Both job dependency management and data communications between jobs are supported.
+- **Workflow(DAG) Support:** Both job dependency management and data communications between jobs are supported.
 
-- **Cross-language Client Support:** So far, developers can use Java, Spring, Shell, Python to write their own PowerJob client and define tasks that can be triggered by PowerJob workflow.
+- **Extensive Processor Support:** Developers can write their processors in Java, Shell, Python, and will subsequently support multilingual scheduling via HTTP.
 
-- **Disaster Tolerance Support:** As long as there are enough computing nodes, configurable retry policies make it possible for your task to be executed and finished successfully.  
+- **Powerful Disaster Tolerance:** As long as there are enough computing nodes, configurable retry policies make it possible for your task to be executed and finished successfully.
+
+- **High Availability & High Performance:**  PowerJob supports unlimited horizontal expansion. It's easy to achieve high availability and performance by deploying as many PowerJob server and worker nodes.
 
 ### Applicable scenes
 
@@ -36,18 +38,16 @@ Refer to [Quick Started Tutorial](https://www.yuque.com/powerjob/en/baz8y6) for 
 - Broadcast tasks, for example, broadcasting to the cluster to clear logs.
 - MapReduce tasks, for example, speeding up certain job like updating large amounts of data.
 - Delayed tasks, for example, processing overdue orders.
-- Customized tasks, triggered with [OpenAPI](https://www.yuque.com/powerjob/en/fs3vg0).
+- Customized tasks, triggered with [OpenAPI](https://www.yuque.com/powerjob/en/openapi).
 
 ### Online trial
-
-- Trial address: [Online Trial Address](http://try.powerjob.tech/)  
-- Application name: powerjob-agent-test  
-- Application password: 123
+- Address: [try.powerjob.tech](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123)
+- Recommended to read the documentation first: [here](https://www.yuque.com/powerjob/en/trial)
 
 # Documents
 **[Docs](https://www.yuque.com/powerjob/en/introduce)**
 
-**[中文文档](https://www.yuque.com/powerjob/guidence/ztn4i5)**
+**[中文文档](https://www.yuque.com/powerjob/guidence/intro)**
 
 # Known Users
 [Click to register as PowerJob user!](https://github.com/PowerJob/PowerJob/issues/6)  

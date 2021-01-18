@@ -10,6 +10,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceIn
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceMetadataService;
+import com.github.kfcfans.powerjob.server.service.lock.local.UseSegmentLock;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -46,6 +47,7 @@ public class DispatchService {
 
     private static final Splitter commaSplitter = Splitter.on(",");
 
+    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId().intValue()", concurrencyLevel = 1024)
     public void redispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes) {
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
         dispatch(jobInfo, instanceId, currentRunningTimes, instanceInfo.getInstanceParams(), instanceInfo.getWfInstanceId());
@@ -59,6 +61,7 @@ public class DispatchService {
      * @param instanceParams 实例的运行参数，API触发方式专用
      * @param wfInstanceId 工作流任务实例ID，workflow 任务专用
      */
+    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId().intValue()", concurrencyLevel = 1024)
     public void dispatch(JobInfoDO jobInfo, long instanceId, long currentRunningTimes, String instanceParams, Long wfInstanceId) {
         Long jobId = jobInfo.getId();
         log.info("[Dispatcher-{}|{}] start to dispatch job: {};instancePrams: {}.", jobId, instanceId, jobInfo, instanceParams);
@@ -76,15 +79,20 @@ public class DispatchService {
         // 查询当前运行的实例数
         long current = System.currentTimeMillis();
 
-        // 0 代表不限制在线任务，还能省去一次 DB 查询
         Integer maxInstanceNum = jobInfo.getMaxInstanceNum();
+        // 秒级任务只派发到一台机器，具体的 maxInstanceNum 由 TaskTracker 控制
+        if (TimeExpressionType.frequentTypes.contains(jobInfo.getTimeExpressionType())) {
+            maxInstanceNum = 1;
+        }
+
+        // 0 代表不限制在线任务，还能省去一次 DB 查询
         if (maxInstanceNum > 0) {
 
-            // 这个 runningInstanceCount 已经包含了本 instance
             // 不统计 WAITING_DISPATCH 的状态：使用 OpenAPI 触发的延迟任务不应该统计进去（比如 delay 是 1 天）
+            // 由于不统计 WAITING_DISPATCH，所以这个 runningInstanceCount 不包含本任务自身
             long runningInstanceCount = instanceInfoRepository.countByJobIdAndStatusIn(jobId, Lists.newArrayList(WAITING_WORKER_RECEIVE.getV(), RUNNING.getV()));
             // 超出最大同时运行限制，不执行调度
-            if (runningInstanceCount > maxInstanceNum) {
+            if (runningInstanceCount >= maxInstanceNum) {
                 String result = String.format(SystemInstanceResult.TOO_MANY_INSTANCES, runningInstanceCount, maxInstanceNum);
                 log.warn("[Dispatcher-{}|{}] cancel dispatch job due to too much instance is running ({} > {}).", jobId, instanceId, runningInstanceCount, maxInstanceNum);
                 instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, result, dbInstanceParams, now);

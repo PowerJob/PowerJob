@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.service.lock;
 
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.persistence.core.model.OmsLockDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.OmsLockRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class DatabaseLockService implements LockService {
     private OmsLockRepository omsLockRepository;
 
     @Override
-    public boolean lock(String name, long maxLockTime) {
+    public boolean tryLock(String name, long maxLockTime) {
 
         OmsLockDO newLock = new OmsLockDO(name, NetUtils.getLocalHost(), maxLockTime);
         try {
@@ -43,7 +44,7 @@ public class DatabaseLockService implements LockService {
 
             log.warn("[DatabaseLockService] The lock[{}] already timeout, will be unlocked now.", omsLockDO);
             unlock(name);
-            return lock(name, maxLockTime);
+            return tryLock(name, maxLockTime);
         }
         return false;
     }
