@@ -297,7 +297,11 @@ public class NetUtils {
      */
     public static boolean isPreferredNetworkInterface(NetworkInterface networkInterface) {
         String preferredNetworkInterface = System.getProperty(PowerJobDKey.PREFERRED_NETWORK_INTERFACE);
-        return Objects.equals(networkInterface.getDisplayName(), preferredNetworkInterface);
+        if (Objects.equals(networkInterface.getDisplayName(), preferredNetworkInterface)) {
+            return true;
+        }
+        // 兼容直接使用网卡名称的情况，比如 Realtek PCIe GBE Family Controller
+        return Objects.equals(networkInterface.getName(), preferredNetworkInterface);
     }
 
     static boolean ignoreInterfaceByConfig(String interfaceName) {
