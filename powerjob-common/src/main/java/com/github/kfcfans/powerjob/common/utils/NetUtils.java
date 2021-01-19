@@ -246,7 +246,7 @@ public class NetUtils {
                 continue;
             }
             // 根据用户 -D 参数忽略网卡
-            if (ignoreInterfaceByConfig(networkInterface.getDisplayName())) {
+            if (ignoreInterfaceByConfig(networkInterface.getDisplayName()) || ignoreInterfaceByConfig(networkInterface.getName())) {
                 continue;
             }
             validNetworkInterfaces.add(networkInterface);
