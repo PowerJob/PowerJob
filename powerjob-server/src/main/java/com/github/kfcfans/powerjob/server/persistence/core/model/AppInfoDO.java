@@ -23,7 +23,9 @@ public class AppInfoDO {
     private Long id;
 
     private String appName;
-    // 应用分组密码
+    /**
+     * 应用分组密码
+     */
     private String password;
 
     /**
@@ -34,5 +36,6 @@ public class AppInfoDO {
     private String currentServer;
 
     private Date gmtCreate;
+
     private Date gmtModified;
 }

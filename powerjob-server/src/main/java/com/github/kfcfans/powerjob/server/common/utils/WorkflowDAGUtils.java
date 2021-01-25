@@ -23,6 +23,7 @@ public class WorkflowDAGUtils {
 
     /**
      * 获取所有根节点
+     *
      * @param peWorkflowDAG 点线表示法的DAG图
      * @return 根节点列表
      */
@@ -37,6 +38,7 @@ public class WorkflowDAGUtils {
 
     /**
      * 校验 DAG 是否有效
+     *
      * @param peWorkflowDAG 点线表示法的 DAG 图
      * @return true/false
      */
@@ -61,13 +63,14 @@ public class WorkflowDAGUtils {
                 }
             }
             return true;
-        }catch (Exception ignore) {
+        } catch (Exception ignore) {
         }
         return false;
     }
 
     /**
      * 将点线表示法的DAG图转化为引用表达法的DAG图
+     *
      * @param PEWorkflowDAG 点线表示法的DAG图
      * @return 引用表示法的DAG图
      */
@@ -82,7 +85,7 @@ public class WorkflowDAGUtils {
         // 创建节点
         PEWorkflowDAG.getNodes().forEach(node -> {
             Long jobId = node.getJobId();
-            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), jobId, node.getJobName(), null, InstanceStatus.WAITING_DISPATCH.getV(), null);
+            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), node.getNodeId(), jobId, node.getJobName(), InstanceStatus.WAITING_DISPATCH.getV());
             id2Node.put(jobId, n);
 
             // 初始阶段，每一个点都设为顶点

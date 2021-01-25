@@ -25,36 +25,54 @@ public class WorkflowInstanceInfoDO {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
-    // 任务所属应用的ID，冗余提高查询效率
+    /**
+     * 任务所属应用的ID，冗余提高查询效率
+     */
     private Long appId;
-
-    // workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
+    /**
+     * workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
+     */
     private Long wfInstanceId;
 
     private Long workflowId;
-
-    // workflow 状态（WorkflowInstanceStatus）
+    /**
+     * workflow 状态（WorkflowInstanceStatus）
+     */
     private Integer status;
-
-    // 工作流启动参数
+    /**
+     * 工作流启动参数
+     */
     @Lob
     @Column
     private String wfInitParams;
+    /**
+     * 工作流上下文
+     */
+    @Lob
+    @Column
+    private String wfContext;
 
     @Lob
     @Column
     private String dag;
+
     @Lob
     @Column
     private String result;
-
-    // 预计触发时间
+    /**
+     * 预计触发时间
+     */
     private Long expectedTriggerTime;
-    // 实际触发时间
+    /**
+     * 实际触发时间
+     */
     private Long actualTriggerTime;
-    // 结束时间
+    /**
+     * 结束时间
+     */
     private Long finishedTime;
 
     private Date gmtCreate;
+
     private Date gmtModified;
 }

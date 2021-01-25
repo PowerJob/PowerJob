@@ -23,18 +23,26 @@ public class UserInfoDO {
     private Long id;
 
     private String username;
+
     private String password;
-
-    // 手机号
+    /**
+     * 手机号
+     */
     private String phone;
-    // 邮箱地址
+    /**
+     * 邮箱地址
+     */
     private String email;
-    // webHook
+    /**
+     * webHook
+     */
     private String webHook;
-
-    // 扩展字段
+    /**
+     * 扩展字段
+     */
     private String extra;
 
     private Date gmtCreate;
+
     private Date gmtModified;
 }

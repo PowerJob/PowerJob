@@ -18,21 +18,52 @@ import java.util.List;
 @AllArgsConstructor
 public class WorkflowDAG {
 
-    // DAG允许存在多个顶点
+    /**
+     * DAG允许存在多个顶点
+     */
     private List<Node> roots;
 
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
     public static final class Node {
-        // 后继者，子节点
-        private List<Node> successors;
-        private Long jobId;
-        private String jobName;
 
-        // 运行时参数
-        private Long instanceId; // 任务实例ID
-        private int status; // 状态 WAITING_DISPATCH -> RUNNING -> SUCCEED/FAILED/STOPPED
+        public Node(List<Node> successors, Long nodeId, Long jobId, String jobName, int status) {
+            this.successors = successors;
+            this.nodeId = nodeId;
+            this.jobId = jobId;
+            this.jobName = jobName;
+            this.status = status;
+        }
+
+        /**
+         * 后继者，子节点
+         */
+        private List<Node> successors;
+        /**
+         * node id
+         *
+         * @since 20210128
+         */
+        private Long nodeId;
+
+        private Long jobId;
+
+        private String jobName;
+        /**
+         * 运行时信息
+         */
+        private Long instanceId;
+        /**
+         * 状态 WAITING_DISPATCH -> RUNNING -> SUCCEED/FAILED/STOPPED
+         */
+        private int status;
+
         private String result;
+        /**
+         * instanceId will be null if disable .
+         */
+        private Boolean enable;
+
+        private Boolean skipWhenFailed;
     }
 }

@@ -26,45 +26,70 @@ public class InstanceInfoDO {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
-
-    // 任务ID
+    /**
+     * 任务ID
+     */
     private Long jobId;
-    // 任务所属应用的ID，冗余提高查询效率
+    /**
+     * 任务所属应用的ID，冗余提高查询效率
+     */
     private Long appId;
-    // 任务实例ID
+    /**
+     * 任务所属应用的ID，冗余提高查询效率
+     */
     private Long instanceId;
-    // 任务实例参数
+    /**
+     * 任务实例参数（动态）
+     */
     @Lob
     @Column
     private String instanceParams;
-
-    // 该任务实例的类型，普通/工作流（InstanceType）
+    /**
+     * 该任务实例的类型，普通/工作流（InstanceType）
+     */
     private Integer type;
-    // 该任务实例所属的 workflow ID，仅 workflow 任务存在
+    /**
+     * 该任务实例所属的 workflow ID，仅 workflow 任务存在
+     */
     private Long wfInstanceId;
     /**
      * 任务状态 {@link InstanceStatus}
      */
     private Integer status;
-    // 执行结果（允许存储稍大的结果）
+    /**
+     * 执行结果（允许存储稍大的结果）
+     */
     @Lob
     @Column
     private String result;
-    // 预计触发时间
+    /**
+     * 预计触发时间
+     */
     private Long expectedTriggerTime;
-    // 实际触发时间
+    /**
+     * 实际触发时间
+     */
     private Long actualTriggerTime;
-    // 结束时间
+    /**
+     * 结束时间
+     */
     private Long finishedTime;
-    // 最后上报时间
+    /**
+     * 最后上报时间
+     */
     private Long lastReportTime;
-    // TaskTracker地址
+    /**
+     * TaskTracker 地址
+     */
     private String taskTrackerAddress;
-
-    // 总共执行的次数（用于重试判断）
+    /**
+     * 总共执行的次数（用于重试判断）
+     */
     private Long runningTimes;
 
+
     private Date gmtCreate;
+
     private Date gmtModified;
 
 }

@@ -25,12 +25,15 @@ public class OmsLockDO {
     private Long id;
 
     private String lockName;
-    private String ownerIP;
 
-    // 最长持有锁的时间
+    private String ownerIP;
+    /**
+     * 最长持有锁的时间
+     */
     private Long maxLockTime;
 
     private Date gmtCreate;
+
     private Date gmtModified;
 
     public OmsLockDO(String lockName, String ownerIP, Long maxLockTime) {

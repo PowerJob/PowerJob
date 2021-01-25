@@ -23,13 +23,13 @@ public class ServerInfoDO {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
-
     /**
      * 服务器IP地址
      */
     private String ip;
 
     private Date gmtCreate;
+
     private Date gmtModified;
 
     public ServerInfoDO(String ip) {

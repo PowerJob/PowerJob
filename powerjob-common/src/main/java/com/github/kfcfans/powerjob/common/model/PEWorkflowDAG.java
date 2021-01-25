@@ -38,25 +38,45 @@ public class PEWorkflowDAG implements Serializable {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Node implements Serializable {
+        /**
+         * node id
+         * @since 20210128
+         */
+        private Long nodeId;
+
         private Long jobId;
+        /**
+         * job alias or job name
+         */
         private String jobName;
 
-        /**
-         * Instance running param, which is not required by DAG.
-         */
+        /* Instance running param, which is not required by DAG. */
+
         @JsonSerialize(using= ToStringSerializer.class)
         private Long instanceId;
-        private Integer status;
-        private String result;
 
-        public Node(Long jobId, String jobName) {
+        private String jobParams;
+
+        private Integer status;
+
+        private String result;
+        /**
+         * instanceId will be null if disable .
+         */
+        private Boolean enable;
+
+        private Boolean skipWhenFailed;
+
+
+        public Node(Long nodeId,Long jobId, String jobName) {
+            this.nodeId = nodeId;
             this.jobId = jobId;
             this.jobName = jobName;
         }
     }
 
     /**
-     * Edge formed by two job ids.
+     * Edge formed by two node ids.
      */
     @Data
     @NoArgsConstructor

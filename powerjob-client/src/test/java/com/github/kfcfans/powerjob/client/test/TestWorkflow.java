@@ -46,8 +46,8 @@ class TestWorkflow extends ClientInitializer {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, "DAG-Node-1"));
-        nodes.add(new PEWorkflowDAG.Node(2L, "DAG-Node-2"));
+        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "DAG-Node-1"));
+        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "DAG-Node-2"));
 
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
 
