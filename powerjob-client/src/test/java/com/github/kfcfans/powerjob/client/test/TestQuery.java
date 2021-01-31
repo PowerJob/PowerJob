@@ -33,17 +33,17 @@ class TestQuery extends ClientInitializer {
     @Test
     void testQueryJob() {
         JobInfoQuery jobInfoQuery = new JobInfoQuery()
-                .idGt(-1L)
-                .idLt(10086L)
-                .jobNameLike("DAG")
-                .gmtModifiedGt(DateUtils.addYears(new Date(), -10))
-                .gmtModifiedLt(DateUtils.addDays(new Date(), 10))
-                .executeTypeIn(Lists.newArrayList(ExecuteType.STANDALONE.getV(), ExecuteType.BROADCAST.getV(), ExecuteType.MAP_REDUCE.getV()))
-                .timeExpressionIn(Lists.newArrayList(TimeExpressionType.API.name(), TimeExpressionType.CRON.name(), TimeExpressionType.WORKFLOW.name(), TimeExpressionType.FIXED_RATE.name()))
-                .processorTypeIn(Lists.newArrayList(ProcessorType.EMBEDDED_JAVA.getV(), ProcessorType.SHELL.getV(), ProcessorType.JAVA_CONTAINER.getV()))
-                .processorInfoLike("com.github.kfcfans");
+                .setIdGt(-1L)
+                .setIdLt(10086L)
+                .setJobNameLike("DAG")
+                .setGmtModifiedGt(DateUtils.addYears(new Date(), -10))
+                .setGmtCreateLt(DateUtils.addDays(new Date(), 10))
+                .setExecuteTypeIn(Lists.newArrayList(ExecuteType.STANDALONE.getV(), ExecuteType.BROADCAST.getV(), ExecuteType.MAP_REDUCE.getV()))
+                .setProcessorTypeIn(Lists.newArrayList(ProcessorType.EMBEDDED_JAVA.getV(), ProcessorType.SHELL.getV(), ProcessorType.JAVA_CONTAINER.getV()))
+                .setProcessorInfoLike("com.github.kfcfans");
 
         ResultDTO<List<JobInfoDTO>> jobQueryResult = ohMyClient.queryJob(jobInfoQuery);
         System.out.println(JSON.toJSONString(jobQueryResult));
+        System.out.println(jobQueryResult.getData().size());
     }
 }

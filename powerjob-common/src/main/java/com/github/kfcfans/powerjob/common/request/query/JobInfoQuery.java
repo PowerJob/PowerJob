@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-@Accessors(chain = true, fluent = true)
+@Accessors(chain = true)
 public class JobInfoQuery extends PowerQuery {
 
     private Long idEq;
@@ -31,7 +31,6 @@ public class JobInfoQuery extends PowerQuery {
     private String jobParamsLike;
 
     private List<Integer> timeExpressionTypeIn;
-    private List<String> timeExpressionIn;
     private List<Integer> executeTypeIn;
     private List<Integer> processorTypeIn;
 
