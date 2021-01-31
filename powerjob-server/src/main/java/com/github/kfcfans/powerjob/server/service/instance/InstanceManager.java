@@ -73,6 +73,12 @@ public class InstanceManager {
             return;
         }
 
+        // 如果任务已经结束，直接丢弃该请求（StopInstance 和 ReportStatus 同时发送的情况）
+        if (InstanceStatus.finishedStatus.contains(instanceInfo.getStatus())) {
+            log.info("[InstanceManager-{}] instance already finished, this report[{}] will be dropped!", instanceId, req);
+            return;
+        }
+
         InstanceStatus newStatus = InstanceStatus.of(req.getInstanceStatus());
         Integer timeExpressionType = jobInfo.getTimeExpressionType();
 

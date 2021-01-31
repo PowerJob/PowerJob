@@ -155,4 +155,10 @@ public class CommonUtils {
         return StringUtils.replace(UUID.randomUUID().toString(), "-", "");
     }
 
+    public static void easySleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignore) {
+        }
+    }
 }

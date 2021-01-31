@@ -5,21 +5,23 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>com.github.kfcfans</groupId>
-        <version>2.0.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-agent</artifactId>
-    <version>3.4.4</version>
+    <version>3.4.5</version>
     <packaging>jar</packaging>
 
 
     <properties>
-        <powerjob.worker.version>3.4.4</powerjob.worker.version>
+        <powerjob.worker.version>3.4.5</powerjob.worker.version>
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
 
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
+
+        <powerjob.official.processors.version>1.0.0</powerjob.official.processors.version>
     </properties>
 
     <dependencies>
@@ -28,6 +30,12 @@
             <groupId>com.github.kfcfans</groupId>
             <artifactId>powerjob-worker</artifactId>
             <version>${powerjob.worker.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.kfcfans</groupId>
+            <artifactId>powerjob-official-processors</artifactId>
+            <version>${powerjob.official.processors.version}</version>
         </dependency>
 
         <!-- java cli 工具 -->

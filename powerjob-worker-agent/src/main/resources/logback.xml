@@ -9,7 +9,7 @@
     <property name="LOG_PATH" value="${user.home}/powerjob/logs"/>
 
     <property name="CONSOLE_LOG_PATTERN"
-              value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) |%highlight(%-5level) |%blue(%thread) |%blue(%file:%line) |%green(%logger) |%cyan(%msg%n)"/>
+              value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) |%highlight(%-5level) |%blue(%thread) |%green(%logger{10}) |%cyan(%msg%n)"/>
 
     <!-- Console 输出设置 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -32,7 +32,7 @@
             <MaxHistory>3</MaxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{10} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -52,7 +52,7 @@
             <MaxHistory>3</MaxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{10} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <append>true</append>
@@ -60,9 +60,9 @@
     <!-- 系统主日志 日志 end -->
 
     <root level="INFO">
-        <appender-ref ref="DEFAULT_APPENDER"/>
-        <appender-ref ref="ERROR_APPENDER"/>
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ERROR_APPENDER"/>
+        <appender-ref ref="DEFAULT_APPENDER"/>
     </root>
 
 </configuration>

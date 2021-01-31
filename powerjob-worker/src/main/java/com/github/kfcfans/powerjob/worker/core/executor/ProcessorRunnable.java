@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.worker.core.executor;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.powerjob.common.ExecuteType;
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
@@ -161,6 +162,9 @@ public class ProcessorRunnable implements Runnable {
      * @param cmd 特殊需求，比如广播执行需要创建广播任务
      */
     private void reportStatus(TaskStatus status, String result, Integer cmd) {
+
+        CommonUtils.easySleep(1);
+
         ProcessorReportTaskStatusReq req = new ProcessorReportTaskStatusReq();
 
         req.setInstanceId(task.getInstanceId());
