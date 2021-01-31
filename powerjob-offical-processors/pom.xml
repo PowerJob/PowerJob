@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-offical-processors</artifactId>
-    <version>3.4.5</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
