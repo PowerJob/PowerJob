@@ -1,10 +1,8 @@
-package tech.powerjob.offical.processors.impl;
+package tech.powerjob.official.processors.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Test;
-import tech.powerjob.offical.processors.TestUtils;
-
-import static org.junit.jupiter.api.Assertions.*;
+import tech.powerjob.official.processors.TestUtils;
 
 /**
  * HttpProcessorTest

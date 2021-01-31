@@ -1,4 +1,4 @@
-### English | [简体中文](./README_zhCN.md)
+# English | [简体中文](./README_zhCN.md)
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>

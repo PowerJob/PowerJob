@@ -43,7 +43,7 @@
         <module>powerjob-worker-agent</module>
         <module>powerjob-worker-spring-boot-starter</module>
         <module>powerjob-worker-samples</module>
-        <module>powerjob-offical-processors</module>
+        <module>powerjob-official-processors</module>
     </modules>
 
     <properties>
