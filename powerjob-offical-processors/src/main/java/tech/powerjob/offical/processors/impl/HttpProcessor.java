@@ -49,6 +49,7 @@ public class HttpProcessor extends CommonBasicProcessor {
             httpParams.method = "GET";
             omsLogger.info("[HttpProcessor] using default request method: GET");
         } else {
+            httpParams.method = httpParams.method.toUpperCase();
             omsLogger.info("[HttpProcessor] request method: {}", httpParams.method);
         }
 
