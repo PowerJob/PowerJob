@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.offical.processors.CommonBasicProcessor;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,14 +22,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class HttpProcessor extends CommonBasicProcessor {
 
-    private static final OkHttpClient client;
-
-    static {
-        client = new OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .build();
-    }
+    // 60 seconds
+    private static final int DEFAULT_TIMEOUT = 60;
+    private static final Map<Integer, OkHttpClient> CLIENT_STORE = new ConcurrentHashMap<>();
 
     @Override
     public ProcessResult process0(TaskContext taskContext) throws Exception {
@@ -60,6 +56,13 @@ public class HttpProcessor extends CommonBasicProcessor {
                 omsLogger.warn("[HttpProcessor] try to use 'application/json' as media type");
             }
         }
+
+        // set default timeout
+        if (httpParams.timeout == null) {
+            httpParams.timeout = DEFAULT_TIMEOUT;
+        }
+        omsLogger.info("[HttpProcessor] request timeout: {} seconds", httpParams.timeout);
+        OkHttpClient client = getClient(httpParams.timeout);
 
         Request.Builder builder = new Request.Builder().url(httpParams.url);
         if (httpParams.headers != null) {
@@ -118,5 +121,16 @@ public class HttpProcessor extends CommonBasicProcessor {
         private String body;
 
         private Map<String, String> headers;
+
+        /**
+         * timeout for complete calls
+         */
+        private Integer timeout;
+    }
+
+    private static OkHttpClient getClient(Integer timeout) {
+        return CLIENT_STORE.computeIfAbsent(timeout, ignore -> new OkHttpClient.Builder()
+                .callTimeout(timeout, TimeUnit.SECONDS)
+                .build());
     }
 }
