@@ -60,6 +60,9 @@
         </encoder>
         <append>true</append>
     </appender>
+    <logger name="com.github.kfcfans.powerjob" level="INFO" additivity="true">
+        <appender-ref ref="DEFAULT_APPENDER"/>
+    </logger>
     <!-- 系统主日志 日志 end -->
 
     <root level="INFO">

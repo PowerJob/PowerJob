@@ -20,6 +20,8 @@
         <picocli.version>4.3.2</picocli.version>
 
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
+
+        <powerjob.offical.processors.version>1.0.0</powerjob.offical.processors.version>
     </properties>
 
     <dependencies>
@@ -28,6 +30,12 @@
             <groupId>com.github.kfcfans</groupId>
             <artifactId>powerjob-worker</artifactId>
             <version>${powerjob.worker.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.kfcfans</groupId>
+            <artifactId>powerjob-offical-processors</artifactId>
+            <version>${powerjob.offical.processors.version}</version>
         </dependency>
 
         <!-- java cli 工具 -->
