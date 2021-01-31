@@ -21,7 +21,7 @@
 
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
 
-        <powerjob.offical.processors.version>1.0.0</powerjob.offical.processors.version>
+        <powerjob.official.processors.version>1.0.0</powerjob.official.processors.version>
     </properties>
 
     <dependencies>
@@ -34,8 +34,8 @@
 
         <dependency>
             <groupId>com.github.kfcfans</groupId>
-            <artifactId>powerjob-offical-processors</artifactId>
-            <version>${powerjob.offical.processors.version}</version>
+            <artifactId>powerjob-official-processors</artifactId>
+            <version>${powerjob.official.processors.version}</version>
         </dependency>
 
         <!-- java cli 工具 -->

@@ -9,7 +9,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>powerjob-offical-processors</artifactId>
+    <artifactId>powerjob-official-processors</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 

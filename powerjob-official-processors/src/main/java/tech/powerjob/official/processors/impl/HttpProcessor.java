@@ -1,4 +1,4 @@
-package tech.powerjob.offical.processors.impl;
+package tech.powerjob.official.processors.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONValidator;
@@ -8,7 +8,7 @@ import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import lombok.Data;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
-import tech.powerjob.offical.processors.CommonBasicProcessor;
+import tech.powerjob.official.processors.CommonBasicProcessor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
