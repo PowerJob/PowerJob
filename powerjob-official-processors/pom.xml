@@ -92,16 +92,20 @@
                             <shadedPattern>shade.powerjob.okio</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com</pattern>
-                            <shadedPattern>shade.powerjob.com</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>org</pattern>
                             <shadedPattern>shade.powerjob.org</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>javax</pattern>
                             <shadedPattern>shade.powerjob.javax</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>shade.powerjob.com.google</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.alibaba</pattern>
+                            <shadedPattern>shade.powerjob.com.alibaba</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
