@@ -5,7 +5,7 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>com.github.kfcfans</groupId>
-        <version>2.0.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -94,10 +94,6 @@
                         <relocation>
                             <pattern>org</pattern>
                             <shadedPattern>shade.powerjob.org</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>javax</pattern>
-                            <shadedPattern>shade.powerjob.javax</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>com.google</pattern>
