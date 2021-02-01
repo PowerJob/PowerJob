@@ -9,6 +9,7 @@ import lombok.Data;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.official.processors.CommonBasicProcessor;
+import tech.powerjob.official.processors.util.CommonUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +30,7 @@ public class HttpProcessor extends CommonBasicProcessor {
     @Override
     public ProcessResult process0(TaskContext taskContext) throws Exception {
         OmsLogger omsLogger = taskContext.getOmsLogger();
-        HttpParams httpParams = JSONObject.parseObject(taskContext.getJobParams(), HttpParams.class);
+        HttpParams httpParams = JSONObject.parseObject(CommonUtils.parseParams(taskContext), HttpParams.class);
 
         if (StringUtils.isEmpty(httpParams.url)) {
             return new ProcessResult(false, "url can't be empty!");
@@ -94,7 +95,6 @@ public class HttpProcessor extends CommonBasicProcessor {
         }
 
         String res = String.format("code:%d,body:%s", response.code(), msgBody);
-        omsLogger.info("[HttpProcessor] process result: {}", res);
 
         return new ProcessResult(true, res);
     }

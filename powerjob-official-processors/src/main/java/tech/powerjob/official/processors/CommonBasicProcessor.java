@@ -6,6 +6,7 @@ import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import com.google.common.base.Stopwatch;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import tech.powerjob.official.processors.util.CommonUtils;
 
 /**
  * CommonBasicProcessor
@@ -20,7 +21,7 @@ public abstract class CommonBasicProcessor implements BasicProcessor {
 
         String clzName = this.getClass().getSimpleName();
         OmsLogger omsLogger = taskContext.getOmsLogger();
-        omsLogger.info("[{}] using params: {}", clzName, taskContext.getJobParams());
+        omsLogger.info("[{}] using params: {}", clzName, CommonUtils.parseParams(taskContext));
 
         try {
             Stopwatch sw = Stopwatch.createStarted();
