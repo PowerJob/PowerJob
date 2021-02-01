@@ -1,4 +1,4 @@
-package tech.powerjob.offical.processors;
+package tech.powerjob.official.processors;
 
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.log.impl.OmsServerLogger;

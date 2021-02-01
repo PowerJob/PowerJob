@@ -1,4 +1,4 @@
-package tech.powerjob.offical.processors;
+package tech.powerjob.official.processors;
 
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
@@ -26,19 +26,11 @@ public abstract class CommonBasicProcessor implements BasicProcessor {
             Stopwatch sw = Stopwatch.createStarted();
             ProcessResult result = process0(taskContext);
             omsLogger.info("[{}] execute succeed, using {}, result: {}", clzName, sw, result);
-            return suit(result);
+            return result;
         } catch (Throwable t) {
             omsLogger.error("[{}] execute failed!", clzName, t);
             return new ProcessResult(false, ExceptionUtils.getMessage(t));
         }
-    }
-
-    private static ProcessResult suit(ProcessResult processResult) {
-        if (processResult.getMsg() == null || processResult.getMsg().length() < 1024) {
-            return processResult;
-        }
-        processResult.setMsg(processResult.getMsg().substring(0, 1024) + "...");
-        return processResult;
     }
 
     protected abstract ProcessResult process0(TaskContext taskContext) throws Exception;

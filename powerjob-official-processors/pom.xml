@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>com.github.kfcfans</groupId>
-        <version>2.0.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>powerjob-offical-processors</artifactId>
-    <version>3.4.5</version>
+    <artifactId>powerjob-official-processors</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -92,16 +92,16 @@
                             <shadedPattern>shade.powerjob.okio</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com</pattern>
-                            <shadedPattern>shade.powerjob.com</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>org</pattern>
                             <shadedPattern>shade.powerjob.org</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>javax</pattern>
-                            <shadedPattern>shade.powerjob.javax</shadedPattern>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>shade.powerjob.com.google</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.alibaba</pattern>
+                            <shadedPattern>shade.powerjob.com.alibaba</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

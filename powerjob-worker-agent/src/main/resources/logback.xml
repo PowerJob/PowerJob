@@ -41,9 +41,6 @@
             <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
-    <logger name="ERROR_LOGGER" level="ERROR" additivity="true">
-        <appender-ref ref="ERROR_APPENDER"/>
-    </logger>
     <!-- 系统所有异常日志（ERROR）双写 end -->
 
 
@@ -60,13 +57,12 @@
         </encoder>
         <append>true</append>
     </appender>
-    <logger name="DEFAULT_LOGGER" level="INFO" additivity="false">
-        <appender-ref ref="DEFAULT_APPENDER"/>
-    </logger>
     <!-- 系统主日志 日志 end -->
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ERROR_APPENDER"/>
+        <appender-ref ref="DEFAULT_APPENDER"/>
     </root>
 
 </configuration>
