@@ -42,7 +42,7 @@ Refer to [PowerJob Introduction](https://www.yuque.com/powerjob/en/introduce) fo
 
 ### Online trial
 - Address: [try.powerjob.tech](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123)
-- Recommended to read the documentation first: [here](https://www.yuque.com/powerjob/en/trial)
+- Recommend reading the document first: [here](https://www.yuque.com/powerjob/en/trial)
 
 # Documents
 **[Docs](https://www.yuque.com/powerjob/en/introduce)**
@@ -59,6 +59,10 @@ Refer to [PowerJob Introduction](https://www.yuque.com/powerjob/en/introduce) fo
 # License
 
 PowerJob is released under Apache License 2.0. Please refer to [License](./LICENSE) for details.
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/PowerJob/PowerJob.svg)](https://starchart.cc/PowerJob/PowerJob)
 
 # Others
 
