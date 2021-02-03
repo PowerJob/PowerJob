@@ -19,6 +19,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileCleanupProcessorTest {
 
     @Test
+    void testPatternCompile() throws Exception {
+        String fileName = "abc.log";
+        System.out.println(fileName.matches("[\\s\\S]*log"));
+        System.out.println(Pattern.matches("[a-z.0-9]*log", fileName));
+    }
+
+    @Test
+    void testScriptCompile() throws Exception {
+        Pattern compile = Pattern.compile("(shell|python)_[0-9]*\\.(sh|py)");
+        String fileNameA = "shell_158671537124147264.sh";
+        String fileNameB = "python_158671537124147264.py";
+        assertTrue(compile.matcher(fileNameA).matches());
+        assertTrue(compile.matcher(fileNameB).matches());
+    }
+
+    @Test
     void testProcess() throws Exception {
         JSONObject params = new JSONObject();
         params.put("dirPath", "/Users/tjq/logs");
@@ -35,9 +51,15 @@ class FileCleanupProcessorTest {
     }
 
     @Test
-    void testPatternCompile() throws Exception {
-        String fileName = "abc.log";
-        System.out.println(fileName.matches("[\\s\\S]*log"));
-        System.out.println(Pattern.matches("[a-z.0-9]*log", fileName));
+    void testCleanWorkerScript() throws Exception {
+        JSONObject params = new JSONObject();
+        params.put("dirPath", "/Users/tjq/powerjob/script");
+        params.put("filePattern", "(shell|python)_[0-9]*\\.(sh|py)");
+        params.put("retentionTime", 24);
+        JSONArray array = new JSONArray();
+        array.add(params);
+
+        TaskContext taskContext = TestUtils.genTaskContext(array.toJSONString());
+        System.out.println(new FileCleanupProcessor().process(taskContext));
     }
 }
