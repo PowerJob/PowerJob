@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 public class CommonUtils {
 
     public static String parseParams(TaskContext context) {
-        if (StringUtils.isEmpty(context.getInstanceParams())) {
+        if (StringUtils.isNotEmpty(context.getInstanceParams())) {
             return context.getInstanceParams();
         }
         return context.getJobParams();

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.official.processors.CommonBasicProcessor;
 import tech.powerjob.official.processors.util.CommonUtils;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -130,6 +131,9 @@ public class HttpProcessor extends CommonBasicProcessor {
 
     private static OkHttpClient getClient(Integer timeout) {
         return CLIENT_STORE.computeIfAbsent(timeout, ignore -> new OkHttpClient.Builder()
+                .connectTimeout(Duration.ZERO)
+                .readTimeout(Duration.ZERO)
+                .writeTimeout(Duration.ZERO)
                 .callTimeout(timeout, TimeUnit.SECONDS)
                 .build());
     }

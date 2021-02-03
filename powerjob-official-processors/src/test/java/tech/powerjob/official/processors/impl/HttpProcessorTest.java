@@ -33,4 +33,14 @@ class HttpProcessorTest {
 
         System.out.println(new HttpProcessor().process(TestUtils.genTaskContext(params.toJSONString())));
     }
+
+    @Test
+    void testTimeout() throws Exception {
+        String url = "http://localhost:7700/tmp/sleep";
+        JSONObject params = new JSONObject();
+        params.put("url", url);
+        params.put("method", "GET");
+        params.put("timeout", 20);
+        System.out.println(new HttpProcessor().process(TestUtils.genTaskContext(params.toJSONString())));
+    }
 }
