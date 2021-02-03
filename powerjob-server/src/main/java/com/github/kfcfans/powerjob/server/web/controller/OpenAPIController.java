@@ -5,6 +5,7 @@ import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.PowerQuery;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.request.query.JobInfoQuery;
+import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowNodeInfoDO;
 import com.github.kfcfans.powerjob.server.service.AppInfoService;
 import com.github.kfcfans.powerjob.server.service.CacheService;
 import com.github.kfcfans.powerjob.server.service.JobService;
@@ -13,6 +14,10 @@ import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceService;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowService;
 import com.github.kfcfans.powerjob.common.response.*;
+import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
+import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
+import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
+import com.github.kfcfans.powerjob.server.web.response.WorkflowInfoVO;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -50,6 +55,7 @@ public class OpenAPIController {
     }
 
     /* ************* Job 区 ************* */
+
     @PostMapping(OpenAPIConstant.SAVE_JOB)
     public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) throws ParseException {
         if (request.getId() != null) {
@@ -146,7 +152,7 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW)
-    public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId, Long appId) {
+    public ResultDTO<WorkflowInfoVO> fetchWorkflow(Long workflowId, Long appId) {
         return ResultDTO.success(workflowService.fetchWorkflow(workflowId, appId));
     }
 
@@ -169,6 +175,23 @@ public class OpenAPIController {
     @PostMapping(OpenAPIConstant.RUN_WORKFLOW)
     public ResultDTO<Long> runWorkflow(Long workflowId, Long appId, @RequestParam(required = false) String initParams, @RequestParam(required = false) Long delay) {
         return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, initParams, delay));
+    }
+
+    @PostMapping(OpenAPIConstant.ADD_WORKFLOW_NODE)
+    public ResultDTO<List<WorkflowNodeInfoDO>> addWorkflowNode(@RequestBody List<AddWorkflowNodeRequest> request) {
+        return ResultDTO.success(workflowService.addWorkflowNode(request));
+    }
+
+    @PostMapping(OpenAPIConstant.SAVE_WORKFLOW_DAG)
+    public ResultDTO<Void> saveWorkflowDAG(@RequestBody SaveWorkflowDAGRequest request) {
+        workflowService.saveWorkflowDAG(request);
+        return ResultDTO.success(null);
+    }
+
+    @PostMapping(OpenAPIConstant.MODIFY_WORKFLOW_NODE)
+    public ResultDTO<Void> modifyWorkflowNode(@RequestBody ModifyWorkflowNodeRequest request) {
+        workflowService.modifyWorkflowNode(request);
+        return ResultDTO.success(null);
     }
 
     /* ************* Workflow Instance 区 ************* */

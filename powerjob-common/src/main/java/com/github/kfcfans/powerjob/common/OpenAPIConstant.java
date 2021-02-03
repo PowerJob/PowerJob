@@ -8,6 +8,10 @@ package com.github.kfcfans.powerjob.common;
  */
 public class OpenAPIConstant {
 
+    private OpenAPIConstant(){
+
+    }
+
     public static final String WEB_PATH = "/openApi";
 
     public static final String ASSERT = "/assert";
@@ -40,6 +44,9 @@ public class OpenAPIConstant {
     public static final String ENABLE_WORKFLOW = "/enableWorkflow";
     public static final String DELETE_WORKFLOW = "/deleteWorkflow";
     public static final String RUN_WORKFLOW = "/runWorkflow";
+    public static final String ADD_WORKFLOW_NODE = "/addWorkflowNode";
+    public static final String MODIFY_WORKFLOW_NODE = "/modifyWorkflowNode";
+    public static final String SAVE_WORKFLOW_DAG = "/saveWorkflowDAG";
 
     /* ************* WorkflowInstance 区 ************* */
 

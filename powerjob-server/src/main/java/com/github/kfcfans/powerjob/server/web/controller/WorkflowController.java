@@ -5,9 +5,13 @@ import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.PageResult;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
+import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowNodeInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowService;
+import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
+import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
 import com.github.kfcfans.powerjob.server.web.request.QueryWorkflowInfoRequest;
+import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
 import com.github.kfcfans.powerjob.server.web.response.WorkflowInfoVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,12 +20,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * 工作流控制器
  *
  * @author tjq
+ * @author zenggonggu
  * @since 2020/5/26
  */
 @RestController
@@ -34,7 +41,7 @@ public class WorkflowController {
     private WorkflowInfoRepository workflowInfoRepository;
 
     @PostMapping("/save")
-    public ResultDTO<Long> save(@RequestBody SaveWorkflowRequest req) throws Exception {
+    public ResultDTO<Long> save(@RequestBody SaveWorkflowRequest req) throws ParseException {
         return ResultDTO.success(workflowService.saveWorkflow(req));
     }
 
@@ -80,6 +87,28 @@ public class WorkflowController {
     @GetMapping("/run")
     public ResultDTO<Long> runWorkflow(Long workflowId, Long appId) {
         return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, null, 0L));
+    }
+
+    @GetMapping("/fetch")
+    public ResultDTO<WorkflowInfoVO> fetchWorkflow(Long workflowId, Long appId) {
+        return ResultDTO.success(workflowService.fetchWorkflow(workflowId, appId));
+    }
+
+    @PostMapping("/addNode")
+    public ResultDTO<List<WorkflowNodeInfoDO>> addWorkflowNode(@RequestBody List<AddWorkflowNodeRequest> request) {
+        return ResultDTO.success(workflowService.addWorkflowNode(request));
+    }
+
+    @PostMapping("/saveDAG")
+    public ResultDTO<Void> saveWorkflowDAG(@RequestBody SaveWorkflowDAGRequest request) {
+        workflowService.saveWorkflowDAG(request);
+        return ResultDTO.success(null);
+    }
+
+    @PostMapping("/modifyNode")
+    public ResultDTO<Void> modifyWorkflowNode(@RequestBody ModifyWorkflowNodeRequest request) {
+        workflowService.modifyWorkflowNode(request);
+        return ResultDTO.success(null);
     }
 
     private static PageResult<WorkflowInfoVO> convertPage(Page<WorkflowInfoDO> originPage) {

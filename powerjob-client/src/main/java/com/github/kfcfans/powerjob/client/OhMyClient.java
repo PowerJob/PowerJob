@@ -2,8 +2,7 @@ package com.github.kfcfans.powerjob.client;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.*;
-import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
-import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
+import com.github.kfcfans.powerjob.common.request.http.*;
 import com.github.kfcfans.powerjob.common.request.query.JobInfoQuery;
 import com.github.kfcfans.powerjob.common.response.*;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
@@ -39,8 +38,9 @@ public class OhMyClient {
 
     /**
      * Init OhMyClient with domain, appName and password.
-     * @param domain like powerjob-server.apple-inc.com (Intranet Domain)
-     * @param appName name of the application
+     *
+     * @param domain   like powerjob-server.apple-inc.com (Intranet Domain)
+     * @param appName  name of the application
      * @param password password of the application
      */
     public OhMyClient(String domain, String appName, String password) {
@@ -50,9 +50,10 @@ public class OhMyClient {
 
     /**
      * Init OhMyClient with server address, appName and password.
+     *
      * @param addressList IP:Port address list, like 192.168.1.1:7700
-     * @param appName name of the application
-     * @param password password of the application
+     * @param appName     name of the application
+     * @param password    password of the application
      */
     public OhMyClient(List<String> addressList, String appName, String password) {
 
@@ -70,11 +71,11 @@ public class OhMyClient {
                         appId = resultDTO.getData();
                         currentAddress = addr;
                         break;
-                    }else {
+                    } else {
                         throw new PowerJobException(resultDTO.getMessage());
                     }
                 }
-            }catch (IOException ignore) {
+            } catch (IOException ignore) {
             }
         }
 
@@ -103,6 +104,7 @@ public class OhMyClient {
     /**
      * Save one Job
      * When an ID exists in SaveJobInfoRequest, it is an update operation. Otherwise, it is a crate operation.
+     *
      * @param request Job meta info
      * @return jobId
      */
@@ -117,6 +119,7 @@ public class OhMyClient {
 
     /**
      * Query JobInfo by jobId
+     *
      * @param jobId jobId
      * @return Job meta info
      */
@@ -131,6 +134,7 @@ public class OhMyClient {
 
     /**
      * Query all JobInfo
+     *
      * @return All JobInfo
      */
     public ResultDTO<List<JobInfoDTO>> fetchAllJob() {
@@ -143,6 +147,7 @@ public class OhMyClient {
 
     /**
      * Query JobInfo by PowerQuery
+     *
      * @param powerQuery JobQuery
      * @return JobInfo
      */
@@ -156,6 +161,7 @@ public class OhMyClient {
 
     /**
      * Disable one Job by jobId
+     *
      * @param jobId jobId
      * @return Standard return object
      */
@@ -170,6 +176,7 @@ public class OhMyClient {
 
     /**
      * Enable one job by jobId
+     *
      * @param jobId jobId
      * @return Standard return object
      */
@@ -184,6 +191,7 @@ public class OhMyClient {
 
     /**
      * Delete one job by jobId
+     *
      * @param jobId jobId
      * @return Standard return object
      */
@@ -198,9 +206,10 @@ public class OhMyClient {
 
     /**
      * Run a job once
-     * @param jobId ID of the job to be run
+     *
+     * @param jobId          ID of the job to be run
      * @param instanceParams Runtime parameters of the job (TaskContext#instanceParams)
-     * @param delayMS Delay time（Milliseconds）
+     * @param delayMS        Delay time（Milliseconds）
      * @return instanceId
      */
     public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) {
@@ -215,13 +224,16 @@ public class OhMyClient {
         String post = postHA(OpenAPIConstant.RUN_JOB, builder.build());
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
+
     public ResultDTO<Long> runJob(Long jobId) {
         return runJob(jobId, null, 0);
     }
 
     /* ************* Instance API list ************* */
+
     /**
      * Stop one job instance
+     *
      * @param instanceId instanceId
      * @return Standard return object
      */
@@ -237,6 +249,7 @@ public class OhMyClient {
     /**
      * Cancel a job instance that is not yet running
      * Notice：There is a time interval between the call interface time and the expected execution time of the job instance to be cancelled, otherwise reliability is not guaranteed
+     *
      * @param instanceId instanceId
      * @return Standard return object
      */
@@ -252,6 +265,7 @@ public class OhMyClient {
     /**
      * Retry failed job instance
      * Notice: Only job instance with completion status (success, failure, manually stopped, cancelled) can be retried, and retries of job instances within workflows are not supported yet.
+     *
      * @param instanceId instanceId
      * @return Standard return object
      */
@@ -266,6 +280,7 @@ public class OhMyClient {
 
     /**
      * Query status about a job instance
+     *
      * @param instanceId instanceId
      * @return {@link InstanceStatus}
      */
@@ -279,6 +294,7 @@ public class OhMyClient {
 
     /**
      * Query detail about a job instance
+     *
      * @param instanceId instanceId
      * @return instance detail
      */
@@ -291,9 +307,11 @@ public class OhMyClient {
     }
 
     /* ************* Workflow API list ************* */
+
     /**
      * Save one workflow
      * When an ID exists in SaveWorkflowRequest, it is an update operation. Otherwise, it is a crate operation.
+     *
      * @param request Workflow meta info
      * @return workflowId
      */
@@ -307,7 +325,53 @@ public class OhMyClient {
     }
 
     /**
+     * 保存工作流 DAG
+     *
+     * @param request DAG of Workflow
+     * @return Standard return object
+     */
+    public ResultDTO<Void> saveWorkflowDag(SaveWorkflowDAGRequest request) {
+        request.setAppId(appId);
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
+        String json = JsonUtils.toJSONStringUnsafe(request);
+        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW_DAG, RequestBody.create(jsonType, json));
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
+    }
+
+    /**
+     * 添加工作流节点
+     *
+     * @param requestList Node info list of Workflow
+     * @return Standard return object
+     */
+    public ResultDTO<List<WorkflowNodeInfoDTO>> addWorkflowNode(List<AddWorkflowNodeRequest> requestList) {
+        for (AddWorkflowNodeRequest addWorkflowNodeRequest : requestList) {
+            addWorkflowNodeRequest.setAppId(appId);
+        }
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
+        String json = JsonUtils.toJSONStringUnsafe(requestList);
+        String post = postHA(OpenAPIConstant.ADD_WORKFLOW_NODE, RequestBody.create(jsonType, json));
+        return JSONObject.parseObject(post, WF_NODE_LIST_RESULT_TYPE);
+    }
+
+    /**
+     * 修改工作流节点
+     *
+     * @param request Node info of Workflow
+     * @return Standard return object
+     */
+    public ResultDTO<Void> modifyWorkflowNode(ModifyWorkflowNodeRequest request) {
+        request.setAppId(appId);
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
+        String json = JsonUtils.toJSONStringUnsafe(request);
+        String post = postHA(OpenAPIConstant.MODIFY_WORKFLOW_NODE, RequestBody.create(jsonType, json));
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
+    }
+
+
+    /**
      * Query Workflow by workflowId
+     *
      * @param workflowId workflowId
      * @return Workflow meta info
      */
@@ -322,6 +386,7 @@ public class OhMyClient {
 
     /**
      * Disable Workflow by workflowId
+     *
      * @param workflowId workflowId
      * @return Standard return object
      */
@@ -336,6 +401,7 @@ public class OhMyClient {
 
     /**
      * Enable Workflow by workflowId
+     *
      * @param workflowId workflowId
      * @return Standard return object
      */
@@ -350,6 +416,7 @@ public class OhMyClient {
 
     /**
      * Delete Workflow by workflowId
+     *
      * @param workflowId workflowId
      * @return Standard return object
      */
@@ -364,9 +431,10 @@ public class OhMyClient {
 
     /**
      * Run a workflow once
+     *
      * @param workflowId workflowId
      * @param initParams workflow startup parameters
-     * @param delayMS Delay time（Milliseconds）
+     * @param delayMS    Delay time（Milliseconds）
      * @return workflow instanceId
      */
     public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) {
@@ -380,13 +448,16 @@ public class OhMyClient {
         String post = postHA(OpenAPIConstant.RUN_WORKFLOW, builder.build());
         return JSONObject.parseObject(post, LONG_RESULT_TYPE);
     }
+
     public ResultDTO<Long> runWorkflow(Long workflowId) {
         return runWorkflow(workflowId, null, 0);
     }
 
     /* ************* Workflow Instance API list ************* */
+
     /**
      * Stop one workflow instance
+     *
      * @param wfInstanceId workflow instanceId
      * @return Standard return object
      */
@@ -401,6 +472,7 @@ public class OhMyClient {
 
     /**
      * Retry one workflow instance
+     *
      * @param wfInstanceId workflow instanceId
      * @return Standard return object
      */
@@ -415,6 +487,7 @@ public class OhMyClient {
 
     /**
      * Query detail about a workflow instance
+     *
      * @param wfInstanceId workflow instanceId
      * @return detail about a workflow
      */
@@ -428,7 +501,6 @@ public class OhMyClient {
     }
 
 
-
     private String postHA(String path, RequestBody requestBody) {
 
         // 先尝试默认地址
@@ -438,7 +510,7 @@ public class OhMyClient {
             if (StringUtils.isNotEmpty(res)) {
                 return res;
             }
-        }catch (IOException e) {
+        } catch (IOException e) {
             log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
         }
 
@@ -455,7 +527,7 @@ public class OhMyClient {
                     currentAddress = addr;
                     return res;
                 }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
             }
         }
