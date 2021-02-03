@@ -24,21 +24,20 @@ public abstract class CommonBasicProcessor implements BasicProcessor {
         String status = "unknown";
         Stopwatch sw = Stopwatch.createStarted();
 
-        String clzName = this.getClass().getSimpleName();
         OmsLogger omsLogger = taskContext.getOmsLogger();
-        omsLogger.info("[{}] using params: {}", clzName, CommonUtils.parseParams(taskContext));
+        omsLogger.info("using params: {}", CommonUtils.parseParams(taskContext));
 
         try {
             ProcessResult result = process0(taskContext);
-            omsLogger.info("[{}] execute succeed, using {}, result: {}", clzName, sw, result);
+            omsLogger.info("execute succeed, using {}, result: {}", sw, result);
             status = result.isSuccess() ? "succeed" : "failed";
             return result;
         } catch (Throwable t) {
             status = "exception";
-            omsLogger.error("[{}] execute failed!", clzName, t);
+            omsLogger.error("execute failed!", t);
             return new ProcessResult(false, ExceptionUtils.getMessage(t));
         } finally {
-            log.info("[{}] status: {}, cost: {}", clzName, status, sw);
+            log.info("status: {}, cost: {}", status, sw);
         }
     }
 

@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * description
+ * test FileCleanupProcessor
  *
  * @author tjq
  * @since 2021/2/1
@@ -21,9 +21,9 @@ class FileCleanupProcessorTest {
     @Test
     void testProcess() throws Exception {
         JSONObject params = new JSONObject();
-        params.put("dirPath", "/Users/tjq/logs/oms-server");
-        params.put("filePattern", "*");
-        params.put("retentionTime", 10);
+        params.put("dirPath", "/Users/tjq/logs");
+        params.put("filePattern", "[\\s\\S]*log");
+        params.put("retentionTime", 0);
         JSONArray array = new JSONArray();
         array.add(params);
 
@@ -37,7 +37,7 @@ class FileCleanupProcessorTest {
     @Test
     void testPatternCompile() throws Exception {
         String fileName = "abc.log";
-        System.out.println(fileName.matches("[a-z]*\\.log"));
-        System.out.println(Pattern.matches("\\*", fileName));
+        System.out.println(fileName.matches("[\\s\\S]*log"));
+        System.out.println(Pattern.matches("[a-z.0-9]*log", fileName));
     }
 }
