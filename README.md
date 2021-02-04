@@ -66,7 +66,7 @@ PowerJob is released under Apache License 2.0. Please refer to [License](./LICEN
 
 # Others
 
-- Any developer interested in getting more involved in PowerJob may join our [Gitter Community](https://gitter.im/PowerJob/community) and make [contributions](https://github.com/PowerJob/PowerJob/pulls)!
+- Any developer interested in getting more involved in PowerJob may join our [Gitter](https://gitter.im/PowerJob/community) or [Reddit](https://www.reddit.com/r/PowerJob) community and make [contributions](https://github.com/PowerJob/PowerJob/pulls)!
 
 - Reach out to me through email **tengjiqi@gmail.com**. Any issues or questions are welcomed on [Issues](https://github.com/PowerJob/PowerJob/issues).
 
