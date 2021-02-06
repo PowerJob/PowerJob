@@ -233,6 +233,9 @@ public class JobService {
         if (jobInfoDO.getTaskRetryNum() == null) {
             jobInfoDO.setTaskRetryNum(0);
         }
+        if (jobInfoDO.getInstanceTimeLimit() == null) {
+            jobInfoDO.setInstanceTimeLimit(0L);
+        }
     }
 
     private static JobInfoDTO convert(JobInfoDO jobInfoDO) {

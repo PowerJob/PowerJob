@@ -11,7 +11,7 @@ import java.util.Collections;
 
 /**
  * 单机处理器 示例
- * com.github.kfcfans.oms.server.processors.StandaloneProcessorDemo
+ * com.github.kfcfans.powerjob.samples.processors.StandaloneProcessorDemo
  *
  * @author tjq
  * @since 2020/4/17
