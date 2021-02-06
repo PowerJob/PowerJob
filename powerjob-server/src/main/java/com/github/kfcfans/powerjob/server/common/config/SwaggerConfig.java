@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.common.config;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import static springfox.documentation.builders.PathSelectors.any;
  */
 @Configuration
 @EnableSwagger2
+@ConditionalOnProperty(name = "oms.swagger.enable", havingValue = "true")
 public class SwaggerConfig {
     
     private final BuildProperties buildProperties;
