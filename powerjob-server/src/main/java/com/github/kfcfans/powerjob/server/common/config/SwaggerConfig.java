@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.server.common.config;
 
+import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,7 +24,7 @@ import static springfox.documentation.builders.PathSelectors.any;
  */
 @Configuration
 @EnableSwagger2
-@ConditionalOnProperty(name = "oms.swagger.enable", havingValue = "true")
+@ConditionalOnProperty(name = PowerJobServerConfigKey.SWAGGER_UI_ENABLE, havingValue = "true")
 public class SwaggerConfig {
     
     private final BuildProperties buildProperties;

@@ -20,6 +20,10 @@ public class PowerJobServerConfigKey {
      * 是否使用 mongoDB
      */
     public static final String MONGODB_ENABLE = "oms.mongodb.enable";
+    /**
+     * 是否启用 Swagger-UI，默认关闭
+     */
+    public static final String SWAGGER_UI_ENABLE = "oms.swagger.enable";
 
     /**
      * 钉钉报警相关
