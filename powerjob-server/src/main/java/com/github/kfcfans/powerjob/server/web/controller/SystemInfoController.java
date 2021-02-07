@@ -6,6 +6,7 @@ import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
+import com.github.kfcfans.powerjob.common.model.WorkerInfo;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
@@ -77,11 +78,11 @@ public class SystemInfoController {
                 List<WorkerStatusVO> result = Lists.newLinkedList();
                 address2Info.forEach((address, m) -> {
                     try {
-                        SystemMetrics metrics = JsonUtils.parseObject(JsonUtils.toJSONString(m), SystemMetrics.class);
+                        WorkerInfo metrics = JsonUtils.parseObject(JsonUtils.toJSONString(m), WorkerInfo.class);
                         WorkerStatusVO info = new WorkerStatusVO(String.valueOf(address), metrics);
                         result.add(info);
                     }catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("[SystemInfoController] parse ask response failed!", e);
                     }
                 });
                 return ResultDTO.success(result);

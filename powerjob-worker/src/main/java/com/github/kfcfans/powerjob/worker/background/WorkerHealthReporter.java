@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.worker.background;
 
 import akka.actor.ActorSelection;
+import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
@@ -41,6 +42,7 @@ public class WorkerHealthReporter implements Runnable {
         heartbeat.setAppId(OhMyWorker.getAppId());
         heartbeat.setHeartbeatTime(System.currentTimeMillis());
         heartbeat.setVersion(PowerJobWorkerVersion.getVersion());
+        heartbeat.setProtocol(Protocol.AKKA.name());
 
         // 获取当前加载的容器列表
         heartbeat.setContainerInfos(OmsContainerFactory.getDeployedContainerInfos());

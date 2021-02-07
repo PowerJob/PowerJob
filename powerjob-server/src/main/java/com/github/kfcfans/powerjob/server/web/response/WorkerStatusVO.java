@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.web.response;
 
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
+import com.github.kfcfans.powerjob.common.model.WorkerInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +22,8 @@ public class WorkerStatusVO {
     private String memoryLoad;
     private String diskLoad;
 
+    private String protocol;
+
     // 1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色
     private int status;
 
@@ -32,7 +35,12 @@ public class WorkerStatusVO {
 
     private static final double THRESHOLD = 0.8;
 
-    public WorkerStatusVO(String address, SystemMetrics systemMetrics) {
+    public WorkerStatusVO(String address, WorkerInfo workerInfo) {
+
+        SystemMetrics systemMetrics = workerInfo.getSystemMetrics();
+
+        this.protocol = workerInfo.getProtocol();
+
         this.status = 1;
         this.address = address;
         this.cpuLoad = String.format(CPU_FORMAT, df.format(systemMetrics.getCpuLoad()), systemMetrics.getCpuProcessors());
