@@ -3,7 +3,7 @@ package com.github.kfcfans.powerjob.server.service;
 import akka.actor.ActorSelection;
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;

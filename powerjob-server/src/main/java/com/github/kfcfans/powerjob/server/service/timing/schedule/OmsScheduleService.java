@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.service.timing.schedule;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;

@@ -1,12 +1,12 @@
-package com.github.kfcfans.powerjob.server.akka.actors;
+package com.github.kfcfans.powerjob.server.transport.akka.actors;
 
 import akka.actor.AbstractActor;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.akka.requests.FriendQueryWorkerClusterStatusReq;
-import com.github.kfcfans.powerjob.server.akka.requests.Ping;
-import com.github.kfcfans.powerjob.server.akka.requests.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.transport.akka.requests.FriendQueryWorkerClusterStatusReq;
+import com.github.kfcfans.powerjob.server.transport.akka.requests.Ping;
+import com.github.kfcfans.powerjob.server.transport.akka.requests.RemoteProcessReq;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import lombok.extern.slf4j.Slf4j;

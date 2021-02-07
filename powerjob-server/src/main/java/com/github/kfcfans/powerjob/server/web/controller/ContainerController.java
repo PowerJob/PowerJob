@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.ContainerTemplateGenerator;

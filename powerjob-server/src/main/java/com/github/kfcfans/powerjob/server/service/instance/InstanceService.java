@@ -8,7 +8,7 @@ import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
 import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;

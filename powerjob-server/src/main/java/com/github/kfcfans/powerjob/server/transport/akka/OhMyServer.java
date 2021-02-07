@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.akka;
+package com.github.kfcfans.powerjob.server.transport.akka;
 
 import akka.actor.*;
 import akka.pattern.Patterns;
@@ -7,9 +7,9 @@ import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.server.akka.actors.FriendActor;
-import com.github.kfcfans.powerjob.server.akka.actors.ServerActor;
-import com.github.kfcfans.powerjob.server.akka.actors.ServerTroubleshootingActor;
+import com.github.kfcfans.powerjob.server.transport.akka.actors.FriendActor;
+import com.github.kfcfans.powerjob.server.transport.akka.actors.ServerActor;
+import com.github.kfcfans.powerjob.server.transport.akka.actors.ServerTroubleshootingActor;
 import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
 import com.google.common.base.Stopwatch;

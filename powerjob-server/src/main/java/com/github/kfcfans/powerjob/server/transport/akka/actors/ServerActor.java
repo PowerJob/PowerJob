@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.akka.actors;
+package com.github.kfcfans.powerjob.server.transport.akka.actors;
 
 import akka.actor.AbstractActor;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
