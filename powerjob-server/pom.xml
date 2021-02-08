@@ -190,6 +190,11 @@
             <artifactId>vertx-web</artifactId>
             <version>${vertx-web.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-client</artifactId>
+            <version>${vertx-web.version}</version>
+        </dependency>
 
 
         <!-- swagger2 -->

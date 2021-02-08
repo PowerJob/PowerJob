@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.common.request;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
+import com.github.kfcfans.powerjob.common.ProtocolConstant;
 import lombok.Data;
 
 import java.util.List;
@@ -71,4 +72,8 @@ public class ServerScheduleJobReq implements OmsSerializable {
     // 最大同时运行任务数，默认 1
     private Integer maxInstanceNum;
 
+    @Override
+    public String path() {
+        return ProtocolConstant.WORKER_PATH_DISPATCH_JOB;
+    }
 }
