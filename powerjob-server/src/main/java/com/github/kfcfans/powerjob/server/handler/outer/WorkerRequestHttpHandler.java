@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.handler.outer;
 
 import com.github.kfcfans.powerjob.common.OmsConstant;
+import com.github.kfcfans.powerjob.common.ProtocolConstant;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.github.kfcfans.powerjob.common.request.WorkerLogReportReq;
@@ -15,7 +16,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
-import java.util.Optional;
 import java.util.Properties;
 
 import static com.github.kfcfans.powerjob.server.handler.outer.WorkerRequestHandler.getWorkerRequestHandler;
@@ -28,8 +28,6 @@ import static com.github.kfcfans.powerjob.server.handler.outer.WorkerRequestHand
  */
 public class WorkerRequestHttpHandler extends AbstractVerticle {
 
-    private static final String HTTP_PREFIX = "/wrh/v1/";
-
     @Override
     public void start() throws Exception {
 
@@ -41,18 +39,18 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
 
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
-        router.post(HTTP_PREFIX + "heartbeat")
+        router.post(ProtocolConstant.SERVER_PATH_HEARTBEAT)
                 .handler(ctx -> {
                     WorkerHeartbeat heartbeat = ctx.getBodyAsJson().mapTo(WorkerHeartbeat.class);
                     getWorkerRequestHandler().onReceiveWorkerHeartbeat(heartbeat);
                 });
-        router.post(HTTP_PREFIX + "instanceStatusReport")
+        router.post(ProtocolConstant.SERVER_PATH_STATUS_REPORT)
                 .blockingHandler(ctx -> {
                     TaskTrackerReportInstanceStatusReq req = ctx.getBodyAsJson().mapTo(TaskTrackerReportInstanceStatusReq.class);
-                    Optional<AskResponse> askResponseOpt = getWorkerRequestHandler().onReceiveTaskTrackerReportInstanceStatusReq(req);
-                    askResponseOpt.ifPresent(askResponse -> out(ctx, askResponse));
+                    getWorkerRequestHandler().onReceiveTaskTrackerReportInstanceStatusReq(req);
+                    out(ctx, AskResponse.succeed(null));
                 });
-        router.post(HTTP_PREFIX + "logReport")
+        router.post(ProtocolConstant.SERVER_PATH_LOG_REPORT)
                 .blockingHandler(ctx -> {
                     WorkerLogReportReq req = ctx.getBodyAsJson().mapTo(WorkerLogReportReq.class);
                     getWorkerRequestHandler().onReceiveWorkerLogReportReq(req);
