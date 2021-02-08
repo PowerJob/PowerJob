@@ -43,8 +43,8 @@ public class ServerController {
     }
 
     @GetMapping("/acquire")
-    public ResultDTO<String> acquireServer(Long appId, String currentServer) {
-        return ResultDTO.success(serverSelectService.getServer(appId, currentServer));
+    public ResultDTO<String> acquireServer(Long appId, String currentServer, String protocol) {
+        return ResultDTO.success(serverSelectService.getServer(appId, currentServer, protocol));
     }
 
     @GetMapping("/hello")

@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -33,20 +32,26 @@ public class TransportService {
     }
 
     public void tell(Protocol protocol, String address, OmsSerializable object) {
-        Transporter transporter = protocol2Transporter.get(protocol);
-        if (transporter == null) {
-            log.error("[TransportService] can't find transporter by protocol[{}], this is a bug!", protocol);
-            return;
-        }
-        transporter.tell(address, object);
+        getTransporter(protocol).tell(address, object);
     }
 
     public AskResponse ask(Protocol protocol, String address, OmsSerializable object) throws Exception {
+
+        return getTransporter(protocol).ask(address, object);
+    }
+
+    public Transporter getTransporter(Protocol protocol) {
         Transporter transporter = protocol2Transporter.get(protocol);
         if (transporter == null) {
             log.error("[TransportService] can't find transporter by protocol[{}], this is a bug!", protocol);
-            throw new IOException("can't find transporter by protocol: " + protocol);
+            throw new UnknownProtocolException("can't find transporter by protocol: " + protocol);
         }
-        return transporter.ask(address, object);
+        return transporter;
+    }
+
+    public static class UnknownProtocolException extends RuntimeException {
+        public UnknownProtocolException(String message) {
+            super(message);
+        }
     }
 }

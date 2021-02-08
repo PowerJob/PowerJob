@@ -3,7 +3,9 @@ package com.github.kfcfans.powerjob.server.service.ha;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
+import com.github.kfcfans.powerjob.server.transport.TransportService;
 import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.handler.inner.requests.Ping;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
@@ -37,6 +39,8 @@ public class ServerSelectService {
     @Resource
     private LockService lockService;
     @Resource
+    private TransportService transportService;
+    @Resource
     private AppInfoRepository appInfoRepository;
 
     @Value("${oms.accurate.select.server.percentage}")
@@ -47,17 +51,17 @@ public class ServerSelectService {
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
 
-    public String getServer(Long appId, String currentServer) {
+    public String getServer(Long appId, String currentServer, String protocol) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
-            if (AkkaStarter.getActorSystemAddress().equals(currentServer)) {
+            if (getThisServerAddress(protocol).equals(currentServer)) {
                 return currentServer;
             }
         }
-        return getServer0(appId);
+        return getServer0(appId, protocol);
     }
 
-    private String getServer0(Long appId) {
+    private String getServer0(Long appId, String protocol) {
 
         Set<String> downServerCache = Sets.newHashSet();
 
@@ -93,7 +97,7 @@ public class ServerSelectService {
                 }
 
                 // 篡位，本机作为Server
-                appInfo.setCurrentServer(AkkaStarter.getActorSystemAddress());
+                appInfo.setCurrentServer(getThisServerAddress(protocol));
                 appInfo.setGmtModified(new Date());
 
                 appInfoRepository.saveAndFlush(appInfo);
@@ -123,10 +127,6 @@ public class ServerSelectService {
             return false;
         }
 
-        if (AkkaStarter.getActorSystemAddress().equals(serverAddress)) {
-            return true;
-        }
-
         Ping ping = new Ping();
         ping.setCurrentTime(System.currentTimeMillis());
 
@@ -145,5 +145,10 @@ public class ServerSelectService {
 
     private boolean accurate() {
         return ThreadLocalRandom.current().nextInt(100) < accurateSelectServerPercentage;
+    }
+
+    private String getThisServerAddress(String protocol) {
+        Protocol pt = Protocol.of(protocol);
+        return transportService.getTransporter(pt).getAddress();
     }
 }
