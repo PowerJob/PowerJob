@@ -7,10 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Worker 管理服务
@@ -54,6 +51,15 @@ public class WorkerManagerService {
             return Collections.emptyList();
         }
         return clusterStatusHolder.getAvailableWorkers(minCPUCores, minMemorySpace, minDiskSpace);
+    }
+
+    public static Optional<WorkerInfo> getWorkerInfo(Long appId, String address) {
+        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
+        if (clusterStatusHolder == null) {
+            log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
+            return Optional.empty();
+        }
+        return Optional.ofNullable(clusterStatusHolder.getWorkerInfo(address));
     }
 
     /**

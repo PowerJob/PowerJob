@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.service.ha.ServerSelectService;
@@ -51,7 +51,7 @@ public class ServerController {
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
         res.put("localHost", NetUtils.getLocalHost());
-        res.put("actorSystemAddress", OhMyServer.getActorSystemAddress());
+        res.put("actorSystemAddress", AkkaStarter.getActorSystemAddress());
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
         res.put("appIds", WorkerManagerService.getAppId2ClusterStatus().keySet());

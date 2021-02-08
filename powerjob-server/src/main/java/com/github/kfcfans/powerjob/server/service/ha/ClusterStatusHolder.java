@@ -85,6 +85,10 @@ public class ClusterStatusHolder {
         return workers;
     }
 
+    public WorkerInfo getWorkerInfo(String address) {
+        return address2WorkerInfo.get(address);
+    }
+
     public List<WorkerInfo> getAvailableWorkers(double minCPUCores, double minMemorySpace, double minDiskSpace) {
         List<WorkerInfo> workerInfos = Lists.newArrayList();
         address2WorkerInfo.forEach((address, workerInfo) -> {

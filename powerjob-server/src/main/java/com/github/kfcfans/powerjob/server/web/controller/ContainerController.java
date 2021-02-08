@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.ContainerTemplateGenerator;
@@ -102,7 +102,7 @@ public class ContainerController {
         }
 
         // 转发 HTTP 请求
-        if (!OhMyServer.getActorSystemAddress().equals(targetServer)) {
+        if (!AkkaStarter.getActorSystemAddress().equals(targetServer)) {
             String targetIp = targetServer.split(":")[0];
             String url = String.format("http://%s:%d/container/listDeployedWorker?appId=%d&containerId=%d", targetIp, port, appId, containerId);
             try {

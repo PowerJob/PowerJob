@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.service.timing.schedule;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
-import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
@@ -76,7 +76,7 @@ public class OmsScheduleService {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         // 先查询DB，查看本机需要负责的任务
-        List<AppInfoDO> allAppInfos = appInfoRepository.findAllByCurrentServer(OhMyServer.getActorSystemAddress());
+        List<AppInfoDO> allAppInfos = appInfoRepository.findAllByCurrentServer(AkkaStarter.getActorSystemAddress());
         if (CollectionUtils.isEmpty(allAppInfos)) {
             log.info("[JobScheduleService] current server has no app's job to schedule.");
             return;

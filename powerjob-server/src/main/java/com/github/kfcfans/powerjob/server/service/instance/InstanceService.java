@@ -1,14 +1,12 @@
 package com.github.kfcfans.powerjob.server.service.instance;
 
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
+import com.github.kfcfans.powerjob.common.model.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
-import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
 import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
 import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
@@ -18,17 +16,17 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.DispatchService;
+import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
+import com.github.kfcfans.powerjob.server.transport.TransportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.Duration;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.github.kfcfans.powerjob.common.InstanceStatus.RUNNING;
@@ -44,6 +42,8 @@ import static com.github.kfcfans.powerjob.common.InstanceStatus.STOPPED;
 @Service
 public class InstanceService {
 
+    @Resource
+    private TransportService transportService;
     @Resource
     private DispatchService dispatchService;
     @Resource
@@ -115,11 +115,15 @@ public class InstanceService {
             不可靠通知停止 TaskTracker
             假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭
              */
-            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfo.getTaskTrackerAddress());
-            ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
-            taskTrackerActor.tell(req, null);
-
-            log.info("[Instance-{}] update instanceInfo and send request succeed.", instanceId);
+            Optional<WorkerInfo> workerInfoOpt = WorkerManagerService.getWorkerInfo(instanceInfo.getAppId(), instanceInfo.getTaskTrackerAddress());
+            if (workerInfoOpt.isPresent()) {
+                ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
+                WorkerInfo workerInfo = workerInfoOpt.get();
+                transportService.tell(Protocol.of(workerInfo.getProtocol()), workerInfo.getAddress(), req);
+                log.info("[Instance-{}] update instanceInfo and send 'stopInstance' request succeed.", instanceId);
+            } else {
+                log.warn("[Instance-{}] update instanceInfo successfully but can't find TaskTracker to stop instance", instanceId);
+            }
 
         }catch (IllegalArgumentException ie) {
             throw ie;
@@ -248,24 +252,23 @@ public class InstanceService {
             return detail;
         }
 
-        // 运行状态下，交由 TaskTracker 返回相关信息
-        try {
+        Optional<WorkerInfo> workerInfoOpt = WorkerManagerService.getWorkerInfo(instanceInfoDO.getAppId(), instanceInfoDO.getTaskTrackerAddress());
+        if (workerInfoOpt.isPresent()) {
+            WorkerInfo workerInfo = workerInfoOpt.get();
             ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);
-            ActorSelection taskTrackerActor = OhMyServer.getTaskTrackerActor(instanceInfoDO.getTaskTrackerAddress());
-            CompletionStage<Object> askCS = Patterns.ask(taskTrackerActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-            AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-
-            if (askResponse.isSuccess()) {
-                InstanceDetail instanceDetail = askResponse.getData(InstanceDetail.class);
-                instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());
-                instanceDetail.setInstanceParams(instanceInfoDO.getInstanceParams());
-                return instanceDetail;
-            }else {
-                log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, the message is {}.", instanceId, askResponse.getMessage());
+            try {
+                AskResponse askResponse = transportService.ask(Protocol.of(workerInfo.getProtocol()), workerInfo.getAddress(), req);
+                if (askResponse.isSuccess()) {
+                    InstanceDetail instanceDetail = askResponse.getData(InstanceDetail.class);
+                    instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());
+                    instanceDetail.setInstanceParams(instanceInfoDO.getInstanceParams());
+                    return instanceDetail;
+                }else {
+                    log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, the message is {}.", instanceId, askResponse.getMessage());
+                }
+            } catch (Exception e) {
+                log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, exception is {}", instanceId, e.toString());
             }
-
-        }catch (Exception e) {
-            log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, exception is {}", instanceId, e.toString());
         }
 
         // 失败则返回基础版信息

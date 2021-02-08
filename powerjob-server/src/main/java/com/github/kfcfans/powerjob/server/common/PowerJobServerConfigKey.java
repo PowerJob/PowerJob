@@ -9,9 +9,13 @@ package com.github.kfcfans.powerjob.server.common;
 public class PowerJobServerConfigKey {
 
     /**
-     * akka 端口号
+     * akka 协议端口号
      */
     public static final String AKKA_PORT = "oms.akka.port";
+    /**
+     * http 协议端口号
+     */
+    public static final String HTTP_PORT = "oms.http.port";
     /**
      * 自定义数据库表前缀
      */

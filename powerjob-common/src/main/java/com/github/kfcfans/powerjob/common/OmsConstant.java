@@ -8,6 +8,9 @@ package com.github.kfcfans.powerjob.common;
  */
 public class OmsConstant {
 
+    public static final int SERVER_DEFAULT_AKKA_PORT = 10086;
+    public static final int SERVER_DEFAULT_HTTP_PORT = 10010;
+
     public static final String TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
     public static final String TIME_PATTERN_PLUS = "yyyy-MM-dd HH:mm:ss.SSS";
 

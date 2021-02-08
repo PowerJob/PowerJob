@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.transport.akka.requests;
+package com.github.kfcfans.powerjob.server.handler.inner.requests;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
 import lombok.Data;

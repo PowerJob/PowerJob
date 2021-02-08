@@ -4,8 +4,8 @@ import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
-import com.github.kfcfans.powerjob.server.transport.akka.requests.Ping;
+import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.handler.inner.requests.Ping;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.extension.LockService;
@@ -50,7 +50,7 @@ public class ServerSelectService {
     public String getServer(Long appId, String currentServer) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
-            if (OhMyServer.getActorSystemAddress().equals(currentServer)) {
+            if (AkkaStarter.getActorSystemAddress().equals(currentServer)) {
                 return currentServer;
             }
         }
@@ -93,7 +93,7 @@ public class ServerSelectService {
                 }
 
                 // 篡位，本机作为Server
-                appInfo.setCurrentServer(OhMyServer.getActorSystemAddress());
+                appInfo.setCurrentServer(AkkaStarter.getActorSystemAddress());
                 appInfo.setGmtModified(new Date());
 
                 appInfoRepository.saveAndFlush(appInfo);
@@ -123,14 +123,14 @@ public class ServerSelectService {
             return false;
         }
 
-        if (OhMyServer.getActorSystemAddress().equals(serverAddress)) {
+        if (AkkaStarter.getActorSystemAddress().equals(serverAddress)) {
             return true;
         }
 
         Ping ping = new Ping();
         ping.setCurrentTime(System.currentTimeMillis());
 
-        ActorSelection serverActor = OhMyServer.getFriendActor(serverAddress);
+        ActorSelection serverActor = AkkaStarter.getFriendActor(serverAddress);
         try {
             CompletionStage<Object> askCS = Patterns.ask(serverActor, ping, Duration.ofMillis(PING_TIMEOUT_MS));
             AskResponse response = (AskResponse) askCS.toCompletableFuture().get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);

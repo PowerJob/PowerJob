@@ -165,7 +165,7 @@ public class DispatchService {
         WorkerInfo taskTracker = allAvailableWorker.get(0);
         String taskTrackerAddress = taskTracker.getAddress();
 
-        transportService.transfer(Protocol.of(taskTracker.getProtocol()), taskTrackerAddress, req);
+        transportService.tell(Protocol.of(taskTracker.getProtocol()), taskTrackerAddress, req);
         log.info("[Dispatcher-{}|{}] send schedule request to TaskTracker[protocol:{},address:{}] successfully: {}.", jobId, instanceId, taskTracker.getProtocol(), taskTrackerAddress, req);
 
         // 修改状态

@@ -2,11 +2,13 @@ package com.github.kfcfans.powerjob.server.transport;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
 import com.github.kfcfans.powerjob.common.Protocol;
+import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -30,12 +32,21 @@ public class TransportService {
         });
     }
 
-    public void transfer(Protocol protocol, String address, OmsSerializable object) {
+    public void tell(Protocol protocol, String address, OmsSerializable object) {
         Transporter transporter = protocol2Transporter.get(protocol);
         if (transporter == null) {
             log.error("[TransportService] can't find transporter by protocol[{}], this is a bug!", protocol);
             return;
         }
-        transporter.transfer(address, object);
+        transporter.tell(address, object);
+    }
+
+    public AskResponse ask(Protocol protocol, String address, OmsSerializable object) throws Exception {
+        Transporter transporter = protocol2Transporter.get(protocol);
+        if (transporter == null) {
+            log.error("[TransportService] can't find transporter by protocol[{}], this is a bug!", protocol);
+            throw new IOException("can't find transporter by protocol: " + protocol);
+        }
+        return transporter.ask(address, object);
     }
 }

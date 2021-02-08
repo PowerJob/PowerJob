@@ -1,6 +1,5 @@
-package com.github.kfcfans.powerjob.server.transport.akka.actors;
+package com.github.kfcfans.powerjob.server.handler.outer;
 
-import akka.actor.AbstractActor;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.model.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.*;
@@ -19,40 +18,39 @@ import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * 处理 Worker 请求
+ * receive and process worker's request
  *
  * @author tjq
- * @since 2020/3/30
+ * @since 2021/2/8
  */
 @Slf4j
-public class ServerActor extends AbstractActor {
+@Component
+public class WorkerRequestHandler {
 
+    @Resource
+    private Environment environment;
+    @Resource
     private InstanceManager instanceManager;
+    @Resource
+    private InstanceLogService instanceLogService;
+    @Resource
+    private ContainerInfoRepository containerInfoRepository;
 
-    @Override
-    public Receive createReceive() {
-        return receiveBuilder()
-                .match(WorkerHeartbeat.class, this::onReceiveWorkerHeartbeat)
-                .match(TaskTrackerReportInstanceStatusReq.class, this::onReceiveTaskTrackerReportInstanceStatusReq)
-                .match(WorkerLogReportReq.class, this::onReceiveWorkerLogReportReq)
-                .match(WorkerNeedDeployContainerRequest.class, this::onReceiveWorkerNeedDeployContainerRequest)
-                .match(WorkerQueryExecutorClusterReq.class, this::onReceiveWorkerQueryExecutorClusterReq)
-                .matchAny(obj -> log.warn("[ServerActor] receive unknown request: {}.", obj))
-                .build();
-    }
-
+    private static WorkerRequestHandler workerRequestHandler;
 
     /**
      * 处理 Worker 的心跳请求
      * @param heartbeat 心跳包
      */
-    private void onReceiveWorkerHeartbeat(WorkerHeartbeat heartbeat) {
+    public void onReceiveWorkerHeartbeat(WorkerHeartbeat heartbeat) {
         WorkerManagerService.updateStatus(heartbeat);
     }
 
@@ -60,36 +58,35 @@ public class ServerActor extends AbstractActor {
      * 处理 instance 状态
      * @param req 任务实例的状态上报请求
      */
-    private void onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) {
+    public Optional<AskResponse> onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) {
         try {
-            getInstanceManager().updateStatus(req);
+            instanceManager.updateStatus(req);
 
             // 结束状态（成功/失败）需要回复消息
             if (InstanceStatus.finishedStatus.contains(req.getInstanceStatus())) {
-                getSender().tell(AskResponse.succeed(null), getSelf());
+                return Optional.of(AskResponse.succeed(null));
             }
         }catch (Exception e) {
             log.error("[ServerActor] update instance status failed for request: {}.", req, e);
         }
+        return Optional.empty();
     }
 
     /**
      * 处理OMS在线日志请求
      * @param req 日志请求
      */
-    private void onReceiveWorkerLogReportReq(WorkerLogReportReq req) {
+    public void onReceiveWorkerLogReportReq(WorkerLogReportReq req) {
         // 这个效率应该不会拉垮吧...也就是一些判断 + Map#get 吧...
-        SpringUtils.getBean(InstanceLogService.class).submitLogs(req.getWorkerAddress(), req.getInstanceLogContents());
+        instanceLogService.submitLogs(req.getWorkerAddress(), req.getInstanceLogContents());
     }
 
     /**
      * 处理 Worker容器部署请求
      * @param req 容器部署请求
      */
-    private void onReceiveWorkerNeedDeployContainerRequest(WorkerNeedDeployContainerRequest req) {
+    public AskResponse onReceiveWorkerNeedDeployContainerRequest(WorkerNeedDeployContainerRequest req) {
 
-        ContainerInfoRepository containerInfoRepository = SpringUtils.getBean(ContainerInfoRepository.class);
-        Environment environment = SpringUtils.getBean(Environment.class);
         String port = environment.getProperty("local.server.port");
 
         Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findById(req.getContainerId());
@@ -109,14 +106,14 @@ public class ServerActor extends AbstractActor {
 
             askResponse.setData(JsonUtils.toBytes(dpReq));
         }
-        getSender().tell(askResponse, getSelf());
+        return askResponse;
     }
 
     /**
      * 处理 worker 请求获取当前任务所有处理器节点的请求
      * @param req jobId + appId
      */
-    private void onReceiveWorkerQueryExecutorClusterReq(WorkerQueryExecutorClusterReq req) {
+    public AskResponse onReceiveWorkerQueryExecutorClusterReq(WorkerQueryExecutorClusterReq req) {
 
         AskResponse askResponse;
 
@@ -137,14 +134,13 @@ public class ServerActor extends AbstractActor {
         }else {
             askResponse = AskResponse.failed("can't find jobInfo by jobId: " + jobId);
         }
-        getSender().tell(askResponse, getSelf());
+        return askResponse;
     }
 
-    // 不需要加锁，从 Spring IOC 中重复取并没什么问题
-    private InstanceManager getInstanceManager() {
-        if (instanceManager == null) {
-            instanceManager = SpringUtils.getBean(InstanceManager.class);
+    public static WorkerRequestHandler getWorkerRequestHandler() {
+        if (workerRequestHandler == null) {
+            workerRequestHandler = SpringUtils.getBean(WorkerRequestHandler.class);
         }
-        return instanceManager;
+        return workerRequestHandler;
     }
 }

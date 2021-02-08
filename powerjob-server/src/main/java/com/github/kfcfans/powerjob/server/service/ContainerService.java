@@ -10,7 +10,7 @@ import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
-import com.github.kfcfans.powerjob.server.transport.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
@@ -126,7 +126,7 @@ public class ContainerService {
 
         ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getId());
         WorkerManagerService.getActiveWorkerInfo(container.getAppId()).keySet().forEach(akkaAddress -> {
-            ActorSelection workerActor = OhMyServer.getWorkerActor(akkaAddress);
+            ActorSelection workerActor = AkkaStarter.getWorkerActor(akkaAddress);
             workerActor.tell(destroyRequest, null);
         });
 
@@ -260,7 +260,7 @@ public class ContainerService {
 
             AtomicInteger count = new AtomicInteger();
             workerAddressList.forEach(akkaAddress -> {
-                ActorSelection workerActor = OhMyServer.getWorkerActor(akkaAddress);
+                ActorSelection workerActor = AkkaStarter.getWorkerActor(akkaAddress);
                 workerActor.tell(req, null);
 
                 remote.sendText("SYSTEM: send deploy request to " + akkaAddress);

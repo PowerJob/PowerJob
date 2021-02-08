@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.transport.akka.actors;
+package com.github.kfcfans.powerjob.server.handler.inner;
 
 import akka.actor.AbstractActor;
 import com.alibaba.fastjson.JSONObject;
@@ -6,9 +6,9 @@ import com.github.kfcfans.powerjob.common.model.WorkerInfo;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
-import com.github.kfcfans.powerjob.server.transport.akka.requests.FriendQueryWorkerClusterStatusReq;
-import com.github.kfcfans.powerjob.server.transport.akka.requests.Ping;
-import com.github.kfcfans.powerjob.server.transport.akka.requests.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.handler.inner.requests.FriendQueryWorkerClusterStatusReq;
+import com.github.kfcfans.powerjob.server.handler.inner.requests.Ping;
+import com.github.kfcfans.powerjob.server.handler.inner.requests.RemoteProcessReq;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -23,7 +23,7 @@ import java.util.Map;
  * @since 2020/4/9
  */
 @Slf4j
-public class FriendActor extends AbstractActor {
+public class FriendRequestHandler extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
