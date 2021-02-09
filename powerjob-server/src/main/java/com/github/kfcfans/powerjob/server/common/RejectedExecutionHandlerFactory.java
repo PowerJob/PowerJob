@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.server.common;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 拒绝策略
@@ -12,6 +13,8 @@ import java.util.concurrent.RejectedExecutionHandler;
  */
 @Slf4j
 public class RejectedExecutionHandlerFactory {
+
+    private static final AtomicLong COUNTER = new AtomicLong();
 
     /**
      * 直接丢弃该任务
@@ -50,7 +53,9 @@ public class RejectedExecutionHandlerFactory {
             log.warn("[{}] ThreadPool[{}] overload, the task[{}] will run by a new thread!", source, p, r);
             log.warn("[{}] Maybe you need to adjust the ThreadPool config!", source);
             if (!p.isShutdown()) {
-                new Thread(r).start();
+                String threadName = source + "-T-" + COUNTER.getAndIncrement();
+                log.info("[{}] create new thread[{}] to run job", source, threadName);
+                new Thread(r, threadName).start();
             }
         };
     }
