@@ -6,6 +6,7 @@ import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatu
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.github.kfcfans.powerjob.common.request.WorkerLogReportReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
+import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
 import io.vertx.core.AbstractVerticle;
@@ -43,6 +44,7 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
                 .handler(ctx -> {
                     WorkerHeartbeat heartbeat = ctx.getBodyAsJson().mapTo(WorkerHeartbeat.class);
                     getWorkerRequestHandler().onReceiveWorkerHeartbeat(heartbeat);
+                    success(ctx);
                 });
         router.post(ProtocolConstant.SERVER_PATH_STATUS_REPORT)
                 .blockingHandler(ctx -> {
@@ -54,6 +56,7 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
                 .blockingHandler(ctx -> {
                     WorkerLogReportReq req = ctx.getBodyAsJson().mapTo(WorkerLogReportReq.class);
                     getWorkerRequestHandler().onReceiveWorkerLogReportReq(req);
+                    success(ctx);
                 });
         server.requestHandler(router).listen(port);
     }
@@ -62,5 +65,9 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
         ctx.response()
                 .putHeader("Content-Type", OmsConstant.JSON_MEDIA_TYPE)
                 .end(JsonObject.mapFrom(msg).encode());
+    }
+
+    private static void success(RoutingContext ctx) {
+        out(ctx, ResultDTO.success(null));
     }
 }

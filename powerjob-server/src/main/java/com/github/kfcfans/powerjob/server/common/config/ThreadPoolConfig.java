@@ -34,7 +34,7 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsTimingPool-");
-        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun("PowerJob"));
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun("PowerJobTiming"));
         return executor;
     }
 

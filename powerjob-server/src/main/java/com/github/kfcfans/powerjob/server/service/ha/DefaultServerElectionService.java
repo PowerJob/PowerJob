@@ -55,7 +55,7 @@ public class DefaultServerElectionService implements ServerElectionService {
     public String elect(Long appId, String protocol, String currentServer) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
-            if (getThisServerAddress(protocol).equals(currentServer)) {
+            if (getProtocolServerAddress(protocol).equals(currentServer)) {
                 return currentServer;
             }
         }
@@ -98,14 +98,15 @@ public class DefaultServerElectionService implements ServerElectionService {
                 }
 
                 // 篡位，本机作为Server
-                appInfo.setCurrentServer(getThisServerAddress(protocol));
+                // 注意，写入 AppInfoDO#currentServer 的永远是 ActorSystem 的地址，仅在返回的时候特殊处理
+                appInfo.setCurrentServer(transportService.getTransporter(Protocol.AKKA).getAddress());
                 appInfo.setGmtModified(new Date());
 
                 appInfoRepository.saveAndFlush(appInfo);
-                log.info("[ServerSelectService] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
-                return appInfo.getCurrentServer();
+                log.info("[ServerElection] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
+                return getProtocolServerAddress(protocol);
             }catch (Exception e) {
-                log.warn("[ServerSelectService] write new server to db failed for app {}.", appName);
+                log.warn("[ServerElection] write new server to db failed for app {}.", appName);
             }finally {
                 lockService.unlock(lockName);
             }
@@ -138,7 +139,7 @@ public class DefaultServerElectionService implements ServerElectionService {
             downServerCache.remove(serverAddress);
             return response.isSuccess();
         }catch (Exception e) {
-            log.warn("[ServerSelectService] server({}) was down.", serverAddress);
+            log.warn("[ServerElection] server({}) was down.", serverAddress);
         }
         downServerCache.add(serverAddress);
         return false;
@@ -148,7 +149,7 @@ public class DefaultServerElectionService implements ServerElectionService {
         return ThreadLocalRandom.current().nextInt(100) < accurateSelectServerPercentage;
     }
 
-    private String getThisServerAddress(String protocol) {
+    private String getProtocolServerAddress(String protocol) {
         Protocol pt = Protocol.of(protocol);
         return transportService.getTransporter(pt).getAddress();
     }
