@@ -26,7 +26,7 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
                 .match(WorkerLogReportReq.class, req -> getWorkerRequestHandler().onReceiveWorkerLogReportReq(req))
                 .match(WorkerNeedDeployContainerRequest.class, this::onReceiveWorkerNeedDeployContainerRequest)
                 .match(WorkerQueryExecutorClusterReq.class, this::onReceiveWorkerQueryExecutorClusterReq)
-                .matchAny(obj -> log.warn("[ServerActor] receive unknown request: {}.", obj))
+                .matchAny(obj -> log.warn("[WorkerRequestAkkaHandler] receive unknown request: {}.", obj))
                 .build();
     }
 
@@ -44,7 +44,7 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
                 getSender().tell(AskResponse.succeed(null), getSelf());
             }
         }catch (Exception e) {
-            log.error("[ServerActor] update instance status failed for request: {}.", req, e);
+            log.error("[WorkerRequestAkkaHandler] update instance status failed for request: {}.", req, e);
         }
     }
 

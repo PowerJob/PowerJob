@@ -16,6 +16,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Properties;
 
@@ -27,6 +29,7 @@ import static com.github.kfcfans.powerjob.server.handler.outer.WorkerRequestHand
  * @author tjq
  * @since 2021/2/8
  */
+@Slf4j
 public class WorkerRequestHttpHandler extends AbstractVerticle {
 
     @Override
@@ -49,8 +52,13 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
         router.post(ProtocolConstant.SERVER_PATH_STATUS_REPORT)
                 .blockingHandler(ctx -> {
                     TaskTrackerReportInstanceStatusReq req = ctx.getBodyAsJson().mapTo(TaskTrackerReportInstanceStatusReq.class);
-                    getWorkerRequestHandler().onReceiveTaskTrackerReportInstanceStatusReq(req);
-                    out(ctx, AskResponse.succeed(null));
+                    try {
+                        getWorkerRequestHandler().onReceiveTaskTrackerReportInstanceStatusReq(req);
+                        out(ctx, AskResponse.succeed(null));
+                    } catch (Exception e) {
+                        log.error("[WorkerRequestHttpHandler] update instance status failed for request: {}.", req, e);
+                        out(ctx, AskResponse.failed(ExceptionUtils.getMessage(e)));
+                    }
                 });
         router.post(ProtocolConstant.SERVER_PATH_LOG_REPORT)
                 .blockingHandler(ctx -> {
@@ -63,7 +71,7 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
 
     private static void out(RoutingContext ctx, Object msg) {
         ctx.response()
-                .putHeader("Content-Type", OmsConstant.JSON_MEDIA_TYPE)
+                .putHeader(OmsConstant.HTTP_HEADER_CONTENT_TYPE, OmsConstant.JSON_MEDIA_TYPE)
                 .end(JsonObject.mapFrom(msg).encode());
     }
 

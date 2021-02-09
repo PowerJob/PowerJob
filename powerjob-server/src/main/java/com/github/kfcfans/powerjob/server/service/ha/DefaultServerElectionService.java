@@ -106,7 +106,7 @@ public class DefaultServerElectionService implements ServerElectionService {
                 log.info("[ServerElection] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
                 return getProtocolServerAddress(protocol);
             }catch (Exception e) {
-                log.warn("[ServerElection] write new server to db failed for app {}.", appName);
+                log.error("[ServerElection] write new server to db failed for app {}.", appName, e);
             }finally {
                 lockService.unlock(lockName);
             }

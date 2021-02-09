@@ -58,16 +58,12 @@ public class WorkerRequestHandler {
      * 处理 instance 状态
      * @param req 任务实例的状态上报请求
      */
-    public Optional<AskResponse> onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) {
-        try {
-            instanceManager.updateStatus(req);
+    public Optional<AskResponse> onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) throws Exception {
+        instanceManager.updateStatus(req);
 
-            // 结束状态（成功/失败）需要回复消息
-            if (InstanceStatus.finishedStatus.contains(req.getInstanceStatus())) {
-                return Optional.of(AskResponse.succeed(null));
-            }
-        }catch (Exception e) {
-            log.error("[ServerActor] update instance status failed for request: {}.", req, e);
+        // 结束状态（成功/失败）需要回复消息
+        if (InstanceStatus.finishedStatus.contains(req.getInstanceStatus())) {
+            return Optional.of(AskResponse.succeed(null));
         }
         return Optional.empty();
     }
