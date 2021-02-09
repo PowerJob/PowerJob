@@ -5,12 +5,13 @@ import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.transport.TransportService;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.extension.LockService;
+import com.github.kfcfans.powerjob.server.extension.ServerElectionService;
 import com.github.kfcfans.powerjob.server.handler.inner.requests.Ping;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.powerjob.server.extension.LockService;
+import com.github.kfcfans.powerjob.server.transport.TransportService;
+import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,14 +28,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Worker请求分配Server服务
+ * Default server election policy, first-come, first-served, no load balancing capability
  *
  * @author tjq
- * @since 2020/4/5
+ * @since 2021/2/9
  */
 @Slf4j
 @Service
-public class ServerSelectService {
+public class DefaultServerElectionService implements ServerElectionService {
 
     @Resource
     private LockService lockService;
@@ -50,8 +51,8 @@ public class ServerSelectService {
     private static final long PING_TIMEOUT_MS = 1000;
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
-
-    public String getServer(Long appId, String currentServer, String protocol) {
+    @Override
+    public String elect(Long appId, String protocol, String currentServer) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
             if (getThisServerAddress(protocol).equals(currentServer)) {

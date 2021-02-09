@@ -5,11 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.extension.ServerElectionService;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.powerjob.server.service.ha.ServerSelectService;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +31,7 @@ import java.util.TimeZone;
 public class ServerController {
 
     @Resource
-    private ServerSelectService serverSelectService;
+    private ServerElectionService serverElectionService;
     @Resource
     private AppInfoRepository appInfoRepository;
 
@@ -43,8 +43,8 @@ public class ServerController {
     }
 
     @GetMapping("/acquire")
-    public ResultDTO<String> acquireServer(Long appId, String currentServer, String protocol) {
-        return ResultDTO.success(serverSelectService.getServer(appId, currentServer, protocol));
+    public ResultDTO<String> acquireServer(Long appId, String protocol, String currentServer) {
+        return ResultDTO.success(serverElectionService.elect(appId, protocol, currentServer));
     }
 
     @GetMapping("/hello")
