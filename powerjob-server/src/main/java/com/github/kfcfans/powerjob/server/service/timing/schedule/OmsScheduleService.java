@@ -70,9 +70,10 @@ public class OmsScheduleService {
     private static final long SCHEDULE_RATE = 15000;
 
     @Async("omsTimingPool")
-    @Scheduled(fixedRate = SCHEDULE_RATE)
+    @Scheduled(fixedDelay = SCHEDULE_RATE)
     public void timingSchedule() {
 
+        long start = System.currentTimeMillis();
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         // 先查询DB，查看本机需要负责的任务
@@ -111,6 +112,11 @@ public class OmsScheduleService {
         }
 
         log.info("[JobScheduleService] cron schedule: {}, workflow schedule: {}, frequent schedule: {}.", cronTime, wfTime, stopwatch.stop());
+
+        long cost = System.currentTimeMillis() - start;
+        if (cost > SCHEDULE_RATE) {
+            log.warn("[JobScheduleService] The database query is using too much time({}ms), please check if the database load is too high!", cost);
+        }
     }
 
     /**
