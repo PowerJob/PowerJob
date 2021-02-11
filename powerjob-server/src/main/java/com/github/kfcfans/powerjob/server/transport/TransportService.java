@@ -4,6 +4,7 @@ import com.github.kfcfans.powerjob.common.OmsSerializable;
 import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.google.common.collect.Maps;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Service
 public class TransportService {
 
+    @Getter
     private final Map<Protocol, Transporter> protocol2Transporter = Maps.newConcurrentMap();
 
     @Autowired

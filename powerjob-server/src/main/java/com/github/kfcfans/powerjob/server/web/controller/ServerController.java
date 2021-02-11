@@ -9,7 +9,7 @@ import com.github.kfcfans.powerjob.server.extension.ServerElectionService;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.transport.TransportService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,6 +31,8 @@ import java.util.TimeZone;
 public class ServerController {
 
     @Resource
+    private TransportService transportService;
+    @Resource
     private ServerElectionService serverElectionService;
     @Resource
     private AppInfoRepository appInfoRepository;
@@ -51,7 +53,7 @@ public class ServerController {
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
         res.put("localHost", NetUtils.getLocalHost());
-        res.put("actorSystemAddress", AkkaStarter.getActorSystemAddress());
+        res.put("communicationSystemInfo", transportService.getProtocol2Transporter());
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
         res.put("appIds", WorkerManagerService.getAppId2ClusterStatus().keySet());

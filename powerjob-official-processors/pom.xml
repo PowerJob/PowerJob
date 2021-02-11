@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-official-processors</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -20,7 +20,7 @@
         <!-- 不会被打包的部分，scope 只能是 test 或 provide -->
         <junit.version>5.6.1</junit.version>
         <logback.version>1.2.3</logback.version>
-        <powerjob.worker.version>3.4.5</powerjob.worker.version>
+        <powerjob.worker.version>3.4.6</powerjob.worker.version>
 
         <!-- 全部 shade 化，避免依赖冲突 -->
         <fastjson.version>1.2.68</fastjson.version>

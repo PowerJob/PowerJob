@@ -11,7 +11,7 @@ import java.io.Serializable;
 public interface OmsSerializable extends Serializable {
 
     /**
-     * request path for http or other protocol, like 'stopInstance'
+     * request path for http or other protocol, like '/worker/stopInstance'
      * @return null for non-http request object or no-null path for http request needed object
      */
     default String path() {

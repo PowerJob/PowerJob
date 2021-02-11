@@ -20,6 +20,8 @@ public class WorkerInfo {
 
     private String protocol;
 
+    private String client;
+
     private SystemMetrics systemMetrics;
 
     private List<DeployedContainerInfo> containerInfos;
@@ -28,6 +30,7 @@ public class WorkerInfo {
         address = workerHeartbeat.getWorkerAddress();
         lastActiveTime = workerHeartbeat.getHeartbeatTime();
         protocol = workerHeartbeat.getProtocol();
+        client = workerHeartbeat.getClient();
         systemMetrics = workerHeartbeat.getSystemMetrics();
         containerInfos = workerHeartbeat.getContainerInfos();
     }

@@ -43,6 +43,7 @@ public class WorkerHealthReporter implements Runnable {
         heartbeat.setHeartbeatTime(System.currentTimeMillis());
         heartbeat.setVersion(PowerJobWorkerVersion.getVersion());
         heartbeat.setProtocol(Protocol.AKKA.name());
+        heartbeat.setClient("Atlantis");
 
         // 获取当前加载的容器列表
         heartbeat.setContainerInfos(OmsContainerFactory.getDeployedContainerInfos());
