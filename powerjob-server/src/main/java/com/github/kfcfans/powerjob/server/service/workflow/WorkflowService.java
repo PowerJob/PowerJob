@@ -7,7 +7,7 @@ import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.WorkflowInfoDTO;
 import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
-import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
+import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;

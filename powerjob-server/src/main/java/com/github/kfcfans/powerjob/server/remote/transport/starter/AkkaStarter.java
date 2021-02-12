@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.transport.starter;
+package com.github.kfcfans.powerjob.server.remote.transport.starter;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
@@ -12,8 +12,8 @@ import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
-import com.github.kfcfans.powerjob.server.handler.inner.FriendRequestHandler;
-import com.github.kfcfans.powerjob.server.handler.outer.WorkerRequestAkkaHandler;
+import com.github.kfcfans.powerjob.server.remote.server.FriendRequestHandler;
+import com.github.kfcfans.powerjob.server.remote.worker.handler.impl.WorkerRequestAkkaHandler;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;

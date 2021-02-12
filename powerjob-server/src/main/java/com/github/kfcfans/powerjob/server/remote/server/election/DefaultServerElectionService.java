@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.service.ha;
+package com.github.kfcfans.powerjob.server.remote.server.election;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
@@ -7,11 +7,11 @@ import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.extension.ServerElectionService;
-import com.github.kfcfans.powerjob.server.handler.inner.requests.Ping;
+import com.github.kfcfans.powerjob.server.remote.server.request.Ping;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.powerjob.server.transport.TransportService;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

@@ -1,7 +1,6 @@
-package com.github.kfcfans.powerjob.server.service.ha;
+package com.github.kfcfans.powerjob.server.remote.worker.cluster;
 
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
-import com.github.kfcfans.powerjob.common.model.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -16,7 +15,7 @@ import java.util.*;
  * @since 2020/4/5
  */
 @Slf4j
-public class WorkerManagerService {
+public class WorkerClusterManagerService {
 
     // 存储Worker健康信息，appId -> ClusterStatusHolder
     private static final Map<Long, ClusterStatusHolder> appId2ClusterStatus = Maps.newConcurrentMap();

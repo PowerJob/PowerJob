@@ -6,7 +6,7 @@ import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
@@ -62,7 +62,7 @@ public class CleanService {
     public void timingClean() {
 
         // 释放本地缓存
-        WorkerManagerService.cleanUp();
+        WorkerClusterManagerService.cleanUp();
 
         // 释放磁盘空间
         cleanLocal(OmsFileUtils.genLogDirPath(), instanceInfoRetentionDay);

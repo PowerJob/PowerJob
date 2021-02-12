@@ -1,7 +1,7 @@
-package com.github.kfcfans.powerjob.server.handler.outer;
+package com.github.kfcfans.powerjob.server.remote.worker.handler;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.model.WorkerInfo;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.*;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
@@ -13,7 +13,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ContainerInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.InstanceLogService;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -51,7 +51,7 @@ public class WorkerRequestHandler {
      * @param heartbeat 心跳包
      */
     public void onReceiveWorkerHeartbeat(WorkerHeartbeat heartbeat) {
-        WorkerManagerService.updateStatus(heartbeat);
+        WorkerClusterManagerService.updateStatus(heartbeat);
     }
 
     /**
@@ -123,7 +123,7 @@ public class WorkerRequestHandler {
             if (!jobInfo.getAppId().equals(appId)) {
                 askResponse = AskResponse.failed("Permission Denied!");
             }else {
-                List<String> sortedAvailableWorker = WorkerManagerService.getAvailableWorkers(appId, jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace())
+                List<String> sortedAvailableWorker = WorkerClusterManagerService.getAvailableWorkers(appId, jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace())
                         .stream().map(WorkerInfo::getAddress).collect(Collectors.toList());
                 askResponse = AskResponse.succeed(sortedAvailableWorker);
             }

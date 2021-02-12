@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.transport;
+package com.github.kfcfans.powerjob.server.remote.transport;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
 import com.github.kfcfans.powerjob.common.Protocol;

@@ -1,8 +1,8 @@
 package com.github.kfcfans.powerjob.server;
 
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
-import com.github.kfcfans.powerjob.server.transport.starter.VertXStarter;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.VertXStarter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

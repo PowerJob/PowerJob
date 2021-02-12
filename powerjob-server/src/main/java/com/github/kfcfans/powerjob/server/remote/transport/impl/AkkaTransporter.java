@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.transport.impl;
+package com.github.kfcfans.powerjob.server.remote.transport.impl;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
@@ -6,8 +6,8 @@ import com.github.kfcfans.powerjob.common.OmsSerializable;
 import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.transport.Transporter;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.transport.Transporter;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;

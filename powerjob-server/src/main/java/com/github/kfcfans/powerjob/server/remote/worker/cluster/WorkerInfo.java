@@ -1,5 +1,7 @@
-package com.github.kfcfans.powerjob.common.model;
+package com.github.kfcfans.powerjob.server.remote.worker.cluster;
 
+import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
+import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import lombok.Data;
 

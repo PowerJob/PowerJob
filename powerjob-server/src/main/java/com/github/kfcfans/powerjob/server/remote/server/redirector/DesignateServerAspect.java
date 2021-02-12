@@ -1,12 +1,12 @@
-package com.github.kfcfans.powerjob.server.common.redirect;
+package com.github.kfcfans.powerjob.server.remote.server.redirector;
 
 import akka.pattern.Patterns;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
-import com.github.kfcfans.powerjob.server.handler.inner.requests.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.server.request.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import lombok.extern.slf4j.Slf4j;

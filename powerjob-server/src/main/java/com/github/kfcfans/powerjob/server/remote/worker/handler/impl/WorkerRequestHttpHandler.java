@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.handler.outer;
+package com.github.kfcfans.powerjob.server.remote.worker.handler.impl;
 
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.ProtocolConstant;
@@ -21,7 +21,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Properties;
 
-import static com.github.kfcfans.powerjob.server.handler.outer.WorkerRequestHandler.getWorkerRequestHandler;
+import static com.github.kfcfans.powerjob.server.remote.worker.handler.WorkerRequestHandler.getWorkerRequestHandler;
 
 /**
  * WorkerRequestHandler

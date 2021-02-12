@@ -10,14 +10,14 @@ import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ContainerInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.web.request.SaveContainerInfoRequest;
 import com.google.common.collect.ArrayListMultimap;
@@ -125,7 +125,7 @@ public class ContainerService {
         }
 
         ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getId());
-        WorkerManagerService.getActiveWorkerInfo(container.getAppId()).keySet().forEach(akkaAddress -> {
+        WorkerClusterManagerService.getActiveWorkerInfo(container.getAppId()).keySet().forEach(akkaAddress -> {
             ActorSelection workerActor = AkkaStarter.getWorkerActor(akkaAddress);
             workerActor.tell(destroyRequest, null);
         });
@@ -247,7 +247,7 @@ public class ContainerService {
             containerInfoRepository.saveAndFlush(container);
 
             // 开始部署（需要分批进行）
-            Set<String> workerAddressList = WorkerManagerService.getActiveWorkerInfo(container.getAppId()).keySet();
+            Set<String> workerAddressList = WorkerClusterManagerService.getActiveWorkerInfo(container.getAppId()).keySet();
             if (workerAddressList.isEmpty()) {
                 remote.sendText("SYSTEM: there is no worker available now, deploy failed!");
                 return;
@@ -284,9 +284,9 @@ public class ContainerService {
      * @return 拼接好的可阅读字符串
      */
     public String fetchDeployedInfo(Long appId, Long containerId) {
-        List<DeployedContainerInfo> infoList = WorkerManagerService.getDeployedContainerInfos(appId, containerId);
+        List<DeployedContainerInfo> infoList = WorkerClusterManagerService.getDeployedContainerInfos(appId, containerId);
 
-        Set<String> aliveWorkers = WorkerManagerService.getActiveWorkerInfo(appId).keySet();
+        Set<String> aliveWorkers = WorkerClusterManagerService.getActiveWorkerInfo(appId).keySet();
 
         Set<String> deployedList = Sets.newLinkedHashSet();
         List<String> unDeployedList = Lists.newLinkedList();

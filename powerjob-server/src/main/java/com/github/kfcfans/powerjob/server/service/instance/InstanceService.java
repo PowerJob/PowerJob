@@ -2,13 +2,13 @@ package com.github.kfcfans.powerjob.server.service.instance;
 
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
-import com.github.kfcfans.powerjob.common.model.WorkerInfo;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
 import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
-import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
+import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
@@ -16,9 +16,9 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.service.DispatchService;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
-import com.github.kfcfans.powerjob.server.transport.TransportService;
+import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -115,7 +115,7 @@ public class InstanceService {
             不可靠通知停止 TaskTracker
             假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭
              */
-            Optional<WorkerInfo> workerInfoOpt = WorkerManagerService.getWorkerInfo(instanceInfo.getAppId(), instanceInfo.getTaskTrackerAddress());
+            Optional<WorkerInfo> workerInfoOpt = WorkerClusterManagerService.getWorkerInfo(instanceInfo.getAppId(), instanceInfo.getTaskTrackerAddress());
             if (workerInfoOpt.isPresent()) {
                 ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
                 WorkerInfo workerInfo = workerInfoOpt.get();
@@ -252,7 +252,7 @@ public class InstanceService {
             return detail;
         }
 
-        Optional<WorkerInfo> workerInfoOpt = WorkerManagerService.getWorkerInfo(instanceInfoDO.getAppId(), instanceInfoDO.getTaskTrackerAddress());
+        Optional<WorkerInfo> workerInfoOpt = WorkerClusterManagerService.getWorkerInfo(instanceInfoDO.getAppId(), instanceInfoDO.getTaskTrackerAddress());
         if (workerInfoOpt.isPresent()) {
             WorkerInfo workerInfo = workerInfoOpt.get();
             ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);

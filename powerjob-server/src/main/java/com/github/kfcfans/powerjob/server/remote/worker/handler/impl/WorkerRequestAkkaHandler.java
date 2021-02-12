@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.handler.outer;
+package com.github.kfcfans.powerjob.server.remote.worker.handler.impl;
 
 import akka.actor.AbstractActor;
 import com.github.kfcfans.powerjob.common.request.*;
@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
-import static com.github.kfcfans.powerjob.server.handler.outer.WorkerRequestHandler.getWorkerRequestHandler;
+import static com.github.kfcfans.powerjob.server.remote.worker.handler.WorkerRequestHandler.getWorkerRequestHandler;
 
 /**
  * 处理 Worker 请求

@@ -8,7 +8,7 @@ import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
 import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
-import com.github.kfcfans.powerjob.server.common.redirect.DesignateServer;
+import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;

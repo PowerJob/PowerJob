@@ -1,9 +1,8 @@
-package com.github.kfcfans.powerjob.server.service.ha;
+package com.github.kfcfans.powerjob.server.remote.worker.cluster;
 
 import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
-import com.github.kfcfans.powerjob.common.model.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

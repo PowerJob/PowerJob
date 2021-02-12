@@ -1,14 +1,14 @@
-package com.github.kfcfans.powerjob.server.handler.inner;
+package com.github.kfcfans.powerjob.server.remote.server;
 
 import akka.actor.AbstractActor;
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.model.WorkerInfo;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
-import com.github.kfcfans.powerjob.server.handler.inner.requests.FriendQueryWorkerClusterStatusReq;
-import com.github.kfcfans.powerjob.server.handler.inner.requests.Ping;
-import com.github.kfcfans.powerjob.server.handler.inner.requests.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.server.request.FriendQueryWorkerClusterStatusReq;
+import com.github.kfcfans.powerjob.server.remote.server.request.Ping;
+import com.github.kfcfans.powerjob.server.remote.server.request.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -45,7 +45,7 @@ public class FriendRequestHandler extends AbstractActor {
      * 处理查询Worker节点的请求
      */
     private void onReceiveFriendQueryWorkerClusterStatusReq(FriendQueryWorkerClusterStatusReq req) {
-        Map<String, WorkerInfo> workerInfo = WorkerManagerService.getActiveWorkerInfo(req.getAppId());
+        Map<String, WorkerInfo> workerInfo = WorkerClusterManagerService.getActiveWorkerInfo(req.getAppId());
         AskResponse askResponse = AskResponse.succeed(workerInfo);
         getSender().tell(askResponse, getSelf());
     }

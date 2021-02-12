@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.service.timing.schedule;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
-import com.github.kfcfans.powerjob.server.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
@@ -14,7 +14,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRep
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.powerjob.server.service.DispatchService;
 import com.github.kfcfans.powerjob.server.service.JobService;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceManager;
@@ -84,7 +84,7 @@ public class OmsScheduleService {
         }
         List<Long> allAppIds = allAppInfos.stream().map(AppInfoDO::getId).collect(Collectors.toList());
         // 清理不需要维护的数据
-        WorkerManagerService.clean(allAppIds);
+        WorkerClusterManagerService.clean(allAppIds);
 
         // 调度 CRON 表达式 JOB
         try {

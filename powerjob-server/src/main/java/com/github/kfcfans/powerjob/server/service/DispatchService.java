@@ -1,16 +1,16 @@
 package com.github.kfcfans.powerjob.server.service;
 
 import com.github.kfcfans.powerjob.common.*;
-import com.github.kfcfans.powerjob.common.model.WorkerInfo;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceMetadataService;
 import com.github.kfcfans.powerjob.server.service.lock.local.UseSegmentLock;
-import com.github.kfcfans.powerjob.server.transport.TransportService;
+import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -107,7 +107,7 @@ public class DispatchService {
         }
 
         // 获取当前所有可用的Worker
-        List<WorkerInfo> allAvailableWorker = WorkerManagerService.getSortedAvailableWorkers(jobInfo.getAppId(), jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
+        List<WorkerInfo> allAvailableWorker = WorkerClusterManagerService.getSortedAvailableWorkers(jobInfo.getAppId(), jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
 
         allAvailableWorker.removeIf(worker -> {
             // 空，则全部不过滤
@@ -120,7 +120,7 @@ public class DispatchService {
         });
 
         if (CollectionUtils.isEmpty(allAvailableWorker)) {
-            String clusterStatusDescription = WorkerManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
+            String clusterStatusDescription = WorkerClusterManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
             log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available, clusterStatus is {}.", jobId, instanceId, clusterStatusDescription);
             instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), currentRunningTimes, current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE, dbInstanceParams, now);
 

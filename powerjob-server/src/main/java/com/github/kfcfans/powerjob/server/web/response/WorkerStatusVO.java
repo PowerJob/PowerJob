@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.server.web.response;
 
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
-import com.github.kfcfans.powerjob.common.model.WorkerInfo;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
