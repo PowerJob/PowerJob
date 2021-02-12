@@ -5,7 +5,7 @@ import com.github.kfcfans.powerjob.common.SystemInstanceResult;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.*;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.*;
 import com.github.kfcfans.powerjob.server.service.DispatchService;
@@ -65,7 +65,7 @@ public class InstanceStatusCheckService {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         // 查询DB获取该Server需要负责的AppGroup
-        List<AppInfoDO> appInfoList = appInfoRepository.findAllByCurrentServer(OhMyServer.getActorSystemAddress());
+        List<AppInfoDO> appInfoList = appInfoRepository.findAllByCurrentServer(AkkaStarter.getActorSystemAddress());
         if (CollectionUtils.isEmpty(appInfoList)) {
             log.info("[InstanceStatusChecker] current server has no app's job to check");
             return;

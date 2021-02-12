@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.service.timing.schedule;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
@@ -14,7 +14,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRep
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.powerjob.server.service.DispatchService;
 import com.github.kfcfans.powerjob.server.service.JobService;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceManager;
@@ -70,20 +70,21 @@ public class OmsScheduleService {
     private static final long SCHEDULE_RATE = 15000;
 
     @Async("omsTimingPool")
-    @Scheduled(fixedRate = SCHEDULE_RATE)
+    @Scheduled(fixedDelay = SCHEDULE_RATE)
     public void timingSchedule() {
 
+        long start = System.currentTimeMillis();
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         // 先查询DB，查看本机需要负责的任务
-        List<AppInfoDO> allAppInfos = appInfoRepository.findAllByCurrentServer(OhMyServer.getActorSystemAddress());
+        List<AppInfoDO> allAppInfos = appInfoRepository.findAllByCurrentServer(AkkaStarter.getActorSystemAddress());
         if (CollectionUtils.isEmpty(allAppInfos)) {
             log.info("[JobScheduleService] current server has no app's job to schedule.");
             return;
         }
         List<Long> allAppIds = allAppInfos.stream().map(AppInfoDO::getId).collect(Collectors.toList());
         // 清理不需要维护的数据
-        WorkerManagerService.clean(allAppIds);
+        WorkerClusterManagerService.clean(allAppIds);
 
         // 调度 CRON 表达式 JOB
         try {
@@ -111,6 +112,11 @@ public class OmsScheduleService {
         }
 
         log.info("[JobScheduleService] cron schedule: {}, workflow schedule: {}, frequent schedule: {}.", cronTime, wfTime, stopwatch.stop());
+
+        long cost = System.currentTimeMillis() - start;
+        if (cost > SCHEDULE_RATE) {
+            log.warn("[JobScheduleService] The database query is using too much time({}ms), please check if the database load is too high!", cost);
+        }
     }
 
     /**

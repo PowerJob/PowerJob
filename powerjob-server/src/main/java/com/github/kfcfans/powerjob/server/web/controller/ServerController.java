@@ -5,11 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.extension.ServerElectionService;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.powerjob.server.service.ha.ServerSelectService;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
+import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +31,9 @@ import java.util.TimeZone;
 public class ServerController {
 
     @Resource
-    private ServerSelectService serverSelectService;
+    private TransportService transportService;
+    @Resource
+    private ServerElectionService serverElectionService;
     @Resource
     private AppInfoRepository appInfoRepository;
 
@@ -43,20 +45,20 @@ public class ServerController {
     }
 
     @GetMapping("/acquire")
-    public ResultDTO<String> acquireServer(Long appId, String currentServer) {
-        return ResultDTO.success(serverSelectService.getServer(appId, currentServer));
+    public ResultDTO<String> acquireServer(Long appId, String protocol, String currentServer) {
+        return ResultDTO.success(serverElectionService.elect(appId, protocol, currentServer));
     }
 
     @GetMapping("/hello")
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
         res.put("localHost", NetUtils.getLocalHost());
-        res.put("actorSystemAddress", OhMyServer.getActorSystemAddress());
+        res.put("communicationSystemInfo", transportService.getProtocol2Transporter());
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
-        res.put("appIds", WorkerManagerService.getAppId2ClusterStatus().keySet());
+        res.put("appIds", WorkerClusterManagerService.getAppId2ClusterStatus().keySet());
         if (debug) {
-            res.put("appId2ClusterInfo", JSON.parseObject(JSON.toJSONString(WorkerManagerService.getAppId2ClusterStatus())));
+            res.put("appId2ClusterInfo", JSON.parseObject(JSON.toJSONString(WorkerClusterManagerService.getAppId2ClusterStatus())));
 
         }
         return ResultDTO.success(res);

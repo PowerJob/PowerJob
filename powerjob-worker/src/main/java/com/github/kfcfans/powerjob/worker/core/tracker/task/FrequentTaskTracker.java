@@ -60,7 +60,7 @@ public class FrequentTaskTracker extends TaskTracker {
 
     private static final int HISTORY_SIZE = 10;
     private static final String LAST_TASK_ID_PREFIX = "L";
-    private static final int MIN_INTERVAL = 1000;
+    private static final int MIN_INTERVAL = 50;
 
     protected FrequentTaskTracker(ServerScheduleJobReq req) {
         super(req);

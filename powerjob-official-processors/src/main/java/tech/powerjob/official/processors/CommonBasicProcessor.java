@@ -5,7 +5,9 @@ import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import com.google.common.base.Stopwatch;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import tech.powerjob.official.processors.util.CommonUtils;
 
 /**
  * CommonBasicProcessor
@@ -13,23 +15,29 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * @author tjq
  * @since 2021/1/30
  */
+@Slf4j
 public abstract class CommonBasicProcessor implements BasicProcessor {
 
     @Override
     public ProcessResult process(TaskContext taskContext) throws Exception {
 
-        String clzName = this.getClass().getSimpleName();
+        String status = "unknown";
+        Stopwatch sw = Stopwatch.createStarted();
+
         OmsLogger omsLogger = taskContext.getOmsLogger();
-        omsLogger.info("[{}] using params: {}", clzName, taskContext.getJobParams());
+        omsLogger.info("using params: {}", CommonUtils.parseParams(taskContext));
 
         try {
-            Stopwatch sw = Stopwatch.createStarted();
             ProcessResult result = process0(taskContext);
-            omsLogger.info("[{}] execute succeed, using {}, result: {}", clzName, sw, result);
+            omsLogger.info("execute succeed, using {}, result: {}", sw, result);
+            status = result.isSuccess() ? "succeed" : "failed";
             return result;
         } catch (Throwable t) {
-            omsLogger.error("[{}] execute failed!", clzName, t);
+            status = "exception";
+            omsLogger.error("execute failed!", t);
             return new ProcessResult(false, ExceptionUtils.getMessage(t));
+        } finally {
+            log.info("status: {}, cost: {}", status, sw);
         }
     }
 

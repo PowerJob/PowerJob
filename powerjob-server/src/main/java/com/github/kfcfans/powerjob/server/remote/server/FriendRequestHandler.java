@@ -1,14 +1,14 @@
-package com.github.kfcfans.powerjob.server.akka.actors;
+package com.github.kfcfans.powerjob.server.remote.server;
 
 import akka.actor.AbstractActor;
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.akka.requests.FriendQueryWorkerClusterStatusReq;
-import com.github.kfcfans.powerjob.server.akka.requests.Ping;
-import com.github.kfcfans.powerjob.server.akka.requests.RemoteProcessReq;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
-import com.github.kfcfans.powerjob.server.service.ha.WorkerManagerService;
+import com.github.kfcfans.powerjob.server.remote.server.request.FriendQueryWorkerClusterStatusReq;
+import com.github.kfcfans.powerjob.server.remote.server.request.Ping;
+import com.github.kfcfans.powerjob.server.remote.server.request.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -23,7 +23,7 @@ import java.util.Map;
  * @since 2020/4/9
  */
 @Slf4j
-public class FriendActor extends AbstractActor {
+public class FriendRequestHandler extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
@@ -45,7 +45,7 @@ public class FriendActor extends AbstractActor {
      * 处理查询Worker节点的请求
      */
     private void onReceiveFriendQueryWorkerClusterStatusReq(FriendQueryWorkerClusterStatusReq req) {
-        Map<String, SystemMetrics> workerInfo = WorkerManagerService.getActiveWorkerInfo(req.getAppId());
+        Map<String, WorkerInfo> workerInfo = WorkerClusterManagerService.getActiveWorkerInfo(req.getAppId());
         AskResponse askResponse = AskResponse.succeed(workerInfo);
         getSender().tell(askResponse, getSelf());
     }

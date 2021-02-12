@@ -29,6 +29,10 @@ public class WorkerHeartbeat implements OmsSerializable {
     private List<DeployedContainerInfo> containerInfos;
     // worker 版本信息
     private String version;
+    // 使用的通讯协议 AKKA / HTTP
+    private String protocol;
+    // 客户端名称
+    private String client;
     // 扩展字段
     private String extra;
 

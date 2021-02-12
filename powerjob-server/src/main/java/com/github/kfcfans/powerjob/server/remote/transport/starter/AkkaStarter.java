@@ -1,17 +1,19 @@
-package com.github.kfcfans.powerjob.server.akka;
+package com.github.kfcfans.powerjob.server.remote.transport.starter;
 
-import akka.actor.*;
+import akka.actor.ActorSelection;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.routing.RoundRobinPool;
+import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.server.akka.actors.FriendActor;
-import com.github.kfcfans.powerjob.server.akka.actors.ServerActor;
-import com.github.kfcfans.powerjob.server.akka.actors.ServerTroubleshootingActor;
 import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
 import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
+import com.github.kfcfans.powerjob.server.remote.server.FriendRequestHandler;
+import com.github.kfcfans.powerjob.server.remote.worker.handler.impl.WorkerRequestAkkaHandler;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
@@ -32,7 +34,7 @@ import java.util.concurrent.CompletionStage;
  * @since 2020/4/2
  */
 @Slf4j
-public class OhMyServer {
+public class AkkaStarter {
 
     public static ActorSystem actorSystem;
     @Getter
@@ -43,18 +45,17 @@ public class OhMyServer {
     public static void init() {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
-        log.info("[OhMyServer] OhMyServer's akka system start to bootstrap...");
+        log.info("[PowerJob] PowerJob's akka system start to bootstrap...");
 
         // 忽略了一个问题，机器是没办法访问外网的，除非架设自己的NTP服务器
         // TimeUtils.check();
 
         // 解析配置文件
-        PropertyUtils.init();
         Properties properties = PropertyUtils.getProperties();
-        int port = Integer.parseInt(properties.getProperty(PowerJobServerConfigKey.AKKA_PORT, "10086"));
+        int port = Integer.parseInt(properties.getProperty(PowerJobServerConfigKey.AKKA_PORT, String.valueOf(OmsConstant.SERVER_DEFAULT_AKKA_PORT)));
         String portFromJVM = System.getProperty(PowerJobServerConfigKey.AKKA_PORT);
         if (StringUtils.isNotEmpty(portFromJVM)) {
-            log.info("[OhMyWorker] use port from jvm params: {}", portFromJVM);
+            log.info("[PowerJob] use port from jvm params: {}", portFromJVM);
             port = Integer.parseInt(portFromJVM);
         }
 
@@ -64,22 +65,18 @@ public class OhMyServer {
         overrideConfig.put("akka.remote.artery.canonical.hostname", localIP);
         overrideConfig.put("akka.remote.artery.canonical.port", port);
         actorSystemAddress = localIP + ":" + port;
-        log.info("[OhMyWorker] akka-remote server address: {}", actorSystemAddress);
+        log.info("[PowerJob] akka-remote server address: {}", actorSystemAddress);
 
         Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.SERVER_AKKA_CONFIG_NAME);
         Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
         actorSystem = ActorSystem.create(RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
 
-        actorSystem.actorOf(Props.create(ServerActor.class)
+        actorSystem.actorOf(Props.create(WorkerRequestAkkaHandler.class)
                 .withDispatcher("akka.server-actor-dispatcher")
                 .withRouter(new RoundRobinPool(Runtime.getRuntime().availableProcessors() * 4)), RemoteConstant.SERVER_ACTOR_NAME);
-        actorSystem.actorOf(Props.create(FriendActor.class), RemoteConstant.SERVER_FRIEND_ACTOR_NAME);
+        actorSystem.actorOf(Props.create(FriendRequestHandler.class), RemoteConstant.SERVER_FRIEND_ACTOR_NAME);
 
-        // 处理系统中产生的异常情况
-        ActorRef troubleshootingActor = actorSystem.actorOf(Props.create(ServerTroubleshootingActor.class), RemoteConstant.SERVER_TROUBLESHOOTING_ACTOR_NAME);
-        actorSystem.eventStream().subscribe(troubleshootingActor, DeadLetter.class);
-
-        log.info("[OhMyServer] OhMyServer's akka system start successfully, using time {}.", stopwatch);
+        log.info("[PowerJob] PowerJob's akka system started successfully, using time {}.", stopwatch);
     }
 
     /**

@@ -5,12 +5,12 @@ import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
-import com.github.kfcfans.powerjob.server.akka.requests.FriendQueryWorkerClusterStatusReq;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.server.request.FriendQueryWorkerClusterStatusReq;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
@@ -68,7 +68,7 @@ public class SystemInfoController {
         // 重定向到指定 Server 获取集群信息
         FriendQueryWorkerClusterStatusReq req = new FriendQueryWorkerClusterStatusReq(appId);
         try {
-            ActorSelection friendActor = OhMyServer.getFriendActor(server);
+            ActorSelection friendActor = AkkaStarter.getFriendActor(server);
             CompletionStage<Object> askCS = Patterns.ask(friendActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
             AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
@@ -77,11 +77,11 @@ public class SystemInfoController {
                 List<WorkerStatusVO> result = Lists.newLinkedList();
                 address2Info.forEach((address, m) -> {
                     try {
-                        SystemMetrics metrics = JsonUtils.parseObject(JsonUtils.toJSONString(m), SystemMetrics.class);
+                        WorkerInfo metrics = JsonUtils.parseObject(JsonUtils.toJSONString(m), WorkerInfo.class);
                         WorkerStatusVO info = new WorkerStatusVO(String.valueOf(address), metrics);
                         result.add(info);
                     }catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("[SystemInfoController] parse ask response failed!", e);
                     }
                 });
                 return ResultDTO.success(result);
