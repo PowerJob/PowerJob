@@ -33,7 +33,14 @@ public class WorkerHealthReporter implements Runnable {
             return;
         }
 
-        SystemMetrics systemMetrics = SystemInfoUtils.getSystemMetrics();
+        SystemMetrics systemMetrics;
+
+        if (OhMyWorker.getConfig().getSystemMetricsCollector() == null) {
+            systemMetrics = SystemInfoUtils.getSystemMetrics();
+        } else {
+            systemMetrics = OhMyWorker.getConfig().getSystemMetricsCollector().collect();
+        }
+
         WorkerHeartbeat heartbeat = new WorkerHeartbeat();
 
         heartbeat.setSystemMetrics(systemMetrics);

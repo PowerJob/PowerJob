@@ -47,7 +47,12 @@ public class SystemMetrics implements OmsSerializable, Comparable<SystemMetrics>
      * Used disk ratio.
      */
     private double diskUsage;
-
+    /**
+     * user-customized system metrics collector, eg. GPU usage
+     * implement SystemMetricsCollector to set the value in worker side
+     * implement WorkerFilter to filter the worker in server side
+     */
+    private String extra;
     /**
      * Score of cache.
      */
