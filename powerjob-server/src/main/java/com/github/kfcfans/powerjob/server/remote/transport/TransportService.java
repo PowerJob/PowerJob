@@ -22,6 +22,8 @@ import java.util.Map;
 @Service
 public class TransportService {
 
+    private static final Map<Protocol, String> protocol2Address = Maps.newHashMap();
+
     @Getter
     private final Map<Protocol, Transporter> protocol2Transporter = Maps.newConcurrentMap();
 
@@ -30,6 +32,7 @@ public class TransportService {
         transporters.forEach(t -> {
             log.info("[TransportService] Transporter[protocol:{},address:{}] registration successful!", t.getProtocol(), t.getAddress());
             protocol2Transporter.put(t.getProtocol(), t);
+            protocol2Address.put(t.getProtocol(), t.getAddress());
         });
     }
 
@@ -55,5 +58,9 @@ public class TransportService {
         public UnknownProtocolException(String message) {
             super(message);
         }
+    }
+
+    public static Map<Protocol, String> getAllAddress() {
+        return protocol2Address;
     }
 }
