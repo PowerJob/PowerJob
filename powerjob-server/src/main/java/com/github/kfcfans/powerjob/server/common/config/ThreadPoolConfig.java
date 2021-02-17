@@ -34,7 +34,7 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsTimingPool-");
-        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun("PowerJobTimingPool"));
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun("PowerJobTiming"));
         return executor;
     }
 
@@ -55,7 +55,7 @@ public class ThreadPoolConfig {
     public TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(Runtime.getRuntime().availableProcessors());
-        scheduler.setThreadNamePrefix("omsSchedulerPool-");
+        scheduler.setThreadNamePrefix("PowerJobSchedulePool-");
         scheduler.setDaemon(true);
         return scheduler;
     }

@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.common.redirect;
+package com.github.kfcfans.powerjob.server.remote.server.redirector;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

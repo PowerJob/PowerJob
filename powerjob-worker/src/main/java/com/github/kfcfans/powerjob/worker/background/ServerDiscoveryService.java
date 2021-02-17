@@ -27,7 +27,7 @@ public class ServerDiscoveryService {
     // 配置的可发起HTTP请求的Server（IP:Port）
     private static final Map<String, String> IP2ADDRESS = Maps.newHashMap();
     // 服务发现地址
-    private static final String DISCOVERY_URL = "http://%s/server/acquire?appId=%d&currentServer=%s";
+    private static final String DISCOVERY_URL = "http://%s/server/acquire?appId=%d&currentServer=%s&protocol=AKKA";
     // 失败次数
     private static int FAILED_COUNT = 0;
     // 最大失败次数

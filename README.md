@@ -42,12 +42,16 @@ Refer to [PowerJob Introduction](https://www.yuque.com/powerjob/en/introduce) fo
 
 ### Online trial
 - Address: [try.powerjob.tech](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123)
-- Recommended to read the documentation first: [here](https://www.yuque.com/powerjob/en/trial)
+- Recommend reading the documentation first: [here](https://www.yuque.com/powerjob/en/trial)
 
 # Documents
 **[Docs](https://www.yuque.com/powerjob/en/introduce)**
 
 **[中文文档](https://www.yuque.com/powerjob/guidence/intro)**
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/PowerJob/PowerJob.svg)](https://starchart.cc/PowerJob/PowerJob)
 
 # Known Users
 [Click to register as PowerJob user!](https://github.com/PowerJob/PowerJob/issues/6)  
@@ -62,7 +66,7 @@ PowerJob is released under Apache License 2.0. Please refer to [License](./LICEN
 
 # Others
 
-- Any developer interested in getting more involved in PowerJob may join our [Gitter Community](https://gitter.im/PowerJob/community) and make [contributions](https://github.com/PowerJob/PowerJob/pulls)!
+- Any developer interested in getting more involved in PowerJob may join our [Reddit](https://www.reddit.com/r/PowerJob) or [Gitter](https://gitter.im/PowerJob/community) community and make [contributions](https://github.com/PowerJob/PowerJob/pulls)!
 
 - Reach out to me through email **tengjiqi@gmail.com**. Any issues or questions are welcomed on [Issues](https://github.com/PowerJob/PowerJob/issues).
 

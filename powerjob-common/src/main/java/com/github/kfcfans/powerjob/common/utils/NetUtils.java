@@ -18,6 +18,7 @@ limitations under the License.
 import com.github.kfcfans.powerjob.common.PowerJobDKey;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.net.*;
@@ -302,6 +303,11 @@ public class NetUtils {
         }
         // 兼容直接使用网卡名称的情况，比如 Realtek PCIe GBE Family Controller
         return Objects.equals(networkInterface.getName(), preferredNetworkInterface);
+    }
+
+    public static Pair<String, Integer> splitAddress2IpAndPort(String address) {
+        String[] split = address.split(":");
+        return Pair.of(split[0], Integer.valueOf(split[1]));
     }
 
     static boolean ignoreInterfaceByConfig(String interfaceName) {

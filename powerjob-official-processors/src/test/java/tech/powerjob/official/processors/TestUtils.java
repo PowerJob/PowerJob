@@ -1,6 +1,7 @@
 package tech.powerjob.official.processors;
 
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
+import com.github.kfcfans.powerjob.worker.log.impl.OmsLocalLogger;
 import com.github.kfcfans.powerjob.worker.log.impl.OmsServerLogger;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -23,7 +24,7 @@ public class TestUtils {
         taskContext.setJobParams(jobParams);
         taskContext.setTaskId("0.0");
         taskContext.setTaskName("TEST_TASK");
-        taskContext.setOmsLogger(new OmsServerLogger(jobId));
+        taskContext.setOmsLogger(new OmsLocalLogger());
 
         return taskContext;
     }

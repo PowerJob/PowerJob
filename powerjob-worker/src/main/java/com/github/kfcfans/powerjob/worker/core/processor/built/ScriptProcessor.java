@@ -8,6 +8,8 @@ import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -44,6 +46,9 @@ public abstract class ScriptProcessor implements BasicProcessor {
 
         File dir = new File(script.getParent());
         boolean success = dir.mkdirs();
+        if (!success) {
+            throw new RuntimeException("create script folder failed.");
+        }
         success = script.createNewFile();
         if (!success) {
             throw new RuntimeException("create script file failed");
@@ -70,11 +75,18 @@ public abstract class ScriptProcessor implements BasicProcessor {
         OmsLogger omsLogger = context.getOmsLogger();
 
         omsLogger.info("SYSTEM===> ScriptProcessor start to process");
-
-        // 1. 授权
-        ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
-        // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
-        chmodPb.start().waitFor();
+        
+        if (SystemUtils.IS_OS_WINDOWS) {
+            if (StringUtils.equals(fetchRunCommand(), "/bin/bash")) {
+                omsLogger.warn("Current OS is {} where shell scripts cannot run.", SystemUtils.OS_NAME);
+                return new ProcessResult(false, "Shell scripts cannot run on Windows");
+            }
+        } else {
+            // 1. 授权
+            ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
+            // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
+            chmodPb.start().waitFor();
+        }
 
         // 2. 执行目标脚本
         ProcessBuilder pb = new ProcessBuilder(fetchRunCommand(), scriptPath);

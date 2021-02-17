@@ -1,7 +1,6 @@
-package com.github.kfcfans.powerjob.server.service.ha;
+package com.github.kfcfans.powerjob.server.remote.worker.cluster;
 
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -16,7 +15,7 @@ import java.util.*;
  * @since 2020/4/5
  */
 @Slf4j
-public class WorkerManagerService {
+public class WorkerClusterManagerService {
 
     // 存储Worker健康信息，appId -> ClusterStatusHolder
     private static final Map<Long, ClusterStatusHolder> appId2ClusterStatus = Maps.newConcurrentMap();
@@ -35,13 +34,31 @@ public class WorkerManagerService {
     /**
      * 获取有序的当前所有可用的Worker地址（按得分高低排序，排在前面的健康度更高）
      */
-    public static List<String> getSortedAvailableWorker(Long appId, double minCPUCores, double minMemorySpace, double minDiskSpace) {
+    public static List<WorkerInfo> getSortedAvailableWorkers(Long appId, double minCPUCores, double minMemorySpace, double minDiskSpace) {
         ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
         if (clusterStatusHolder == null) {
             log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
             return Collections.emptyList();
         }
-        return clusterStatusHolder.getSortedAvailableWorker(minCPUCores, minMemorySpace, minDiskSpace);
+        return clusterStatusHolder.getSortedAvailableWorkers(minCPUCores, minMemorySpace, minDiskSpace);
+    }
+
+    public static List<WorkerInfo> getAvailableWorkers(Long appId, double minCPUCores, double minMemorySpace, double minDiskSpace) {
+        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
+        if (clusterStatusHolder == null) {
+            log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
+            return Collections.emptyList();
+        }
+        return clusterStatusHolder.getAvailableWorkers(minCPUCores, minMemorySpace, minDiskSpace);
+    }
+
+    public static Optional<WorkerInfo> getWorkerInfo(Long appId, String address) {
+        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
+        if (clusterStatusHolder == null) {
+            log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
+            return Optional.empty();
+        }
+        return Optional.ofNullable(clusterStatusHolder.getWorkerInfo(address));
     }
 
     /**
@@ -71,7 +88,7 @@ public class WorkerManagerService {
      * @param appId 应用ID
      * @return Worker信息
      */
-    public static Map<String, SystemMetrics> getActiveWorkerInfo(Long appId) {
+    public static Map<String, WorkerInfo> getActiveWorkerInfo(Long appId) {
         ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
         if (clusterStatusHolder == null) {
             return Collections.emptyMap();

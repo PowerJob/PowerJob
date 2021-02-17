@@ -1,14 +1,19 @@
-package com.github.kfcfans.powerjob.server.service.ha;
+package com.github.kfcfans.powerjob.server.remote.server.election;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
-import com.github.kfcfans.powerjob.server.akka.requests.Ping;
+import com.github.kfcfans.powerjob.common.utils.JsonUtils;
+import com.github.kfcfans.powerjob.server.extension.LockService;
+import com.github.kfcfans.powerjob.server.extension.ServerElectionService;
+import com.github.kfcfans.powerjob.server.remote.server.request.Ping;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
-import com.github.kfcfans.powerjob.server.extension.LockService;
+import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,17 +30,19 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Worker请求分配Server服务
+ * Default server election policy, first-come, first-served, no load balancing capability
  *
  * @author tjq
- * @since 2020/4/5
+ * @since 2021/2/9
  */
 @Slf4j
 @Service
-public class ServerSelectService {
+public class DefaultServerElectionService implements ServerElectionService {
 
     @Resource
     private LockService lockService;
+    @Resource
+    private TransportService transportService;
     @Resource
     private AppInfoRepository appInfoRepository;
 
@@ -46,18 +53,18 @@ public class ServerSelectService {
     private static final long PING_TIMEOUT_MS = 1000;
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
-
-    public String getServer(Long appId, String currentServer) {
+    @Override
+    public String elect(Long appId, String protocol, String currentServer) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
-            if (OhMyServer.getActorSystemAddress().equals(currentServer)) {
+            if (getProtocolServerAddress(protocol).equals(currentServer)) {
                 return currentServer;
             }
         }
-        return getServer0(appId);
+        return getServer0(appId, protocol);
     }
 
-    private String getServer0(Long appId) {
+    private String getServer0(Long appId, String protocol) {
 
         Set<String> downServerCache = Sets.newHashSet();
 
@@ -70,8 +77,9 @@ public class ServerSelectService {
             }
             String appName = appInfoOpt.get().getAppName();
             String originServer = appInfoOpt.get().getCurrentServer();
-            if (isActive(originServer, downServerCache)) {
-                return originServer;
+            String activeAddress = activeAddress(originServer, downServerCache, protocol);
+            if (StringUtils.isNotEmpty(activeAddress)) {
+                return activeAddress;
             }
 
             // 无可用Server，重新进行Server选举，需要加锁
@@ -88,19 +96,21 @@ public class ServerSelectService {
 
                 // 可能上一台机器已经完成了Server选举，需要再次判断
                 AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new RuntimeException("impossible, unless we just lost our database."));
-                if (isActive(appInfo.getCurrentServer(), downServerCache)) {
-                    return appInfo.getCurrentServer();
+                String address = activeAddress(originServer, downServerCache, protocol);
+                if (StringUtils.isNotEmpty(address)) {
+                    return address;
                 }
 
                 // 篡位，本机作为Server
-                appInfo.setCurrentServer(OhMyServer.getActorSystemAddress());
+                // 注意，写入 AppInfoDO#currentServer 的永远是 ActorSystem 的地址，仅在返回的时候特殊处理
+                appInfo.setCurrentServer(transportService.getTransporter(Protocol.AKKA).getAddress());
                 appInfo.setGmtModified(new Date());
 
                 appInfoRepository.saveAndFlush(appInfo);
-                log.info("[ServerSelectService] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
-                return appInfo.getCurrentServer();
+                log.info("[ServerElection] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
+                return getProtocolServerAddress(protocol);
             }catch (Exception e) {
-                log.warn("[ServerSelectService] write new server to db failed for app {}.", appName);
+                log.error("[ServerElection] write new server to db failed for app {}.", appName, e);
             }finally {
                 lockService.unlock(lockName);
             }
@@ -112,38 +122,42 @@ public class ServerSelectService {
      * 判断指定server是否存活
      * @param serverAddress 需要检测的server地址
      * @param downServerCache 缓存，防止多次发送PING（这个QPS其实还蛮爆表的...）
-     * @return true 存活 / false down机
+     * @param protocol 协议，用于返回指定的地址
+     * @return null or address
      */
-    private boolean isActive(String serverAddress, Set<String> downServerCache) {
+    private String activeAddress(String serverAddress, Set<String> downServerCache, String protocol) {
 
         if (downServerCache.contains(serverAddress)) {
-            return false;
+            return null;
         }
         if (StringUtils.isEmpty(serverAddress)) {
-            return false;
-        }
-
-        if (OhMyServer.getActorSystemAddress().equals(serverAddress)) {
-            return true;
+            return null;
         }
 
         Ping ping = new Ping();
         ping.setCurrentTime(System.currentTimeMillis());
 
-        ActorSelection serverActor = OhMyServer.getFriendActor(serverAddress);
+        ActorSelection serverActor = AkkaStarter.getFriendActor(serverAddress);
         try {
             CompletionStage<Object> askCS = Patterns.ask(serverActor, ping, Duration.ofMillis(PING_TIMEOUT_MS));
             AskResponse response = (AskResponse) askCS.toCompletableFuture().get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             downServerCache.remove(serverAddress);
-            return response.isSuccess();
+            if (response.isSuccess()) {
+                return JsonUtils.parseObject(response.getData(), JSONObject.class).getString(protocol);
+            }
         }catch (Exception e) {
-            log.warn("[ServerSelectService] server({}) was down.", serverAddress);
+            log.warn("[ServerElection] server({}) was down.", serverAddress);
         }
         downServerCache.add(serverAddress);
-        return false;
+        return null;
     }
 
     private boolean accurate() {
         return ThreadLocalRandom.current().nextInt(100) < accurateSelectServerPercentage;
+    }
+
+    private String getProtocolServerAddress(String protocol) {
+        Protocol pt = Protocol.of(protocol);
+        return TransportService.getAllAddress().get(pt);
     }
 }

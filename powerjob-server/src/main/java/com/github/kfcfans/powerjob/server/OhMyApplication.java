@@ -1,6 +1,8 @@
 package com.github.kfcfans.powerjob.server;
 
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
+import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.VertXStarter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,8 +30,8 @@ public class OhMyApplication {
 
         pre();
 
-        // Init ActorSystem first
-        OhMyServer.init();
+        AkkaStarter.init();
+        VertXStarter.init();
 
         // Start SpringBoot application.
         try {
@@ -42,6 +44,7 @@ public class OhMyApplication {
 
     private static void pre() {
         log.info(TIPS);
+        PropertyUtils.init();
     }
 
 }

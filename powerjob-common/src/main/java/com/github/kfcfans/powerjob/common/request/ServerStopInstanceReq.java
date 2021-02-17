@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.common.request;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
+import com.github.kfcfans.powerjob.common.ProtocolConstant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ServerStopInstanceReq implements OmsSerializable {
     private Long instanceId;
+
+    @Override
+    public String path() {
+        return ProtocolConstant.WORKER_PATH_STOP_INSTANCE;
+    }
 }

@@ -1,12 +1,12 @@
-package com.github.kfcfans.powerjob.server.common.redirect;
+package com.github.kfcfans.powerjob.server.remote.server.redirector;
 
 import akka.pattern.Patterns;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.akka.OhMyServer;
-import com.github.kfcfans.powerjob.server.akka.requests.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.server.request.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +70,7 @@ public class DesignateServerAspect {
         String targetServer = appInfo.getCurrentServer();
 
         // 目标IP与本地符合则本地执行
-        if (Objects.equals(targetServer, OhMyServer.getActorSystemAddress())) {
+        if (Objects.equals(targetServer, AkkaStarter.getActorSystemAddress())) {
             return point.proceed();
         }
 
@@ -82,7 +82,7 @@ public class DesignateServerAspect {
                 .setParameterTypes(parameterTypes)
                 .setArgs(args);
 
-        CompletionStage<Object> askCS = Patterns.ask(OhMyServer.getFriendActor(targetServer), remoteProcessReq, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
+        CompletionStage<Object> askCS = Patterns.ask(AkkaStarter.getFriendActor(targetServer), remoteProcessReq, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
         AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get();
 
         if (!askResponse.isSuccess()) {

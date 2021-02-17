@@ -9,7 +9,9 @@ import lombok.Data;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.official.processors.CommonBasicProcessor;
+import tech.powerjob.official.processors.util.CommonUtils;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +31,7 @@ public class HttpProcessor extends CommonBasicProcessor {
     @Override
     public ProcessResult process0(TaskContext taskContext) throws Exception {
         OmsLogger omsLogger = taskContext.getOmsLogger();
-        HttpParams httpParams = JSONObject.parseObject(taskContext.getJobParams(), HttpParams.class);
+        HttpParams httpParams = JSONObject.parseObject(CommonUtils.parseParams(taskContext), HttpParams.class);
 
         if (StringUtils.isEmpty(httpParams.url)) {
             return new ProcessResult(false, "url can't be empty!");
@@ -38,22 +40,22 @@ public class HttpProcessor extends CommonBasicProcessor {
         if (!httpParams.url.startsWith("http")) {
             httpParams.url = "http://" + httpParams.url;
         }
-        omsLogger.info("[HttpProcessor] request url: {}", httpParams.url);
+        omsLogger.info("request url: {}", httpParams.url);
 
         // set default method
         if (StringUtils.isEmpty(httpParams.method)) {
             httpParams.method = "GET";
-            omsLogger.info("[HttpProcessor] using default request method: GET");
+            omsLogger.info("using default request method: GET");
         } else {
             httpParams.method = httpParams.method.toUpperCase();
-            omsLogger.info("[HttpProcessor] request method: {}", httpParams.method);
+            omsLogger.info("request method: {}", httpParams.method);
         }
 
         // set default mediaType
         if (!"GET".equals(httpParams.method) && StringUtils.isEmpty(httpParams.mediaType)) {
             if (JSONValidator.from(httpParams.body).validate()) {
                 httpParams.mediaType = "application/json";
-                omsLogger.warn("[HttpProcessor] try to use 'application/json' as media type");
+                omsLogger.warn("try to use 'application/json' as media type");
             }
         }
 
@@ -61,14 +63,14 @@ public class HttpProcessor extends CommonBasicProcessor {
         if (httpParams.timeout == null) {
             httpParams.timeout = DEFAULT_TIMEOUT;
         }
-        omsLogger.info("[HttpProcessor] request timeout: {} seconds", httpParams.timeout);
+        omsLogger.info("request timeout: {} seconds", httpParams.timeout);
         OkHttpClient client = getClient(httpParams.timeout);
 
         Request.Builder builder = new Request.Builder().url(httpParams.url);
         if (httpParams.headers != null) {
             httpParams.headers.forEach((k, v) -> {
                 builder.addHeader(k, v);
-                omsLogger.info("[HttpProcessor] add header {}:{}", k, v);
+                omsLogger.info("add header {}:{}", k, v);
             });
         }
 
@@ -77,7 +79,7 @@ public class HttpProcessor extends CommonBasicProcessor {
             case "DELETE":
             case "POST":
                 MediaType mediaType = MediaType.parse(httpParams.mediaType);
-                omsLogger.info("[HttpProcessor] mediaType: {}", mediaType);
+                omsLogger.info("mediaType: {}", mediaType);
                 RequestBody requestBody = RequestBody.create(mediaType, httpParams.body);
                 builder.method(httpParams.method, requestBody);
                 break;
@@ -86,7 +88,7 @@ public class HttpProcessor extends CommonBasicProcessor {
         }
 
         Response response = client.newCall(builder.build()).execute();
-        omsLogger.info("[HttpProcessor] response: {}", response);
+        omsLogger.info("response: {}", response);
 
         String msgBody = "";
         if (response.body() != null) {
@@ -94,7 +96,6 @@ public class HttpProcessor extends CommonBasicProcessor {
         }
 
         String res = String.format("code:%d,body:%s", response.code(), msgBody);
-        omsLogger.info("[HttpProcessor] process result: {}", res);
 
         return new ProcessResult(true, res);
     }
@@ -130,6 +131,9 @@ public class HttpProcessor extends CommonBasicProcessor {
 
     private static OkHttpClient getClient(Integer timeout) {
         return CLIENT_STORE.computeIfAbsent(timeout, ignore -> new OkHttpClient.Builder()
+                .connectTimeout(Duration.ZERO)
+                .readTimeout(Duration.ZERO)
+                .writeTimeout(Duration.ZERO)
                 .callTimeout(timeout, TimeUnit.SECONDS)
                 .build());
     }
