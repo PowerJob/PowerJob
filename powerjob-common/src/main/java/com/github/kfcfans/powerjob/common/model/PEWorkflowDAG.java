@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,6 +36,7 @@ public class PEWorkflowDAG implements Serializable {
      * Point.
      */
     @Data
+    @Accessors(chain = true)
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Node implements Serializable {

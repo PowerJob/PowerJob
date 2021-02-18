@@ -43,6 +43,12 @@ public class WorkflowInstanceController {
         return ResultDTO.success(null);
     }
 
+    @RequestMapping("/retry")
+    public ResultDTO<Void> retryWfInstance(Long wfInstanceId, Long appId){
+        workflowInstanceService.retryWorkflowInstance(wfInstanceId, appId);
+        return ResultDTO.success(null);
+    }
+
     @GetMapping("/info")
     public ResultDTO<WorkflowInstanceInfoVO> getInfo(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstanceDO = workflowInstanceService.fetchWfInstance(wfInstanceId, appId);

@@ -2,13 +2,13 @@ package com.github.kfcfans.powerjob.server.common.utils;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
+import com.github.kfcfans.powerjob.common.SystemInstanceResult;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.server.model.WorkflowDAG;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +24,7 @@ public class WorkflowDAGUtils {
     private WorkflowDAGUtils() {
 
     }
+
     /**
      * 获取所有根节点
      *
@@ -72,6 +73,128 @@ public class WorkflowDAGUtils {
         return false;
     }
 
+
+    /**
+     * Add by Echo009 on 2021/02/08
+     * 获取准备好的节点（非完成状态的节点且，前置依赖节点为空或者均处于完成状态）
+     * 注意，这里会直接将当前 disable（enable = false）的节点的状态置为完成
+     *
+     * @param dag 点线表示法的DAG图
+     * @return 当前可执行的节点
+     */
+    public static List<PEWorkflowDAG.Node> listReadyNodes(PEWorkflowDAG dag) {
+        // 保存 nodeId -> Node 的映射关系
+        Map<Long, PEWorkflowDAG.Node> nodeId2Node = Maps.newHashMap();
+
+        List<PEWorkflowDAG.Node> dagNodes = dag.getNodes();
+        for (PEWorkflowDAG.Node node : dagNodes) {
+            nodeId2Node.put(node.getNodeId(), node);
+        }
+        // 构建依赖树（下游任务需要哪些上游任务完成才能执行）
+        Multimap<Long, Long> relyMap = LinkedListMultimap.create();
+        // 后继节点 Map
+        Multimap<Long, Long> successorMap = LinkedListMultimap.create();
+        dag.getEdges().forEach(edge -> {
+            relyMap.put(edge.getTo(), edge.getFrom());
+            successorMap.put(edge.getFrom(), edge.getTo());
+        });
+        List<PEWorkflowDAG.Node> readyNodes = Lists.newArrayList();
+        List<PEWorkflowDAG.Node> skipNodes = Lists.newArrayList();
+
+        for (PEWorkflowDAG.Node currentNode : dagNodes) {
+            if (!isReadyNode(currentNode.getNodeId(), nodeId2Node, relyMap)) {
+                continue;
+            }
+            // 需要直接跳过的节点
+            if (currentNode.getEnable() != null && !currentNode.getEnable()) {
+                skipNodes.add(currentNode);
+            } else {
+                readyNodes.add(currentNode);
+            }
+        }
+        // 当前直接跳过的节点不为空
+        if (!skipNodes.isEmpty()) {
+            for (PEWorkflowDAG.Node skipNode : skipNodes) {
+                // move
+                readyNodes.addAll(moveAndObtainReadySuccessor(skipNode, nodeId2Node, relyMap, successorMap));
+            }
+        }
+        return readyNodes;
+    }
+
+    /**
+     * 移动并获取就绪的后继节点
+     *
+     * @param skippedNode  当前需要跳过的节点
+     * @param nodeId2Node  nodeId -> Node
+     * @param relyMap      to-node id  -> list of from-node id
+     * @param successorMap from-node id -> list of to-node id
+     * @return 就绪的后继节点
+     */
+    private static List<PEWorkflowDAG.Node> moveAndObtainReadySuccessor(PEWorkflowDAG.Node skippedNode, Map<Long, PEWorkflowDAG.Node> nodeId2Node, Multimap<Long, Long> relyMap, Multimap<Long, Long> successorMap) {
+
+        // 更新当前跳过节点的状态
+        skippedNode.setStatus(InstanceStatus.SUCCEED.getV());
+        skippedNode.setResult(SystemInstanceResult.DISABLE_NODE);
+        // 有可能出现需要连续移动的情况
+        List<PEWorkflowDAG.Node> readyNodes = Lists.newArrayList();
+        List<PEWorkflowDAG.Node> skipNodes = Lists.newArrayList();
+        // 获取当前跳过节点的后继节点
+        Collection<Long> successors = successorMap.get(skippedNode.getNodeId());
+        for (Long successor : successors) {
+            // 判断后继节点是否处于 Ready 状态（前驱节点均处于完成状态）
+            if (isReadyNode(successor, nodeId2Node, relyMap)) {
+                PEWorkflowDAG.Node node = nodeId2Node.get(successor);
+                if (node.getEnable() != null && !node.getEnable()) {
+                    // 需要跳过
+                    skipNodes.add(node);
+                    continue;
+                }
+                readyNodes.add(node);
+            }
+        }
+        // 深度优先，继续移动
+        if (!skipNodes.isEmpty()) {
+            for (PEWorkflowDAG.Node node : skipNodes) {
+                readyNodes.addAll(moveAndObtainReadySuccessor(node, nodeId2Node, relyMap, successorMap));
+            }
+        }
+        return readyNodes;
+    }
+
+    /**
+     * 判断当前节点是否准备就绪
+     *
+     * @param nodeId      Node id
+     * @param nodeId2Node Node id -> Node
+     * @param relyMap     to-node id  -> list of from-node id
+     * @return true if current node is ready
+     */
+    private static boolean isReadyNode(long nodeId, Map<Long, PEWorkflowDAG.Node> nodeId2Node, Multimap<Long, Long> relyMap) {
+        PEWorkflowDAG.Node currentNode = nodeId2Node.get(nodeId);
+        int currentNodeStatus = currentNode.getStatus() == null ? InstanceStatus.WAITING_DISPATCH.getV() : currentNode.getStatus();
+        // 跳过已完成节点（处理成功 或者 处理失败）和已派发节点（存在 InstanceId）
+        if (InstanceStatus.FINISHED_STATUS.contains(currentNodeStatus)
+                || currentNode.getInstanceId() != null) {
+            return false;
+        }
+        Collection<Long> relyNodeIds = relyMap.get(nodeId);
+        for (Long relyNodeId : relyNodeIds) {
+            PEWorkflowDAG.Node relyNode = nodeId2Node.get(relyNodeId);
+            int relyNodeStatus = relyNode.getStatus() == null ? InstanceStatus.WAITING_DISPATCH.getV() : relyNode.getStatus();
+            // 只要依赖的节点有一个未完成，那么就不是就绪状态
+            // 注意，这里允许失败的原因是有允许失败跳过节点的存在，对于不允许跳过的失败节点，一定走不到这里（工作流会被打断）
+            if (InstanceStatus.GENERALIZED_RUNNING_STATUS.contains(relyNodeStatus)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isNotAllowSkipWhenFailed(PEWorkflowDAG.Node node) {
+        // 默认不允许跳过
+        return node.getSkipWhenFailed() == null || !node.getSkipWhenFailed();
+    }
     /**
      * 将点线表示法的DAG图转化为引用表达法的DAG图
      *

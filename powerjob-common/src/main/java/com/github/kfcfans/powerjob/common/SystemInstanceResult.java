@@ -57,5 +57,8 @@ public class SystemInstanceResult {
      */
     public static final String INVALID_DAG = "invalid dag";
 
-
+    /**
+     * 被禁用的节点
+     */
+    public static final String DISABLE_NODE = "disable node";
 }
