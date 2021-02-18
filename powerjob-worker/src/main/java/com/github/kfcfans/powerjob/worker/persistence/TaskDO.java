@@ -16,29 +16,55 @@ import org.springframework.util.StringUtils;
 @Setter
 public class TaskDO {
 
-    // 层次命名法，可以表示 Map 后的父子关系，如 0.1.2 代表 rootTask map 的第一个 task map 的第二个 task
+    /**
+     * 层次命名法，可以表示 Map 后的父子关系，如 0.1.2 代表 rootTask map 的第一个 task map 的第二个 task
+     */
     private String taskId;
-
+    /**
+     * 任务实例 ID
+     */
     private Long instanceId;
-    // 秒级任务专用
+    /**
+     * 秒级任务专用
+     * 对于普通任务而言 等于 instanceId
+     * 对于秒级（固定频率）任务 自增长
+     */
     private Long subInstanceId;
-    // 任务名称
+    /**
+     * 任务名称
+     */
     private String taskName;
-    // 任务对象（序列化后的二进制数据）
+    /**
+     *  任务对象（序列化后的二进制数据）
+     */
     private byte[] taskContent;
-    // 对于TaskTracker为workerAddress（派发地址），对于普通Worker为TaskTrackerAddress（汇报地址），所有地址都是 IP:Port
+    /**
+     * 对于TaskTracker为workerAddress（派发地址），对于普通Worker为TaskTrackerAddress（汇报地址），所有地址都是 IP:Port
+     */
     private String address;
-    // 任务状态，0～10代表 JobTracker 使用，11～20代表普通Worker使用
+    /**
+     * 任务状态，0～10代表 JobTracker 使用，11～20代表普通Worker使用
+     */
     private Integer status;
-    // 执行结果
+    /**
+     * 执行结果
+     */
     private String result;
-    // 失败次数
+    /**
+     * 失败次数
+     */
     private Integer failedCnt;
-    // 创建时间
+    /**
+     * 创建时间
+     */
     private Long createdTime;
-    // 最后修改时间
+    /**
+     * 最后修改时间
+     */
     private Long lastModifiedTime;
-    // ProcessorTracker 最后上报时间
+    /**
+     * ProcessorTracker 最后上报时间
+     */
     private Long lastReportTime;
 
     public String getUpdateSQL() {

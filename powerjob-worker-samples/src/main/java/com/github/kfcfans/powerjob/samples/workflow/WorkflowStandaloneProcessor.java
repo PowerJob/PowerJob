@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.samples.workflow;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
@@ -22,14 +22,13 @@ public class WorkflowStandaloneProcessor implements BasicProcessor {
     public ProcessResult process(TaskContext context) throws Exception {
         OmsLogger logger = context.getOmsLogger();
         logger.info("current:" + context.getJobParams());
-        System.out.println("current: " + context.getJobParams());
-        System.out.println("currentContext:");
-        System.out.println(JSONObject.toJSONString(context));
+        System.out.println("jobParams: " + context.getJobParams());
+        System.out.println("currentContext:"+JSON.toJSONString(context));
 
         // 尝试获取上游任务
-        Map<Long, String> upstreamTaskResult = context.fetchUpstreamTaskResult();
-        System.out.println("工作流上游任务数据：");
-        System.out.println(upstreamTaskResult);
+        Map<String, String> workflowContext = context.fetchWorkflowContext();
+        System.out.println("工作流上下文数据：");
+        System.out.println(workflowContext);
 
         return new ProcessResult(true, context.getJobId() + " process successfully.");
     }

@@ -3,6 +3,8 @@ package com.github.kfcfans.powerjob.worker.autoconfigure;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
+import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
+import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -133,5 +135,16 @@ public class PowerJobProperties {
          * Test mode is used for conditions that your have no powerjob-server in your develop env so you can't startup the application
          */
         private boolean enableTestMode = false;
+        /**
+         * Max length of appended workflow context value length. Appended workflow context value that is longer than the value will be ignore.
+         * {@link TaskContext} max length for #appendedContextData key and value.
+         */
+        private int maxAppendedWfContextLength = 8096;
+        /**
+         * Max size of appended workflow context. Appended workflow context that is greater than the value will be truncated.
+         * {@link TaskContext} max size for #appendedContextData
+         * {@link TaskTracker} max size for #appendedWfContext
+         */
+        private int maxAppendedWfContextSize = 16;
     }
 }

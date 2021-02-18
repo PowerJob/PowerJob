@@ -3,6 +3,8 @@ package com.github.kfcfans.powerjob.common.request;
 import com.github.kfcfans.powerjob.common.OmsSerializable;
 import lombok.Data;
 
+import java.util.Map;
+
 
 /**
  * TaskTracker 将状态上报给服务器
@@ -14,19 +16,31 @@ import lombok.Data;
 public class TaskTrackerReportInstanceStatusReq implements OmsSerializable {
 
     private Long jobId;
+
     private Long instanceId;
+
     private Long wfInstanceId;
+    /**
+     * 追加的工作流上下文数据
+     * @since 2021/02/05
+     */
+    private Map<String,String> appendedWfContext;
 
     private int instanceStatus;
 
     private String result;
 
     /* ********* 统计信息 ********* */
+
     private long totalTaskNum;
+
     private long succeedTaskNum;
+
     private long failedTaskNum;
 
     private long startTime;
+
     private long reportTime;
+
     private String sourceAddress;
 }

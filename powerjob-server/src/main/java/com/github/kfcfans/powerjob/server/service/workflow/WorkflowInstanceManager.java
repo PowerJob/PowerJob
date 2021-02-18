@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.service.workflow;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
@@ -20,6 +21,7 @@ import com.github.kfcfans.powerjob.server.service.alarm.AlarmCenter;
 import com.github.kfcfans.powerjob.server.service.alarm.WorkflowInstanceAlarm;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
+import com.github.kfcfans.powerjob.server.service.lock.local.UseSegmentLock;
 import com.google.common.collect.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +38,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
+@SuppressWarnings("squid:S1192")
 public class WorkflowInstanceManager {
 
     @Resource
@@ -155,7 +158,7 @@ public class WorkflowInstanceManager {
                 JobInfoDO jobInfo = jobInfoRepository.findById(root.getJobId()).orElseGet(JobInfoDO::new);
                 if (jobInfo.getId() == null) {
                     // 在创建工作流实例到当前的这段时间内 job 信息被物理删除了
-                    log.error("[Workflow-{}|{}]job info of current node{nodeId={},jobId={}} is not present! maybe you have deleted the job!", wfInfo.getId(), wfInstanceId, root.getNodeId(), root.getJobId());
+                    log.error("[Workflow-{}|{}]job info of current node(nodeId={},jobId={}) is not present! maybe you have deleted the job!", wfInfo.getId(), wfInstanceId, root.getNodeId(), root.getJobId());
                 }
                 nodeId2JobInfoMap.put(root.getNodeId(), jobInfo);
                 // instanceParam 传递的是工作流实例的 wfContext
@@ -163,7 +166,7 @@ public class WorkflowInstanceManager {
                 root.setInstanceId(instanceId);
                 root.setStatus(InstanceStatus.RUNNING.getV());
 
-                log.info("[Workflow-{}|{}] create root instance(jobId={},instanceId={}) successfully~", wfInfo.getId(), wfInstanceId, root.getJobId(), instanceId);
+                log.info("[Workflow-{}|{}] create root instance(nodeId={},jobId={},instanceId={}) successfully~", wfInfo.getId(), wfInstanceId,root.getNodeId(), root.getJobId(), instanceId);
             });
 
             // 持久化
@@ -195,7 +198,7 @@ public class WorkflowInstanceManager {
      * @param status       完成任务的任务实例状态（SUCCEED/FAILED/STOPPED）
      * @param result       完成任务的任务实例结果
      */
-    @SuppressWarnings({"squid:S3776","squid:S2142","squid:S1141"})
+    @SuppressWarnings({"squid:S3776", "squid:S2142", "squid:S1141"})
     public void move(Long wfInstanceId, Long instanceId, InstanceStatus status, String result) {
 
         int lockId = wfInstanceId.hashCode();
@@ -228,7 +231,7 @@ public class WorkflowInstanceManager {
                         node.setStatus(status.getV());
                         node.setResult(result);
 
-                        log.info("[Workflow-{}|{}] node(jobId={},instanceId={}) finished in workflowInstance, status={},result={}", wfId, wfInstanceId, node.getJobId(), instanceId, status.name(), result);
+                        log.info("[Workflow-{}|{}] node(nodeId={},jobId={},instanceId={}) finished in workflowInstance, status={},result={}", wfId, wfInstanceId,node.getNodeId(), node.getJobId(), instanceId, status.name(), result);
                     }
 
                     if (InstanceStatus.generalizedRunningStatus.contains(node.getStatus())) {
@@ -299,7 +302,7 @@ public class WorkflowInstanceManager {
                     JobInfoDO jobInfo = jobInfoRepository.findById(currentNode.getJobId()).orElseGet(JobInfoDO::new);
                     if (jobInfo.getId() == null) {
                         // 在创建工作流实例到当前的这段时间内 job 信息被物理删除了
-                        log.error("[Workflow-{}|{}]job info of current node{nodeId={},jobId={}} is not present! maybe you have deleted the job!", wfId, wfInstanceId, currentNode.getNodeId(), currentNode.getJobId());
+                        log.error("[Workflow-{}|{}]job info of current node(nodeId={},jobId={}) is not present! maybe you have deleted the job!", wfId, wfInstanceId, currentNode.getNodeId(), currentNode.getJobId());
                     }
                     nodeId2JobInfoMap.put(nodeId, jobInfo);
                     // instanceParam 传递的是工作流实例的 wfContext
@@ -327,6 +330,37 @@ public class WorkflowInstanceManager {
         }
     }
 
+    /**
+     * 更新工作流上下文
+     * @since 2021/02/05
+     * @param wfInstanceId          工作流实例
+     * @param appendedWfContextData 追加的上下文数据
+     */
+    @UseSegmentLock(type = "updateWfContext", key = "#wfInstanceId.intValue()", concurrencyLevel = 1024)
+    public void updateWorkflowContext(Long wfInstanceId, Map<String, String> appendedWfContextData) {
+
+        try {
+            Optional<WorkflowInstanceInfoDO> wfInstanceInfoOpt = workflowInstanceInfoRepository.findByWfInstanceId(wfInstanceId);
+            if (!wfInstanceInfoOpt.isPresent()) {
+                log.error("[WorkflowInstanceManager] can't find metadata by workflowInstanceId({}).", wfInstanceId);
+                return;
+            }
+            WorkflowInstanceInfoDO wfInstance = wfInstanceInfoOpt.get();
+            HashMap<String, String> wfContext = JSON.parseObject(wfInstance.getWfContext(), new TypeReference<HashMap<String, String>>() {
+            });
+            for (Map.Entry<String, String> entry : appendedWfContextData.entrySet()) {
+                String key = entry.getKey();
+                String originValue = wfContext.put(key, entry.getValue());
+                log.info("[Workflow-{}|{}] update workflow context {} : {} -> {}", wfInstance.getWorkflowId(), wfInstance.getWfInstanceId(), key, originValue, entry.getValue());
+            }
+            wfInstance.setWfContext(JSON.toJSONString(wfContext));
+            workflowInstanceInfoRepository.saveAndFlush(wfInstance);
+
+        } catch (Exception e) {
+            log.error("[WorkflowInstanceManager] update workflow(workflowInstanceId={}) context failed.", wfInstanceId, e);
+        }
+
+    }
 
     /**
      * 运行任务实例

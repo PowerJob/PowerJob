@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * worker的master节点，处理来自server的jobInstance请求和来自worker的task请求
+ * worker 的 master 节点，处理来自 server 的 jobInstance 请求和来自 worker 的task 请求
  *
  * @author tjq
  * @since 2020/3/17
@@ -66,6 +66,9 @@ public class TaskTrackerActor extends AbstractActor {
         }
 
         taskTracker.updateTaskStatus(req.getSubInstanceId(), req.getTaskId(), taskStatus, req.getReportTime(), req.getResult());
+
+        // 更新工作流上下文
+        taskTracker.updateAppendedWfContext(req.getAppendedWfContext());
     }
 
     /**

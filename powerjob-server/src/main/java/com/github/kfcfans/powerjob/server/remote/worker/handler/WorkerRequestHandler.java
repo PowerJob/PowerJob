@@ -15,14 +15,17 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRep
 import com.github.kfcfans.powerjob.server.service.InstanceLogService;
 import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
+import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +42,8 @@ public class WorkerRequestHandler {
     private Environment environment;
     @Resource
     private InstanceManager instanceManager;
+    @Resource
+    private WorkflowInstanceManager workflowInstanceManager;
     @Resource
     private InstanceLogService instanceLogService;
     @Resource
@@ -58,7 +63,13 @@ public class WorkerRequestHandler {
      * 处理 instance 状态
      * @param req 任务实例的状态上报请求
      */
-    public Optional<AskResponse> onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) throws Exception {
+    public Optional<AskResponse> onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) throws ExecutionException {
+        // 2021/02/05 如果是工作流中的实例先尝试更新上下文信息，再更新实例状态，这里一定不会有异常
+        if (req.getWfInstanceId() != null && !CollectionUtils.isEmpty(req.getAppendedWfContext())) {
+            // 更新工作流上下文信息
+            workflowInstanceManager.updateWorkflowContext(req.getWfInstanceId(),req.getAppendedWfContext());
+        }
+
         instanceManager.updateStatus(req);
 
         // 结束状态（成功/失败）需要回复消息

@@ -29,6 +29,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,24 +54,48 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public abstract class TaskTracker {
 
-    // TaskTracker创建时间
-    protected long createTime;
-    // 任务实例ID，使用频率过高，从 InstanceInfo 提取出来单独保存一份
-    protected long instanceId;
-    // 任务实例信息
-    protected InstanceInfo instanceInfo;
-    // ProcessTracker 状态管理
-    protected ProcessorTrackerStatusHolder ptStatusHolder;
-    // 数据库持久化服务
-    protected TaskPersistenceService taskPersistenceService;
-    // 定时任务线程池
+    /**
+     * TaskTracker创建时间
+     */
+    protected final long createTime;
+    /**
+     * 任务实例ID，使用频率过高，从 InstanceInfo 提取出来单独保存一份
+     */
+    protected final long instanceId;
+    /**
+     * 任务实例信息
+     */
+    protected final InstanceInfo instanceInfo;
+    /**
+     * ProcessTracker 状态管理
+     */
+    protected final ProcessorTrackerStatusHolder ptStatusHolder;
+    /**
+     * 数据库持久化服务
+     */
+    protected final TaskPersistenceService taskPersistenceService;
+    /**
+     * 定时任务线程池
+     */
     protected ScheduledExecutorService scheduledPool;
-    // 是否结束
-    protected AtomicBoolean finished;
-    // 上报时间缓存
+    /**
+     * 是否结束
+     */
+    protected final AtomicBoolean finished;
+    /**
+     * 追加的工作流上下文数据
+     *
+     * @since 2021/02/05
+     */
+    protected final Map<String, String> appendedWfContext;
+    /**
+     * 上报时间缓存
+     */
     private final Cache<String, Long> taskId2LastReportTime;
 
-    // 分段锁
+    /**
+     * 分段锁
+     */
     private final SegmentLock segmentLock;
     private static final int UPDATE_CONCURRENCY = 4;
 
@@ -93,7 +119,8 @@ public abstract class TaskTracker {
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
         this.taskPersistenceService = TaskPersistenceService.INSTANCE;
         this.finished = new AtomicBoolean(false);
-
+        // 只有工作流中的任务允许向工作流中追加上下文数据
+        this.appendedWfContext = req.getWfInstanceId() == null ? Collections.emptyMap() : Maps.newConcurrentMap();
         // 构建缓存
         taskId2LastReportTime = CacheBuilder.newBuilder().maximumSize(1024).build();
 
@@ -108,6 +135,7 @@ public abstract class TaskTracker {
 
     /**
      * 静态方法创建 TaskTracker
+     *
      * @param req 服务端调度任务请求
      * @return API/CRON -> CommonTaskTracker, FIX_RATE/FIX_DELAY -> FrequentTaskTracker
      */
@@ -116,8 +144,10 @@ public abstract class TaskTracker {
             TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
             switch (timeExpressionType) {
                 case FIXED_RATE:
-                case FIXED_DELAY:return new FrequentTaskTracker(req);
-                default:return new CommonTaskTracker(req);
+                case FIXED_DELAY:
+                    return new FrequentTaskTracker(req);
+                default:
+                    return new CommonTaskTracker(req);
             }
         } catch (Exception e) {
             log.warn("[TaskTracker-{}] create TaskTracker from request({}) failed.", req.getInstanceId(), req, e);
@@ -139,15 +169,45 @@ public abstract class TaskTracker {
     }
 
     /* *************************** 对外方法区 *************************** */
+
+    /**
+     * 更新追加的上下文数据
+     *
+     * @param newAppendedWfContext 追加的上下文数据
+     * @since 2021/02/05
+     */
+    public void updateAppendedWfContext(Map<String, String> newAppendedWfContext) {
+
+        // check
+        if (instanceInfo.getWfInstanceId() == null || CollectionUtils.isEmpty(newAppendedWfContext)) {
+            // 只有工作流中的任务才有存储的必要
+            return;
+        }
+        // 先判断当前上下文大小是否超出限制
+        final int sizeThreshold = OhMyWorker.getConfig().getMaxAppendedWfContextSize();
+        for (Map.Entry<String, String> entry : newAppendedWfContext.entrySet()) {
+            if (appendedWfContext.size() >= sizeThreshold) {
+                log.warn("[TaskTracker-{}] current size of appended workflow context data is greater than {}, the rest of appended workflow context data will be ignore! ", instanceInfo.getInstanceId(), sizeThreshold);
+                break;
+            }
+            String originValue = appendedWfContext.put(entry.getKey(), entry.getValue());
+            log.info("[TaskTracker-{}] update appended workflow context data {} : {} -> {}", instanceInfo.getInstanceId(), entry.getKey(), originValue, entry.getValue());
+        }
+
+    }
+
+
     /**
      * 更新Task状态
      * V1.0.0 -> V1.0.1（e405e283ad7f97b0b4e5d369c7de884c0caf9192） 锁方案变更，从 synchronized (taskId.intern()) 修改为分段锁，能大大减少内存占用，损失的只有理论并发度而已
+     *
      * @param subInstanceId 子任务实例ID
-     * @param taskId task的ID（task为任务实例的执行单位）
-     * @param newStatus task的新状态
-     * @param reportTime 上报时间
-     * @param result task的执行结果，未执行完成时为空
+     * @param taskId        task的ID（task为任务实例的执行单位）
+     * @param newStatus     task的新状态
+     * @param reportTime    上报时间
+     * @param result        task的执行结果，未执行完成时为空
      */
+    @SuppressWarnings({"squid:S3776","squid:S2142"})
     public void updateTaskStatus(Long subInstanceId, String taskId, int newStatus, long reportTime, @Nullable String result) {
 
         if (finished.get()) {
@@ -168,7 +228,7 @@ public abstract class TaskTracker {
                 Optional<TaskDO> taskOpt = taskPersistenceService.getTask(instanceId, taskId);
                 if (taskOpt.isPresent()) {
                     lastReportTime = taskOpt.get().getLastReportTime();
-                }else {
+                } else {
                     // 理论上不存在这种情况，除非数据库异常
                     log.error("[TaskTracker-{}-{}] can't find task by taskId={}.", instanceId, subInstanceId, taskId);
                 }
@@ -235,6 +295,7 @@ public abstract class TaskTracker {
             }
 
         } catch (InterruptedException ignore) {
+            // ignore
         } catch (Exception e) {
             log.warn("[TaskTracker-{}-{}] update task status failed.", instanceId, subInstanceId, e);
         } finally {
@@ -244,6 +305,7 @@ public abstract class TaskTracker {
 
     /**
      * 提交Task任务(MapReduce的Map，Broadcast的广播)，上层保证 batchSize，同时插入过多数据可能导致失败
+     *
      * @param newTaskList 新增的子任务列表
      */
     public boolean submitTask(List<TaskDO> newTaskList) {
@@ -269,6 +331,7 @@ public abstract class TaskTracker {
 
     /**
      * 处理 ProcessorTracker 的心跳信息
+     *
      * @param heartbeatReq ProcessorTracker（任务的执行管理器）发来的心跳包，包含了其当前状态
      */
     public void receiveProcessorTrackerHeartbeat(ProcessorTrackerStatusReportReq heartbeatReq) {
@@ -290,10 +353,11 @@ public abstract class TaskTracker {
 
     /**
      * 生成广播任务
+     *
      * @param preExecuteSuccess 预执行广播任务运行状态
-     * @param subInstanceId 子实例ID
-     * @param preTaskId 预执行广播任务的taskId
-     * @param result 预执行广播任务的结果
+     * @param subInstanceId     子实例ID
+     * @param preTaskId         预执行广播任务的taskId
+     * @param result            预执行广播任务的结果
      */
     public void broadcast(boolean preExecuteSuccess, long subInstanceId, String preTaskId, String result) {
 
@@ -317,7 +381,7 @@ public abstract class TaskTracker {
                 subTaskList.add(subTask);
             }
             submitTask(subTaskList);
-        }else {
+        } else {
             log.warn("[TaskTracker-{}-{}] BroadcastTask failed because of preProcess failed, preProcess result={}.", instanceId, subInstanceId, result);
         }
     }
@@ -334,7 +398,6 @@ public abstract class TaskTracker {
         scheduledPool.shutdown();
 
         // 1. 通知 ProcessorTracker 释放资源
-        Long instanceId = instanceInfo.getInstanceId();
         TaskTrackerStopInstanceReq stopRequest = new TaskTrackerStopInstanceReq();
         stopRequest.setInstanceId(instanceId);
         ptStatusHolder.getAllProcessorTrackers().forEach(ptIP -> {
@@ -348,7 +411,7 @@ public abstract class TaskTracker {
         boolean dbSuccess = taskPersistenceService.deleteAllTasks(instanceId);
         if (!dbSuccess) {
             log.error("[TaskTracker-{}] delete tasks from database failed.", instanceId);
-        }else {
+        } else {
             log.debug("[TaskTracker-{}] delete all tasks from database successfully.", instanceId);
         }
 
@@ -368,7 +431,8 @@ public abstract class TaskTracker {
 
     /**
      * 派发任务到 ProcessorTracker
-     * @param task 需要被执行的任务
+     *
+     * @param task                    需要被执行的任务
      * @param processorTrackerAddress ProcessorTracker的地址（IP:Port）
      */
     protected void dispatchTask(TaskDO task, String processorTrackerAddress) {
@@ -400,6 +464,7 @@ public abstract class TaskTracker {
 
     /**
      * 获取任务实例产生的各个Task状态，用于分析任务实例执行情况
+     *
      * @param subInstanceId 子任务实例ID
      * @return InstanceStatisticsHolder
      */
@@ -418,7 +483,6 @@ public abstract class TaskTracker {
     }
 
 
-
     /**
      * 定时扫描数据库中的task（出于内存占用量考虑，每次最多获取100个），并将需要执行的任务派发出去
      */
@@ -435,7 +499,6 @@ public abstract class TaskTracker {
             }
 
             Stopwatch stopwatch = Stopwatch.createStarted();
-            Long instanceId = instanceInfo.getInstanceId();
 
             // 1. 获取可以派发任务的 ProcessorTracker
             List<String> availablePtIps = ptStatusHolder.getAvailableProcessorTrackers();
@@ -502,7 +565,7 @@ public abstract class TaskTracker {
                         log.info("[TaskTracker-{}] detective new worker: {}", instanceId, address);
                     }
                 });
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.warn("[TaskTracker-{}] detective failed!", instanceId, e);
             }
         }
@@ -531,13 +594,15 @@ public abstract class TaskTracker {
 
     /**
      * 初始化 TaskTracker
+     *
      * @param req 服务器调度任务实例运行请求
      */
-    abstract protected void initTaskTracker(ServerScheduleJobReq req);
+    protected abstract void initTaskTracker(ServerScheduleJobReq req);
 
     /**
      * 查询任务实例的详细运行状态
+     *
      * @return 任务实例的详细运行状态
      */
-    abstract public InstanceDetail fetchRunningStatus();
+    public abstract InstanceDetail fetchRunningStatus();
 }

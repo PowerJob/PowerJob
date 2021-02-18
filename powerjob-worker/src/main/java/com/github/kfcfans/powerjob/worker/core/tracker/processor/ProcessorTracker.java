@@ -13,6 +13,7 @@ import com.github.kfcfans.powerjob.worker.core.ProcessorBeanFactory;
 import com.github.kfcfans.powerjob.worker.core.executor.ProcessorRunnable;
 import com.github.kfcfans.powerjob.worker.core.processor.built.PythonProcessor;
 import com.github.kfcfans.powerjob.worker.core.processor.built.ShellProcessor;
+import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import com.github.kfcfans.powerjob.worker.log.impl.OmsServerLogger;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
@@ -20,7 +21,6 @@ import com.github.kfcfans.powerjob.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
-import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -40,43 +40,67 @@ import java.util.concurrent.*;
 @Slf4j
 public class ProcessorTracker {
 
-    // 记录创建时间
+    /**
+     * 记录创建时间
+     */
     private long startTime;
-    // 任务实例信息
+    /**
+     * 任务实例信息
+     */
     private InstanceInfo instanceInfo;
-    // 冗余 instanceId，方便日志
+    /**
+     * 冗余 instanceId，方便日志
+     */
     private Long instanceId;
-
-    // 任务执行器
+    /**
+     * 任务执行器
+     */
     private BasicProcessor processor;
-    // 容器（可能为空）
+    /**
+     * 容器（可能为空）
+     */
     private OmsContainer omsContainer;
-    // 在线日志
+    /**
+     * 在线日志
+     */
     private OmsLogger omsLogger;
-    // ProcessResult 上报失败的重试队列
+    /**
+     * ProcessResult 上报失败的重试队列
+     */
     private Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
-    // 上一次空闲时间（用于闲置判定）
+    /**
+     * 上一次空闲时间（用于闲置判定）
+     */
     private long lastIdleTime;
-    // 上次完成任务数量（用于闲置判定）
+    /**
+     * 上次完成任务数量（用于闲置判定）
+     */
     private long lastCompletedTaskCount;
 
     private String taskTrackerAddress;
+
     private ActorSelection taskTrackerActorRef;
 
     private ThreadPoolExecutor threadPool;
+
     private ScheduledExecutorService timingPool;
 
     private static final int THREAD_POOL_QUEUE_MAX_SIZE = 128;
-    // 长时间空闲的 ProcessorTracker 会发起销毁请求
+    /**
+     * 长时间空闲的 ProcessorTracker 会发起销毁请求
+     */
     private static final long MAX_IDLE_TIME = 120000;
-
-    // 当 ProcessorTracker 出现根本性错误（比如 Processor 创建失败，所有的任务直接失败）
+    /**
+     * 当 ProcessorTracker 出现根本性错误（比如 Processor 创建失败，所有的任务直接失败）
+     */
     private boolean lethal = false;
+
     private String lethalReason;
 
     /**
      * 创建 ProcessorTracker（其实就是创建了个执行用的线程池 T_T）
      */
+    @SuppressWarnings("squid:S1181")
     public ProcessorTracker(TaskTrackerStartTaskReq request) {
         try {
             // 赋值
@@ -122,7 +146,14 @@ public class ProcessorTracker {
         // 一旦 ProcessorTracker 出现异常，所有提交到此处的任务直接返回失败，防止形成死锁
         // 死锁分析：TT创建PT，PT创建失败，无法定期汇报心跳，TT长时间未收到PT心跳，认为PT宕机（确实宕机了），无法选择可用的PT再次派发任务，死锁形成，GG斯密达 T_T
         if (lethal) {
-            ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq(instanceId, newTask.getSubInstanceId(), newTask.getTaskId(), TaskStatus.WORKER_PROCESS_FAILED.getValue(), lethalReason, System.currentTimeMillis(), null);
+            ProcessorReportTaskStatusReq report = new ProcessorReportTaskStatusReq()
+                    .setInstanceId(instanceId)
+                    .setSubInstanceId(newTask.getSubInstanceId())
+                    .setTaskId(newTask.getTaskId())
+                    .setStatus(TaskStatus.WORKER_PROCESS_FAILED.getValue())
+                    .setResult(lethalReason)
+                    .setReportTime(System.currentTimeMillis());
+
             taskTrackerActorRef.tell(report, null);
             return;
         }
@@ -137,10 +168,10 @@ public class ProcessorTracker {
         try {
             threadPool.submit(processorRunnable);
             success = true;
-        }catch (RejectedExecutionException ignore) {
+        } catch (RejectedExecutionException ignore) {
             log.warn("[ProcessorTracker-{}] submit task(taskId={},taskName={}) to ThreadPool failed due to ThreadPool has too much task waiting to process, this task will dispatch to other ProcessorTracker.",
                     instanceId, newTask.getTaskId(), newTask.getTaskName());
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("[ProcessorTracker-{}] submit task(taskId={},taskName={}) to ThreadPool failed.", instanceId, newTask.getTaskId(), newTask.getTaskName(), e);
         }
 
@@ -228,6 +259,7 @@ public class ProcessorTracker {
     private class CheckerAndReporter implements Runnable {
 
         @Override
+        @SuppressWarnings({"squid:S1066","squid:S3776"})
         public void run() {
 
             // 超时检查，如果超时则自动关闭 TaskTracker
@@ -245,10 +277,10 @@ public class ProcessorTracker {
             if (threadPool.getActiveCount() > 0 || threadPool.getCompletedTaskCount() > lastCompletedTaskCount) {
                 lastIdleTime = -1;
                 lastCompletedTaskCount = threadPool.getCompletedTaskCount();
-            }else {
+            } else {
                 if (lastIdleTime == -1) {
                     lastIdleTime = System.currentTimeMillis();
-                }else {
+                } else {
                     long idleTime = System.currentTimeMillis() - lastIdleTime;
                     if (idleTime > MAX_IDLE_TIME) {
                         log.warn("[ProcessorTracker-{}] ProcessorTracker have been idle for {}ms, it's time to tell TaskTracker and then destroy self.", instanceId, idleTime);
@@ -296,7 +328,7 @@ public class ProcessorTracker {
                 if (SpringUtils.supportSpringBean()) {
                     try {
                         processor = SpringUtils.getBean(processorInfo);
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, ExceptionUtils.getMessage(e));
                     }
                 }
@@ -318,7 +350,7 @@ public class ProcessorTracker {
                 omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), true);
                 if (omsContainer != null) {
                     processor = omsContainer.getProcessor(split[1]);
-                }else {
+                } else {
                     log.warn("[ProcessorTracker-{}] load container failed.", instanceId);
                 }
                 break;

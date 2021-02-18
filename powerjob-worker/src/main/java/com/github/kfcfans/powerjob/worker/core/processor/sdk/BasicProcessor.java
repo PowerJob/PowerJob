@@ -13,6 +13,9 @@ public interface BasicProcessor {
 
     /**
      * 核心处理逻辑
+     * 可通过 {@link TaskContext#fetchWorkflowContext} 获取工作流上下文
+     * 可通过 {@link TaskContext#appendData2WfContext} 向工作流上下文中添加数据
+     *
      * @param context 任务上下文，可通过 jobParams 和 instanceParams 分别获取控制台参数和OpenAPI传递的任务实例参数
      * @return 处理结果，msg有长度限制，超长会被裁剪，不允许返回 null
      * @throws Exception 异常，允许抛出异常，但不推荐，最好由业务开发者自己处理
