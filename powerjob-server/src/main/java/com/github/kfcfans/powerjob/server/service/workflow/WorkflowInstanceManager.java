@@ -291,6 +291,8 @@ public class WorkflowInstanceManager {
                 }
                 // 注意：这里会直接跳过 disable 的节点
                 List<PEWorkflowDAG.Node> readyNodes = WorkflowDAGUtils.listReadyNodes(dag);
+                // 这里得重新更新一下，因为 WorkflowDAGUtils#listReadyNodes 可能会更新节点状态
+                wfInstance.setDag(JSON.toJSONString(dag));
                 // 如果没有就绪的节点，需要再次判断是否已经全部完成
                 if (readyNodes.isEmpty() && isFinish(dag)) {
                     allFinished = true;
@@ -315,7 +317,7 @@ public class WorkflowInstanceManager {
                     readyNode.setStatus(InstanceStatus.RUNNING.getV());
                     log.debug("[Workflow-{}|{}] workflowInstance start to process new node(nodeId={},jobId={},instanceId={})", wfId, wfInstanceId, readyNode.getNodeId(), readyNode.getJobId(), newInstanceId);
                 }
-
+                // 这里也得更新 DAG 信息
                 wfInstance.setDag(JSON.toJSONString(dag));
                 workflowInstanceInfoRepository.saveAndFlush(wfInstance);
                 // 持久化结束后，开始调度执行所有的任务
