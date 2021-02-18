@@ -107,7 +107,7 @@ public class InstanceService {
 
             InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
             // 判断状态，只有运行中才能停止
-            if (!InstanceStatus.generalizedRunningStatus.contains(instanceInfo.getStatus())) {
+            if (!InstanceStatus.GENERALIZED_RUNNING_STATUS.contains(instanceInfo.getStatus())) {
                 throw new IllegalArgumentException("can't stop finished instance!");
             }
 
@@ -153,7 +153,7 @@ public class InstanceService {
         log.info("[Instance-{}] retry instance in appId: {}", instanceId, appId);
 
         InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
-        if (!InstanceStatus.finishedStatus.contains(instanceInfo.getStatus())) {
+        if (!InstanceStatus.FINISHED_STATUS.contains(instanceInfo.getStatus())) {
             throw new PowerJobException("Only stopped instance can be retry!");
         }
         // 暂时不支持工作流任务的重试

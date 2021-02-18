@@ -228,7 +228,7 @@ public class OmsScheduleService {
                     return;
                 }
                 // 查询日志记录表中是否存在相关的任务
-                List<Long> runningJobIdList = instanceInfoRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.generalizedRunningStatus);
+                List<Long> runningJobIdList = instanceInfoRepository.findByJobIdInAndStatusIn(jobIds, InstanceStatus.GENERALIZED_RUNNING_STATUS);
                 Set<Long> runningJobIdSet = Sets.newHashSet(runningJobIdList);
 
                 List<Long> notRunningJobIds = Lists.newLinkedList();

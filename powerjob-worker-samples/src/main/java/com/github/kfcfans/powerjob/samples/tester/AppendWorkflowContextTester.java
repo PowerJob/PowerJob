@@ -1,7 +1,6 @@
 package com.github.kfcfans.powerjob.samples.tester;
 
 import com.github.kfcfans.powerjob.common.WorkflowContextConstant;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
@@ -19,6 +18,8 @@ import java.util.Map;
 @Component
 public class AppendWorkflowContextTester implements BasicProcessor {
 
+    private static final String FAIL_CODE = "0";
+
 
     @Override
     @SuppressWarnings("squid:S106")
@@ -29,6 +30,7 @@ public class AppendWorkflowContextTester implements BasicProcessor {
         System.out.println("======= AppendWorkflowContextTester#start =======");
         System.out.println("current instance id : " + context.getInstanceId());
         System.out.println("current workflow context : " + workflowContext);
+        System.out.println("current job param : " + context.getJobParams());
         System.out.println("initParam of workflow context : " + originValue);
         int num = 0;
         try {
@@ -38,6 +40,9 @@ public class AppendWorkflowContextTester implements BasicProcessor {
         }
         context.appendData2WfContext(WorkflowContextConstant.CONTEXT_INIT_PARAMS_KEY, num + 1);
         System.out.println("======= AppendWorkflowContextTester#end =======");
-        return new ProcessResult(true, JsonUtils.toJSONString(context));
+        if (FAIL_CODE.equals(context.getJobParams())) {
+            return new ProcessResult(false, "Failed!");
+        }
+        return new ProcessResult(true, "Success!");
     }
 }

@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.server.service.workflow;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.SystemInstanceResult;
@@ -46,10 +46,10 @@ public class WorkflowInstanceService {
             throw new PowerJobException("workflow instance already stopped");
         }
         // 停止所有已启动且未完成的服务
-        PEWorkflowDAG workflowDAG = JSONObject.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
+        PEWorkflowDAG workflowDAG = JSON.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
         WorkflowDAGUtils.listRoots(workflowDAG).forEach(node -> {
             try {
-                if (node.getInstanceId() != null && InstanceStatus.generalizedRunningStatus.contains(node.getStatus())) {
+                if (node.getInstanceId() != null && InstanceStatus.GENERALIZED_RUNNING_STATUS.contains(node.getStatus())) {
                     log.debug("[WfInstance-{}] instance({}) is running, try to stop it now.", wfInstanceId, node.getInstanceId());
                     node.setStatus(InstanceStatus.STOPPED.getV());
                     node.setResult(SystemInstanceResult.STOPPED_BY_USER);
@@ -57,7 +57,7 @@ public class WorkflowInstanceService {
                     instanceService.stopInstance(node.getInstanceId());
                 }
             }catch (Exception e) {
-                log.warn("[WfInstance-{}] stop instance({}) failed.", wfInstanceId, JSONObject.toJSONString(node), e);
+                log.warn("[WfInstance-{}] stop instance({}) failed.", wfInstanceId, JSON.toJSONString(node), e);
             }
         });
 

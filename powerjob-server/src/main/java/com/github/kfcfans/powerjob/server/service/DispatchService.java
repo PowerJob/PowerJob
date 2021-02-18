@@ -51,7 +51,13 @@ public class DispatchService {
 
     private static final Splitter COMMA_SPLITTER = Splitter.on(",");
 
-    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId().intValue()", concurrencyLevel = 1024)
+    /**
+     * 重新派发任务
+     *
+     * @param jobInfo    任务信息（注意，这里传入的任务信息有可能为“空”）
+     * @param instanceId 实例ID
+     */
+    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId() ?: 0", concurrencyLevel = 1024)
     public void redispatch(JobInfoDO jobInfo, long instanceId) {
         // 这里暂时保留
         dispatch(jobInfo, instanceId);
@@ -67,10 +73,10 @@ public class DispatchService {
      * 迁移至 {@link InstanceManager#updateStatus} 中处理
      * **************************************************
      *
-     * @param jobInfo    任务的元信息，注意这里传入的 jobInfo 可能为空对象
+     * @param jobInfo    任务的元信息
      * @param instanceId 任务实例ID
      */
-    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId().intValue()", concurrencyLevel = 1024)
+    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId() ?: 0", concurrencyLevel = 1024)
     public void dispatch(JobInfoDO jobInfo, long instanceId) {
         // 检查当前任务是否被取消
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);

@@ -185,7 +185,7 @@ public class JobService {
         if (!TimeExpressionType.frequentTypes.contains(jobInfoDO.getTimeExpressionType())) {
             return;
         }
-        List<InstanceInfoDO> executeLogs = instanceInfoRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.generalizedRunningStatus);
+        List<InstanceInfoDO> executeLogs = instanceInfoRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.GENERALIZED_RUNNING_STATUS);
         if (CollectionUtils.isEmpty(executeLogs)) {
             return;
         }

@@ -15,7 +15,9 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public enum InstanceStatus {
-
+    /**
+     *
+     */
     WAITING_DISPATCH(1, "等待派发"),
     WAITING_WORKER_RECEIVE(2, "等待Worker接收"),
     RUNNING(3, "运行中"),
@@ -27,10 +29,14 @@ public enum InstanceStatus {
     private final int v;
     private final String des;
 
-    // 广义的运行状态
-    public static final List<Integer> generalizedRunningStatus = Lists.newArrayList(WAITING_DISPATCH.v, WAITING_WORKER_RECEIVE.v, RUNNING.v);
-    // 结束状态
-    public static final List<Integer> finishedStatus = Lists.newArrayList(FAILED.v, SUCCEED.v, CANCELED.v, STOPPED.v);
+    /**
+     * 广义的运行状态
+     */
+    public static final List<Integer> GENERALIZED_RUNNING_STATUS = Lists.newArrayList(WAITING_DISPATCH.v, WAITING_WORKER_RECEIVE.v, RUNNING.v);
+    /**
+     * 结束状态
+     */
+    public static final List<Integer> FINISHED_STATUS = Lists.newArrayList(FAILED.v, SUCCEED.v, CANCELED.v, STOPPED.v);
 
     public static InstanceStatus of(int v) {
         for (InstanceStatus is : values()) {

@@ -73,7 +73,7 @@ public class WorkerRequestHandler {
         instanceManager.updateStatus(req);
 
         // 结束状态（成功/失败）需要回复消息
-        if (InstanceStatus.finishedStatus.contains(req.getInstanceStatus())) {
+        if (InstanceStatus.FINISHED_STATUS.contains(req.getInstanceStatus())) {
             return Optional.of(AskResponse.succeed(null));
         }
         return Optional.empty();

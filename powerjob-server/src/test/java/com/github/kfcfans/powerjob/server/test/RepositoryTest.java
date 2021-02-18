@@ -106,7 +106,7 @@ public class RepositoryTest {
 
     @Test
     public void testDeleteInstanceInfo() {
-        instanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(new Date(), InstanceStatus.finishedStatus);
+        instanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(new Date(), InstanceStatus.FINISHED_STATUS);
     }
 
     @Test

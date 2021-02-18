@@ -51,7 +51,9 @@ public class CleanService {
 
     private static final int TEMPORARY_RETENTION_DAY = 3;
 
-    // 每天凌晨3点定时清理
+    /**
+     * 每天凌晨3点定时清理
+     */
     private static final String CLEAN_TIME_EXPRESSION = "0 0 3 * * ?";
 
     private static final String HISTORY_DELETE_LOCK = "history_delete_lock";
@@ -152,7 +154,7 @@ public class CleanService {
         }
         try {
             Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
-            int num = instanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(t, InstanceStatus.finishedStatus);
+            int num = instanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(t, InstanceStatus.FINISHED_STATUS);
             log.info("[CleanService] deleted {} instanceInfo records whose modify time before {}.", num, t);
         }catch (Exception e) {
             log.warn("[CleanService] clean instanceInfo failed.", e);
