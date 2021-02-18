@@ -40,6 +40,12 @@ public abstract class MapProcessor implements BasicProcessor {
             log.warn("[MapProcessor] map task size is too large, network maybe overload... please try to split the tasks.");
         }
 
+        // 修复 map 任务命名和根任务名或者最终任务名称一致导致的问题（无限生成子任务或者直接失败）
+        if (TaskConstant.ROOT_TASK_NAME.equals(taskName) || TaskConstant.LAST_TASK_NAME.equals(taskName)) {
+            log.warn("[MapProcessor] illegal map task name : {}! please do not use 'OMS_ROOT_TASK' or 'OMS_LAST_TASK' as map task name. as a precaution, it will be renamed 'X-{}' automatically.",taskName,taskName);
+            taskName ="X-"+taskName;
+        }
+
         TaskDO task = ThreadLocalStore.getTask();
 
         // 1. 构造请求
