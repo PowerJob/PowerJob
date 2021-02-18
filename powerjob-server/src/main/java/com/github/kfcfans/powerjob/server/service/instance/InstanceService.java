@@ -57,14 +57,20 @@ public class InstanceService {
 
     /**
      * 创建任务实例（注意，该方法并不调用 saveAndFlush，如果有需要立即同步到DB的需求，请在方法结束后手动调用 flush）
-     * @param jobId 任务ID
-     * @param appId 所属应用ID
-     * @param instanceParams 任务实例参数，仅 OpenAPI 创建时存在
-     * @param wfInstanceId 工作流任务实例ID，仅工作流下的任务实例存在
+     * ********************************************
+     * 2021-02-03 modify by Echo009
+     * 新增 jobParams ，每次均记录任务静态参数
+     * ********************************************
+     *
+     * @param jobId             任务ID
+     * @param appId             所属应用ID
+     * @param jobParams         任务静态参数
+     * @param instanceParams    任务实例参数，仅 OpenAPI 创建 或者 工作流任务 时存在
+     * @param wfInstanceId      工作流任务实例ID，仅工作流下的任务实例存在
      * @param expectTriggerTime 预期执行时间
      * @return 任务实例ID
      */
-    public Long create(Long jobId, Long appId, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
+    public Long create(Long jobId, Long appId, String jobParams, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
 
         Long instanceId = idGenerateService.allocate();
         Date now = new Date();
@@ -73,11 +79,13 @@ public class InstanceService {
         newInstanceInfo.setJobId(jobId);
         newInstanceInfo.setAppId(appId);
         newInstanceInfo.setInstanceId(instanceId);
+        newInstanceInfo.setJobParams(jobParams);
         newInstanceInfo.setInstanceParams(instanceParams);
         newInstanceInfo.setType(wfInstanceId == null ? InstanceType.NORMAL.getV() : InstanceType.WORKFLOW.getV());
         newInstanceInfo.setWfInstanceId(wfInstanceId);
 
         newInstanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+        newInstanceInfo.setRunningTimes(0L);
         newInstanceInfo.setExpectedTriggerTime(expectTriggerTime);
         newInstanceInfo.setLastReportTime(-1L);
         newInstanceInfo.setGmtCreate(now);
@@ -89,6 +97,7 @@ public class InstanceService {
 
     /**
      * 停止任务实例
+     *
      * @param instanceId 任务实例ID
      */
     public void stopInstance(Long instanceId) {
@@ -125,9 +134,9 @@ public class InstanceService {
                 log.warn("[Instance-{}] update instanceInfo successfully but can't find TaskTracker to stop instance", instanceId);
             }
 
-        }catch (IllegalArgumentException ie) {
+        } catch (IllegalArgumentException ie) {
             throw ie;
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("[Instance-{}] stopInstance failed.", instanceId, e);
             throw e;
         }
@@ -135,6 +144,7 @@ public class InstanceService {
 
     /**
      * 重试任务（只有结束的任务运行重试）
+     *
      * @param instanceId 任务实例ID
      */
     @DesignateServer(appIdParameterName = "appId")
@@ -162,12 +172,13 @@ public class InstanceService {
         // 派发任务
         Long jobId = instanceInfo.getJobId();
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new PowerJobException("can't find job info by jobId: " + jobId));
-        dispatchService.redispatch(jobInfo, instanceId, instanceInfo.getRunningTimes());
+        dispatchService.redispatch(jobInfo, instanceId);
     }
 
     /**
      * 取消任务实例的运行
      * 接口使用条件：调用接口时间与待取消任务的预计执行时间有一定时间间隔，否则不保证可靠性！
+     *
      * @param instanceId 任务实例
      */
     public void cancelInstance(Long instanceId) {
@@ -194,12 +205,12 @@ public class InstanceService {
                 // 如果写 DB 失败，抛异常，接口返回 false，即取消失败，任务会被 HA 机制重新调度执行，因此此处不需要任何处理
                 instanceInfoRepository.saveAndFlush(instanceInfo);
                 log.info("[Instance-{}] cancel the instance successfully.", instanceId);
-            }else {
+            } else {
                 log.warn("[Instance-{}] cancel the instance failed.", instanceId);
                 throw new PowerJobException("instance already up and running");
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("[Instance-{}] cancelInstance failed.", instanceId, e);
             throw e;
         }
@@ -215,6 +226,7 @@ public class InstanceService {
 
     /**
      * 获取任务实例的信息
+     *
      * @param instanceId 任务实例ID
      * @return 任务实例的信息
      */
@@ -224,6 +236,7 @@ public class InstanceService {
 
     /**
      * 获取任务实例的状态
+     *
      * @param instanceId 任务实例ID
      * @return 任务实例的状态
      */
@@ -234,6 +247,7 @@ public class InstanceService {
 
     /**
      * 获取任务实例的详细运行详细
+     *
      * @param instanceId 任务实例ID
      * @return 详细运行状态
      */

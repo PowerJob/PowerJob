@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.server.service.workflow;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -39,9 +40,9 @@ public class WorkflowService {
      * 保存/修改DAG工作流
      * @param req 请求
      * @return 工作流ID
-     * @throws Exception 异常
+     * @throws ParseException 异常
      */
-    public Long saveWorkflow(SaveWorkflowRequest req) throws Exception {
+    public Long saveWorkflow(SaveWorkflowRequest req) throws ParseException {
 
         req.valid();
 
@@ -60,7 +61,7 @@ public class WorkflowService {
 
         BeanUtils.copyProperties(req, wf);
         wf.setGmtModified(new Date());
-        wf.setPeDAG(JSONObject.toJSONString(req.getPEWorkflowDAG()));
+        wf.setPeDAG(JSON.toJSONString(req.getPEWorkflowDAG()));
         wf.setStatus(req.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
         wf.setTimeExpressionType(req.getTimeExpressionType().getV());
 
@@ -147,9 +148,9 @@ public class WorkflowService {
         log.info("[WorkflowService-{}] try to run workflow, initParams={},delay={} ms.", wfInfo.getId(), initParams, delay);
         Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay);
         if (delay <= 0) {
-            workflowInstanceManager.start(wfInfo, wfInstanceId, initParams);
+            workflowInstanceManager.start(wfInfo, wfInstanceId);
         }else {
-            InstanceTimeWheelService.schedule(wfInstanceId, delay, () -> workflowInstanceManager.start(wfInfo, wfInstanceId, initParams));
+            InstanceTimeWheelService.schedule(wfInstanceId, delay, () -> workflowInstanceManager.start(wfInfo, wfInstanceId));
         }
         return wfInstanceId;
     }

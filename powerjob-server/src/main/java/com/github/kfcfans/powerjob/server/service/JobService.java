@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -52,18 +53,19 @@ public class JobService {
 
     /**
      * 保存/修改任务
+     *
      * @param request 任务请求
      * @return 创建的任务ID（jobId）
-     * @throws Exception 异常
+     * @throws ParseException 异常
      */
-    public Long saveJob(SaveJobInfoRequest request) throws Exception {
+    public Long saveJob(SaveJobInfoRequest request) throws ParseException {
 
         request.valid();
 
         JobInfoDO jobInfoDO;
         if (request.getId() != null) {
             jobInfoDO = jobInfoRepository.findById(request.getId()).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + request.getId()));
-        }else {
+        } else {
             jobInfoDO = new JobInfoDO();
         }
 
@@ -107,9 +109,10 @@ public class JobService {
 
     /**
      * 手动立即运行某个任务
-     * @param jobId 任务ID
+     *
+     * @param jobId          任务ID
      * @param instanceParams 任务实例参数（仅 OpenAPI 存在）
-     * @param delay 延迟时间，单位 毫秒
+     * @param delay          延迟时间，单位 毫秒
      * @return 任务实例ID
      */
     @DesignateServer(appIdParameterName = "appId")
@@ -119,14 +122,12 @@ public class JobService {
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
 
         log.info("[Job-{}] try to run job in app[{}], instanceParams={},delay={} ms.", jobInfo.getId(), appId, instanceParams, delay);
-        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), instanceParams, null, System.currentTimeMillis() + Math.max(delay, 0));
+        Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), jobInfo.getJobParams(), instanceParams, null, System.currentTimeMillis() + Math.max(delay, 0));
         instanceInfoRepository.flush();
         if (delay <= 0) {
-            dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
-        }else {
-            InstanceTimeWheelService.schedule(instanceId, delay, () -> {
-                dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, null);
-            });
+            dispatchService.dispatch(jobInfo, instanceId);
+        } else {
+            InstanceTimeWheelService.schedule(instanceId, delay, () -> dispatchService.dispatch(jobInfo, instanceId));
         }
         log.info("[Job-{}] run job successfully, params={}, instanceId={}", jobInfo.getId(), instanceParams, instanceId);
         return instanceId;
@@ -135,6 +136,7 @@ public class JobService {
 
     /**
      * 删除某个任务
+     *
      * @param jobId 任务ID
      */
     public void deleteJob(Long jobId) {
@@ -150,10 +152,11 @@ public class JobService {
 
     /**
      * 启用某个任务
+     *
      * @param jobId 任务ID
-     * @throws Exception 异常（CRON表达式错误）
+     * @throws ParseException 异常（CRON表达式错误）
      */
-    public void enableJob(Long jobId) throws Exception {
+    public void enableJob(Long jobId) throws ParseException {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
 
         jobInfoDO.setStatus(SwitchableStatus.ENABLE.getV());
@@ -166,7 +169,7 @@ public class JobService {
      * 停止或删除某个JOB
      * 秒级任务还要额外停止正在运行的任务实例
      */
-    private void shutdownOrStopJob(Long jobId, SwitchableStatus status) throws IllegalArgumentException {
+    private void shutdownOrStopJob(Long jobId, SwitchableStatus status) {
 
         // 1. 先更新 job_info 表
         Optional<JobInfoDO> jobInfoOPT = jobInfoRepository.findById(jobId);
@@ -193,12 +196,13 @@ public class JobService {
             try {
                 // 重复查询了数据库，不过问题不大，这个调用量很小
                 instanceService.stopInstance(instance.getInstanceId());
-            }catch (Exception ignore) {
+            } catch (Exception ignore) {
+                // ignore exception
             }
         });
     }
 
-    private void calculateNextTriggerTime(JobInfoDO jobInfoDO) throws Exception {
+    private void calculateNextTriggerTime(JobInfoDO jobInfoDO) throws ParseException {
         // 计算下次调度时间
         Date now = new Date();
         TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
@@ -210,7 +214,7 @@ public class JobService {
                 throw new PowerJobException("cron expression is out of date: " + jobInfoDO.getTimeExpression());
             }
             jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
-        }else if (timeExpressionType == TimeExpressionType.API || timeExpressionType == TimeExpressionType.WORKFLOW) {
+        } else if (timeExpressionType == TimeExpressionType.API || timeExpressionType == TimeExpressionType.WORKFLOW) {
             jobInfoDO.setTimeExpression(null);
         }
         // 重写最后修改时间

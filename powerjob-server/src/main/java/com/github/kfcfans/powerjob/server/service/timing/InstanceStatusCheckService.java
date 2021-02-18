@@ -75,7 +75,7 @@ public class InstanceStatusCheckService {
         try {
             checkInstance(allAppIds);
             checkWorkflowInstance(allAppIds);
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("[InstanceStatusChecker] status check failed.", e);
         }
         log.info("[InstanceStatusChecker] status check using {}.", stopwatch.stop());
@@ -83,82 +83,97 @@ public class InstanceStatusCheckService {
 
     /**
      * 检查任务实例的状态，发现异常及时重试，包括
-     * WAITING_DISPATCH 超时：写入时间伦但为调度前 server down
+     * WAITING_DISPATCH 超时：写入时间轮但未调度前 server down
      * WAITING_WORKER_RECEIVE 超时：由于网络错误导致 worker 未接受成功
      * RUNNING 超时：TaskTracker down，断开与 server 的心跳连接
+     *
      * @param allAppIds 本系统所承担的所有 appIds
      */
     private void checkInstance(List<Long> allAppIds) {
 
         Lists.partition(allAppIds, MAX_BATCH_NUM).forEach(partAppIds -> {
-
             // 1. 检查等待 WAITING_DISPATCH 状态的任务
-            long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
-            List<InstanceInfoDO> waitingDispatchInstances = instanceInfoRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
-            if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
-                log.warn("[InstanceStatusChecker] find some instance which is not triggered as expected: {}", waitingDispatchInstances);
-                waitingDispatchInstances.forEach(instance -> {
-
-                    // 过滤因为失败重试而改成 WAITING_DISPATCH 状态的任务实例
-                    long t = System.currentTimeMillis() - instance.getGmtModified().getTime();
-                    if (t < DISPATCH_TIMEOUT_MS) {
-                        return;
-                    }
-
-                    Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(instance.getJobId());
-                    if (jobInfoOpt.isPresent()) {
-                        dispatchService.redispatch(jobInfoOpt.get(), instance.getInstanceId(), 0);
-                    } else {
-                        log.warn("[InstanceStatusChecker] can't find job by jobId[{}], so redispatch failed, failed instance: {}", instance.getJobId(), instance);
-                        updateFailedInstance(instance, SystemInstanceResult.CAN_NOT_FIND_JOB_INFO);
-                    }
-                });
-            }
-
+            handleWaitingDispatchInstance(partAppIds);
             // 2. 检查 WAITING_WORKER_RECEIVE 状态的任务
-            threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
-            List<InstanceInfoDO> waitingWorkerReceiveInstances = instanceInfoRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
-            if (!CollectionUtils.isEmpty(waitingWorkerReceiveInstances)) {
-                log.warn("[InstanceStatusChecker] find one instance didn't receive any reply from worker, try to redispatch: {}", waitingWorkerReceiveInstances);
-                waitingWorkerReceiveInstances.forEach(instance -> {
-                    // 重新派发
-                    JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
-                    dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), 0);
-                });
-            }
-
-            // 3. 检查 RUNNING 状态的任务（一定时间没收到 TaskTracker 的状态报告，视为失败）
-            threshold = System.currentTimeMillis() - RUNNING_TIMEOUT_MS;
-            List<InstanceInfoDO> failedInstances = instanceInfoRepository.findByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold));
-            if (!CollectionUtils.isEmpty(failedInstances)) {
-                log.warn("[InstanceStatusCheckService] instances({}) has not received status report for a long time.", failedInstances);
-                failedInstances.forEach(instance -> {
-
-                    JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
-                    TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
-                    SwitchableStatus switchableStatus = SwitchableStatus.of(jobInfoDO.getStatus());
-
-                    // 如果任务已关闭，则不进行重试，将任务置为失败即可；秒级任务也直接置为失败，由派发器重新调度
-                    if (switchableStatus != SwitchableStatus.ENABLE || TimeExpressionType.frequentTypes.contains(timeExpressionType.getV())) {
-                        updateFailedInstance(instance, SystemInstanceResult.REPORT_TIMEOUT);
-                        return;
-                    }
-
-                    // CRON 和 API一样，失败次数 + 1，根据重试配置进行重试
-                    if (instance.getRunningTimes() < jobInfoDO.getInstanceRetryNum()) {
-                        dispatchService.redispatch(jobInfoDO, instance.getInstanceId(), instance.getRunningTimes());
-                    }else {
-                        updateFailedInstance(instance, SystemInstanceResult.REPORT_TIMEOUT);
-                    }
-
-                });
-            }
+            handleWaitingWorkerReceiveInstance(partAppIds);
+            // 3. 检查 RUNNING 状态的任务（一定时间内没收到 TaskTracker 的状态报告，视为失败）
+            handleRunningInstance(partAppIds);
         });
+    }
+
+
+    private void handleWaitingDispatchInstance(List<Long> partAppIds) {
+        // 1. 检查等待 WAITING_DISPATCH 状态的任务
+        long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
+        List<InstanceInfoDO> waitingDispatchInstances = instanceInfoRepository.findByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold);
+        if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
+            log.warn("[InstanceStatusChecker] find some instance which is not triggered as expected: {}", waitingDispatchInstances);
+            waitingDispatchInstances.forEach(instance -> {
+
+                // 过滤因为失败重试而改成 WAITING_DISPATCH 状态的任务实例
+                long t = System.currentTimeMillis() - instance.getGmtModified().getTime();
+                if (t < DISPATCH_TIMEOUT_MS) {
+                    return;
+                }
+
+                Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(instance.getJobId());
+                if (jobInfoOpt.isPresent()) {
+                    dispatchService.redispatch(jobInfoOpt.get(), instance.getInstanceId());
+                } else {
+                    log.warn("[InstanceStatusChecker] can't find job by jobId[{}], so redispatch failed, failed instance: {}", instance.getJobId(), instance);
+                    updateFailedInstance(instance, SystemInstanceResult.CAN_NOT_FIND_JOB_INFO);
+                }
+            });
+        }
+    }
+
+    private void handleWaitingWorkerReceiveInstance(List<Long> partAppIds) {
+        // 2. 检查 WAITING_WORKER_RECEIVE 状态的任务
+        long threshold = System.currentTimeMillis() - RECEIVE_TIMEOUT_MS;
+        List<InstanceInfoDO> waitingWorkerReceiveInstances = instanceInfoRepository.findByAppIdInAndStatusAndActualTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_WORKER_RECEIVE.getV(), threshold);
+        if (!CollectionUtils.isEmpty(waitingWorkerReceiveInstances)) {
+            log.warn("[InstanceStatusChecker] find one instance didn't receive any reply from worker, try to redispatch: {}", waitingWorkerReceiveInstances);
+            waitingWorkerReceiveInstances.forEach(instance -> {
+                // 重新派发
+                JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
+                dispatchService.redispatch(jobInfoDO, instance.getInstanceId());
+            });
+        }
+    }
+
+    private void handleRunningInstance(List<Long> partAppIds) {
+        // 3. 检查 RUNNING 状态的任务（一定时间没收到 TaskTracker 的状态报告，视为失败）
+        long threshold = System.currentTimeMillis() - RUNNING_TIMEOUT_MS;
+        List<InstanceInfoDO> failedInstances = instanceInfoRepository.findByAppIdInAndStatusAndGmtModifiedBefore(partAppIds, InstanceStatus.RUNNING.getV(), new Date(threshold));
+        if (!CollectionUtils.isEmpty(failedInstances)) {
+            log.warn("[InstanceStatusCheckService] instances({}) has not received status report for a long time.", failedInstances);
+            failedInstances.forEach(instance -> {
+
+                JobInfoDO jobInfoDO = jobInfoRepository.findById(instance.getJobId()).orElseGet(JobInfoDO::new);
+                TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
+                SwitchableStatus switchableStatus = SwitchableStatus.of(jobInfoDO.getStatus());
+
+                // 如果任务已关闭，则不进行重试，将任务置为失败即可；秒级任务也直接置为失败，由派发器重新调度
+                if (switchableStatus != SwitchableStatus.ENABLE || TimeExpressionType.frequentTypes.contains(timeExpressionType.getV())) {
+                    updateFailedInstance(instance, SystemInstanceResult.REPORT_TIMEOUT);
+                    return;
+                }
+
+                // CRON 和 API一样，失败次数 + 1，根据重试配置进行重试
+                if (instance.getRunningTimes() < jobInfoDO.getInstanceRetryNum()) {
+                    dispatchService.redispatch(jobInfoDO, instance.getInstanceId());
+                } else {
+                    updateFailedInstance(instance, SystemInstanceResult.REPORT_TIMEOUT);
+                }
+
+            });
+        }
     }
 
     /**
      * 定期检查工作流实例状态
      * 此处仅检查并重试长时间处于 WAITING 状态的工作流实例，工作流的其他可靠性由 Instance 支撑，即子任务失败会反馈会 WorkflowInstance
+     *
      * @param allAppIds 本系统所承担的所有 appIds
      */
     private void checkWorkflowInstance(List<Long> allAppIds) {
@@ -175,7 +190,7 @@ public class InstanceStatusCheckService {
                 waitingWfInstanceList.forEach(wfInstance -> {
                     Optional<WorkflowInfoDO> workflowOpt = workflowInfoRepository.findById(wfInstance.getWorkflowId());
                     workflowOpt.ifPresent(workflowInfo -> {
-                        workflowInstanceManager.start(workflowInfo, wfInstance.getWfInstanceId(), wfInstance.getWfInitParams());
+                        workflowInstanceManager.start(workflowInfo, wfInstance.getWfInstanceId());
                         log.info("[Workflow-{}|{}] restart workflowInstance successfully~", workflowInfo.getId(), wfInstance.getWfInstanceId());
                     });
                 });
@@ -184,7 +199,7 @@ public class InstanceStatusCheckService {
     }
 
     /**
-     * 处理上报超时而失败的任务实例
+     * 处理失败的任务实例
      */
     private void updateFailedInstance(InstanceInfoDO instance, String result) {
 
@@ -196,6 +211,6 @@ public class InstanceStatusCheckService {
         instance.setResult(result);
         instanceInfoRepository.saveAndFlush(instance);
 
-        instanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, SystemInstanceResult.REPORT_TIMEOUT);
+        instanceManager.processFinishedInstance(instance.getInstanceId(), instance.getWfInstanceId(), InstanceStatus.FAILED, result);
     }
 }

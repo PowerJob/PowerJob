@@ -1,10 +1,7 @@
 package com.github.kfcfans.powerjob.server.service.workflow;
 
-import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.SystemInstanceResult;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
+import com.alibaba.fastjson.JSON;
+import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
@@ -23,19 +20,13 @@ import com.github.kfcfans.powerjob.server.service.alarm.AlarmCenter;
 import com.github.kfcfans.powerjob.server.service.alarm.WorkflowInstanceAlarm;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 管理运行中的工作流实例
@@ -66,8 +57,13 @@ public class WorkflowInstanceManager {
 
     /**
      * 创建工作流任务实例
-     * @param wfInfo 工作流任务元数据（描述信息）
-     * @param initParams 启动参数
+     * ********************************************
+     * 2021-02-03 modify by Echo009
+     * 通过 initParams 初始化工作流上下文（wfContext）
+     * ********************************************
+     *
+     * @param wfInfo            工作流任务元数据（描述信息）
+     * @param initParams        启动参数
      * @param expectTriggerTime 预计执行时间
      * @return wfInstanceId
      */
@@ -86,13 +82,17 @@ public class WorkflowInstanceManager {
         newWfInstance.setExpectedTriggerTime(expectTriggerTime);
         newWfInstance.setActualTriggerTime(System.currentTimeMillis());
         newWfInstance.setWfInitParams(initParams);
+        // 初始化上下文
+        Map<String, String> wfContextMap = Maps.newHashMap();
+        wfContextMap.put(WorkflowContextConstant.CONTEXT_INIT_PARAMS_KEY, initParams);
+        newWfInstance.setWfContext(JsonUtils.toJSONString(wfContextMap));
 
         newWfInstance.setGmtCreate(now);
         newWfInstance.setGmtModified(now);
 
         // 校验合法性（工作是否存在且启用）
-        List<Long> allJobIds = Lists.newLinkedList();
-        PEWorkflowDAG dag = JSONObject.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
+        Set<Long> allJobIds = Sets.newHashSet();
+        PEWorkflowDAG dag = JSON.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
         dag.getNodes().forEach(node -> allJobIds.add(node.getJobId()));
         int needNum = allJobIds.size();
         long dbNum = jobInfoRepository.countByAppIdAndStatusAndIdIn(wfInfo.getAppId(), SwitchableStatus.ENABLE.getV(), allJobIds);
@@ -101,19 +101,25 @@ public class WorkflowInstanceManager {
         if (dbNum < allJobIds.size()) {
             log.warn("[Workflow-{}|{}] this workflow need {} jobs, but just find {} jobs in database, maybe you delete or disable some job!", wfId, wfInstanceId, needNum, dbNum);
             onWorkflowInstanceFailed(SystemInstanceResult.CAN_NOT_FIND_JOB, newWfInstance);
-        }else {
-            workflowInstanceInfoRepository.save(newWfInstance);
+        } else {
+            workflowInstanceInfoRepository.saveAndFlush(newWfInstance);
         }
         return wfInstanceId;
     }
 
     /**
      * 开始任务
-     * @param wfInfo 工作流任务信息
+     * ********************************************
+     * 2021-02-03 modify by Echo009
+     * 1、工作流支持配置重复的任务节点
+     * 2、移除参数 initParams，改为统一从工作流实例中获取
+     * 传递工作流实例的 wfContext 作为 初始启动参数
+     * ********************************************
+     *
+     * @param wfInfo       工作流任务信息
      * @param wfInstanceId 工作流任务实例ID
-     * @param initParams 启动参数
      */
-    public void start(WorkflowInfoDO wfInfo, Long wfInstanceId, String initParams) {
+    public void start(WorkflowInfoDO wfInfo, Long wfInstanceId) {
 
         Optional<WorkflowInstanceInfoDO> wfInstanceInfoOpt = workflowInstanceInfoRepository.findByWfInstanceId(wfInstanceId);
         if (!wfInstanceInfoOpt.isPresent()) {
@@ -124,7 +130,7 @@ public class WorkflowInstanceManager {
 
         // 不是等待中，不再继续执行（可能上一流程已经失败）
         if (wfInstanceInfo.getStatus() != WorkflowInstanceStatus.WAITING.getV()) {
-            log.info("[Workflow-{}|{}] workflowInstance({}) need't running any more.", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
+            log.info("[Workflow-{}|{}] workflowInstance({}) needn't running any more.", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
             return;
         }
 
@@ -137,19 +143,23 @@ public class WorkflowInstanceManager {
 
         try {
 
-            // 构建根任务启动参数（为了精简 worker 端实现，启动参数仍以 instanceParams 字段承接）
-            Map<String, String> preJobId2Result = Maps.newHashMap();
-            // 模拟 preJobId -> preJobResult 的格式，-1 代表前置任务不存在
-            preJobId2Result.put("-1", initParams);
-            String wfRootInstanceParams = JSONObject.toJSONString(preJobId2Result);
-
-            PEWorkflowDAG peWorkflowDAG = JSONObject.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
+            PEWorkflowDAG peWorkflowDAG = JSON.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
             List<PEWorkflowDAG.Node> roots = WorkflowDAGUtils.listRoots(peWorkflowDAG);
 
             peWorkflowDAG.getNodes().forEach(node -> node.setStatus(InstanceStatus.WAITING_DISPATCH.getV()));
+            Map<Long, JobInfoDO> nodeId2JobInfoMap = Maps.newHashMap();
             // 创建所有的根任务
             roots.forEach(root -> {
-                Long instanceId = instanceService.create(root.getJobId(), wfInfo.getAppId(), wfRootInstanceParams, wfInstanceId, System.currentTimeMillis());
+                // 注意：这里必须保证任务实例全部创建成功，如果在这里创建实例部分失败，会导致 DAG 信息不会更新，已经生成的实例节点在工作流日志中没法展示
+                // 如果 job 信息缺失，在 dispatch 的时候会失败，继而使整个工作流失败
+                JobInfoDO jobInfo = jobInfoRepository.findById(root.getJobId()).orElseGet(JobInfoDO::new);
+                if (jobInfo.getId() == null) {
+                    // 在创建工作流实例到当前的这段时间内 job 信息被物理删除了
+                    log.error("[Workflow-{}|{}]job info of current node{nodeId={},jobId={}} is not present! maybe you have deleted the job!", wfInfo.getId(), wfInstanceId, root.getNodeId(), root.getJobId());
+                }
+                nodeId2JobInfoMap.put(root.getNodeId(), jobInfo);
+                // instanceParam 传递的是工作流实例的 wfContext
+                Long instanceId = instanceService.create(root.getJobId(), wfInfo.getAppId(), jobInfo.getJobParams(), wfInstanceInfo.getWfContext(), wfInstanceId, System.currentTimeMillis());
                 root.setInstanceId(instanceId);
                 root.setStatus(InstanceStatus.RUNNING.getV());
 
@@ -158,13 +168,13 @@ public class WorkflowInstanceManager {
 
             // 持久化
             wfInstanceInfo.setStatus(WorkflowInstanceStatus.RUNNING.getV());
-            wfInstanceInfo.setDag(JSONObject.toJSONString(peWorkflowDAG));
+            wfInstanceInfo.setDag(JSON.toJSONString(peWorkflowDAG));
             workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
             log.info("[Workflow-{}|{}] start workflow successfully", wfInfo.getId(), wfInstanceId);
 
             // 真正开始执行根任务
-            roots.forEach(root -> runInstance(root.getJobId(), root.getInstanceId(), wfInstanceId, wfRootInstanceParams));
-        }catch (Exception e) {
+            roots.forEach(root -> runInstance(nodeId2JobInfoMap.get(root.getNodeId()), root.getInstanceId()));
+        } catch (Exception e) {
 
             log.error("[Workflow-{}|{}] submit workflow: {} failed.", wfInfo.getId(), wfInstanceId, wfInfo, e);
             onWorkflowInstanceFailed(e.getMessage(), wfInstanceInfo);
@@ -173,11 +183,19 @@ public class WorkflowInstanceManager {
 
     /**
      * 下一步（当工作流的某个任务完成时调用该方法）
+     * ********************************************
+     * 2021-02-03 modify by Echo009
+     * 1、工作流支持配置重复的任务节点
+     * 2、不再获取上游任务的结果作为实例参数而是传递工作流
+     * 实例的 wfContext 作为 实例参数
+     * ********************************************
+     *
      * @param wfInstanceId 工作流任务实例ID
-     * @param instanceId 具体完成任务的某个任务实例ID
-     * @param status 完成任务的任务实例状态（SUCCEED/FAILED/STOPPED）
-     * @param result 完成任务的任务实例结果
+     * @param instanceId   具体完成任务的某个任务实例ID
+     * @param status       完成任务的任务实例状态（SUCCEED/FAILED/STOPPED）
+     * @param result       完成任务的任务实例结果
      */
+    @SuppressWarnings({"squid:S3776","squid:S2142","squid:S1141"})
     public void move(Long wfInstanceId, Long instanceId, InstanceStatus status, String result) {
 
         int lockId = wfInstanceId.hashCode();
@@ -192,18 +210,16 @@ public class WorkflowInstanceManager {
             WorkflowInstanceInfoDO wfInstance = wfInstanceInfoOpt.get();
             Long wfId = wfInstance.getWorkflowId();
 
-            // 特殊处理手动终止的情况
-            if (status == InstanceStatus.STOPPED) {
-                // 工作流已经不在运行状态了（由用户手动停止工作流实例导致），不需要任何操作
-                if (!WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
-                    return;
-                }
+            // 特殊处理手动终止 且 工作流实例已经不在运行状态的情况
+            if (status == InstanceStatus.STOPPED && !WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
+                // 由用户手动停止工作流实例导致，不需要任何操作
+                return;
             }
 
             try {
-                PEWorkflowDAG dag = JSONObject.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
-                // 保存 jobId -> Node 的映射关系（一个job只能出现一次的原因）
-                Map<Long, PEWorkflowDAG.Node> jobId2Node = Maps.newHashMap();
+                PEWorkflowDAG dag = JSON.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
+                // 保存 nodeId -> Node 的映射关系
+                Map<Long, PEWorkflowDAG.Node> nodeId2Node = Maps.newHashMap();
 
                 // 更新完成节点状态
                 boolean allFinished = true;
@@ -218,11 +234,11 @@ public class WorkflowInstanceManager {
                     if (InstanceStatus.generalizedRunningStatus.contains(node.getStatus())) {
                         allFinished = false;
                     }
-                    jobId2Node.put(node.getJobId(), node);
+                    nodeId2Node.put(node.getNodeId(), node);
                 }
 
                 wfInstance.setGmtModified(new Date());
-                wfInstance.setDag(JSONObject.toJSONString(dag));
+                wfInstance.setDag(JSON.toJSONString(dag));
                 // 工作流已经结束（某个节点失败导致工作流整体已经失败），仅更新最新的DAG图
                 if (!WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
                     workflowInstanceInfoRepository.saveAndFlush(wfInstance);
@@ -265,67 +281,64 @@ public class WorkflowInstanceManager {
                 dag.getEdges().forEach(edge -> relyMap.put(edge.getTo(), edge.getFrom()));
 
                 // 重新计算需要派发的任务
-                Map<Long, Long> jobId2InstanceId = Maps.newHashMap();
-                Map<Long, String> jobId2InstanceParams = Maps.newHashMap();
-
-                relyMap.keySet().forEach(jobId -> {
-
+                List<PEWorkflowDAG.Node> readyNodes = Lists.newArrayList();
+                Map<Long, JobInfoDO> nodeId2JobInfoMap = Maps.newHashMap();
+                relyMap.keySet().forEach(nodeId -> {
+                    PEWorkflowDAG.Node currentNode = nodeId2Node.get(nodeId);
                     // 跳过已完成节点（理论上此处不可能出现 FAILED 的情况）和已派发节点（存在 InstanceId）
-                    if (jobId2Node.get(jobId).getStatus() == InstanceStatus.SUCCEED.getV() || jobId2Node.get(jobId).getInstanceId() != null) {
+                    if (currentNode.getStatus() == InstanceStatus.SUCCEED.getV() || currentNode.getInstanceId() != null) {
                         return;
                     }
                     // 判断某个任务所有依赖的完成情况，只要有一个未成功，即无法执行
-                    for (Long reliedJobId : relyMap.get(jobId)) {
-                        if (jobId2Node.get(reliedJobId).getStatus() != InstanceStatus.SUCCEED.getV()) {
+                    for (Long reliedJobId : relyMap.get(nodeId)) {
+                        if (nodeId2Node.get(reliedJobId).getStatus() != InstanceStatus.SUCCEED.getV()) {
                             return;
                         }
                     }
-
-                    // 所有依赖已经执行完毕，可以执行该任务 （为什么是 Key 是 String？在 JSON 标准中，key必须由双引号引起来，Long会导致结果无法被反序列化）
-                    Map<String, String> preJobId2Result = Maps.newHashMap();
-                    // 构建下一个任务的入参 （前置任务 jobId -> result）
-                    relyMap.get(jobId).forEach(jid -> preJobId2Result.put(String.valueOf(jid), jobId2Node.get(jid).getResult()));
-
-                    Long newInstanceId = instanceService.create(jobId, wfInstance.getAppId(), JsonUtils.toJSONString(preJobId2Result), wfInstanceId, System.currentTimeMillis());
-                    jobId2Node.get(jobId).setInstanceId(newInstanceId);
-                    jobId2Node.get(jobId).setStatus(InstanceStatus.RUNNING.getV());
-
-                    jobId2InstanceId.put(jobId, newInstanceId);
-                    jobId2InstanceParams.put(jobId, JSONObject.toJSONString(preJobId2Result));
-
-                    log.debug("[Workflow-{}|{}] workflowInstance start to process new node(jobId={},instanceId={})", wfId, wfInstanceId, jobId, newInstanceId);
+                    // 同理：这里必须保证任务实例全部创建成功，避免部分失败导致已经生成的实例节点在工作流日志中没法展示
+                    JobInfoDO jobInfo = jobInfoRepository.findById(currentNode.getJobId()).orElseGet(JobInfoDO::new);
+                    if (jobInfo.getId() == null) {
+                        // 在创建工作流实例到当前的这段时间内 job 信息被物理删除了
+                        log.error("[Workflow-{}|{}]job info of current node{nodeId={},jobId={}} is not present! maybe you have deleted the job!", wfId, wfInstanceId, currentNode.getNodeId(), currentNode.getJobId());
+                    }
+                    nodeId2JobInfoMap.put(nodeId, jobInfo);
+                    // instanceParam 传递的是工作流实例的 wfContext
+                    Long newInstanceId = instanceService.create(jobInfo.getId(), wfInstance.getAppId(), jobInfo.getJobParams(), wfInstance.getWfContext(), wfInstanceId, System.currentTimeMillis());
+                    currentNode.setInstanceId(newInstanceId);
+                    currentNode.setStatus(InstanceStatus.RUNNING.getV());
+                    readyNodes.add(currentNode);
+                    log.debug("[Workflow-{}|{}] workflowInstance start to process new node(nodeId={},jobId={},instanceId={})", wfId, wfInstanceId, currentNode.getNodeId(), currentNode.getJobId(), newInstanceId);
                 });
 
-                wfInstance.setDag(JSONObject.toJSONString(dag));
+                wfInstance.setDag(JSON.toJSONString(dag));
                 workflowInstanceInfoRepository.saveAndFlush(wfInstance);
-
                 // 持久化结束后，开始调度执行所有的任务
-                jobId2InstanceId.forEach((jobId, newInstanceId) -> runInstance(jobId, newInstanceId, wfInstanceId, jobId2InstanceParams.get(jobId)));
+                readyNodes.forEach(node -> runInstance(nodeId2JobInfoMap.get(node.getNodeId()), node.getInstanceId()));
 
-            }catch (Exception e) {
+            } catch (Exception e) {
                 onWorkflowInstanceFailed("MOVE NEXT STEP FAILED: " + e.getMessage(), wfInstance);
                 log.error("[Workflow-{}|{}] update failed.", wfId, wfInstanceId, e);
             }
 
         } catch (InterruptedException ignore) {
+            // ignore
         } finally {
             segmentLock.unlock(lockId);
         }
     }
 
+
     /**
      * 运行任务实例
      * 需要将创建和运行任务实例分离，否则在秒失败情况下，会发生DAG覆盖更新的问题
-     * @param jobId 任务ID
+     *
+     * @param jobInfo    任务信息
      * @param instanceId 任务实例ID
-     * @param wfInstanceId 工作流任务实例ID
-     * @param instanceParams 任务实例参数，值为上游任务的执行结果： preJobId to preJobInstanceResult
      */
-    private void runInstance(Long jobId, Long instanceId, Long wfInstanceId, String instanceParams) {
-        JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
+    private void runInstance(JobInfoDO jobInfo, Long instanceId) {
         // 洗去时间表达式类型
         jobInfo.setTimeExpressionType(TimeExpressionType.WORKFLOW.getV());
-        dispatchService.dispatch(jobInfo, instanceId, 0, instanceParams, wfInstanceId);
+        dispatchService.dispatch(jobInfo, instanceId);
     }
 
     private void onWorkflowInstanceFailed(String result, WorkflowInstanceInfoDO wfInstance) {
@@ -349,7 +362,8 @@ public class WorkflowInstanceManager {
                 List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
                 AlarmCenter.alarmFailed(content, userList);
             });
-        }catch (Exception ignore) {
+        } catch (Exception ignore) {
+            // ignore
         }
     }
 }

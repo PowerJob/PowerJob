@@ -39,6 +39,13 @@ public class InstanceInfoDO {
      */
     private Long instanceId;
     /**
+     * 任务参数（静态）
+     * @since 2021/2/01
+     */
+    @Lob
+    @Column
+    private String jobParams;
+    /**
      * 任务实例参数（动态）
      */
     @Lob

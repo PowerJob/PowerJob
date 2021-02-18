@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * JobInfo 数据访问层
@@ -18,7 +19,9 @@ import java.util.List;
 public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long>, JpaSpecificationExecutor<JobInfoDO> {
 
 
-    // 调度专用
+    /**
+     * 调度专用
+     */
     List<JobInfoDO> findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(List<Long> appIds, int status, int timeExpressionType, long time);
 
     @Query(value = "select id from JobInfoDO where appId in ?1 and status = ?2 and timeExpressionType in ?3")
@@ -28,8 +31,14 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long>, JpaSp
 
     Page<JobInfoDO> findByAppIdAndJobNameLikeAndStatusNot(Long appId, String condition, int status, Pageable pageable);
 
-    // 校验工作流包含的任务
-    long countByAppIdAndStatusAndIdIn(Long appId, int status, List<Long> jobIds);
+    /**
+     * 校验工作流包含的任务
+     * @param appId APP ID
+     * @param status 状态
+     * @param jobIds 任务ID
+     * @return 数量
+     */
+    long countByAppIdAndStatusAndIdIn(Long appId, int status, Set<Long> jobIds);
 
     long countByAppIdAndStatusNot(long appId, int status);
 

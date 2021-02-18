@@ -21,6 +21,9 @@ import java.util.Set;
  */
 public class WorkflowDAGUtils {
 
+    private WorkflowDAGUtils() {
+
+    }
     /**
      * 获取所有根节点
      *
@@ -29,11 +32,11 @@ public class WorkflowDAGUtils {
      */
     public static List<PEWorkflowDAG.Node> listRoots(PEWorkflowDAG peWorkflowDAG) {
 
-        Map<Long, PEWorkflowDAG.Node> jobId2Node = Maps.newHashMap();
-        peWorkflowDAG.getNodes().forEach(node -> jobId2Node.put(node.getJobId(), node));
-        peWorkflowDAG.getEdges().forEach(edge -> jobId2Node.remove(edge.getTo()));
+        Map<Long, PEWorkflowDAG.Node> nodeId2Node = Maps.newHashMap();
+        peWorkflowDAG.getNodes().forEach(node -> nodeId2Node.put(node.getNodeId(), node));
+        peWorkflowDAG.getEdges().forEach(edge -> nodeId2Node.remove(edge.getTo()));
 
-        return Lists.newLinkedList(jobId2Node.values());
+        return Lists.newLinkedList(nodeId2Node.values());
     }
 
     /**
@@ -44,13 +47,13 @@ public class WorkflowDAGUtils {
      */
     public static boolean valid(PEWorkflowDAG peWorkflowDAG) {
 
-        // 点不允许重复，一个工作流中某个任务只允许出现一次
-        Set<Long> jobIds = Sets.newHashSet();
+        // 节点ID
+        Set<Long> nodeIds = Sets.newHashSet();
         for (PEWorkflowDAG.Node n : peWorkflowDAG.getNodes()) {
-            if (jobIds.contains(n.getJobId())) {
+            if (nodeIds.contains(n.getNodeId())) {
                 return false;
             }
-            jobIds.add(n.getJobId());
+            nodeIds.add(n.getNodeId());
         }
 
         try {
@@ -64,6 +67,7 @@ public class WorkflowDAGUtils {
             }
             return true;
         } catch (Exception ignore) {
+            // ignore
         }
         return false;
     }
@@ -71,29 +75,29 @@ public class WorkflowDAGUtils {
     /**
      * 将点线表示法的DAG图转化为引用表达法的DAG图
      *
-     * @param PEWorkflowDAG 点线表示法的DAG图
+     * @param peWorkflowDAG 点线表示法的DAG图
      * @return 引用表示法的DAG图
      */
-    public static WorkflowDAG convert(PEWorkflowDAG PEWorkflowDAG) {
+    public static WorkflowDAG convert(PEWorkflowDAG peWorkflowDAG) {
         Set<Long> rootIds = Sets.newHashSet();
         Map<Long, WorkflowDAG.Node> id2Node = Maps.newHashMap();
 
-        if (PEWorkflowDAG.getNodes() == null || PEWorkflowDAG.getNodes().isEmpty()) {
+        if (peWorkflowDAG.getNodes() == null || peWorkflowDAG.getNodes().isEmpty()) {
             throw new PowerJobException("empty graph");
         }
 
         // 创建节点
-        PEWorkflowDAG.getNodes().forEach(node -> {
-            Long jobId = node.getJobId();
-            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), node.getNodeId(), jobId, node.getJobName(), InstanceStatus.WAITING_DISPATCH.getV());
-            id2Node.put(jobId, n);
+        peWorkflowDAG.getNodes().forEach(node -> {
+            Long nodeId = node.getNodeId();
+            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), node.getNodeId(), node.getJobId(), node.getJobName(), InstanceStatus.WAITING_DISPATCH.getV());
+            id2Node.put(nodeId, n);
 
             // 初始阶段，每一个点都设为顶点
-            rootIds.add(jobId);
+            rootIds.add(nodeId);
         });
 
         // 连接图像
-        PEWorkflowDAG.getEdges().forEach(edge -> {
+        peWorkflowDAG.getEdges().forEach(edge -> {
             WorkflowDAG.Node from = id2Node.get(edge.getFrom());
             WorkflowDAG.Node to = id2Node.get(edge.getTo());
 
@@ -104,12 +108,12 @@ public class WorkflowDAGUtils {
             from.getSuccessors().add(to);
 
             // 被连接的点不可能成为 root，移除
-            rootIds.remove(to.getJobId());
+            rootIds.remove(to.getNodeId());
         });
 
         // 合法性校验（至少存在一个顶点）
-        if (rootIds.size() < 1) {
-            throw new PowerJobException("Illegal DAG: " + JsonUtils.toJSONString(PEWorkflowDAG));
+        if (rootIds.isEmpty()) {
+            throw new PowerJobException("Illegal DAG: " + JsonUtils.toJSONString(peWorkflowDAG));
         }
 
         List<WorkflowDAG.Node> roots = Lists.newLinkedList();
@@ -121,13 +125,13 @@ public class WorkflowDAGUtils {
     private static boolean invalidPath(WorkflowDAG.Node root, Set<Long> ids) {
 
         // 递归出口（出现之前的节点则代表有环，失败；出现无后继者节点，则说明该路径成功）
-        if (ids.contains(root.getJobId())) {
+        if (ids.contains(root.getNodeId())) {
             return true;
         }
         if (root.getSuccessors().isEmpty()) {
             return false;
         }
-        ids.add(root.getJobId());
+        ids.add(root.getNodeId());
         for (WorkflowDAG.Node node : root.getSuccessors()) {
             if (invalidPath(node, Sets.newHashSet(ids))) {
                 return true;
