@@ -13,6 +13,7 @@ public class OpenAPIConstant {
     public static final String ASSERT = "/assert";
 
     /* ************* JOB 区 ************* */
+
     public static final String SAVE_JOB = "/saveJob";
     public static final String FETCH_JOB = "/fetchJob";
     public static final String FETCH_ALL_JOB = "/fetchAllJob";
@@ -23,6 +24,7 @@ public class OpenAPIConstant {
     public static final String RUN_JOB = "/runJob";
 
     /* ************* Instance 区 ************* */
+
     public static final String STOP_INSTANCE = "/stopInstance";
     public static final String CANCEL_INSTANCE = "/cancelInstance";
     public static final String RETRY_INSTANCE = "/retryInstance";
@@ -31,6 +33,7 @@ public class OpenAPIConstant {
     public static final String QUERY_INSTANCE = "/queryInstance";
 
     /* ************* Workflow 区 ************* */
+
     public static final String SAVE_WORKFLOW = "/saveWorkflow";
     public static final String FETCH_WORKFLOW = "/fetchWorkflow";
     public static final String DISABLE_WORKFLOW = "/disableWorkflow";
@@ -39,6 +42,8 @@ public class OpenAPIConstant {
     public static final String RUN_WORKFLOW = "/runWorkflow";
 
     /* ************* WorkflowInstance 区 ************* */
+
     public static final String STOP_WORKFLOW_INSTANCE = "/stopWfInstance";
+    public static final String RETRY_WORKFLOW_INSTANCE = "/retryWfInstance";
     public static final String FETCH_WORKFLOW_INSTANCE_INFO = "/fetchWfInstanceInfo";
 }

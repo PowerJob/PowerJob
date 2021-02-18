@@ -95,6 +95,11 @@ class TestWorkflow extends ClientInitializer {
     }
 
     @Test
+    public void testRetryWorkflowInstance() {
+        System.out.println(ohMyClient.retryWorkflowInstance(149962433421639744L));
+    }
+
+    @Test
     public void testFetchWfInstanceInfo() throws Exception {
         System.out.println(ohMyClient.fetchWorkflowInstanceInfo(149962433421639744L));
     }

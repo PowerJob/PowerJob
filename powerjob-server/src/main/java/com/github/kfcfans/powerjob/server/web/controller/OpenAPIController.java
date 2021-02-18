@@ -16,6 +16,7 @@ import com.github.kfcfans.powerjob.common.response.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -50,7 +51,7 @@ public class OpenAPIController {
 
     /* ************* Job 区 ************* */
     @PostMapping(OpenAPIConstant.SAVE_JOB)
-    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) throws Exception {
+    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) throws ParseException {
         if (request.getId() != null) {
             checkJobIdValid(request.getId(), request.getAppId());
         }
@@ -86,7 +87,7 @@ public class OpenAPIController {
         return ResultDTO.success(null);
     }
     @PostMapping(OpenAPIConstant.ENABLE_JOB)
-    public ResultDTO<Void> enableJob(Long jobId, Long appId) throws Exception {
+    public ResultDTO<Void> enableJob(Long jobId, Long appId) throws ParseException {
         checkJobIdValid(jobId, appId);
         jobService.enableJob(jobId);
         return ResultDTO.success(null);
@@ -138,8 +139,9 @@ public class OpenAPIController {
     }
 
     /* ************* Workflow 区 ************* */
+
     @PostMapping(OpenAPIConstant.SAVE_WORKFLOW)
-    public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) throws Exception {
+    public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) throws ParseException {
         return ResultDTO.success(workflowService.saveWorkflow(request));
     }
 
@@ -170,11 +172,19 @@ public class OpenAPIController {
     }
 
     /* ************* Workflow Instance 区 ************* */
+
     @PostMapping(OpenAPIConstant.STOP_WORKFLOW_INSTANCE)
     public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId, Long appId) {
         workflowInstanceService.stopWorkflowInstance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
+
+    @PostMapping(OpenAPIConstant.RETRY_WORKFLOW_INSTANCE)
+    public ResultDTO<Void> retryWorkflowInstance(Long wfInstanceId, Long appId) {
+        workflowInstanceService.retryWorkflowInstance(wfInstanceId, appId);
+        return ResultDTO.success(null);
+    }
+
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO)
     public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId, Long appId) {
         return ResultDTO.success(workflowInstanceService.fetchWorkflowInstanceInfo(wfInstanceId, appId));

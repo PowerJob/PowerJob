@@ -400,6 +400,20 @@ public class OhMyClient {
     }
 
     /**
+     * Retry one workflow instance
+     * @param wfInstanceId workflow instanceId
+     * @return Standard return object
+     */
+    public ResultDTO<Void> retryWorkflowInstance(Long wfInstanceId) {
+        RequestBody body = new FormBody.Builder()
+                .add("wfInstanceId", wfInstanceId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.RETRY_WORKFLOW_INSTANCE, body);
+        return JSONObject.parseObject(post, VOID_RESULT_TYPE);
+    }
+
+    /**
      * Query detail about a workflow instance
      * @param wfInstanceId workflow instanceId
      * @return detail about a workflow
