@@ -130,7 +130,7 @@ public class JobService {
         } else {
             InstanceTimeWheelService.schedule(instanceId, delay, () -> dispatchService.dispatch(jobInfo, instanceId));
         }
-        log.info("[Job-{}] run job successfully, params={}, instanceId={}", jobInfo.getId(), instanceParams, instanceId);
+        log.info("[Job-{}|{}] execute 'runJob' successfully, params={}", jobInfo.getId(), instanceId, instanceParams);
         return instanceId;
     }
 
