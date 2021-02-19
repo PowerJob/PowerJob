@@ -1,12 +1,18 @@
 package com.github.kfcfans.powerjob.server.remote.worker.cluster;
 
+import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
 import com.github.kfcfans.powerjob.server.extension.WorkerFilter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 获取 worker 集群信息
@@ -14,6 +20,7 @@ import java.util.List;
  * @author tjq
  * @since 2021/2/19
  */
+@Slf4j
 @Service
 public class WorkerClusterQueryService {
 
@@ -31,7 +38,7 @@ public class WorkerClusterQueryService {
      */
     public List<WorkerInfo> getSuitableWorkers(JobInfoDO jobInfo) {
 
-        List<WorkerInfo> workers = WorkerClusterManagerService.getWorkerInfosByAppId(jobInfo.getAppId());
+        List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(jobInfo.getAppId()).values());
 
         workers.removeIf(workerInfo -> filterWorker(workerInfo, jobInfo));
 
@@ -47,11 +54,59 @@ public class WorkerClusterQueryService {
 
     @DesignateServer(appIdParameterName = "appId")
     public List<WorkerInfo> getAllWorkers(Long appId) {
-        List<WorkerInfo> workers = WorkerClusterManagerService.getWorkerInfosByAppId(appId);
+        List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(appId).values());
         workers.sort((o1, o2) -> o2 .getSystemMetrics().calculateScore() - o1.getSystemMetrics().calculateScore());
         return workers;
     }
 
+    /**
+     * get all alive workers
+     * @param appId appId
+     * @return alive workers
+     */
+    public List<WorkerInfo> getAllAliveWorkers(Long appId) {
+        List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(appId).values());
+        workers.removeIf(WorkerInfo::timeout);
+        return workers;
+    }
+
+    public Optional<WorkerInfo> getWorkerInfoByAddress(Long appId, String address) {
+        return Optional.ofNullable(getWorkerInfosByAppId(appId).get(address));
+    }
+
+    public Map<Long, ClusterStatusHolder> getAppId2ClusterStatus() {
+        return WorkerClusterManagerService.getAppId2ClusterStatus();
+    }
+
+    /**
+     * 获取某个应用容器的部署情况
+     * @param appId 应用ID
+     * @param containerId 容器ID
+     * @return 部署情况
+     */
+    public List<DeployedContainerInfo> getDeployedContainerInfos(Long appId, Long containerId) {
+        ClusterStatusHolder clusterStatusHolder = getAppId2ClusterStatus().get(appId);
+        if (clusterStatusHolder == null) {
+            return Collections.emptyList();
+        }
+        return clusterStatusHolder.getDeployedContainerInfos(containerId);
+    }
+
+    private Map<String, WorkerInfo> getWorkerInfosByAppId(Long appId) {
+        ClusterStatusHolder clusterStatusHolder = getAppId2ClusterStatus().get(appId);
+        if (clusterStatusHolder == null) {
+            log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
+            return Collections.emptyMap();
+        }
+        return clusterStatusHolder.getAllWorkers();
+    }
+
+    /**
+     * filter invalid worker for job
+     * @param workerInfo worker info
+     * @param jobInfo job info
+     * @return filter this worker when return true
+     */
     private boolean filterWorker(WorkerInfo workerInfo, JobInfoDO jobInfo) {
         for (WorkerFilter filter : workerFilters) {
             if (filter.filter(workerInfo, jobInfo)) {

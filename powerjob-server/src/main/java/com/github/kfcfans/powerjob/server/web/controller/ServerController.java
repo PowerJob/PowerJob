@@ -10,6 +10,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
 import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,6 +37,8 @@ public class ServerController {
     private ServerElectionService serverElectionService;
     @Resource
     private AppInfoRepository appInfoRepository;
+    @Resource
+    private WorkerClusterQueryService workerClusterQueryService;
 
     @GetMapping("/assert")
     public ResultDTO<Long> assertAppName(String appName) {
@@ -56,9 +59,9 @@ public class ServerController {
         res.put("communicationSystemInfo", transportService.getProtocol2Transporter());
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
-        res.put("appIds", WorkerClusterManagerService.getAppId2ClusterStatus().keySet());
+        res.put("appIds", workerClusterQueryService.getAppId2ClusterStatus().keySet());
         if (debug) {
-            res.put("appId2ClusterInfo", JSON.parseObject(JSON.toJSONString(WorkerClusterManagerService.getAppId2ClusterStatus())));
+            res.put("appId2ClusterInfo", JSON.parseObject(JSON.toJSONString(workerClusterQueryService.getAppId2ClusterStatus())));
 
         }
         return ResultDTO.success(res);

@@ -10,15 +10,16 @@ import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
-import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.OmsFileUtils;
+import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.ContainerInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.mongodb.GridFsManager;
-import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
-import com.github.kfcfans.powerjob.server.extension.LockService;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.server.web.request.SaveContainerInfoRequest;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -54,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 容器服务
@@ -73,6 +75,9 @@ public class ContainerService {
     private ContainerInfoRepository containerInfoRepository;
     @Resource
     private GridFsManager gridFsManager;
+
+    @Resource
+    private WorkerClusterQueryService workerClusterQueryService;
 
     // 下载用的分段锁
     private final SegmentLock segmentLock = new SegmentLock(4);
@@ -125,8 +130,8 @@ public class ContainerService {
         }
 
         ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getId());
-        WorkerClusterManagerService.getActiveWorkerInfo(container.getAppId()).keySet().forEach(akkaAddress -> {
-            ActorSelection workerActor = AkkaStarter.getWorkerActor(akkaAddress);
+        workerClusterQueryService.getAllAliveWorkers(container.getAppId()).forEach(workerInfo -> {
+            ActorSelection workerActor = AkkaStarter.getWorkerActor(workerInfo.getAddress());
             workerActor.tell(destroyRequest, null);
         });
 
@@ -247,7 +252,10 @@ public class ContainerService {
             containerInfoRepository.saveAndFlush(container);
 
             // 开始部署（需要分批进行）
-            Set<String> workerAddressList = WorkerClusterManagerService.getActiveWorkerInfo(container.getAppId()).keySet();
+            Set<String> workerAddressList = workerClusterQueryService.getAllAliveWorkers(container.getAppId())
+                    .stream()
+                    .map(WorkerInfo::getAddress)
+                    .collect(Collectors.toSet());
             if (workerAddressList.isEmpty()) {
                 remote.sendText("SYSTEM: there is no worker available now, deploy failed!");
                 return;
@@ -284,9 +292,12 @@ public class ContainerService {
      * @return 拼接好的可阅读字符串
      */
     public String fetchDeployedInfo(Long appId, Long containerId) {
-        List<DeployedContainerInfo> infoList = WorkerClusterManagerService.getDeployedContainerInfos(appId, containerId);
+        List<DeployedContainerInfo> infoList = workerClusterQueryService.getDeployedContainerInfos(appId, containerId);
 
-        Set<String> aliveWorkers = WorkerClusterManagerService.getActiveWorkerInfo(appId).keySet();
+        Set<String> aliveWorkers = workerClusterQueryService.getAllAliveWorkers(appId)
+                .stream()
+                .map(WorkerInfo::getAddress)
+                .collect(Collectors.toSet());
 
         Set<String> deployedList = Sets.newLinkedHashSet();
         List<String> unDeployedList = Lists.newLinkedList();

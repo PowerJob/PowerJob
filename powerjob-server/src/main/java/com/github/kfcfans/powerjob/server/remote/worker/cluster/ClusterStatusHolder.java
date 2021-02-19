@@ -36,6 +36,7 @@ public class ClusterStatusHolder {
 
     /**
      * 更新 worker 机器的状态
+     * @param heartbeat 心跳请求
      */
     public void updateStatus(WorkerHeartbeat heartbeat) {
 
@@ -64,26 +65,12 @@ public class ClusterStatusHolder {
         }
     }
 
-    public List<WorkerInfo> getAllWorkers() {
-        return Lists.newLinkedList(address2WorkerInfo.values());
-    }
-
-    public WorkerInfo getWorkerInfo(String address) {
-        return address2WorkerInfo.get(address);
-    }
-
     /**
-     * 获取当前连接的的机器详情
-     * @return map
+     * 获取该集群所有的机器信息
+     * @return 地址: 机器信息
      */
-    public Map<String, WorkerInfo> getActiveWorkerInfo() {
-        Map<String, WorkerInfo> res = Maps.newHashMap();
-        address2WorkerInfo.forEach((address, workerInfo) -> {
-            if (!workerInfo.timeout()) {
-                res.put(address, workerInfo);
-            }
-        });
-        return res;
+    public Map<String, WorkerInfo> getAllWorkers() {
+        return address2WorkerInfo;
     }
 
     /**

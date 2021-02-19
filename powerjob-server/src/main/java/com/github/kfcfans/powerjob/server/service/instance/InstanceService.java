@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.service.instance;
 
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
 import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
@@ -54,6 +55,9 @@ public class InstanceService {
     private JobInfoRepository jobInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
+
+    @Resource
+    private WorkerClusterQueryService workerClusterQueryService;
 
     /**
      * 创建任务实例（注意，该方法并不调用 saveAndFlush，如果有需要立即同步到DB的需求，请在方法结束后手动调用 flush）
@@ -124,7 +128,7 @@ public class InstanceService {
             不可靠通知停止 TaskTracker
             假如没有成功关闭，之后 TaskTracker 会再次 reportStatus，按照流程，instanceLog 会被更新为 RUNNING，开发者可以再次手动关闭
              */
-            Optional<WorkerInfo> workerInfoOpt = WorkerClusterManagerService.getWorkerInfo(instanceInfo.getAppId(), instanceInfo.getTaskTrackerAddress());
+            Optional<WorkerInfo> workerInfoOpt = workerClusterQueryService.getWorkerInfoByAddress(instanceInfo.getAppId(), instanceInfo.getTaskTrackerAddress());
             if (workerInfoOpt.isPresent()) {
                 ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
                 WorkerInfo workerInfo = workerInfoOpt.get();
@@ -266,7 +270,7 @@ public class InstanceService {
             return detail;
         }
 
-        Optional<WorkerInfo> workerInfoOpt = WorkerClusterManagerService.getWorkerInfo(instanceInfoDO.getAppId(), instanceInfoDO.getTaskTrackerAddress());
+        Optional<WorkerInfo> workerInfoOpt = workerClusterQueryService.getWorkerInfoByAddress(instanceInfoDO.getAppId(), instanceInfoDO.getTaskTrackerAddress());
         if (workerInfoOpt.isPresent()) {
             WorkerInfo workerInfo = workerInfoOpt.get();
             ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);
