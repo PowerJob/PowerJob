@@ -183,7 +183,7 @@ public class ProcessorRunnable implements Runnable {
         } else {
             processResult = new ProcessResult(true, "NO_PREPOST_TASK");
         }
-        // 通知 TaskerTracker 创建广播子任务
+        // 通知 TaskTracker 创建广播子任务
         reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), ProcessorReportTaskStatusReq.BROADCAST, taskContext.getWorkflowContext().getAppendedContextData());
 
     }
