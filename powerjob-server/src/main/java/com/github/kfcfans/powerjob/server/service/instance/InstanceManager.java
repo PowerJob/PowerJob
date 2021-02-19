@@ -8,7 +8,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.UserInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
-import com.github.kfcfans.powerjob.server.service.DispatchService;
+import com.github.kfcfans.powerjob.server.remote.DispatchService;
 import com.github.kfcfans.powerjob.server.service.InstanceLogService;
 import com.github.kfcfans.powerjob.server.service.UserService;
 import com.github.kfcfans.powerjob.server.service.alarm.AlarmCenter;

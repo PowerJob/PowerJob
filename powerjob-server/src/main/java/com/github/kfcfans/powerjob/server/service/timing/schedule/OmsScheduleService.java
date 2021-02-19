@@ -12,7 +12,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRep
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
-import com.github.kfcfans.powerjob.server.service.DispatchService;
+import com.github.kfcfans.powerjob.server.remote.DispatchService;
 import com.github.kfcfans.powerjob.server.service.JobService;
 import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;

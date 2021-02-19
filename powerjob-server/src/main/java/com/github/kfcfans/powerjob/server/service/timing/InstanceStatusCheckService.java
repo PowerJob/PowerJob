@@ -8,7 +8,7 @@ import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.*;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.*;
-import com.github.kfcfans.powerjob.server.service.DispatchService;
+import com.github.kfcfans.powerjob.server.remote.DispatchService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceManager;
 import com.google.common.base.Stopwatch;

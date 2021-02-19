@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 
 /**
- * Worker 管理服务
+ * 管理 worker 集群信息
  *
  * @author tjq
  * @since 2020/4/5
@@ -32,25 +32,19 @@ public class WorkerClusterManagerService {
     }
 
     /**
-     * 获取有序的当前所有可用的Worker地址（按得分高低排序，排在前面的健康度更高）
+     * 获取某个 app 下所有连接过的机器信息
+     * @param appId appId
+     * @return 所有连接过的机器信息列表
      */
-    public static List<WorkerInfo> getSortedAvailableWorkers(Long appId, double minCPUCores, double minMemorySpace, double minDiskSpace) {
+    public static List<WorkerInfo> getWorkerInfosByAppId(Long appId) {
         ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
         if (clusterStatusHolder == null) {
             log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
             return Collections.emptyList();
         }
-        return clusterStatusHolder.getSortedAvailableWorkers(minCPUCores, minMemorySpace, minDiskSpace);
+        return clusterStatusHolder.getAllWorkers();
     }
 
-    public static List<WorkerInfo> getAvailableWorkers(Long appId, double minCPUCores, double minMemorySpace, double minDiskSpace) {
-        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
-        if (clusterStatusHolder == null) {
-            log.warn("[WorkerManagerService] can't find any worker for app(appId={}) yet.", appId);
-            return Collections.emptyList();
-        }
-        return clusterStatusHolder.getAvailableWorkers(minCPUCores, minMemorySpace, minDiskSpace);
-    }
 
     public static Optional<WorkerInfo> getWorkerInfo(Long appId, String address) {
         ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
@@ -68,19 +62,6 @@ public class WorkerClusterManagerService {
     public static void clean(List<Long> usingAppIds) {
         Set<Long> keys = Sets.newHashSet(usingAppIds);
         appId2ClusterStatus.entrySet().removeIf(entry -> !keys.contains(entry.getKey()));
-    }
-
-    /**
-     * 获取某个应用下的Worker集群状态描述
-     * @param appId 应用ID
-     * @return 集群状态描述信息
-     */
-    public static String getWorkerClusterStatusDescription(Long appId) {
-        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.get(appId);
-        if (clusterStatusHolder == null) {
-            return "CAN'T_FIND_ANY_WORKER";
-        }
-        return clusterStatusHolder.getClusterDescription();
     }
 
     /**

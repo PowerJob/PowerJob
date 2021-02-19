@@ -1,8 +1,6 @@
 package com.github.kfcfans.powerjob.server.remote.worker.cluster;
 
-import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,7 +10,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * 管理Worker集群状态
@@ -30,7 +27,6 @@ public class ClusterStatusHolder {
     // 集群中所有机器的容器部署状态 containerId -> (workerAddress -> containerInfo)
     private Map<Long, Map<String, DeployedContainerInfo>> containerId2Infos;
 
-    private static final long WORKER_TIMEOUT_MS = 60000;
 
     public ClusterStatusHolder(String appName) {
         this.appName = appName;
@@ -68,51 +64,12 @@ public class ClusterStatusHolder {
         }
     }
 
-    /**
-     * 获取当前所有可用的 Worker
-     * @param minCPUCores 最低CPU核心数量
-     * @param minMemorySpace 最低内存可用空间，单位GB
-     * @param minDiskSpace 最低磁盘可用空间，单位GB
-     * @return List<Worker>
-     */
-    public List<WorkerInfo> getSortedAvailableWorkers(double minCPUCores, double minMemorySpace, double minDiskSpace) {
-        List<WorkerInfo> workers = getAvailableWorkers(minCPUCores, minMemorySpace, minDiskSpace);
-
-        // 按机器健康度排序
-        workers.sort((o1, o2) -> o2 .getSystemMetrics().calculateScore() - o1.getSystemMetrics().calculateScore());
-
-        return workers;
+    public List<WorkerInfo> getAllWorkers() {
+        return Lists.newLinkedList(address2WorkerInfo.values());
     }
 
     public WorkerInfo getWorkerInfo(String address) {
         return address2WorkerInfo.get(address);
-    }
-
-    public List<WorkerInfo> getAvailableWorkers(double minCPUCores, double minMemorySpace, double minDiskSpace) {
-        List<WorkerInfo> workerInfos = Lists.newArrayList();
-        address2WorkerInfo.forEach((address, workerInfo) -> {
-
-            if (timeout(address)) {
-                log.info("[ClusterStatusHolder] worker(address={},metrics={}) was filtered because of timeout, last active time is {}.", address, workerInfo.getSystemMetrics(), workerInfo.getLastActiveTime());
-                return;
-            }
-            // 判断指标
-            SystemMetrics metrics = workerInfo.getSystemMetrics();
-            if (metrics.available(minCPUCores, minMemorySpace, minDiskSpace)) {
-                workerInfos.add(workerInfo);
-            }else {
-                log.info("[ClusterStatusHolder] worker(address={},metrics={}) was filtered by config(minCPUCores={},minMemory={},minDiskSpace={})", address, metrics, minCPUCores, minMemorySpace, minDiskSpace);
-            }
-        });
-        return workerInfos;
-    }
-
-    /**
-     * 获取整个集群的简介
-     * @return 获取集群简介
-     */
-    public String getClusterDescription() {
-        return String.format("appName:%s,clusterStatus:%s", appName, JSON.toJSONString(address2WorkerInfo));
     }
 
     /**
@@ -122,7 +79,7 @@ public class ClusterStatusHolder {
     public Map<String, WorkerInfo> getActiveWorkerInfo() {
         Map<String, WorkerInfo> res = Maps.newHashMap();
         address2WorkerInfo.forEach((address, workerInfo) -> {
-            if (!timeout(address)) {
+            if (!workerInfo.timeout()) {
                 res.put(address, workerInfo);
             }
         });
@@ -154,7 +111,7 @@ public class ClusterStatusHolder {
         // 丢弃超时机器的信息
         List<String> timeoutAddress = Lists.newLinkedList();
         address2WorkerInfo.forEach((addr, workerInfo) -> {
-            if (timeout(addr)) {
+            if (workerInfo.timeout()) {
                 timeoutAddress.add(addr);
             }
         });
@@ -163,16 +120,5 @@ public class ClusterStatusHolder {
             log.info("[ClusterStatusHolder-{}] detective timeout workers({}), try to release their infos.", appName, timeoutAddress);
             timeoutAddress.forEach(address2WorkerInfo::remove);
         }
-    }
-
-    private boolean timeout(String address) {
-        // 排除超时机器
-        return Optional.ofNullable(address2WorkerInfo.get(address))
-                .map(workerInfo -> {
-                    long timeout = System.currentTimeMillis() - workerInfo.getLastActiveTime();
-                    return timeout > WORKER_TIMEOUT_MS;
-                })
-                .orElse(true);
-
     }
 }

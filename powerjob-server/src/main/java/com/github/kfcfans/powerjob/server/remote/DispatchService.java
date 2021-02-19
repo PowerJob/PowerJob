@@ -1,19 +1,17 @@
-package com.github.kfcfans.powerjob.server.service;
+package com.github.kfcfans.powerjob.server.remote;
 
 import com.github.kfcfans.powerjob.common.*;
-import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
-import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
+import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceManager;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceMetadataService;
 import com.github.kfcfans.powerjob.server.service.lock.local.UseSegmentLock;
-import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -23,7 +21,6 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.github.kfcfans.powerjob.common.InstanceStatus.*;
@@ -42,6 +39,8 @@ public class DispatchService {
 
     @Resource
     private TransportService transportService;
+    @Resource
+    private WorkerClusterQueryService workerClusterQueryService;
 
     @Resource
     private InstanceManager instanceManager;
@@ -50,7 +49,6 @@ public class DispatchService {
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
-    private static final Splitter COMMA_SPLITTER = Splitter.on(",");
 
     /**
      * 重新派发任务
@@ -120,12 +118,12 @@ public class DispatchService {
                 return;
             }
         }
+
         // 获取当前最合适的 worker 列表
-        List<WorkerInfo> suitableWorkers = obtainSuitableWorkers(jobInfo);
+        List<WorkerInfo> suitableWorkers = workerClusterQueryService.getSuitableWorkers(jobInfo);
 
         if (CollectionUtils.isEmpty(suitableWorkers)) {
-            String clusterStatusDescription = WorkerClusterManagerService.getWorkerClusterStatusDescription(jobInfo.getAppId());
-            log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available, clusterStatus is {}.", jobId, instanceId, clusterStatusDescription);
+            log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available", jobId, instanceId);
             instanceInfoRepository.update4TriggerFailed(instanceId, FAILED.getV(), current, current, RemoteConstant.EMPTY_ADDRESS, SystemInstanceResult.NO_WORKER_AVAILABLE, now);
 
             instanceManager.processFinishedInstance(instanceId, instanceInfo.getWfInstanceId(), FAILED, SystemInstanceResult.NO_WORKER_AVAILABLE);
@@ -149,32 +147,6 @@ public class DispatchService {
 
         // 装载缓存
         instanceMetadataService.loadJobInfo(instanceId, jobInfo);
-    }
-
-    /**
-     * 获取当前最合适的 worker 列表
-     */
-    private List<WorkerInfo> obtainSuitableWorkers(JobInfoDO jobInfo) {
-        // 获取当前所有可用的Worker
-        List<WorkerInfo> allAvailableWorker = WorkerClusterManagerService.getSortedAvailableWorkers(jobInfo.getAppId(), jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace());
-
-        // 筛选指定的机器
-        allAvailableWorker.removeIf(worker -> {
-            // 空，则全部不过滤
-            if (StringUtils.isEmpty(jobInfo.getDesignatedWorkers())) {
-                return false;
-            }
-            // 非空，只有匹配上的 worker 才不被过滤
-            Set<String> designatedWorkers = Sets.newHashSet(COMMA_SPLITTER.splitToList(jobInfo.getDesignatedWorkers()));
-            return !designatedWorkers.contains(worker.getAddress());
-        });
-
-
-        // 限定集群大小（0代表不限制）
-        if (!allAvailableWorker.isEmpty() && jobInfo.getMaxWorkerCount() > 0 && allAvailableWorker.size() > jobInfo.getMaxWorkerCount()) {
-            allAvailableWorker = allAvailableWorker.subList(0, jobInfo.getMaxWorkerCount());
-        }
-        return allAvailableWorker;
     }
 
     /**

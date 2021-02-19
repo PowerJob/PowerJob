@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.remote.worker.handler;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
 import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.*;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
@@ -48,6 +49,9 @@ public class WorkerRequestHandler {
     private InstanceLogService instanceLogService;
     @Resource
     private ContainerInfoRepository containerInfoRepository;
+
+    @Resource
+    private WorkerClusterQueryService workerClusterQueryService;
 
     private static WorkerRequestHandler workerRequestHandler;
 
@@ -134,7 +138,7 @@ public class WorkerRequestHandler {
             if (!jobInfo.getAppId().equals(appId)) {
                 askResponse = AskResponse.failed("Permission Denied!");
             }else {
-                List<String> sortedAvailableWorker = WorkerClusterManagerService.getAvailableWorkers(appId, jobInfo.getMinCpuCores(), jobInfo.getMinMemorySpace(), jobInfo.getMinDiskSpace())
+                List<String> sortedAvailableWorker = workerClusterQueryService.getSuitableWorkers(jobInfo)
                         .stream().map(WorkerInfo::getAddress).collect(Collectors.toList());
                 askResponse = AskResponse.succeed(sortedAvailableWorker);
             }

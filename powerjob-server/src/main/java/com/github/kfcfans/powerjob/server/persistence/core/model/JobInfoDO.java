@@ -131,4 +131,10 @@ public class JobInfoDO {
 
     private Date gmtModified;
 
+    /**
+     * 扩展参数，PowerJob 自身不会使用该数据，留给开发者扩展时使用
+     * 比如 WorkerFilter 的自定义 worker 过滤逻辑，可在次传入过滤指标 GpuUsage < 10
+     */
+    private String extra;
+
 }
