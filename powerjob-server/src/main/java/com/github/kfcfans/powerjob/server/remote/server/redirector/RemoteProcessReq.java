@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.remote.server.request;
+package com.github.kfcfans.powerjob.server.remote.server.redirector;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
 import lombok.Getter;

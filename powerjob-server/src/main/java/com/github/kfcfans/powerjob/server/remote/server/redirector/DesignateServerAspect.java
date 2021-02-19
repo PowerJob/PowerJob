@@ -1,14 +1,15 @@
 package com.github.kfcfans.powerjob.server.remote.server.redirector;
 
 import akka.pattern.Patterns;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.server.remote.server.request.RemoteProcessReq;
-import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.AppInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.AppInfoRepository;
+import com.github.kfcfans.powerjob.server.remote.transport.starter.AkkaStarter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,6 +20,9 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
@@ -37,6 +41,8 @@ public class DesignateServerAspect {
 
     @Resource
     private AppInfoRepository appInfoRepository;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Around(value = "@annotation(designateServer))")
     public Object execute(ProceedingJoinPoint point, DesignateServer designateServer) throws Throwable {
@@ -88,6 +94,32 @@ public class DesignateServerAspect {
         if (!askResponse.isSuccess()) {
             throw new PowerJobException("remote process failed: " + askResponse.getMessage());
         }
-        return JSONObject.parseObject(askResponse.getData(), methodSignature.getReturnType());
+
+        // 考虑范型情况
+        Method method = methodSignature.getMethod();
+        JavaType returnType = getMethodReturnJavaType(method);
+
+        return objectMapper.readValue(askResponse.getData(), returnType);
+    }
+
+
+    private static JavaType getMethodReturnJavaType(Method method) {
+        Type type = method.getGenericReturnType();
+        return getJavaType(type);
+    }
+
+    private static JavaType getJavaType(Type type) {
+        if (type instanceof ParameterizedType) {
+            Type[] actualTypeArguments = ((ParameterizedType)type).getActualTypeArguments();
+            Class<?> rowClass = (Class<?>) ((ParameterizedType)type).getRawType();
+            JavaType[] javaTypes = new JavaType[actualTypeArguments.length];
+            for (int i = 0; i < actualTypeArguments.length; i++) {
+                //泛型也可能带有泛型，递归处理
+                javaTypes[i] = getJavaType(actualTypeArguments[i]);
+            }
+            return TypeFactory.defaultInstance().constructParametricType(rowClass, javaTypes);
+        } else {
+            return TypeFactory.defaultInstance().constructParametricType((Class<?>) type, new JavaType[0]);
+        }
     }
 }

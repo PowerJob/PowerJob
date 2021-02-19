@@ -24,7 +24,7 @@ public class WorkerStatusVO {
 
     private String protocol;
 
-    // 1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色
+    // 1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色，9999 -> 非在线机器
     private int status;
 
     // 12.3%(4 cores)
@@ -35,14 +35,14 @@ public class WorkerStatusVO {
 
     private static final double THRESHOLD = 0.8;
 
-    public WorkerStatusVO(String address, WorkerInfo workerInfo) {
+    public WorkerStatusVO(WorkerInfo workerInfo) {
 
         SystemMetrics systemMetrics = workerInfo.getSystemMetrics();
 
         this.protocol = workerInfo.getProtocol();
 
         this.status = 1;
-        this.address = address;
+        this.address = workerInfo.getAddress();
         this.cpuLoad = String.format(CPU_FORMAT, df.format(systemMetrics.getCpuLoad()), systemMetrics.getCpuProcessors());
         if (systemMetrics.getCpuLoad() > systemMetrics.getCpuProcessors() * THRESHOLD) {
             this.status ++;
@@ -62,6 +62,10 @@ public class WorkerStatusVO {
         this.diskLoad = String.format(OTHER_FORMAT, diskL, diskUsed, diskMax);
         if (systemMetrics.getDiskUsage() > THRESHOLD) {
             this.status ++;
+        }
+
+        if (workerInfo.timeout()) {
+            this.status = 9999;
         }
     }
 }

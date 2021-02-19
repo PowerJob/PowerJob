@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.remote.worker.cluster;
 
 import com.github.kfcfans.powerjob.server.extension.WorkerFilter;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
+import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,13 @@ public class WorkerClusterQueryService {
         if (!workers.isEmpty() && jobInfo.getMaxWorkerCount() > 0 && workers.size() > jobInfo.getMaxWorkerCount()) {
             workers = workers.subList(0, jobInfo.getMaxWorkerCount());
         }
+        return workers;
+    }
+
+    @DesignateServer(appIdParameterName = "appId")
+    public List<WorkerInfo> getAllWorkers(Long appId) {
+        List<WorkerInfo> workers = WorkerClusterManagerService.getWorkerInfosByAppId(appId);
+        workers.sort((o1, o2) -> o2 .getSystemMetrics().calculateScore() - o1.getSystemMetrics().calculateScore());
         return workers;
     }
 
