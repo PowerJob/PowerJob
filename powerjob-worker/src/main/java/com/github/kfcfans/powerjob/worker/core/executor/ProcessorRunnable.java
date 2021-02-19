@@ -11,6 +11,7 @@ import com.github.kfcfans.powerjob.worker.common.utils.SerializerUtils;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskResult;
+import com.github.kfcfans.powerjob.worker.core.processor.WorkflowContext;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BroadcastProcessor;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.MapReduceProcessor;
@@ -63,7 +64,9 @@ public class ProcessorRunnable implements Runnable {
         log.debug("[ProcessorRunnable-{}] start to run task(taskId={}&taskName={})", instanceId, taskId, task.getTaskName());
         ThreadLocalStore.setTask(task);
         // 0. 构造任务上下文
+        WorkflowContext workflowContext = constructWorkflowContext();
         TaskContext taskContext = constructTaskContext();
+        taskContext.setWorkflowContext(workflowContext);
         // 1. 上报执行信息
         reportStatus(TaskStatus.WORKER_PROCESSING, null, null, null);
 
@@ -91,7 +94,7 @@ public class ProcessorRunnable implements Runnable {
             processResult = new ProcessResult(false, e.toString());
         }
         //
-        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), null, taskContext.getAppendedContextData());
+        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), null, workflowContext.getAppendedContextData());
     }
 
 
@@ -109,6 +112,10 @@ public class ProcessorRunnable implements Runnable {
         }
         taskContext.setUserContext(OhMyWorker.getConfig().getUserContext());
         return taskContext;
+    }
+
+    private WorkflowContext constructWorkflowContext(){
+       return new WorkflowContext(task.getInstanceId(), instanceInfo.getInstanceParams());
     }
 
     /**
@@ -151,7 +158,7 @@ public class ProcessorRunnable implements Runnable {
         }
 
         TaskStatus status = processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED;
-        reportStatus(status, suit(processResult.getMsg()), null, taskContext.getAppendedContextData());
+        reportStatus(status, suit(processResult.getMsg()), null, taskContext.getWorkflowContext().getAppendedContextData());
 
         log.info("[ProcessorRunnable-{}] the last task execute successfully, using time: {}", instanceId, stopwatch);
     }
@@ -177,7 +184,7 @@ public class ProcessorRunnable implements Runnable {
             processResult = new ProcessResult(true, "NO_PREPOST_TASK");
         }
         // 通知 TaskerTracker 创建广播子任务
-        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), ProcessorReportTaskStatusReq.BROADCAST, taskContext.getAppendedContextData());
+        reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), ProcessorReportTaskStatusReq.BROADCAST, taskContext.getWorkflowContext().getAppendedContextData());
 
     }
 

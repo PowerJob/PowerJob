@@ -59,7 +59,7 @@ public class MapProcessorDemo extends MapProcessor {
             return map(subTasks, "MAP_TEST_TASK");
         }else {
             // 测试在 Map 任务中追加上下文
-            context.appendData2WfContext("Yasuo","A sword's poor company for a long road.");
+            context.getWorkflowContext().appendData2WfContext("Yasuo","A sword's poor company for a long road.");
             System.out.println("==== PROCESS ====");
             System.out.println("subTask: " + JsonUtils.toJSONString(context.getSubTask()));
             boolean b = ThreadLocalRandom.current().nextBoolean();

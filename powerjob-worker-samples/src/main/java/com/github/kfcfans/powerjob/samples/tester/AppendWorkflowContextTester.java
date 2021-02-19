@@ -25,7 +25,7 @@ public class AppendWorkflowContextTester implements BasicProcessor {
     @SuppressWarnings("squid:S106")
     public ProcessResult process(TaskContext context) throws Exception {
 
-        Map<String, String> workflowContext = context.fetchWorkflowContext();
+        Map<String, String> workflowContext = context.getWorkflowContext().fetchWorkflowContext();
         String originValue = workflowContext.get(WorkflowContextConstant.CONTEXT_INIT_PARAMS_KEY);
         System.out.println("======= AppendWorkflowContextTester#start =======");
         System.out.println("current instance id : " + context.getInstanceId());
@@ -38,7 +38,7 @@ public class AppendWorkflowContextTester implements BasicProcessor {
         } catch (Exception e) {
             // ignore
         }
-        context.appendData2WfContext(WorkflowContextConstant.CONTEXT_INIT_PARAMS_KEY, num + 1);
+        context.getWorkflowContext().appendData2WfContext(WorkflowContextConstant.CONTEXT_INIT_PARAMS_KEY, num + 1);
         System.out.println("======= AppendWorkflowContextTester#end =======");
         if (FAIL_CODE.equals(context.getJobParams())) {
             return new ProcessResult(false, "Failed!");

@@ -26,7 +26,7 @@ public class WorkflowStandaloneProcessor implements BasicProcessor {
         System.out.println("currentContext:"+JSON.toJSONString(context));
 
         // 尝试获取上游任务
-        Map<String, String> workflowContext = context.fetchWorkflowContext();
+        Map<String, String> workflowContext = context.getWorkflowContext().fetchWorkflowContext();
         System.out.println("工作流上下文数据：");
         System.out.println(workflowContext);
 

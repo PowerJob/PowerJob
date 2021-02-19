@@ -1,18 +1,12 @@
 package com.github.kfcfans.powerjob.worker.core.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.kfcfans.powerjob.common.WorkflowContextConstant;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
-import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
 
 /**
  * 任务上下文
@@ -24,6 +18,7 @@ import java.util.Map;
  * 2021/02/04 移除 fetchUpstreamTaskResult 方法
  *
  * @author tjq
+ * @author Echo009
  * @since 2020/3/18
  */
 @Getter
@@ -72,61 +67,9 @@ public class TaskContext {
      * 用户自定义上下文，通过 {@link OhMyConfig} 初始化
      */
     private Object userContext;
-
     /**
-     * 追加的上下文数据
+     * 工作流上下文数据
      */
-    private final Map<String,String> appendedContextData = Maps.newConcurrentMap();
-
-
-
-    /**
-     * 获取工作流上下文 (MAP)，本质上是将 instanceParams 解析成 MAP
-     * 初始参数的 key 为 {@link WorkflowContextConstant#CONTEXT_INIT_PARAMS_KEY}
-     * 注意，在没有传递初始参数时，通过 CONTEXT_INIT_PARAMS_KEY 获取到的是 null
-     *
-     * @return 工作流上下文
-     * @author Echo009
-     * @since 2021/02/04
-     */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    public Map<String, String> fetchWorkflowContext() {
-        Map<String, String> res = Maps.newHashMap();
-        try {
-            Map originMap = JsonUtils.parseObject(instanceParams, Map.class);
-            originMap.forEach((k, v) -> res.put(String.valueOf(k), v == null ? null : String.valueOf(v)));
-            return res;
-        } catch (Exception ignore) {
-            // ignore
-        }
-        return Maps.newHashMap();
-    }
-
-
-    /**
-     * 往工作流上下文添加数据
-     * 注意：如果 key 在当前上下文中已存在，那么会直接覆盖
-     */
-    public synchronized void appendData2WfContext(String key,Object value){
-        String finalValue;
-        try {
-            // 先判断当前上下文大小是否超出限制
-            final int sizeThreshold = OhMyWorker.getConfig().getMaxAppendedWfContextSize();
-            if (appendedContextData.size() >= sizeThreshold) {
-                log.warn("[TaskContext-{}|{}|{}] appended workflow context data size must be lesser than {}, current appended workflow context data(key={}) will be ignored!",instanceId,taskId,taskName,sizeThreshold,key);
-            }
-            finalValue = JsonUtils.toJSONStringUnsafe(value);
-            final int lengthThreshold = OhMyWorker.getConfig().getMaxAppendedWfContextLength();
-            // 判断 key & value 是否超长度限制
-            if (key.length() > lengthThreshold || finalValue.length() > lengthThreshold) {
-                log.warn("[TaskContext-{}|{}|{}] appended workflow context data length must be shorter than {}, current appended workflow context data(key={}) will be ignored!",instanceId,taskId,taskName,lengthThreshold,key);
-                return;
-            }
-        } catch (Exception e) {
-            log.warn("[TaskContext-{}|{}|{}] fail to append data to workflow context, key : {}",instanceId,taskId,taskName, key);
-            return;
-        }
-        appendedContextData.put(key, JsonUtils.toJSONString(value));
-    }
+    private WorkflowContext workflowContext;
 
 }
