@@ -35,6 +35,7 @@ import static com.github.kfcfans.powerjob.server.common.utils.WorkflowDAGUtils.i
  * 管理运行中的工作流实例
  *
  * @author tjq
+ * @author Echo009
  * @since 2020/5/26
  */
 @Slf4j
@@ -417,10 +418,10 @@ public class WorkflowInstanceManager {
     }
 
 
-    private boolean isFinish(PEWorkflowDAG dag){
+    private boolean isFinish(PEWorkflowDAG dag) {
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
             if (InstanceStatus.GENERALIZED_RUNNING_STATUS.contains(node.getStatus())) {
-               return false;
+                return false;
             }
         }
         return true;
