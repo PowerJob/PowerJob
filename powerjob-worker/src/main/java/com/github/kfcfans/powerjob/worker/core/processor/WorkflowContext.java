@@ -2,7 +2,6 @@ package com.github.kfcfans.powerjob.worker.core.processor;
 
 import com.github.kfcfans.powerjob.common.WorkflowContextConstant;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -63,24 +62,14 @@ public class WorkflowContext {
     public void appendData2WfContext(String key, Object value) {
         String finalValue;
         try {
-            // 先判断当前上下文大小是否超出限制
-            final int sizeThreshold = OhMyWorker.getConfig().getMaxAppendedWfContextSize();
-            if (appendedContextData.size() >= sizeThreshold) {
-                log.warn("[WorkflowContext-{}] appended workflow context data size must be lesser than {}, current appended workflow context data(key={}) will be ignored!", instanceId, sizeThreshold, key);
-                return;
-            }
+            // 这里不限制长度，完成任务之后上报至 TaskTracker 时再校验
             finalValue = JsonUtils.toJSONStringUnsafe(value);
-            final int lengthThreshold = OhMyWorker.getConfig().getMaxAppendedWfContextLength();
-            // 判断 key & value 是否超长度限制
-            if (key.length() > lengthThreshold || finalValue.length() > lengthThreshold) {
-                log.warn("[WorkflowContext-{}] appended workflow context data length must be shorter than {}, current appended workflow context data(key={}) will be ignored!", instanceId, lengthThreshold, key);
-                return;
-            }
+
         } catch (Exception e) {
             log.warn("[WorkflowContext-{}] fail to append data to workflow context, key : {}", instanceId, key);
             return;
         }
-        appendedContextData.put(key, JsonUtils.toJSONString(value));
+        appendedContextData.put(key, finalValue);
     }
 
 

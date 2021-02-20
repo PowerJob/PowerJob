@@ -3,8 +3,7 @@ package com.github.kfcfans.powerjob.worker.common;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
-import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
-import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
+import com.github.kfcfans.powerjob.worker.core.processor.WorkflowContext;
 import com.github.kfcfans.powerjob.worker.extension.SystemMetricsCollector;
 import com.google.common.collect.Lists;
 import lombok.Getter;
@@ -58,15 +57,9 @@ public class OhMyConfig {
     private boolean enableTestMode = false;
     /**
      * Max length of appended workflow context value length. Appended workflow context value that is longer than the value will be ignore.
-     * {@link TaskContext} max length for #appendedContextData key and value.
+     * {@link WorkflowContext} max length for #appendedContextData
      */
-    private int maxAppendedWfContextLength = 8096;
-    /**
-     * Max size of appended workflow context. Appended workflow context that is greater than the value will be truncated.
-     * {@link TaskContext} max size for #appendedContextData
-     * {@link TaskTracker} max size for #appendedWfContext
-     */
-    private int maxAppendedWfContextSize = 16;
+    private int maxAppendedWfContextLength = 8192;
 
 
     private SystemMetricsCollector systemMetricsCollector;

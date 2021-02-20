@@ -18,6 +18,7 @@ import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
+import com.github.kfcfans.powerjob.worker.common.utils.WorkflowContextUtils;
 import com.github.kfcfans.powerjob.worker.core.ha.ProcessorTrackerStatusHolder;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
 import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
@@ -183,13 +184,14 @@ public abstract class TaskTracker {
             // 只有工作流中的任务才有存储的必要
             return;
         }
-        // 先判断当前上下文大小是否超出限制
-        final int sizeThreshold = OhMyWorker.getConfig().getMaxAppendedWfContextSize();
+        // 检查追加的上下文大小是否超出限制
+        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext)) {
+            log.warn("[TaskTracker-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(),OhMyWorker.getConfig().getMaxAppendedWfContextLength());
+            // ignore appended workflow context data
+            return;
+        }
+
         for (Map.Entry<String, String> entry : newAppendedWfContext.entrySet()) {
-            if (appendedWfContext.size() >= sizeThreshold) {
-                log.warn("[TaskTracker-{}] current size of appended workflow context data is greater than {}, the rest of appended workflow context data will be ignore! ", instanceInfo.getInstanceId(), sizeThreshold);
-                break;
-            }
             String originValue = appendedWfContext.put(entry.getKey(), entry.getValue());
             log.info("[TaskTracker-{}] update appended workflow context data {} : {} -> {}", instanceInfo.getInstanceId(), entry.getKey(), originValue, entry.getValue());
         }

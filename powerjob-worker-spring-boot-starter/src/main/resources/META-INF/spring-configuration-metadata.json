@@ -54,13 +54,7 @@
     {
       "name": "powerjob.worker.max-appended-wf-context-length",
       "type": "java.lang.Integer",
-      "description": "Max length of appended workflow context value length. Appended workflow context value that is longer than the value will be ignore.",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
-    },
-    {
-      "name": "powerjob.worker.max-appended-wf-context-size",
-      "type": "java.lang.Integer",
-      "description": "Max size of appended workflow context. Appended workflow context that is greater than the value will be truncated.",
+      "description": "Max length of appended workflow context. Appended workflow context that is longer than the value will be ignore.",
       "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     }
   ],

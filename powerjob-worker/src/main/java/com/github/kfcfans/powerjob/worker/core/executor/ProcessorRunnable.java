@@ -8,6 +8,7 @@ import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SerializerUtils;
+import com.github.kfcfans.powerjob.worker.common.utils.WorkflowContextUtils;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskResult;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -114,8 +116,8 @@ public class ProcessorRunnable implements Runnable {
         return taskContext;
     }
 
-    private WorkflowContext constructWorkflowContext(){
-       return new WorkflowContext(task.getInstanceId(), instanceInfo.getInstanceParams());
+    private WorkflowContext constructWorkflowContext() {
+        return new WorkflowContext(task.getInstanceId(), instanceInfo.getInstanceParams());
     }
 
     /**
@@ -205,6 +207,12 @@ public class ProcessorRunnable implements Runnable {
         req.setResult(result);
         req.setReportTime(System.currentTimeMillis());
         req.setCmd(cmd);
+        // 检查追加的上下文大小是否超出限制
+        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext)) {
+            log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(),OhMyWorker.getConfig().getMaxAppendedWfContextLength());
+            // ignore appended workflow context data
+            appendedWfContext = Collections.emptyMap();
+        }
         req.setAppendedWfContext(appendedWfContext);
 
         // 最终结束状态要求可靠发送
@@ -253,4 +261,5 @@ public class ProcessorRunnable implements Runnable {
                 task.getInstanceId(), task.getTaskId(), result.length(), maxLength);
         return result.substring(0, maxLength).concat("...");
     }
+
 }
