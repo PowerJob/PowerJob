@@ -23,7 +23,7 @@ class TestWorkflow extends ClientInitializer {
     private static final long WF_ID = 1;
 
     @Test
-    public void initTestData() throws Exception {
+    void initTestData() throws Exception {
         SaveJobInfoRequest base = new SaveJobInfoRequest();
         base.setJobName("DAG-Node-");
         base.setTimeExpressionType(TimeExpressionType.WORKFLOW);
@@ -39,7 +39,7 @@ class TestWorkflow extends ClientInitializer {
     }
 
     @Test
-    public void testSaveWorkflow() throws Exception {
+    void testSaveWorkflow() throws Exception {
 
 
         SaveWorkflowRequest req = new SaveWorkflowRequest();
@@ -55,7 +55,7 @@ class TestWorkflow extends ClientInitializer {
     }
 
     @Test
-    public void testAddWorkflowNode(){
+    void testAddWorkflowNode() {
         AddWorkflowNodeRequest addWorkflowNodeRequest = new AddWorkflowNodeRequest();
         addWorkflowNodeRequest.setJobId(1L);
         addWorkflowNodeRequest.setWorkflowId(WF_ID);
@@ -63,7 +63,7 @@ class TestWorkflow extends ClientInitializer {
     }
 
     @Test
-    public void testModifyWorkflowNode() {
+    void testModifyWorkflowNode() {
         ModifyWorkflowNodeRequest modifyWorkflowNodeRequest = new ModifyWorkflowNodeRequest();
         modifyWorkflowNodeRequest.setWorkflowId(WF_ID);
         modifyWorkflowNodeRequest.setId(1L);
@@ -74,7 +74,7 @@ class TestWorkflow extends ClientInitializer {
     }
 
     @Test
-    public void testSaveWorkflowDag() {
+    void testSaveWorkflowDag() {
         // DAG 图
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
@@ -96,50 +96,53 @@ class TestWorkflow extends ClientInitializer {
     }
 
 
-
-
     @Test
-    public void testDisableWorkflow() throws Exception {
+    void testDisableWorkflow() throws Exception {
         System.out.println(ohMyClient.disableWorkflow(WF_ID));
     }
 
     @Test
-    public void testDeleteWorkflow() throws Exception {
+    void testDeleteWorkflow() throws Exception {
         System.out.println(ohMyClient.deleteWorkflow(WF_ID));
     }
 
     @Test
-    public void testEnableWorkflow() throws Exception {
+    void testEnableWorkflow() throws Exception {
         System.out.println(ohMyClient.enableWorkflow(WF_ID));
     }
 
     @Test
-    public void testFetchWorkflowInfo() throws Exception {
+    void testFetchWorkflowInfo() throws Exception {
         System.out.println(ohMyClient.fetchWorkflow(WF_ID));
     }
 
     @Test
-    public void testRunWorkflow() throws Exception {
+    void testRunWorkflow() throws Exception {
         System.out.println(ohMyClient.runWorkflow(WF_ID));
     }
 
     @Test
-    public void testStopWorkflowInstance() throws Exception {
+    void testStopWorkflowInstance() throws Exception {
         System.out.println(ohMyClient.stopWorkflowInstance(149962433421639744L));
     }
 
     @Test
-    public void testRetryWorkflowInstance() {
+    void testRetryWorkflowInstance() {
         System.out.println(ohMyClient.retryWorkflowInstance(149962433421639744L));
     }
 
     @Test
-    public void testFetchWfInstanceInfo() throws Exception {
+    void testMarkWorkflowNodeAsSuccess() {
+        System.out.println(ohMyClient.markWorkflowNodeAsSuccess(149962433421639744L, 1L));
+    }
+
+    @Test
+    void testFetchWfInstanceInfo() throws Exception {
         System.out.println(ohMyClient.fetchWorkflowInstanceInfo(149962433421639744L));
     }
 
     @Test
-    public void testRunWorkflowPlus() throws Exception {
+    void testRunWorkflowPlus() throws Exception {
         System.out.println(ohMyClient.runWorkflow(WF_ID, "this is init Params 2", 90000));
     }
 }

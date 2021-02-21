@@ -208,6 +208,12 @@ public class OpenAPIController {
         return ResultDTO.success(null);
     }
 
+    @PostMapping(OpenAPIConstant.MARK_WORKFLOW_NODE_AS_SUCCESS)
+    public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId,Long nodeId, Long appId) {
+        workflowInstanceService.markNodeAsSuccess(appId,wfInstanceId,nodeId);
+        return ResultDTO.success(null);
+    }
+
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO)
     public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId, Long appId) {
         return ResultDTO.success(workflowInstanceService.fetchWorkflowInstanceInfo(wfInstanceId, appId));

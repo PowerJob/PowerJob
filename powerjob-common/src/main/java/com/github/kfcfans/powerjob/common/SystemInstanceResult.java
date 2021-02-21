@@ -61,4 +61,8 @@ public class SystemInstanceResult {
      * 被禁用的节点
      */
     public static final String DISABLE_NODE = "disable node";
+    /**
+     * 标记为成功的节点
+     */
+    public static final String MARK_AS_SUCCESSFUL_NODE = "mark as successful node";
 }

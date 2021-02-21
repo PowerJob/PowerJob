@@ -168,7 +168,7 @@ public class CleanService {
         }
         try {
             Date t = DateUtils.addDays(new Date(), -instanceInfoRetentionDay);
-            int num = workflowInstanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(t, WorkflowInstanceStatus.finishedStatus);
+            int num = workflowInstanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(t, WorkflowInstanceStatus.FINISHED_STATUS);
             log.info("[CleanService] deleted {} workflow instanceInfo records whose modify time before {}.", num, t);
         }catch (Exception e) {
             log.warn("[CleanService] clean workflow instanceInfo failed.", e);

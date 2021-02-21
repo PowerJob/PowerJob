@@ -163,7 +163,7 @@ public class WorkflowInstanceManager {
         }
 
         // 并发度控制
-        int instanceConcurrency = workflowInstanceInfoRepository.countByWorkflowIdAndStatusIn(wfInfo.getId(), WorkflowInstanceStatus.generalizedRunningStatus);
+        int instanceConcurrency = workflowInstanceInfoRepository.countByWorkflowIdAndStatusIn(wfInfo.getId(), WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS);
         if (instanceConcurrency > wfInfo.getMaxWfInstanceNum()) {
             onWorkflowInstanceFailed(String.format(SystemInstanceResult.TOO_MANY_INSTANCES, instanceConcurrency, wfInfo.getMaxWfInstanceNum()), wfInstanceInfo);
             return;
@@ -237,7 +237,7 @@ public class WorkflowInstanceManager {
             Long wfId = wfInstance.getWorkflowId();
 
             // 特殊处理手动终止 且 工作流实例已经不在运行状态的情况
-            if (status == InstanceStatus.STOPPED && !WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
+            if (status == InstanceStatus.STOPPED && !WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
                 // 由用户手动停止工作流实例导致，不需要任何操作
                 return;
             }
@@ -267,7 +267,7 @@ public class WorkflowInstanceManager {
                 wfInstance.setGmtModified(new Date());
                 wfInstance.setDag(JSON.toJSONString(dag));
                 // 工作流已经结束（某个节点失败导致工作流整体已经失败），仅更新最新的DAG图
-                if (!WorkflowInstanceStatus.generalizedRunningStatus.contains(wfInstance.getStatus())) {
+                if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
                     workflowInstanceInfoRepository.saveAndFlush(wfInstance);
                     log.info("[Workflow-{}|{}] workflow already finished(status={}), just update the dag info.", wfId, wfInstanceId, wfInstance.getStatus());
                     return;

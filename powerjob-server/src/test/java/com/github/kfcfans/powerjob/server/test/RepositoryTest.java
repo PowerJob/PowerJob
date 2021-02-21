@@ -111,7 +111,7 @@ public class RepositoryTest {
 
     @Test
     public void testDeleteWorkflowInstanceInfo() {
-        workflowInstanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(new Date(), WorkflowInstanceStatus.finishedStatus);
+        workflowInstanceInfoRepository.deleteAllByGmtModifiedBeforeAndStatusIn(new Date(), WorkflowInstanceStatus.FINISHED_STATUS);
     }
 
 }
