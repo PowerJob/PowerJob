@@ -21,4 +21,8 @@ public interface OmsLockRepository extends JpaRepository<OmsLockDO, Long> {
     int deleteByLockName(String lockName);
 
     OmsLockDO findByLockName(String lockName);
+
+    @Modifying
+    @Transactional
+    int deleteByOwnerIP(String ip);
 }

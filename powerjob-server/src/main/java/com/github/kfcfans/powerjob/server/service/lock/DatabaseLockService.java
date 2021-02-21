@@ -6,10 +6,9 @@ import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.persistence.core.model.OmsLockDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.OmsLockRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 /**
  * 基于数据库实现的分布式锁
@@ -21,13 +20,25 @@ import javax.annotation.Resource;
 @Service
 public class DatabaseLockService implements LockService {
 
-    @Resource
-    private OmsLockRepository omsLockRepository;
+    private final String ownerIp;
+    private final OmsLockRepository omsLockRepository;
+
+    @Autowired
+    public DatabaseLockService(OmsLockRepository omsLockRepository) {
+
+        this.ownerIp = NetUtils.getLocalHost();
+        this.omsLockRepository = omsLockRepository;
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            int num = omsLockRepository.deleteByOwnerIP(ownerIp);
+            log.info("[DatabaseLockService] execute shutdown hook, release all lock(owner={},num={})", ownerIp, num);
+        }));
+    }
 
     @Override
     public boolean tryLock(String name, long maxLockTime) {
 
-        OmsLockDO newLock = new OmsLockDO(name, NetUtils.getLocalHost(), maxLockTime);
+        OmsLockDO newLock = new OmsLockDO(name, ownerIp, maxLockTime);
         try {
             omsLockRepository.saveAndFlush(newLock);
             return true;
