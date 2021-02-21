@@ -2,6 +2,7 @@ package com.github.kfcfans.powerjob.server.remote;
 
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
+import com.github.kfcfans.powerjob.server.common.constans.DispatchStrategy;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
@@ -21,6 +22,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static com.github.kfcfans.powerjob.common.InstanceStatus.*;
@@ -136,7 +138,7 @@ public class DispatchService {
 
 
         // 发送请求（不可靠，需要一个后台线程定期轮询状态）
-        WorkerInfo taskTracker = suitableWorkers.get(0);
+        WorkerInfo taskTracker = selectTaskTracker(jobInfo, suitableWorkers);
         String taskTrackerAddress = taskTracker.getAddress();
 
         transportService.tell(Protocol.of(taskTracker.getProtocol()), taskTrackerAddress, req);
@@ -181,5 +183,17 @@ public class DispatchService {
         req.setInstanceTimeoutMS(jobInfo.getInstanceTimeLimit());
         req.setThreadConcurrency(jobInfo.getConcurrency());
         return req;
+    }
+
+    private WorkerInfo selectTaskTracker(JobInfoDO jobInfo, List<WorkerInfo> workerInfos) {
+        DispatchStrategy dispatchStrategy = DispatchStrategy.of(jobInfo.getDispatchStrategy());
+        switch (dispatchStrategy) {
+            case HEALTH_FIRST:
+                return workerInfos.get(0);
+            case RANDOM:
+                return workerInfos.get(ThreadLocalRandom.current().nextInt(workerInfos.size()));
+        }
+        // impossible, indian java
+        return workerInfos.get(0);
     }
 }

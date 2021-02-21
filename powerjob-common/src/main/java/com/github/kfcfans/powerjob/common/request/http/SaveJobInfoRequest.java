@@ -125,6 +125,12 @@ public class SaveJobInfoRequest {
      */
     private List<Long> notifyUserIds;
 
+    private String extra;
+
+    private Integer dispatchStrategy;
+
+    private String lifecycle;
+
 
     /**
      * Check non-null properties.

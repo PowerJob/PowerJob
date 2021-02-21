@@ -137,4 +137,8 @@ public class JobInfoDO {
      */
     private String extra;
 
+    private Integer dispatchStrategy;
+
+    private String lifecycle;
+
 }

@@ -5,6 +5,7 @@ import com.github.kfcfans.powerjob.common.ProcessorType;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.server.common.SJ;
+import com.github.kfcfans.powerjob.server.common.constans.DispatchStrategy;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.google.common.collect.Lists;
@@ -89,6 +90,12 @@ public class JobInfoVO {
     // 报警用户ID列表
     private List<String> notifyUserIds;
 
+    private String extra;
+
+    private String dispatchStrategy;
+
+    private String lifecycle;
+
     public static JobInfoVO from(JobInfoDO jobInfoDO) {
         JobInfoVO jobInfoVO = new JobInfoVO();
         BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
@@ -96,11 +103,13 @@ public class JobInfoVO {
         TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
         ExecuteType executeType = ExecuteType.of(jobInfoDO.getExecuteType());
         ProcessorType processorType = ProcessorType.of(jobInfoDO.getProcessorType());
+        DispatchStrategy dispatchStrategy = DispatchStrategy.of(jobInfoDO.getDispatchStrategy());
 
         jobInfoVO.setTimeExpressionType(timeExpressionType.name());
         jobInfoVO.setExecuteType(executeType.name());
         jobInfoVO.setProcessorType(processorType.name());
         jobInfoVO.setEnable(jobInfoDO.getStatus() == SwitchableStatus.ENABLE.getV());
+        jobInfoVO.setDispatchStrategy(dispatchStrategy.name());
 
         if (!StringUtils.isEmpty(jobInfoDO.getNotifyUserIds())) {
             jobInfoVO.setNotifyUserIds(SJ.commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));

@@ -75,4 +75,10 @@ public class JobInfoDTO {
 
     private Date gmtCreate;
     private Date gmtModified;
+
+    private String extra;
+
+    private Integer dispatchStrategy;
+
+    private String lifecycle;
 }
