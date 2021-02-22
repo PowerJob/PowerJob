@@ -58,8 +58,7 @@ public class WorkflowInfoVO {
     /**
      * ENABLE / DISABLE
      */
-    private boolean enable;
-
+    private Boolean enable;
     /**
      * 工作流整体失败的报警
      */

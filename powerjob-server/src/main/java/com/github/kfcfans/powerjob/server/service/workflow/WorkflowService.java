@@ -264,8 +264,7 @@ public class WorkflowService {
 
     private WorkflowInfoVO convert2WorkflowInfoVO(WorkflowInfoDO wfInfo) {
 
-        WorkflowInfoVO res = new WorkflowInfoVO();
-        BeanUtils.copyProperties(wfInfo, res);
+        WorkflowInfoVO res =  WorkflowInfoVO.from(wfInfo);
 
         PEWorkflowDAG dagInfo;
         try {

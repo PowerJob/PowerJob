@@ -35,7 +35,7 @@ public class WorkflowInfoDTO {
     /**
      * 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
      */
-    private Integer timeExpressionType;
+    private String timeExpressionType;
     /**
      * 时间表达式，CRON/NULL/LONG/LONG
      */
@@ -63,4 +63,11 @@ public class WorkflowInfoDTO {
     private Date gmtCreate;
 
     private Date gmtModified;
+
+    /**
+     * ENABLE / DISABLE
+     *
+     * status 字段的转义
+     */
+    private Boolean enable;
 }
