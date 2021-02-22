@@ -8,10 +8,7 @@ import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.server.model.WorkflowDAG;
 import com.google.common.collect.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * DAG 工具类
@@ -49,7 +46,7 @@ public class WorkflowDAGUtils {
      */
     public static boolean valid(PEWorkflowDAG peWorkflowDAG) {
 
-        // 节点ID
+        // 校验节点 ID 是否重复
         Set<Long> nodeIds = Sets.newHashSet();
         for (PEWorkflowDAG.Node n : peWorkflowDAG.getNodes()) {
             if (nodeIds.contains(n.getNodeId())) {
@@ -59,15 +56,18 @@ public class WorkflowDAGUtils {
         }
 
         try {
-            WorkflowDAG workflowDAG = convert(peWorkflowDAG);
-
+            // 记录遍历过的所有节点 ID
+            HashSet<Long> traversalNodeIds = Sets.newHashSet();
+            WorkflowDAG dag = convert(peWorkflowDAG);
             // 检查所有顶点的路径
-            for (WorkflowDAG.Node root : workflowDAG.getRoots()) {
-                if (invalidPath(root, Sets.newHashSet())) {
+            for (WorkflowDAG.Node root : dag.getRoots()) {
+                if (invalidPath(root, Sets.newHashSet(),traversalNodeIds)) {
                     return false;
                 }
             }
-            return true;
+            // 理论上应该遍历过图中的所有节点，如果不相等则说明有环 (孤立的环)
+            return traversalNodeIds.size() == nodeIds.size();
+
         } catch (Exception ignore) {
             // ignore
         }
@@ -246,18 +246,19 @@ public class WorkflowDAGUtils {
     }
 
 
-    private static boolean invalidPath(WorkflowDAG.Node root, Set<Long> ids) {
+    private static boolean invalidPath(WorkflowDAG.Node root, Set<Long> ids, Set<Long> nodeIdContainer) {
 
         // 递归出口（出现之前的节点则代表有环，失败；出现无后继者节点，则说明该路径成功）
         if (ids.contains(root.getNodeId())) {
             return true;
         }
+        nodeIdContainer.add(root.getNodeId());
         if (root.getSuccessors().isEmpty()) {
             return false;
         }
         ids.add(root.getNodeId());
         for (WorkflowDAG.Node node : root.getSuccessors()) {
-            if (invalidPath(node, Sets.newHashSet(ids))) {
+            if (invalidPath(node, Sets.newHashSet(ids),nodeIdContainer)) {
                 return true;
             }
         }

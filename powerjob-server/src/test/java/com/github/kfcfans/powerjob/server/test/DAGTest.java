@@ -1,6 +1,7 @@
 package com.github.kfcfans.powerjob.server.test;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
@@ -17,38 +18,42 @@ import java.util.stream.Collectors;
  * DAG 图算法测试集合
  *
  * @author tjq
+ * @author Echo009
  * @since 2020/5/31
  */
 public class DAGTest {
 
-    @Test
-    public void testDAGUtils() throws Exception {
 
+    @Test
+    public void testValidDAG1() {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        // 图1： 1 -> 2 -> 1，理论上报错
+        // 测试图1： 1 -> 2 -> 1，理论上报错
         nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
         nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 1L));
-        System.out.println(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
+        Assert.assertFalse(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
+    }
 
-        // 图2： 1 -> 2/3 -> 4
-        List<PEWorkflowDAG.Node> nodes2 = Lists.newLinkedList();
-        List<PEWorkflowDAG.Edge> edges2 = Lists.newLinkedList();
+    @Test
+    public void testValidDAG2() throws JsonProcessingException {
+        // 测试图2： 1 -> 2/3 -> 4
+        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes2.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes2.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
-        nodes2.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes2.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
-        edges2.add(new PEWorkflowDAG.Edge(1L, 2L));
-        edges2.add(new PEWorkflowDAG.Edge(1L, 3L));
-        edges2.add(new PEWorkflowDAG.Edge(2L, 4L));
-        edges2.add(new PEWorkflowDAG.Edge(3L, 4L));
+        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
+        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
+        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
+        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
+        edges.add(new PEWorkflowDAG.Edge(1L, 2L));
+        edges.add(new PEWorkflowDAG.Edge(1L, 3L));
+        edges.add(new PEWorkflowDAG.Edge(2L, 4L));
+        edges.add(new PEWorkflowDAG.Edge(3L, 4L));
 
-        PEWorkflowDAG validPEDAG = new PEWorkflowDAG(nodes2, edges2);
-        System.out.println(WorkflowDAGUtils.valid(validPEDAG));
+        PEWorkflowDAG validPEDAG = new PEWorkflowDAG(nodes, edges);
+        Assert.assertTrue(WorkflowDAGUtils.valid(validPEDAG));
 
         WorkflowDAG wfDAG = WorkflowDAGUtils.convert(validPEDAG);
         System.out.println("jackson");
@@ -64,24 +69,88 @@ public class DAGTest {
         // 打断点看 reference 关系
         System.out.println(wfDAGByJackSon);
         System.out.println(wfDAGByFastJSON);
+    }
 
-        // 测试图三（双顶点） 1 -> 3, 2 -> 4
-        List<PEWorkflowDAG.Node> nodes3 = Lists.newLinkedList();
-        List<PEWorkflowDAG.Edge> edges3 = Lists.newLinkedList();
+    @Test
+    public void testValidDAG3() {
 
-        nodes3.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes3.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
-        nodes3.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes3.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
-        edges3.add(new PEWorkflowDAG.Edge(1L, 3L));
-        edges3.add(new PEWorkflowDAG.Edge(2L, 4L));
+        // 测试图3：（双顶点） 1 -> 3, 2 -> 4
+        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        PEWorkflowDAG multiRootPEDAG = new PEWorkflowDAG(nodes3, edges3);
-        System.out.println(WorkflowDAGUtils.valid(multiRootPEDAG));
+        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
+        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
+        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
+        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
+        edges.add(new PEWorkflowDAG.Edge(1L, 3L));
+        edges.add(new PEWorkflowDAG.Edge(2L, 4L));
+
+        PEWorkflowDAG multiRootPEDAG = new PEWorkflowDAG(nodes, edges);
+        Assert.assertTrue(WorkflowDAGUtils.valid(multiRootPEDAG));
         WorkflowDAG multiRootDAG = WorkflowDAGUtils.convert(multiRootPEDAG);
         System.out.println(multiRootDAG);
+    }
+
+    /**
+     * @author Echo009
+     * @since 2021/02/21
+     */
+    @Test
+    public void testValidDAG4() {
+
+        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
+
+        // 测试图4：（双顶点 单个环） 1 -> 3 -> 1, 2 -> 4
+        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
+        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
+        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
+        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
+        edges.add(new PEWorkflowDAG.Edge(1L, 3L));
+        edges.add(new PEWorkflowDAG.Edge(3L, 1L));
+        edges.add(new PEWorkflowDAG.Edge(2L, 4L));
+
+        Assert.assertFalse(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
 
     }
+
+
+    /**
+     * @author Echo009
+     * @since 2021/02/21
+     */
+    @Test
+    public void testValidDAG5() {
+
+        //  1 -> 2 -> 5 -> 6
+        //       3 -> 5
+        //  1 -> 3 -> 4 -> 5
+        //  1 -> 6
+
+        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
+
+        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
+        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
+        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
+        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
+        nodes.add(new PEWorkflowDAG.Node(5L, 5L, "5"));
+        nodes.add(new PEWorkflowDAG.Node(6L, 6L, "6"));
+        edges.add(new PEWorkflowDAG.Edge(1L, 2L));
+        edges.add(new PEWorkflowDAG.Edge(2L, 5L));
+        edges.add(new PEWorkflowDAG.Edge(5L, 6L));
+        edges.add(new PEWorkflowDAG.Edge(1L, 3L));
+        edges.add(new PEWorkflowDAG.Edge(3L, 4L));
+        edges.add(new PEWorkflowDAG.Edge(3L, 5L));
+        edges.add(new PEWorkflowDAG.Edge(4L, 5L));
+        edges.add(new PEWorkflowDAG.Edge(1L, 6L));
+
+
+        Assert.assertTrue(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
+
+    }
+
+
 
     /**
      * @author Echo009
