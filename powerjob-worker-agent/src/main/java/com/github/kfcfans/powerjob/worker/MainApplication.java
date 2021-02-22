@@ -17,7 +17,7 @@ import picocli.CommandLine.Option;
  * @since 2020/5/20
  */
 @Slf4j
-@Command(name = "OhMyAgent", mixinStandardHelpOptions = true, version = "3.4.3", description = "powerjob-worker agent")
+@Command(name = "OhMyAgent", mixinStandardHelpOptions = true, version = "3.4.7", description = "powerjob-worker agent")
 public class MainApplication implements Runnable {
 
     @Option(names = {"-a", "--app"}, description = "worker-agent's name", required = true)
