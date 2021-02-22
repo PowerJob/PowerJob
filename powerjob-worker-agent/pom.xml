@@ -10,18 +10,18 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-agent</artifactId>
-    <version>3.4.6</version>
+    <version>3.4.7</version>
     <packaging>jar</packaging>
 
 
     <properties>
-        <powerjob.worker.version>3.4.6</powerjob.worker.version>
+        <powerjob.worker.version>3.4.7</powerjob.worker.version>
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
 
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
 
-        <powerjob.official.processors.version>1.0.0</powerjob.official.processors.version>
+        <powerjob.official.processors.version>1.0.1</powerjob.official.processors.version>
     </properties>
 
     <dependencies>

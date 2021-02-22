@@ -2,13 +2,14 @@ package com.github.kfcfans.powerjob.server.remote.server;
 
 import akka.actor.AbstractActor;
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.server.remote.server.request.FriendQueryWorkerClusterStatusReq;
 import com.github.kfcfans.powerjob.server.remote.server.request.Ping;
 import com.github.kfcfans.powerjob.server.remote.server.request.RemoteProcessReq;
+import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
 import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -38,7 +39,7 @@ public class FriendRequestHandler extends AbstractActor {
      * 处理存活检测的请求
      */
     private void onReceivePing(Ping ping) {
-        getSender().tell(AskResponse.succeed(System.currentTimeMillis() - ping.getCurrentTime()), getSelf());
+        getSender().tell(AskResponse.succeed(TransportService.getAllAddress()), getSelf());
     }
 
     /**

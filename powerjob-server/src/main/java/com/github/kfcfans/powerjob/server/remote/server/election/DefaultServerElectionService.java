@@ -2,9 +2,11 @@ package com.github.kfcfans.powerjob.server.remote.server.election;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
+import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
+import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.server.extension.LockService;
 import com.github.kfcfans.powerjob.server.extension.ServerElectionService;
 import com.github.kfcfans.powerjob.server.remote.server.request.Ping;
@@ -75,8 +77,9 @@ public class DefaultServerElectionService implements ServerElectionService {
             }
             String appName = appInfoOpt.get().getAppName();
             String originServer = appInfoOpt.get().getCurrentServer();
-            if (isActive(originServer, downServerCache)) {
-                return originServer;
+            String activeAddress = activeAddress(originServer, downServerCache, protocol);
+            if (StringUtils.isNotEmpty(activeAddress)) {
+                return activeAddress;
             }
 
             // 无可用Server，重新进行Server选举，需要加锁
@@ -93,8 +96,9 @@ public class DefaultServerElectionService implements ServerElectionService {
 
                 // 可能上一台机器已经完成了Server选举，需要再次判断
                 AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new RuntimeException("impossible, unless we just lost our database."));
-                if (isActive(appInfo.getCurrentServer(), downServerCache)) {
-                    return appInfo.getCurrentServer();
+                String address = activeAddress(originServer, downServerCache, protocol);
+                if (StringUtils.isNotEmpty(address)) {
+                    return address;
                 }
 
                 // 篡位，本机作为Server
@@ -118,15 +122,16 @@ public class DefaultServerElectionService implements ServerElectionService {
      * 判断指定server是否存活
      * @param serverAddress 需要检测的server地址
      * @param downServerCache 缓存，防止多次发送PING（这个QPS其实还蛮爆表的...）
-     * @return true 存活 / false down机
+     * @param protocol 协议，用于返回指定的地址
+     * @return null or address
      */
-    private boolean isActive(String serverAddress, Set<String> downServerCache) {
+    private String activeAddress(String serverAddress, Set<String> downServerCache, String protocol) {
 
         if (downServerCache.contains(serverAddress)) {
-            return false;
+            return null;
         }
         if (StringUtils.isEmpty(serverAddress)) {
-            return false;
+            return null;
         }
 
         Ping ping = new Ping();
@@ -137,12 +142,14 @@ public class DefaultServerElectionService implements ServerElectionService {
             CompletionStage<Object> askCS = Patterns.ask(serverActor, ping, Duration.ofMillis(PING_TIMEOUT_MS));
             AskResponse response = (AskResponse) askCS.toCompletableFuture().get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             downServerCache.remove(serverAddress);
-            return response.isSuccess();
+            if (response.isSuccess()) {
+                return JsonUtils.parseObject(response.getData(), JSONObject.class).getString(protocol);
+            }
         }catch (Exception e) {
             log.warn("[ServerElection] server({}) was down.", serverAddress);
         }
         downServerCache.add(serverAddress);
-        return false;
+        return null;
     }
 
     private boolean accurate() {
@@ -151,6 +158,6 @@ public class DefaultServerElectionService implements ServerElectionService {
 
     private String getProtocolServerAddress(String protocol) {
         Protocol pt = Protocol.of(protocol);
-        return transportService.getTransporter(pt).getAddress();
+        return TransportService.getAllAddress().get(pt);
     }
 }

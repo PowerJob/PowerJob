@@ -312,6 +312,8 @@ public abstract class TaskTracker {
                 subTask.setSubInstanceId(subInstanceId);
                 subTask.setTaskName(TaskConstant.BROADCAST_TASK_NAME);
                 subTask.setTaskId(preTaskId + "." + i);
+                // 广播任务直接写入派发地址
+                subTask.setAddress(allWorkerAddress.get(i));
                 subTaskList.add(subTask);
             }
             submitTask(subTaskList);
