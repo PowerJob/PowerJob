@@ -215,8 +215,8 @@ public class WorkflowService {
      */
     public void modifyWorkflowNode(ModifyWorkflowNodeRequest req) {
         req.valid();
-        permissionCheck(req.getId(), req.getAppId());
-        WorkflowNodeInfoDO workflowNodeInfoDO = workflowNodeInfoRepository.findById(req.getId()).orElseThrow(() -> new IllegalArgumentException("can't find workflowNod by id: " + req.getId()));
+        permissionCheck(req.getWorkflowId(), req.getAppId());
+        WorkflowNodeInfoDO workflowNodeInfoDO = workflowNodeInfoRepository.findById(req.getId()).orElseThrow(() -> new IllegalArgumentException("can't find workflow Node by id: " + req.getId()));
         BeanUtils.copyProperties(req, workflowNodeInfoDO);
         workflowNodeInfoDO.setGmtModified(new Date());
         workflowNodeInfoRepository.saveAndFlush(workflowNodeInfoDO);
