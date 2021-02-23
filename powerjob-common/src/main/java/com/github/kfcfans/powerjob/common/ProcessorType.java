@@ -14,9 +14,12 @@ import lombok.Getter;
 public enum ProcessorType {
 
     EMBEDDED_JAVA(1, "内置JAVA处理器"),
+    JAVA_CONTAINER(4, "Java容器"),
+
+    @Deprecated
     SHELL(2, "SHELL脚本"),
-    PYTHON(3, "Python脚本"),
-    JAVA_CONTAINER(4, "Java容器");
+    @Deprecated
+    PYTHON(3, "Python脚本");
 
     private final int v;
     private final String des;

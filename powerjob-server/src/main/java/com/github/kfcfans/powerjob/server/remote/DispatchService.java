@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.remote;
 
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.powerjob.server.common.constans.DispatchStrategy;
+import com.github.kfcfans.powerjob.common.DispatchStrategy;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;

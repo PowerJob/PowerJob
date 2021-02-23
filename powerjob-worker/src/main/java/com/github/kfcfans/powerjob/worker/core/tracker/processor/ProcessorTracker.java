@@ -11,8 +11,6 @@ import com.github.kfcfans.powerjob.worker.container.OmsContainer;
 import com.github.kfcfans.powerjob.worker.container.OmsContainerFactory;
 import com.github.kfcfans.powerjob.worker.core.ProcessorBeanFactory;
 import com.github.kfcfans.powerjob.worker.core.executor.ProcessorRunnable;
-import com.github.kfcfans.powerjob.worker.core.processor.built.PythonProcessor;
-import com.github.kfcfans.powerjob.worker.core.processor.built.ShellProcessor;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import com.github.kfcfans.powerjob.worker.log.impl.OmsServerLogger;
@@ -336,12 +334,6 @@ public class ProcessorTracker {
                 if (processor == null) {
                     processor = ProcessorBeanFactory.getInstance().getLocalProcessor(processorInfo);
                 }
-                break;
-            case SHELL:
-                processor = new ShellProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS());
-                break;
-            case PYTHON:
-                processor = new PythonProcessor(instanceId, processorInfo, instanceInfo.getInstanceTimeoutMS());
                 break;
             case JAVA_CONTAINER:
                 String[] split = processorInfo.split("#");

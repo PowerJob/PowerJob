@@ -5,7 +5,7 @@ import com.github.kfcfans.powerjob.common.ProcessorType;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.server.common.SJ;
-import com.github.kfcfans.powerjob.server.common.constans.DispatchStrategy;
+import com.github.kfcfans.powerjob.common.DispatchStrategy;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.google.common.collect.Lists;

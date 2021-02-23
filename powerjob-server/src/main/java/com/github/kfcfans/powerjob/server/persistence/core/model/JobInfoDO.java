@@ -66,10 +66,8 @@ public class JobInfoDO {
      */
     private Integer processorType;
     /**
-     * 执行器信息（可能需要存储整个脚本文件）
+     * 执行器信息
      */
-    @Lob
-    @Column
     private String processorInfo;
 
     /* ************************** 运行时配置 ************************** */

@@ -7,16 +7,15 @@ import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
 import com.github.kfcfans.powerjob.server.common.SJ;
-import com.github.kfcfans.powerjob.server.common.constans.DispatchStrategy;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
-import com.github.kfcfans.powerjob.server.remote.DispatchService;
-import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.CronExpression;
 import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
+import com.github.kfcfans.powerjob.server.remote.DispatchService;
+import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +78,7 @@ public class JobService {
         jobInfoDO.setProcessorType(request.getProcessorType().getV());
         jobInfoDO.setTimeExpressionType(request.getTimeExpressionType().getV());
         jobInfoDO.setStatus(request.isEnable() ? SwitchableStatus.ENABLE.getV() : SwitchableStatus.DISABLE.getV());
-        jobInfoDO.setDispatchStrategy(DispatchStrategy.of(request.getDispatchStrategy()).getV());
+        jobInfoDO.setDispatchStrategy(request.getDispatchStrategy().getV());
 
         // 填充默认值，非空保护防止 NPE
         fillDefaultValue(jobInfoDO);
