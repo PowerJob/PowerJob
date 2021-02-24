@@ -266,13 +266,14 @@ public class WorkflowService {
 
         WorkflowInfoVO res =  WorkflowInfoVO.from(wfInfo);
 
-        PEWorkflowDAG dagInfo;
+        PEWorkflowDAG dagInfo = null;
         try {
             dagInfo = JSON.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
         } catch (Exception e) {
             log.warn("[WorkflowService-{}]illegal DAG : {}", wfInfo.getId(), wfInfo.getPeDAG());
-            // 这里直接返回空对象
-            res.setPEWorkflowDAG(new PEWorkflowDAG());
+        }
+        if (dagInfo == null) {
+            // 这里直接返回
             return res;
         }
 
