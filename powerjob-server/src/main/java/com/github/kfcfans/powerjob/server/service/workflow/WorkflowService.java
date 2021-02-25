@@ -180,7 +180,8 @@ public class WorkflowService {
 
     /**
      * 添加工作流节点
-     * @param requestList  工作流节点列表
+     *
+     * @param requestList 工作流节点列表
      * @return 新增的节点信息
      */
     public List<WorkflowNodeInfoDO> addWorkflowNode(List<AddWorkflowNodeRequest> requestList) {
@@ -211,6 +212,7 @@ public class WorkflowService {
 
     /**
      * 修改工作流节点信息
+     *
      * @param req 工作流节点信息
      */
     public void modifyWorkflowNode(ModifyWorkflowNodeRequest req) {
@@ -245,7 +247,7 @@ public class WorkflowService {
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
             WorkflowNodeInfoDO nodeInfo = nodeIdNodInfoMap.get(node.getNodeId());
             if (nodeInfo == null) {
-                throw new PowerJobException("can't find node info by id :" +node.getNodeId());
+                throw new PowerJobException("can't find node info by id :" + node.getNodeId());
             }
             if (!workflowInfoDO.getId().equals(nodeInfo.getWorkflowId())) {
                 throw new PowerJobException("node workflowId must be same to workflowId");
@@ -257,14 +259,14 @@ public class WorkflowService {
         workflowInfoDO.setPeDAG(JSON.toJSONString(dag));
         workflowInfoRepository.saveAndFlush(workflowInfoDO);
         // 物理删除当前工作流中 “游离” 的节点 (不在工作流 DAG 中的节点)
-       int deleteCount = workflowNodeInfoRepository.deleteByWorkflowIdAndIdNotIn(workflowId, nodeIdList);
-       log.warn("[WorkflowService-{}]delete {} dissociative nodes of workflow", workflowId,deleteCount);
+        int deleteCount = workflowNodeInfoRepository.deleteByWorkflowIdAndIdNotIn(workflowId, nodeIdList);
+        log.warn("[WorkflowService-{}]delete {} dissociative nodes of workflow", workflowId, deleteCount);
     }
 
 
     private WorkflowInfoVO convert2WorkflowInfoVO(WorkflowInfoDO wfInfo) {
 
-        WorkflowInfoVO res =  WorkflowInfoVO.from(wfInfo);
+        WorkflowInfoVO res = WorkflowInfoVO.from(wfInfo);
 
         PEWorkflowDAG dagInfo = null;
         try {
@@ -290,7 +292,8 @@ public class WorkflowService {
                 if (nodeInfo != null) {
                     node.setEnable(nodeInfo.getEnable())
                             .setSkipWhenFailed(nodeInfo.getSkipWhenFailed())
-                            .setJobName(nodeInfo.getNodeAlias());
+                            .setJobName(nodeInfo.getNodeAlias())
+                            .setJobParams(nodeInfo.getNodeParams());
 
                 } else {
                     // 默认开启 并且 不允许失败跳过
