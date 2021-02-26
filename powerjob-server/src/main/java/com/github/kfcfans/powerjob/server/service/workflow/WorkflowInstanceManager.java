@@ -387,14 +387,15 @@ public class WorkflowInstanceManager {
 
             if (!nodeInfoOpt.isPresent()) {
                 // 默认启用 + 不允许失败跳过
-                node.setEnable(true);
-                node.setSkipWhenFailed(false);
-                node.setJobParams(jobInfo.getJobParams());
+                node.setEnable(true)
+                        .setSkipWhenFailed(false)
+                        .setJobParams(jobInfo.getJobParams());
             } else {
-
                 WorkflowNodeInfoDO nodeInfo = nodeInfoOpt.get();
-                node.setEnable(nodeInfo.getEnable());
-                node.setSkipWhenFailed(nodeInfo.getSkipWhenFailed());
+                // 使用节点别名覆盖
+                node.setJobName(nodeInfo.getNodeAlias())
+                        .setEnable(nodeInfo.getEnable())
+                        .setSkipWhenFailed(nodeInfo.getSkipWhenFailed());
                 // 如果节点中指定了参数信息，则取节点的，否则取 Job 上的
                 if (!StringUtils.isBlank(nodeInfo.getNodeParams())) {
                     node.setJobParams(nodeInfo.getNodeParams());
