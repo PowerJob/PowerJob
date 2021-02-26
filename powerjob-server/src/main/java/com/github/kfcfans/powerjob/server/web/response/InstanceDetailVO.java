@@ -22,30 +22,56 @@ import java.util.List;
 @NoArgsConstructor
 public class InstanceDetailVO {
 
-    // 任务预计执行时间
+    /**
+     * 任务预计执行时间
+     */
     private String expectedTriggerTime;
-    // 任务整体开始时间
+    /**
+     * 任务整体开始时间
+     */
     private String actualTriggerTime;
-    // 任务整体结束时间（可能不存在）
+    /**
+     * 任务整体结束时间（可能不存在）
+     */
     private String finishedTime;
-    // 任务状态
+    /**
+     * 任务状态
+     */
     private Integer status;
-    // 任务执行结果（可能不存在）
+    /**
+     * 任务执行结果（可能不存在）
+     */
     private String result;
-    // TaskTracker地址
+    /**
+     * TaskTracker地址
+     */
     private String taskTrackerAddress;
-    // 启动参数
+    /**
+     * 任务参数
+     */
+    private String jobParams;
+    /**
+     * 启动参数
+     */
     private String instanceParams;
 
-    // MR或BD任务专用
+    /**
+     * MR或BD任务专用
+     */
     private InstanceDetailVO.TaskDetail taskDetail;
-    // 秒级任务专用
+    /**
+     * 秒级任务专用
+     */
     private List<InstanceDetailVO.SubInstanceDetail> subInstanceDetails;
 
-    // 重试次数
+    /**
+     * 重试次数
+     */
     private Long runningTimes;
 
-    // 秒级任务的 extra -> List<SubInstanceDetail>
+    /**
+     * 秒级任务的 extra -> List<SubInstanceDetail>
+     */
     @Data
     @NoArgsConstructor
     public static class SubInstanceDetail implements OmsSerializable {
@@ -56,7 +82,9 @@ public class InstanceDetailVO {
         private int status;
     }
 
-    // MapReduce 和 Broadcast 任务的 extra ->
+    /**
+     * MapReduce 和 Broadcast 任务的 extra ->
+     */
     @Data
     @NoArgsConstructor
     public static class TaskDetail implements OmsSerializable {

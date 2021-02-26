@@ -41,6 +41,10 @@ public class InstanceDetail implements OmsSerializable {
      */
     private String taskTrackerAddress;
     /**
+     * 任务参数
+     */
+    private String jobParams;
+    /**
      * Param string that is passed to an instance when it is initialized.
      */
     private String instanceParams;
