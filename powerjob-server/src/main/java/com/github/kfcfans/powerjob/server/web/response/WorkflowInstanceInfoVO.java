@@ -17,26 +17,45 @@ import org.springframework.beans.BeanUtils;
 @Data
 public class WorkflowInstanceInfoVO {
 
-    // workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
+    /**
+     * workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
+     */
     private String wfInstanceId;
 
     private String workflowId;
-    // 工作流名称，通过 workflowId 查询获取
+    /**
+     * 工作流名称，通过 workflowId 查询获取
+     */
     private String workflowName;
 
-    // workflow 状态（WorkflowInstanceStatus）
+    /**
+     * workflow 状态（WorkflowInstanceStatus）
+     */
     private Integer status;
-    // 工作流启动参数
+    /**
+     * 工作流启动参数
+     */
     private String wfInitParams;
+
+    /**
+     * 工作流上下文
+     */
+    private String wfContext;
 
     private PEWorkflowDAG pEWorkflowDAG;
     private String result;
 
-    // 预计触发时间
+    /**
+     * 预计触发时间
+     */
     private String expectedTriggerTime;
-    // 实际触发时间（需要格式化为人看得懂的时间）
+    /**
+     * 实际触发时间（需要格式化为人看得懂的时间）
+     */
     private String actualTriggerTime;
-    // 结束时间（同理，需要格式化）
+    /**
+     * 结束时间（同理，需要格式化）
+     */
     private String finishedTime;
 
     public static WorkflowInstanceInfoVO from(WorkflowInstanceInfoDO wfInstanceDO, String workflowName) {
