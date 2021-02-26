@@ -47,6 +47,10 @@ public class SystemInstanceResult {
     public static final String CAN_NOT_FIND_JOB = "can't find some job";
 
     /**
+     * 没有启用的节点
+     */
+    public static final String NO_ENABLED_NODES = "no enabled nodes";
+    /**
      * 被用户手动停止
      */
     public static final String STOPPED_BY_USER = "stopped by user";

@@ -20,7 +20,8 @@ import com.github.kfcfans.powerjob.server.service.alarm.WorkflowInstanceAlarm;
 import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.service.lock.local.UseSegmentLock;
-import com.google.common.collect.*;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -191,6 +192,8 @@ public class WorkflowInstanceManager {
             if (readyNodes.isEmpty()) {
                 // 没有就绪的节点（所有节点都被禁用）
                 wfInstanceInfo.setStatus(WorkflowInstanceStatus.SUCCEED.getV());
+                wfInstanceInfo.setResult(SystemInstanceResult.NO_ENABLED_NODES);
+                wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
                 log.warn("[Workflow-{}|{}] workflowInstance({}) needn't running ", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
                 workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
                 return;
