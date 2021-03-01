@@ -5,6 +5,7 @@ import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
@@ -34,11 +35,14 @@ public class WorkflowContext {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public WorkflowContext(Long instanceId, String data) {
         this.instanceId = instanceId;
+        if (StringUtils.isBlank(data)) {
+            return;
+        }
         try {
             Map originMap = JsonUtils.parseObject(data, Map.class);
             originMap.forEach((k, v) -> this.data.put(String.valueOf(k), v == null ? null : String.valueOf(v)));
         } catch (Exception exception) {
-            log.warn("[WorkflowContext-{}] parse workflow context failed, {}", instanceId, exception);
+            log.warn("[WorkflowContext-{}] parse workflow context failed, {}", instanceId, exception.getMessage());
         }
     }
 
