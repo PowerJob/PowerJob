@@ -82,6 +82,10 @@ public class InstanceManager {
         InstanceStatus receivedInstanceStatus = InstanceStatus.of(req.getInstanceStatus());
         Integer timeExpressionType = jobInfo.getTimeExpressionType();
 
+        instanceInfo.setStatus(receivedInstanceStatus.getV());
+        instanceInfo.setLastReportTime(req.getReportTime());
+        instanceInfo.setGmtModified(new Date());
+
         // FREQUENT 任务没有失败重试机制，TaskTracker一直运行即可，只需要将存活信息同步到DB即可
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
@@ -97,9 +101,6 @@ public class InstanceManager {
             // 这里不会存在并发问题
             instanceInfo.setRunningTimes(instanceInfo.getRunningTimes() + 1);
         }
-        instanceInfo.setStatus(receivedInstanceStatus.getV());
-        instanceInfo.setLastReportTime(req.getReportTime());
-        instanceInfo.setGmtModified(new Date());
 
         boolean finished = false;
         if (receivedInstanceStatus == InstanceStatus.SUCCEED) {
