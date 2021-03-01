@@ -102,6 +102,9 @@
                         <relocation>
                             <pattern>org</pattern>
                             <shadedPattern>shade.powerjob.org</shadedPattern>
+                            <excludes>
+                                <exclude>org.slf4j.*</exclude>
+                            </excludes>
                         </relocation>
                         <relocation>
                             <pattern>com.google</pattern>
