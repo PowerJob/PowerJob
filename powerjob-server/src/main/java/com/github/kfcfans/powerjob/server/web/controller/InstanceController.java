@@ -73,8 +73,8 @@ public class InstanceController {
     }
 
     @GetMapping("/detail")
-    public ResultDTO<InstanceDetailVO> getInstanceDetail(String instanceId) {
-        return ResultDTO.success(InstanceDetailVO.from(instanceService.getInstanceDetail(Long.valueOf(instanceId))));
+    public ResultDTO<InstanceDetailVO> getInstanceDetail(Long instanceId) {
+        return ResultDTO.success(InstanceDetailVO.from(instanceService.getInstanceDetail(instanceId)));
     }
 
     @GetMapping("/log")
