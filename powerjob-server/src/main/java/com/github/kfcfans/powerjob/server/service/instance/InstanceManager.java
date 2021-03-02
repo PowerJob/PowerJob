@@ -81,8 +81,7 @@ public class InstanceManager {
 
         InstanceStatus receivedInstanceStatus = InstanceStatus.of(req.getInstanceStatus());
         Integer timeExpressionType = jobInfo.getTimeExpressionType();
-
-        instanceInfo.setStatus(receivedInstanceStatus.getV());
+        // 更新 最后上报时间 和 修改时间
         instanceInfo.setLastReportTime(req.getReportTime());
         instanceInfo.setGmtModified(new Date());
 
@@ -90,7 +89,7 @@ public class InstanceManager {
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
         if (TimeExpressionType.frequentTypes.contains(timeExpressionType)) {
-
+            instanceInfo.setStatus(receivedInstanceStatus.getV());
             instanceInfo.setResult(req.getResult());
             instanceInfo.setRunningTimes(req.getTotalTaskNum());
             instanceInfoRepository.saveAndFlush(instanceInfo);
@@ -101,6 +100,8 @@ public class InstanceManager {
             // 这里不会存在并发问题
             instanceInfo.setRunningTimes(instanceInfo.getRunningTimes() + 1);
         }
+        // QAQ ，不能提前变更 status，否则会导致更新运行次数的逻辑不生效继而导致普通任务 无限重试
+        instanceInfo.setStatus(receivedInstanceStatus.getV());
 
         boolean finished = false;
         if (receivedInstanceStatus == InstanceStatus.SUCCEED) {
