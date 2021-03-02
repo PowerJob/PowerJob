@@ -1,5 +1,8 @@
 package com.github.kfcfans.powerjob.server.web.controller;
 
+import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
+import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
+import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
@@ -8,10 +11,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowNodeInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowService;
-import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
-import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
 import com.github.kfcfans.powerjob.server.web.request.QueryWorkflowInfoRequest;
-import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
 import com.github.kfcfans.powerjob.server.web.response.WorkflowInfoVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +43,11 @@ public class WorkflowController {
     @PostMapping("/save")
     public ResultDTO<Long> save(@RequestBody SaveWorkflowRequest req) throws ParseException {
         return ResultDTO.success(workflowService.saveWorkflow(req));
+    }
+
+    @PostMapping("/copy")
+    public ResultDTO<Long> copy(Long workflowId, Long appId) {
+        return ResultDTO.success(workflowService.copyWorkflow(workflowId,appId));
     }
 
     @GetMapping("/disable")

@@ -32,10 +32,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Workflow 服务
@@ -101,6 +98,69 @@ public class WorkflowService {
         WorkflowInfoDO newEntity = workflowInfoRepository.saveAndFlush(wf);
         return newEntity.getId();
     }
+
+    /**
+     * 深度复制工作流
+     *
+     * @param wfId  工作流 ID
+     * @param appId APP ID
+     * @return 生成的工作流 ID
+     */
+    @Transactional(rollbackOn = Exception.class)
+    public long copyWorkflow(Long wfId, Long appId) {
+
+        WorkflowInfoDO originWorkflow = permissionCheck(wfId, appId);
+        if (originWorkflow.getStatus() == SwitchableStatus.DELETED.getV()) {
+            throw new IllegalStateException("can't copy the workflow which has been deleted!");
+        }
+        // 拷贝基础信息
+        WorkflowInfoDO copyWorkflow = new WorkflowInfoDO();
+        BeanUtils.copyProperties(originWorkflow, copyWorkflow);
+        copyWorkflow.setId(null);
+        copyWorkflow.setGmtCreate(new Date());
+        copyWorkflow.setGmtModified(new Date());
+        copyWorkflow.setWfName(copyWorkflow.getWfName() + "_COPY");
+        // 先 save 获取 id
+        copyWorkflow = workflowInfoRepository.saveAndFlush(copyWorkflow);
+
+        if (StringUtils.isEmpty(copyWorkflow.getPeDAG())) {
+            return copyWorkflow.getId();
+        }
+
+        PEWorkflowDAG dag = JSON.parseObject(copyWorkflow.getPeDAG(), PEWorkflowDAG.class);
+
+        // 拷贝节点信息，并且更新 DAG 中的节点信息
+        if (!CollectionUtils.isEmpty(dag.getNodes())) {
+            // originNodeId => copyNodeId
+            HashMap<Long, Long> nodeIdMap = new HashMap<>(dag.getNodes().size(), 1);
+            // 校正 节点信息
+            for (PEWorkflowDAG.Node node : dag.getNodes()) {
+
+                WorkflowNodeInfoDO originNode = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(() -> new IllegalArgumentException("can't find workflow Node by id: " + node.getNodeId()));
+
+                WorkflowNodeInfoDO copyNode = new WorkflowNodeInfoDO();
+                BeanUtils.copyProperties(originNode, copyNode);
+                copyNode.setId(null);
+                copyNode.setWorkflowId(copyWorkflow.getId());
+                copyNode.setGmtCreate(new Date());
+                copyNode.setGmtModified(new Date());
+
+                copyNode = workflowNodeInfoRepository.saveAndFlush(copyNode);
+                nodeIdMap.put(originNode.getId(), copyNode.getId());
+
+                node.setNodeId(copyNode.getId());
+            }
+            // 校正 边信息
+            for (PEWorkflowDAG.Edge edge : dag.getEdges()) {
+                edge.setFrom(nodeIdMap.get(edge.getFrom()));
+                edge.setTo(nodeIdMap.get(edge.getTo()));
+            }
+        }
+        copyWorkflow.setPeDAG(JSON.toJSONString(dag));
+        workflowInfoRepository.saveAndFlush(copyWorkflow);
+        return copyWorkflow.getId();
+    }
+
 
     /**
      * 获取工作流元信息，这里获取到的 DAG 包含节点的完整信息（是否启用、是否允许失败跳过）

@@ -39,6 +39,7 @@ public class OpenAPIConstant {
     /* ************* Workflow 区 ************* */
 
     public static final String SAVE_WORKFLOW = "/saveWorkflow";
+    public static final String COPY_WORKFLOW = "/copyWorkflow";
     public static final String FETCH_WORKFLOW = "/fetchWorkflow";
     public static final String DISABLE_WORKFLOW = "/disableWorkflow";
     public static final String ENABLE_WORKFLOW = "/enableWorkflow";

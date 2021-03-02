@@ -151,6 +151,12 @@ public class OpenAPIController {
         return ResultDTO.success(workflowService.saveWorkflow(request));
     }
 
+    @PostMapping(OpenAPIConstant.COPY_WORKFLOW)
+    public ResultDTO<Long> copy(Long workflowId, Long appId) {
+        return ResultDTO.success(workflowService.copyWorkflow(workflowId,appId));
+    }
+
+
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW)
     public ResultDTO<WorkflowInfoVO> fetchWorkflow(Long workflowId, Long appId) {
         return ResultDTO.success(workflowService.fetchWorkflow(workflowId, appId));
