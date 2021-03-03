@@ -162,12 +162,14 @@ public class WorkflowInstanceManager {
             log.info("[Workflow-{}|{}] workflowInstance({}) needn't running any more.", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
             return;
         }
-
-        // 并发度控制
-        int instanceConcurrency = workflowInstanceInfoRepository.countByWorkflowIdAndStatusIn(wfInfo.getId(), WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS);
-        if (instanceConcurrency > wfInfo.getMaxWfInstanceNum()) {
-            onWorkflowInstanceFailed(String.format(SystemInstanceResult.TOO_MANY_INSTANCES, instanceConcurrency, wfInfo.getMaxWfInstanceNum()), wfInstanceInfo);
-            return;
+        // 最大实例数量 <= 0 表示不限制
+        if (wfInfo.getMaxWfInstanceNum() > 0) {
+            // 并发度控制
+            int instanceConcurrency = workflowInstanceInfoRepository.countByWorkflowIdAndStatusIn(wfInfo.getId(), WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS);
+            if ( instanceConcurrency > wfInfo.getMaxWfInstanceNum()) {
+                onWorkflowInstanceFailed(String.format(SystemInstanceResult.TOO_MANY_INSTANCES, instanceConcurrency, wfInfo.getMaxWfInstanceNum()), wfInstanceInfo);
+                return;
+            }
         }
 
         try {
