@@ -197,7 +197,7 @@ public class JobService {
         executeLogs.forEach(instance -> {
             try {
                 // 重复查询了数据库，不过问题不大，这个调用量很小
-                instanceService.stopInstance(instance.getInstanceId());
+                instanceService.stopInstance(instance.getAppId(),instance.getInstanceId());
             } catch (Exception ignore) {
                 // ignore exception
             }

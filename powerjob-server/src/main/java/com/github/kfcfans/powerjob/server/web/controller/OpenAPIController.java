@@ -110,7 +110,7 @@ public class OpenAPIController {
     @PostMapping(OpenAPIConstant.STOP_INSTANCE)
     public ResultDTO<Void> stopInstance(Long instanceId, Long appId) {
         checkInstanceIdValid(instanceId, appId);
-        instanceService.stopInstance(instanceId);
+        instanceService.stopInstance(appId,instanceId);
         return ResultDTO.success(null);
     }
 

@@ -13,6 +13,7 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
+import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -52,6 +53,7 @@ public class WorkflowInstanceService {
      * @param wfInstanceId 工作流实例ID
      * @param appId        所属应用ID
      */
+    @DesignateServer(appIdParameterName = "appId")
     public void stopWorkflowInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
@@ -67,7 +69,7 @@ public class WorkflowInstanceService {
                     node.setStatus(InstanceStatus.STOPPED.getV());
                     node.setResult(SystemInstanceResult.STOPPED_BY_USER);
                     // 注意，这里并不保证一定能终止正在运行的实例
-                    instanceService.stopInstance(node.getInstanceId());
+                    instanceService.stopInstance(appId,node.getInstanceId());
                 }
             } catch (Exception e) {
                 log.warn("[WfInstance-{}] stop instance({}) failed.", wfInstanceId, JSON.toJSONString(node), e);
@@ -90,6 +92,7 @@ public class WorkflowInstanceService {
      * @param wfInstanceId 工作流实例ID
      * @param appId        应用ID
      */
+    @DesignateServer(appIdParameterName = "appId")
     public void retryWorkflowInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         // 仅允许重试 失败的工作流

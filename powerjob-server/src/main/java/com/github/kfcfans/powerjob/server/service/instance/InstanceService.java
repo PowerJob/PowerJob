@@ -2,14 +2,11 @@ package com.github.kfcfans.powerjob.server.service.instance;
 
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
-import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
-import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
 import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
-import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
@@ -17,9 +14,11 @@ import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.remote.DispatchService;
-import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
-import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
+import com.github.kfcfans.powerjob.server.remote.server.redirector.DesignateServer;
 import com.github.kfcfans.powerjob.server.remote.transport.TransportService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
+import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerInfo;
+import com.github.kfcfans.powerjob.server.service.id.IdGenerateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -104,9 +103,10 @@ public class InstanceService {
      *
      * @param instanceId 任务实例ID
      */
-    public void stopInstance(Long instanceId) {
+    @DesignateServer(appIdParameterName = "appId")
+    public void stopInstance(Long appId,Long instanceId) {
 
-        log.info("[Instance-{}] try to stop the instance.", instanceId);
+        log.info("[Instance-{}] try to stop the instance instance in appId: {}", instanceId,appId);
         try {
 
             InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);

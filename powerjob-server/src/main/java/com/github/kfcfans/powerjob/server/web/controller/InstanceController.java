@@ -16,6 +16,7 @@ import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
 import com.github.kfcfans.powerjob.server.web.request.QueryInstanceRequest;
 import com.github.kfcfans.powerjob.server.web.response.InstanceDetailVO;
 import com.github.kfcfans.powerjob.server.web.response.InstanceInfoVO;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeanUtils;
@@ -61,8 +62,8 @@ public class InstanceController {
     private InstanceInfoRepository instanceInfoRepository;
 
     @GetMapping("/stop")
-    public ResultDTO<Void> stopInstance(Long instanceId) {
-        instanceService.stopInstance(instanceId);
+    public ResultDTO<Void> stopInstance(Long appId,Long instanceId) {
+        instanceService.stopInstance(appId,instanceId);
         return ResultDTO.success(null);
     }
 
@@ -95,7 +96,8 @@ public class InstanceController {
     }
 
     @GetMapping("/downloadLog4Console")
-    public void downloadLog4Console(Long appId, Long instanceId , HttpServletResponse response) throws Exception {
+    @SneakyThrows
+    public void downloadLog4Console(Long appId, Long instanceId , HttpServletResponse response) {
         // 获取内部下载链接
         String downloadUrl = instanceLogService.fetchDownloadUrl(appId, instanceId);
         // 先下载到本机
@@ -139,18 +141,4 @@ public class InstanceController {
         return pageResult;
     }
 
-    /**
-     * 获取该 instanceId 对应的服务器地址
-     * @param instanceId 任务实例ID
-     * @return 对应服务器地址
-     */
-    private String getTargetServer(Long instanceId) {
-        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-        if (instanceInfo == null) {
-            throw new PowerJobException("invalid instanceId: " + instanceId);
-        }
-
-        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(instanceInfo.getAppId());
-        return appInfoOpt.orElseThrow(() -> new PowerJobException("impossible")).getCurrentServer();
-    }
 }
