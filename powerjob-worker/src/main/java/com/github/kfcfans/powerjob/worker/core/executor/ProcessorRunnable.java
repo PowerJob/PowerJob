@@ -104,6 +104,7 @@ public class ProcessorRunnable implements Runnable {
         TaskContext taskContext = new TaskContext();
         BeanUtils.copyProperties(task, taskContext);
         taskContext.setJobId(instanceInfo.getJobId());
+        taskContext.setWfInstanceId(instanceInfo.getWfInstanceId());
         taskContext.setMaxRetryTimes(instanceInfo.getTaskRetryNum());
         taskContext.setCurrentRetryTimes(task.getFailedCnt());
         taskContext.setJobParams(instanceInfo.getJobParams());
