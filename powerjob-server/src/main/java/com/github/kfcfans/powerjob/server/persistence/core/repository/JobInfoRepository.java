@@ -34,11 +34,11 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long>, JpaSp
     /**
      * 校验工作流包含的任务
      * @param appId APP ID
-     * @param status 状态
+     * @param statusSet 状态列表
      * @param jobIds 任务ID
      * @return 数量
      */
-    long countByAppIdAndStatusAndIdIn(Long appId, int status, Set<Long> jobIds);
+    long countByAppIdAndStatusInAndIdIn(Long appId, Set<Integer> statusSet , Set<Long> jobIds);
 
     long countByAppIdAndStatusNot(long appId, int status);
 

@@ -12,12 +12,14 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SwitchableStatus {
-
+    /**
+     *
+     */
     ENABLE(1),
     DISABLE(2),
     DELETED(99);
 
-    private int v;
+    private final int v;
 
     public static SwitchableStatus of(int v) {
         for (SwitchableStatus type : values()) {

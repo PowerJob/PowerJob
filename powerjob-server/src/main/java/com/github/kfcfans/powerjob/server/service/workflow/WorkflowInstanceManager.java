@@ -119,7 +119,8 @@ public class WorkflowInstanceManager {
             node.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
         });
         int needNum = allJobIds.size();
-        long dbNum = jobInfoRepository.countByAppIdAndStatusAndIdIn(wfInfo.getAppId(), SwitchableStatus.ENABLE.getV(), allJobIds);
+        // 检查工作流中的任务是否均处于可用状态（没有被删除）
+        long dbNum = jobInfoRepository.countByAppIdAndStatusInAndIdIn(wfInfo.getAppId(), Sets.newHashSet(SwitchableStatus.ENABLE.getV(), SwitchableStatus.DISABLE.getV()), allJobIds);
         log.debug("[Workflow-{}|{}] contains {} jobs, find {} jobs in database.", wfId, wfInstanceId, needNum, dbNum);
         // 先 set 一次，异常的话直接存这个信息
         newWfInstance.setDag(JSON.toJSONString(dag));
