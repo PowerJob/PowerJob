@@ -121,6 +121,22 @@ public class OhMyClient {
         return JSON.parseObject(post, LONG_RESULT_TYPE);
     }
 
+
+    /**
+     * Copy one Job
+     *
+     * @param jobId Job id
+     * @return Id of job copy
+     */
+    public ResultDTO<Long> copyJob(Long jobId) {
+        RequestBody body = new FormBody.Builder()
+                .add("jobId", jobId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.COPY_JOB, body);
+        return JSON.parseObject(post, LONG_RESULT_TYPE);
+    }
+
     /**
      * Query JobInfo by jobId
      *
@@ -329,6 +345,22 @@ public class OhMyClient {
     }
 
     /**
+     * Copy one workflow
+     *
+     * @param workflowId Workflow id
+     * @return Id of workflow copy
+     */
+    public ResultDTO<Long> copyWorkflow(Long workflowId) {
+        RequestBody body = new FormBody.Builder()
+                .add("workflowId", workflowId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.COPY_WORKFLOW, body);
+        return JSON.parseObject(post, LONG_RESULT_TYPE);
+    }
+
+
+    /**
      * 保存工作流 DAG
      *
      * @param request DAG of Workflow
@@ -493,10 +525,10 @@ public class OhMyClient {
      * mark the workflow node as success
      *
      * @param wfInstanceId workflow instanceId
-     * @param nodeId node id
+     * @param nodeId       node id
      * @return Standard return object
      */
-    public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId,Long nodeId) {
+    public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId, Long nodeId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
                 .add("nodeId", nodeId.toString())

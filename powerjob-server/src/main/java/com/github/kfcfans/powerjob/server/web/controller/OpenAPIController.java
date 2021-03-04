@@ -3,21 +3,19 @@ package com.github.kfcfans.powerjob.server.web.controller;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.PowerQuery;
-import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
+import com.github.kfcfans.powerjob.common.request.http.*;
 import com.github.kfcfans.powerjob.common.request.query.JobInfoQuery;
+import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
+import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
+import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import com.github.kfcfans.powerjob.common.response.WorkflowInstanceInfoDTO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowNodeInfoDO;
 import com.github.kfcfans.powerjob.server.service.AppInfoService;
 import com.github.kfcfans.powerjob.server.service.CacheService;
 import com.github.kfcfans.powerjob.server.service.JobService;
 import com.github.kfcfans.powerjob.server.service.instance.InstanceService;
-import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowInstanceService;
 import com.github.kfcfans.powerjob.server.service.workflow.WorkflowService;
-import com.github.kfcfans.powerjob.common.response.*;
-import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
-import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
-import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
-import com.github.kfcfans.powerjob.server.web.response.JobInfoVO;
 import com.github.kfcfans.powerjob.server.web.response.WorkflowInfoVO;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,8 +64,8 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.COPY_JOB)
-    public ResultDTO<JobInfoVO> copyJob(Long jobId) {
-        return ResultDTO.success(JobInfoVO.from(jobService.copyJob(jobId)));
+    public ResultDTO<Long> copyJob(Long jobId) {
+        return ResultDTO.success(jobService.copyJob(jobId).getId());
     }
 
     @PostMapping(OpenAPIConstant.FETCH_JOB)

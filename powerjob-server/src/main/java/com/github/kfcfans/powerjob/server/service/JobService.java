@@ -104,6 +104,9 @@ public class JobService {
     public JobInfoDO copyJob(Long jobId) {
 
         JobInfoDO origin = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId));
+        if (origin.getStatus() == SwitchableStatus.DELETED.getV()) {
+            throw new IllegalStateException("can't copy the job which has been deleted!");
+        }
         JobInfoDO copyJob = new JobInfoDO();
         // 值拷贝
         BeanUtils.copyProperties(origin, copyJob);
