@@ -17,7 +17,7 @@ public class CommonUtils {
 
     public static String parseParams(TaskContext context) {
         // 工作流中的总是优先使用 jobParams
-        if (context.getWfInstanceId() == null) {
+        if (context.getWfInstanceId() != null) {
             return context.getJobParams();
         }
         if (StringUtils.isNotEmpty(context.getInstanceParams())) {
