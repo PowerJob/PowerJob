@@ -74,7 +74,7 @@ public class DingTalkAlarmService implements Alarmable {
         userIds.remove(null);
 
         if (!userIds.isEmpty()) {
-            String userListStr = SJ.commaJoiner.skipNulls().join(userIds);
+            String userListStr = SJ.COMMA_JOINER.skipNulls().join(userIds);
             List<DingTalkUtils.MarkdownEntity> markdownEntities = Lists.newLinkedList();
             markdownEntities.add(new DingTalkUtils.MarkdownEntity("server", NetUtils.getLocalHost()));
             String content = alarm.fetchContent().replaceAll(OmsConstant.LINE_SEPARATOR, OmsConstant.COMMA);

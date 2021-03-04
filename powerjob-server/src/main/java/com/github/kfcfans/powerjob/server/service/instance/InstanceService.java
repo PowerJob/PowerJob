@@ -6,7 +6,7 @@ import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
-import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
+import com.github.kfcfans.powerjob.server.common.constants.InstanceType;
 import com.github.kfcfans.powerjob.server.common.utils.QueryConvertUtils;
 import com.github.kfcfans.powerjob.server.common.utils.timewheel.TimerFuture;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;

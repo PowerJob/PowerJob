@@ -3,7 +3,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;
 import com.github.kfcfans.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;

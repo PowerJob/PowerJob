@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.server.common.SJ;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -76,7 +76,7 @@ public class WorkflowInfoVO {
         vo.setTimeExpressionType(TimeExpressionType.of(wfDO.getTimeExpressionType()).name());
         vo.setPEWorkflowDAG(JSON.parseObject(wfDO.getPeDAG(), PEWorkflowDAG.class));
         if (!StringUtils.isEmpty(wfDO.getNotifyUserIds())) {
-            vo.setNotifyUserIds(SJ.commaSplitter.splitToList(wfDO.getNotifyUserIds()).stream().map(Long::valueOf).collect(Collectors.toList()));
+            vo.setNotifyUserIds(SJ.COMMA_SPLITTER.splitToList(wfDO.getNotifyUserIds()).stream().map(Long::valueOf).collect(Collectors.toList()));
         }
         return vo;
     }

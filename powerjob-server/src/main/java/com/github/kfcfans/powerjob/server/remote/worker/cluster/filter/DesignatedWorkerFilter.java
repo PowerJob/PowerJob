@@ -33,7 +33,7 @@ public class DesignatedWorkerFilter implements WorkerFilter {
             return false;
         }
 
-        Set<String> designatedWorkersSet = Sets.newHashSet(SJ.commaSplitter.splitToList(designatedWorkers));
+        Set<String> designatedWorkersSet = Sets.newHashSet(SJ.COMMA_SPLITTER.splitToList(designatedWorkers));
 
         return !designatedWorkersSet.contains(workerInfo.getAddress());
     }

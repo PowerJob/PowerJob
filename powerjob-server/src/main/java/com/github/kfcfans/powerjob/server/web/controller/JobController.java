@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.PageResult;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.repository.JobInfoRepository;

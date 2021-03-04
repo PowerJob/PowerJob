@@ -4,7 +4,7 @@ import com.github.kfcfans.powerjob.common.InstanceStatus;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.InstanceInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.OmsLockDO;

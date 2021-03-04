@@ -6,7 +6,7 @@ import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.common.DispatchStrategy;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;
 import com.google.common.collect.Lists;
 import lombok.Data;
@@ -112,7 +112,7 @@ public class JobInfoVO {
         jobInfoVO.setDispatchStrategy(dispatchStrategy.name());
 
         if (!StringUtils.isEmpty(jobInfoDO.getNotifyUserIds())) {
-            jobInfoVO.setNotifyUserIds(SJ.commaSplitter.splitToList(jobInfoDO.getNotifyUserIds()));
+            jobInfoVO.setNotifyUserIds(SJ.COMMA_SPLITTER.splitToList(jobInfoDO.getNotifyUserIds()));
         }else {
             jobInfoVO.setNotifyUserIds(Lists.newLinkedList());
         }

@@ -11,7 +11,7 @@ import com.google.common.base.Splitter;
  */
 public class SJ {
 
-    public static final Splitter commaSplitter = Splitter.on(",");
-    public static final Joiner commaJoiner = Joiner.on(",");
+    public static final Splitter COMMA_SPLITTER = Splitter.on(",");
+    public static final Joiner COMMA_JOINER = Joiner.on(",");
 
 }

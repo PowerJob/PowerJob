@@ -1,8 +1,8 @@
 package com.github.kfcfans.powerjob.server.web.request;
 
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.server.common.constans.ContainerSourceType;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.ContainerSourceType;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import lombok.Data;
 
 /**

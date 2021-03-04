@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.server.common.constans;
+package com.github.kfcfans.powerjob.server.common.constants;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

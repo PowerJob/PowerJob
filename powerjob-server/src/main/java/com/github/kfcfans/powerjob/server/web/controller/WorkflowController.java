@@ -5,7 +5,7 @@ import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.persistence.PageResult;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowNodeInfoDO;

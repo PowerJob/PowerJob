@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.server.web.request;
 
-import com.github.kfcfans.powerjob.server.common.constans.InstanceType;
+import com.github.kfcfans.powerjob.server.common.constants.InstanceType;
 import lombok.Data;
 
 /**

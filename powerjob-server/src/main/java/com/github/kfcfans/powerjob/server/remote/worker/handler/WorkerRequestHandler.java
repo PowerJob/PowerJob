@@ -7,7 +7,7 @@ import com.github.kfcfans.powerjob.common.request.*;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.ContainerInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.JobInfoDO;

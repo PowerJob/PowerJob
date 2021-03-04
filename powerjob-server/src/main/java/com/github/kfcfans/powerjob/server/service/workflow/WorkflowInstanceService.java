@@ -7,7 +7,7 @@ import com.github.kfcfans.powerjob.common.SystemInstanceResult;
 import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.response.WorkflowInstanceInfoDTO;
-import com.github.kfcfans.powerjob.server.common.constans.SwitchableStatus;
+import com.github.kfcfans.powerjob.server.common.constants.SwitchableStatus;
 import com.github.kfcfans.powerjob.server.common.utils.WorkflowDAGUtils;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import com.github.kfcfans.powerjob.server.persistence.core.model.WorkflowInstanceInfoDO;
