@@ -44,8 +44,14 @@ public class JobController {
         return ResultDTO.success(null);
     }
 
+    @PostMapping("/copy")
+    public ResultDTO<JobInfoVO> copyJob(String jobId) {
+        return ResultDTO.success(JobInfoVO.from(jobService.copyJob(Long.valueOf(jobId))));
+    }
+
+
     @GetMapping("/disable")
-    public ResultDTO<Void> disableJob(String jobId) throws Exception {
+    public ResultDTO<Void> disableJob(String jobId) {
         jobService.disableJob(Long.valueOf(jobId));
         return ResultDTO.success(null);
     }
@@ -86,7 +92,7 @@ public class JobController {
                 result.setTotalItems(1);
                 result.setTotalPages(1);
                 result.setData(Lists.newArrayList(JobInfoVO.from(jobInfoOpt.get())));
-            }else {
+            } else {
                 result.setTotalPages(0);
                 result.setTotalItems(0);
                 result.setData(Lists.newLinkedList());

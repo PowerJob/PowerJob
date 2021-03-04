@@ -17,6 +17,7 @@ import com.github.kfcfans.powerjob.common.response.*;
 import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
 import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
+import com.github.kfcfans.powerjob.server.web.response.JobInfoVO;
 import com.github.kfcfans.powerjob.server.web.response.WorkflowInfoVO;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,6 +65,11 @@ public class OpenAPIController {
         return ResultDTO.success(jobService.saveJob(request));
     }
 
+    @PostMapping(OpenAPIConstant.COPY_JOB)
+    public ResultDTO<JobInfoVO> copyJob(Long jobId) {
+        return ResultDTO.success(JobInfoVO.from(jobService.copyJob(jobId)));
+    }
+
     @PostMapping(OpenAPIConstant.FETCH_JOB)
     public ResultDTO<JobInfoDTO> fetchJob(Long jobId, Long appId) {
         checkJobIdValid(jobId, appId);
@@ -86,12 +92,14 @@ public class OpenAPIController {
         jobService.deleteJob(jobId);
         return ResultDTO.success(null);
     }
+
     @PostMapping(OpenAPIConstant.DISABLE_JOB)
     public ResultDTO<Void> disableJob(Long jobId, Long appId) {
         checkJobIdValid(jobId, appId);
         jobService.disableJob(jobId);
         return ResultDTO.success(null);
     }
+
     @PostMapping(OpenAPIConstant.ENABLE_JOB)
     public ResultDTO<Void> enableJob(Long jobId, Long appId) throws ParseException {
         checkJobIdValid(jobId, appId);
@@ -110,7 +118,7 @@ public class OpenAPIController {
     @PostMapping(OpenAPIConstant.STOP_INSTANCE)
     public ResultDTO<Void> stopInstance(Long instanceId, Long appId) {
         checkInstanceIdValid(instanceId, appId);
-        instanceService.stopInstance(appId,instanceId);
+        instanceService.stopInstance(appId, instanceId);
         return ResultDTO.success(null);
     }
 
@@ -153,7 +161,7 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.COPY_WORKFLOW)
     public ResultDTO<Long> copy(Long workflowId, Long appId) {
-        return ResultDTO.success(workflowService.copyWorkflow(workflowId,appId));
+        return ResultDTO.success(workflowService.copyWorkflow(workflowId, appId));
     }
 
 
@@ -167,11 +175,13 @@ public class OpenAPIController {
         workflowService.deleteWorkflow(workflowId, appId);
         return ResultDTO.success(null);
     }
+
     @PostMapping(OpenAPIConstant.DISABLE_WORKFLOW)
     public ResultDTO<Void> disableWorkflow(Long workflowId, Long appId) {
         workflowService.disableWorkflow(workflowId, appId);
         return ResultDTO.success(null);
     }
+
     @PostMapping(OpenAPIConstant.ENABLE_WORKFLOW)
     public ResultDTO<Void> enableWorkflow(Long workflowId, Long appId) {
         workflowService.enableWorkflow(workflowId, appId);
@@ -215,8 +225,8 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.MARK_WORKFLOW_NODE_AS_SUCCESS)
-    public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId,Long nodeId, Long appId) {
-        workflowInstanceService.markNodeAsSuccess(appId,wfInstanceId,nodeId);
+    public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId, Long nodeId, Long appId) {
+        workflowInstanceService.markNodeAsSuccess(appId, wfInstanceId, nodeId);
         return ResultDTO.success(null);
     }
 

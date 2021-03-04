@@ -19,6 +19,7 @@ public class OpenAPIConstant {
     /* ************* JOB 区 ************* */
 
     public static final String SAVE_JOB = "/saveJob";
+    public static final String COPY_JOB = "/copyJob";
     public static final String FETCH_JOB = "/fetchJob";
     public static final String FETCH_ALL_JOB = "/fetchAllJob";
     public static final String QUERY_JOB = "/queryJob";

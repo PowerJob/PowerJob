@@ -57,7 +57,7 @@ public class JobService {
      *
      * @param request 任务请求
      * @return 创建的任务ID（jobId）
-     * @throws ParseException 异常
+     * @exception ParseException 异常
      */
     public Long saveJob(SaveJobInfoRequest request) throws ParseException {
 
@@ -95,6 +95,31 @@ public class JobService {
         JobInfoDO res = jobInfoRepository.saveAndFlush(jobInfoDO);
         return res.getId();
     }
+
+    /**
+     * 复制任务
+     * @param jobId 目标任务ID
+     * @return 复制后的任务 ID
+     */
+    public JobInfoDO copyJob(Long jobId) {
+
+        JobInfoDO origin = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId));
+        JobInfoDO copyJob = new JobInfoDO();
+        // 值拷贝
+        BeanUtils.copyProperties(origin, copyJob);
+        // 填充默认值，理论上应该不需要
+        fillDefaultValue(copyJob);
+        // 修正创建时间以及更新时间
+        copyJob.setId(null);
+        copyJob.setJobName(copyJob.getJobName()+"_COPY");
+        copyJob.setGmtCreate(new Date());
+        copyJob.setGmtModified(new Date());
+
+        copyJob = jobInfoRepository.saveAndFlush(copyJob);
+        return copyJob;
+
+    }
+
 
     public JobInfoDTO fetchJob(Long jobId) {
         return convert(jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + jobId)));
@@ -156,7 +181,7 @@ public class JobService {
      * 启用某个任务
      *
      * @param jobId 任务ID
-     * @throws ParseException 异常（CRON表达式错误）
+     * @exception ParseException 异常（CRON表达式错误）
      */
     public void enableJob(Long jobId) throws ParseException {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
@@ -197,7 +222,7 @@ public class JobService {
         executeLogs.forEach(instance -> {
             try {
                 // 重复查询了数据库，不过问题不大，这个调用量很小
-                instanceService.stopInstance(instance.getAppId(),instance.getInstanceId());
+                instanceService.stopInstance(instance.getAppId(), instance.getInstanceId());
             } catch (Exception ignore) {
                 // ignore exception
             }
