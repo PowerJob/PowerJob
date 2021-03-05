@@ -18,7 +18,14 @@ public interface WorkflowInfoRepository extends JpaRepository<WorkflowInfoDO, Lo
 
     List<WorkflowInfoDO> findByAppIdInAndStatusAndTimeExpressionTypeAndNextTriggerTimeLessThanEqual(List<Long> appIds, int status, int timeExpressionType, long time);
 
-    // 对外查询（list）三兄弟
+    /**
+     * 查询指定 APP 下所有的工作流信息
+     * @param appId APP ID
+     * @return 该 APP 下的所有工作流信息
+     */
+    List<WorkflowInfoDO> findByAppId(Long appId);
+
+    /** 对外查询（list）三兄弟 */
     Page<WorkflowInfoDO> findByAppIdAndStatusNot(Long appId, int nStatus, Pageable pageable);
     Page<WorkflowInfoDO> findByIdAndStatusNot(Long id, int nStatus, Pageable pageable);
     Page<WorkflowInfoDO> findByAppIdAndStatusNotAndWfNameLike(Long appId, int nStatus, String condition, Pageable pageable);
