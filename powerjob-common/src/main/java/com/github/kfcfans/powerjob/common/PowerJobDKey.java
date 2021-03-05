@@ -16,6 +16,8 @@ public class PowerJobDKey {
      */
     public static final String PREFERRED_NETWORK_INTERFACE = "powerjob.network.interface.preferred";
 
+    public static final String BIND_LOCAL_ADDRESS = "powerjob.network.local.address";
+
     /**
      * Java regular expressions for network interfaces that will be ignored.
      */
