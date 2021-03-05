@@ -19,16 +19,16 @@ import tech.powerjob.official.processors.util.CommonUtils;
 public abstract class CommonBasicProcessor implements BasicProcessor {
 
     @Override
-    public ProcessResult process(TaskContext taskContext) throws Exception {
+    public ProcessResult process(TaskContext ctx) throws Exception {
 
         String status = "unknown";
         Stopwatch sw = Stopwatch.createStarted();
 
-        OmsLogger omsLogger = taskContext.getOmsLogger();
-        omsLogger.info("using params: {}", CommonUtils.parseParams(taskContext));
+        OmsLogger omsLogger = ctx.getOmsLogger();
+        omsLogger.info("using params: {}", CommonUtils.parseParams(ctx));
 
         try {
-            ProcessResult result = process0(taskContext);
+            ProcessResult result = process0(ctx);
             omsLogger.info("execute succeed, using {}, result: {}", sw, result);
             status = result.isSuccess() ? "succeed" : "failed";
             return result;
@@ -37,7 +37,7 @@ public abstract class CommonBasicProcessor implements BasicProcessor {
             omsLogger.error("execute failed!", t);
             return new ProcessResult(false, ExceptionUtils.getMessage(t));
         } finally {
-            log.info("status: {}, cost: {}", status, sw);
+            log.info("{}|{}|{}|{}|{}", getClass().getSimpleName(), ctx.getJobId(), ctx.getInstanceId(), status, sw);
         }
     }
 
