@@ -180,7 +180,9 @@ public class DispatchService {
         req.setProcessorType(ProcessorType.of(jobInfo.getProcessorType()).name());
 
         req.setTimeExpressionType(TimeExpressionType.of(jobInfo.getTimeExpressionType()).name());
-        req.setInstanceTimeoutMS(jobInfo.getInstanceTimeLimit());
+        if (jobInfo.getInstanceTimeLimit() != null) {
+            req.setInstanceTimeoutMS(jobInfo.getInstanceTimeLimit());
+        }
         req.setThreadConcurrency(jobInfo.getConcurrency());
         return req;
     }
