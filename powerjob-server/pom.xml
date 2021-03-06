@@ -43,6 +43,26 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-remote</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-common</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-persistence</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <!-- oms-common -->

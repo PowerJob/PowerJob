@@ -18,4 +18,15 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-persistence</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>
