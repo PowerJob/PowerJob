@@ -11,7 +11,13 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
     <version>3.4.6</version>
-    <packaging>jar</packaging>
+    <modules>
+        <module>powerjob-server-common</module>
+        <module>powerjob-server-remote</module>
+        <module>powerjob-server-persistence</module>
+        <module>powerjob-server-starter</module>
+    </modules>
+    <packaging>pom</packaging>
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
@@ -220,7 +226,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
                 <configuration>
-                    <mainClass>com.github.kfcfans.powerjob.server.OhMyApplication</mainClass>
+                    <mainClass>tech.powerjob.server.OhMyApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
