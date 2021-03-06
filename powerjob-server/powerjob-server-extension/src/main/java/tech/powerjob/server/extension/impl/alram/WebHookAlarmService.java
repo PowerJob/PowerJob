@@ -1,10 +1,10 @@
-package tech.powerjob.server.service.alarm.impl;
+package tech.powerjob.server.extension.impl.alram;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
 import tech.powerjob.server.persistence.core.model.UserInfoDO;
-import tech.powerjob.server.service.alarm.Alarm;
+import tech.powerjob.server.common.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;

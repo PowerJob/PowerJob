@@ -1,4 +1,4 @@
-package tech.powerjob.server.service.alarm;
+package tech.powerjob.server.common.module;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.OmsConstant;

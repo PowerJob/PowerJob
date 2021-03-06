@@ -8,7 +8,6 @@ import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import tech.powerjob.server.extension.LockService;
-import tech.powerjob.server.extension.ServerElectionService;
 import tech.powerjob.server.persistence.core.model.AppInfoDO;
 import tech.powerjob.server.persistence.core.repository.AppInfoRepository;
 import tech.powerjob.server.remote.transport.TransportService;
@@ -36,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
-public class DefaultServerElectionService implements ServerElectionService {
+public class ServerElectionService {
 
     @Resource
     private LockService lockService;
@@ -52,7 +51,6 @@ public class DefaultServerElectionService implements ServerElectionService {
     private static final long PING_TIMEOUT_MS = 1000;
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
-    @Override
     public String elect(Long appId, String protocol, String currentServer) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功

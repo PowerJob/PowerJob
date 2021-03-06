@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>tech.powerjob</groupId>
-    <artifactId>powerjob-server-starter</artifactId>
+    <artifactId>powerjob-server-extension</artifactId>
     <version>1.0.0</version>
 
     <properties>
@@ -21,19 +21,8 @@
     <dependencies>
         <dependency>
             <groupId>tech.powerjob</groupId>
-            <artifactId>powerjob-server-extension</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>tech.powerjob</groupId>
-            <artifactId>powerjob-server-remote</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>tech.powerjob</groupId>
-            <artifactId>powerjob-server-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-persistence</artifactId>
         </dependency>
     </dependencies>
+
 </project>

@@ -25,6 +25,10 @@
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-extension</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-persistence</artifactId>
         </dependency>
     </dependencies>

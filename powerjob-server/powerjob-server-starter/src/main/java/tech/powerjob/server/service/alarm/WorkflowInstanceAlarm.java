@@ -2,6 +2,7 @@ package tech.powerjob.server.service.alarm;
 
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import lombok.Data;
+import tech.powerjob.server.common.module.Alarm;
 
 /**
  * 工作流执行失败告警对象

@@ -1,8 +1,8 @@
-package tech.powerjob.server.remote.worker.cluster.filter;
+package tech.powerjob.server.extension.impl.workerfilter;
 
 import tech.powerjob.server.extension.WorkerFilter;
 import tech.powerjob.server.persistence.core.model.JobInfoDO;
-import tech.powerjob.server.remote.worker.cluster.WorkerInfo;
+import tech.powerjob.server.common.module.WorkerInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

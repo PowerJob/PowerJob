@@ -2,7 +2,7 @@ package tech.powerjob.server.remote.worker.handler;
 
 import com.github.kfcfans.powerjob.common.InstanceStatus;
 import tech.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
-import tech.powerjob.server.remote.worker.cluster.WorkerInfo;
+import tech.powerjob.server.common.module.WorkerInfo;
 import com.github.kfcfans.powerjob.common.request.*;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;

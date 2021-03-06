@@ -19,7 +19,7 @@ import tech.powerjob.server.persistence.core.repository.ContainerInfoRepository;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
-import tech.powerjob.server.remote.worker.cluster.WorkerInfo;
+import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.web.request.SaveContainerInfoRequest;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;

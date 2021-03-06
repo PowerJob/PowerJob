@@ -36,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 public class InstanceManager {
 
     @Resource
+    private AlarmCenter alarmCenter;
+    @Resource
     private DispatchService dispatchService;
     @Resource
     private InstanceLogService instanceLogService;
@@ -179,7 +181,7 @@ public class InstanceManager {
             }
 
             List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
-            AlarmCenter.alarmFailed(content, userList);
+            alarmCenter.alarmFailed(content, userList);
         }
 
         // 主动移除缓存，减小内存占用

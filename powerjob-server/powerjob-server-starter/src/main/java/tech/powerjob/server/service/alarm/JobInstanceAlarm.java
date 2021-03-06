@@ -1,6 +1,7 @@
 package tech.powerjob.server.service.alarm;
 
 import lombok.Data;
+import tech.powerjob.server.common.module.Alarm;
 
 /**
  * 任务执行失败告警对象

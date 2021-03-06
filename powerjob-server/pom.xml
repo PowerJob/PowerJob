@@ -16,6 +16,7 @@
         <module>powerjob-server-remote</module>
         <module>powerjob-server-persistence</module>
         <module>powerjob-server-starter</module>
+        <module>powerjob-server-extension</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -47,12 +48,17 @@
         <dependencies>
             <dependency>
                 <groupId>tech.powerjob</groupId>
-                <artifactId>powerjob-server-remote</artifactId>
+                <artifactId>powerjob-server-common</artifactId>
                 <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>tech.powerjob</groupId>
-                <artifactId>powerjob-server-common</artifactId>
+                <artifactId>powerjob-server-extension</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-remote</artifactId>
                 <version>1.0.0</version>
             </dependency>
             <dependency>

@@ -1,5 +1,8 @@
 package tech.powerjob.server.service.alarm;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import tech.powerjob.server.common.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
 import tech.powerjob.server.persistence.core.model.UserInfoDO;
 import com.google.common.collect.Lists;
@@ -17,20 +20,25 @@ import java.util.concurrent.*;
  * @since 2020/4/19
  */
 @Slf4j
+@Component
 public class AlarmCenter {
 
-    private static final ExecutorService POOL;
-    private static final List<Alarmable> BEANS = Lists.newLinkedList();
-    private static final int THREAD_KEEP_ALIVE_TIME_M = 5;
+    private final ExecutorService POOL;
+    private final List<Alarmable> BEANS = Lists.newLinkedList();
 
-    static {
+    @Autowired
+    public AlarmCenter(List<Alarmable> alarmables) {
         int cores = Runtime.getRuntime().availableProcessors();
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("AlarmPool-%d").build();
-        POOL = new ThreadPoolExecutor(cores, cores, THREAD_KEEP_ALIVE_TIME_M, TimeUnit.MINUTES, Queues.newLinkedBlockingQueue(), factory);
+        POOL = new ThreadPoolExecutor(cores, cores, 5, TimeUnit.MINUTES, Queues.newLinkedBlockingQueue(), factory);
+
+        alarmables.forEach(bean -> {
+            BEANS.add(bean);
+            log.info("[AlarmCenter] bean(className={},obj={}) register to AlarmCenter successfully!", bean.getClass().getName(), bean);
+        });
     }
 
-
-    public static void alarmFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
+    public void alarmFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
         POOL.execute(() -> BEANS.forEach(alarmable -> {
             try {
                 alarmable.onFailed(alarm, targetUserList);
@@ -38,10 +46,5 @@ public class AlarmCenter {
                 log.warn("[AlarmCenter] alarm failed.", e);
             }
         }));
-    }
-
-    public static void register(Alarmable alarmable) {
-        BEANS.add(alarmable);
-        log.info("[AlarmCenter] bean(className={},obj={}) register to AlarmCenter successfully!", alarmable.getClass().getName(), alarmable);
     }
 }

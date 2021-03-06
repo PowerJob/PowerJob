@@ -17,7 +17,7 @@ import tech.powerjob.server.remote.DispatchService;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.remote.transport.TransportService;
 import tech.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
-import tech.powerjob.server.remote.worker.cluster.WorkerInfo;
+import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.service.id.IdGenerateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;

@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.server.common.module.WorkerInfo;
 
 import java.util.Collections;
 import java.util.List;

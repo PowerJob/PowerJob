@@ -8,7 +8,7 @@ import tech.powerjob.server.persistence.core.model.JobInfoDO;
 import tech.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import tech.powerjob.server.remote.transport.TransportService;
 import tech.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
-import tech.powerjob.server.remote.worker.cluster.WorkerInfo;
+import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.service.instance.InstanceManager;
 import tech.powerjob.server.service.instance.InstanceMetadataService;
 import tech.powerjob.server.service.lock.local.UseSegmentLock;

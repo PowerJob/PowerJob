@@ -1,4 +1,4 @@
-package tech.powerjob.server.service.lock;
+package tech.powerjob.server.extension.impl;
 
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;

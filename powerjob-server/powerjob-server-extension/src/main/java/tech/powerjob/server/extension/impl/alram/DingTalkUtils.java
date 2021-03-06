@@ -1,4 +1,4 @@
-package tech.powerjob.server.common.utils;
+package tech.powerjob.server.extension.impl.alram;
 
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;

@@ -1,7 +1,7 @@
 package tech.powerjob.server.extension;
 
 import tech.powerjob.server.persistence.core.model.JobInfoDO;
-import tech.powerjob.server.remote.worker.cluster.WorkerInfo;
+import tech.powerjob.server.common.module.WorkerInfo;
 
 /**
  * filter worker by system metrics or other info

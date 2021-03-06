@@ -1,6 +1,7 @@
 package tech.powerjob.server.remote.worker.cluster;
 
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
+import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.extension.WorkerFilter;
 import tech.powerjob.server.persistence.core.model.JobInfoDO;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;

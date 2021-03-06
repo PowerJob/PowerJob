@@ -1,4 +1,4 @@
-package tech.powerjob.server.remote.worker.cluster;
+package tech.powerjob.server.common.module;
 
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;

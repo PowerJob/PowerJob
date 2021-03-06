@@ -1,6 +1,6 @@
 package tech.powerjob.server.test;
 
-import tech.powerjob.server.common.utils.DingTalkUtils;
+import tech.powerjob.server.extension.impl.alram.DingTalkUtils;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 

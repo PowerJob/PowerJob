@@ -45,6 +45,8 @@ import static tech.powerjob.server.common.utils.WorkflowDAGUtils.isNotAllowSkipW
 public class WorkflowInstanceManager {
 
     @Resource
+    private AlarmCenter alarmCenter;
+    @Resource
     private InstanceService instanceService;
     @Resource
     private DispatchService dispatchService;
@@ -453,7 +455,7 @@ public class WorkflowInstanceManager {
                 content.setResult(result);
 
                 List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
-                AlarmCenter.alarmFailed(content, userList);
+                alarmCenter.alarmFailed(content, userList);
             });
         } catch (Exception ignore) {
             // ignore
