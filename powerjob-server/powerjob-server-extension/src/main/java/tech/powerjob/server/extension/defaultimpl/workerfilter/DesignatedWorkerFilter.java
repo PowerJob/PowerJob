@@ -1,13 +1,13 @@
 package tech.powerjob.server.extension.defaultimpl.workerfilter;
 
-import tech.powerjob.server.common.SJ;
-import tech.powerjob.server.extension.WorkerFilter;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
-import tech.powerjob.server.common.module.WorkerInfo;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.common.module.WorkerInfo;
+import tech.powerjob.server.extension.WorkerFilter;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 
 import java.util.Set;
 
@@ -21,20 +21,25 @@ import java.util.Set;
 @Component
 public class DesignatedWorkerFilter implements WorkerFilter {
 
-    // min length 1.1.1.1:1
-    private static final int MIN_ADDRESS_LENGTH = 9;
-
     @Override
     public boolean filter(WorkerInfo workerInfo, JobInfoDO jobInfo) {
 
         String designatedWorkers = jobInfo.getDesignatedWorkers();
 
-        if (StringUtils.isEmpty(designatedWorkers) || designatedWorkers.length() < MIN_ADDRESS_LENGTH) {
+        // no worker is specified, no filter of any
+        if (StringUtils.isEmpty(designatedWorkers)) {
             return false;
         }
 
         Set<String> designatedWorkersSet = Sets.newHashSet(SJ.COMMA_SPLITTER.splitToList(designatedWorkers));
 
-        return !designatedWorkersSet.contains(workerInfo.getAddress());
+        for (String tagOrAddress : designatedWorkersSet) {
+            if (tagOrAddress.equals(workerInfo.getTag()) || tagOrAddress.equals(workerInfo.getAddress())) {
+                return false;
+            }
+        }
+
+        return true;
     }
+
 }

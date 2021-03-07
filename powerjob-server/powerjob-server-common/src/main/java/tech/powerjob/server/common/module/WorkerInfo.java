@@ -24,6 +24,8 @@ public class WorkerInfo {
 
     private String client;
 
+    private String tag;
+
     private SystemMetrics systemMetrics;
 
     private List<DeployedContainerInfo> containerInfos;
@@ -35,6 +37,7 @@ public class WorkerInfo {
         lastActiveTime = workerHeartbeat.getHeartbeatTime();
         protocol = workerHeartbeat.getProtocol();
         client = workerHeartbeat.getClient();
+        tag = workerHeartbeat.getTag();
         systemMetrics = workerHeartbeat.getSystemMetrics();
         containerInfos = workerHeartbeat.getContainerInfos();
     }

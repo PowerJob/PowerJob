@@ -23,6 +23,7 @@ public class WorkerStatusVO {
     private String diskLoad;
 
     private String protocol;
+    private String tag;
 
     // 1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色，9999 -> 非在线机器
     private int status;
@@ -40,6 +41,7 @@ public class WorkerStatusVO {
         SystemMetrics systemMetrics = workerInfo.getSystemMetrics();
 
         this.protocol = workerInfo.getProtocol();
+        this.tag = workerInfo.getTag();
 
         this.status = 1;
         this.address = workerInfo.getAddress();

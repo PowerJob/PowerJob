@@ -64,4 +64,6 @@ public class OhMyConfig {
 
     private SystemMetricsCollector systemMetricsCollector;
 
+    private String tag;
+
 }

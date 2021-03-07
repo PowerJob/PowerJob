@@ -31,6 +31,8 @@ public class WorkerHeartbeat implements OmsSerializable {
     private String version;
     // 使用的通讯协议 AKKA / HTTP
     private String protocol;
+    // worker tag，标识同一个 worker 下的一类集群 ISSUE: 226
+    private String tag;
     // 客户端名称
     private String client;
     // 扩展字段
