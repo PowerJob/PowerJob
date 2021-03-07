@@ -47,18 +47,22 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
         StringBuilder inputSB = new StringBuilder();
         StringBuilder errorSB = new StringBuilder();
 
-        pool.execute(() -> copyStream(process.getInputStream(), inputSB, omsLogger));
-        pool.execute(() -> copyStream(process.getErrorStream(), errorSB, omsLogger));
+        boolean success = true;
+        String result;
 
-        try {
-            boolean success = process.waitFor() == 0;
-            String result = String.format("[INPUT]: %s;[ERROR]: %s", inputSB.toString(), errorSB.toString());
+        try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
 
-            return new ProcessResult(success, result);
-        }catch (InterruptedException ie) {
+            pool.execute(() -> copyStream(is, inputSB, omsLogger));
+            pool.execute(() -> copyStream(es, errorSB, omsLogger));
+
+            success = process.waitFor() == 0;
+
+        } catch (InterruptedException ie) {
             omsLogger.info("SYSTEM ===> ScriptProcessor has been interrupted");
-            return new ProcessResult(false, "Interrupted");
+        } finally {
+            result = String.format("[INPUT]: %s;[ERROR]: %s", inputSB.toString(), errorSB.toString());
         }
+        return new ProcessResult(success, result);
     }
 
     private String prepareScriptFile(Long instanceId, String processorInfo) throws IOException {
