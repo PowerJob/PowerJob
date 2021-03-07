@@ -23,7 +23,6 @@
         <powerjob.worker.version>3.4.7</powerjob.worker.version>
 
         <!-- 全部 shade 化，避免依赖冲突 -->
-        <slf4j.version>1.7.30</slf4j.version>
         <fastjson.version>1.2.68</fastjson.version>
         <okhttp.version>3.14.9</okhttp.version>
         <guava.version>29.0-jre</guava.version>
@@ -31,13 +30,6 @@
     </properties>
 
     <dependencies>
-
-        <!-- slf4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
 
         <!-- fastJson(used for serialization of DAG) -->
         <dependency>
@@ -110,6 +102,9 @@
                         <relocation>
                             <pattern>org</pattern>
                             <shadedPattern>shade.powerjob.org</shadedPattern>
+                            <excludes>
+                                <exclude>org.slf4j.*</exclude>
+                            </excludes>
                         </relocation>
                         <relocation>
                             <pattern>com.google</pattern>
