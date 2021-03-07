@@ -6,7 +6,7 @@ import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.core.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.service.CacheService;
-import tech.powerjob.server.service.workflow.WorkflowInstanceService;
+import tech.powerjob.server.core.workflow.WorkflowInstanceService;
 import tech.powerjob.server.web.request.QueryWorkflowInstanceRequest;
 import tech.powerjob.server.web.response.WorkflowInstanceInfoVO;
 import org.springframework.beans.BeanUtils;

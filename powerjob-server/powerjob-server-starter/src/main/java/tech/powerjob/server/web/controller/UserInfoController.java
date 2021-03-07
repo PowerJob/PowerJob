@@ -1,9 +1,10 @@
 package tech.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import org.springframework.beans.BeanUtils;
 import tech.powerjob.server.persistence.core.model.UserInfoDO;
 import tech.powerjob.server.persistence.core.repository.UserInfoRepository;
-import tech.powerjob.server.service.UserService;
+import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.web.request.ModifyUserInfoRequest;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,9 @@ public class UserInfoController {
 
     @PostMapping("save")
     public ResultDTO<Void> save(@RequestBody ModifyUserInfoRequest request) {
-        userService.save(request);
+        UserInfoDO userInfoDO = new UserInfoDO();
+        BeanUtils.copyProperties(request, userInfoDO);
+        userService.save(userInfoDO);
         return ResultDTO.success(null);
     }
 

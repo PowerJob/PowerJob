@@ -6,7 +6,7 @@ import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.core.repository.JobInfoRepository;
-import tech.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
+import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.web.response.SystemOverviewVO;
 import tech.powerjob.server.web.response.WorkerStatusVO;

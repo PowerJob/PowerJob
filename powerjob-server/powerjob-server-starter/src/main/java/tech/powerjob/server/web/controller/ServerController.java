@@ -9,7 +9,7 @@ import tech.powerjob.server.persistence.core.model.AppInfoDO;
 import tech.powerjob.server.persistence.core.repository.AppInfoRepository;
 import tech.powerjob.server.remote.server.election.ServerElectionService;
 import tech.powerjob.server.remote.transport.TransportService;
-import tech.powerjob.server.remote.worker.cluster.WorkerClusterQueryService;
+import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

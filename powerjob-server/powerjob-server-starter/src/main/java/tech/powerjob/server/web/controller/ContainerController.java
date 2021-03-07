@@ -5,7 +5,7 @@ import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.common.constants.ContainerSourceType;
 import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.common.utils.ContainerTemplateGenerator;
+import tech.powerjob.server.core.container.ContainerTemplateGenerator;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.core.model.AppInfoDO;
 import tech.powerjob.server.persistence.core.model.ContainerInfoDO;

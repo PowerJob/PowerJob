@@ -1,6 +1,6 @@
 package tech.powerjob.server.test;
 
-import tech.powerjob.server.service.id.IdGenerateService;
+import tech.powerjob.server.core.uid.IdGenerateService;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.service.timing.CleanService;
 import org.junit.Test;

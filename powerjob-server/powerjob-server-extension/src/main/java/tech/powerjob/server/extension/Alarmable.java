@@ -1,7 +1,7 @@
 package tech.powerjob.server.extension;
 
 import tech.powerjob.server.persistence.core.model.UserInfoDO;
-import tech.powerjob.server.common.module.Alarm;
+import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
 
 import java.util.List;
 

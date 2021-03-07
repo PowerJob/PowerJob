@@ -10,7 +10,7 @@ import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.core.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.persistence.core.repository.WorkflowInfoRepository;
-import tech.powerjob.server.service.workflow.WorkflowService;
+import tech.powerjob.server.core.workflow.WorkflowService;
 import tech.powerjob.server.web.request.QueryWorkflowInfoRequest;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
 import org.springframework.data.domain.Page;
@@ -96,7 +96,8 @@ public class WorkflowController {
 
     @GetMapping("/fetch")
     public ResultDTO<WorkflowInfoVO> fetchWorkflow(Long workflowId, Long appId) {
-        return ResultDTO.success(workflowService.fetchWorkflow(workflowId, appId));
+        WorkflowInfoDO workflowInfoDO = workflowService.fetchWorkflow(workflowId, appId);
+        return ResultDTO.success(WorkflowInfoVO.from(workflowInfoDO));
     }
 
     @PostMapping("/addNode")

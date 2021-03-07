@@ -17,6 +17,8 @@
         <module>powerjob-server-persistence</module>
         <module>powerjob-server-starter</module>
         <module>powerjob-server-extension</module>
+        <module>powerjob-server-migrate</module>
+        <module>powerjob-server-core</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -64,6 +66,16 @@
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-persistence</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-migrate</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-core</artifactId>
                 <version>1.0.0</version>
             </dependency>
         </dependencies>

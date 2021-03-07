@@ -1,9 +1,9 @@
 package tech.powerjob.server.test;
 
-import tech.powerjob.server.common.utils.timewheel.HashedWheelTimer;
-import tech.powerjob.server.common.utils.timewheel.TimerFuture;
-import tech.powerjob.server.common.utils.timewheel.TimerTask;
-import tech.powerjob.server.service.instance.InstanceTimeWheelService;
+import tech.powerjob.server.common.timewheel.HashedWheelTimer;
+import tech.powerjob.server.common.timewheel.TimerFuture;
+import tech.powerjob.server.common.timewheel.TimerTask;
+import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;

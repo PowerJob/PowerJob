@@ -6,7 +6,7 @@ import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.core.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.core.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
-import tech.powerjob.server.remote.worker.cluster.WorkerClusterManagerService;
+import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 import tech.powerjob.server.extension.LockService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;

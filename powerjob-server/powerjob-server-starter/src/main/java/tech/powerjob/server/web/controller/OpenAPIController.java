@@ -9,13 +9,14 @@ import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.response.WorkflowInstanceInfoDTO;
+import tech.powerjob.server.persistence.core.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.core.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.service.AppInfoService;
 import tech.powerjob.server.service.CacheService;
 import tech.powerjob.server.service.JobService;
-import tech.powerjob.server.service.instance.InstanceService;
-import tech.powerjob.server.service.workflow.WorkflowInstanceService;
-import tech.powerjob.server.service.workflow.WorkflowService;
+import tech.powerjob.server.core.instance.InstanceService;
+import tech.powerjob.server.core.workflow.WorkflowInstanceService;
+import tech.powerjob.server.core.workflow.WorkflowService;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
 import org.springframework.web.bind.annotation.*;
 
@@ -165,7 +166,8 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW)
     public ResultDTO<WorkflowInfoVO> fetchWorkflow(Long workflowId, Long appId) {
-        return ResultDTO.success(workflowService.fetchWorkflow(workflowId, appId));
+        WorkflowInfoDO workflowInfoDO = workflowService.fetchWorkflow(workflowId, appId);
+        return ResultDTO.success(WorkflowInfoVO.from(workflowInfoDO));
     }
 
     @PostMapping(OpenAPIConstant.DELETE_WORKFLOW)

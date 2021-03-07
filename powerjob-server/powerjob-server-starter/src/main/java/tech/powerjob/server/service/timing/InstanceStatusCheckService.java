@@ -8,9 +8,9 @@ import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.persistence.core.model.*;
 import tech.powerjob.server.persistence.core.repository.*;
-import tech.powerjob.server.remote.DispatchService;
-import tech.powerjob.server.service.instance.InstanceManager;
-import tech.powerjob.server.service.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.core.DispatchService;
+import tech.powerjob.server.core.instance.InstanceManager;
+import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -109,12 +109,6 @@ public class InstanceStatusCheckService {
         if (!CollectionUtils.isEmpty(waitingDispatchInstances)) {
             log.warn("[InstanceStatusChecker] find some instance which is not triggered as expected: {}", waitingDispatchInstances);
             waitingDispatchInstances.forEach(instance -> {
-
-                // 过滤因为失败重试而改成 WAITING_DISPATCH 状态的任务实例
-                long t = System.currentTimeMillis() - instance.getGmtModified().getTime();
-                if (t < DISPATCH_TIMEOUT_MS) {
-                    return;
-                }
 
                 Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(instance.getJobId());
                 if (jobInfoOpt.isPresent()) {
