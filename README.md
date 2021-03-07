@@ -49,16 +49,16 @@ Refer to [PowerJob Introduction](https://www.yuque.com/powerjob/en/introduce) fo
 
 **[中文文档](https://www.yuque.com/powerjob/guidence/intro)**
 
-## Stargazers over time
-
-[![Stargazers over time](https://starchart.cc/PowerJob/PowerJob.svg)](https://starchart.cc/PowerJob/PowerJob)
-
 # Known Users
 [Click to register as PowerJob user!](https://github.com/PowerJob/PowerJob/issues/6)  
 ღ( ´・ᴗ・\` )ღ Many thanks to the following registered users. ღ( ´・ᴗ・\` )ღ
 <p style="text-align: center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/user.png" alt="PowerJob User" title="PowerJob User"/>
 </p>
+
+# Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/PowerJob/PowerJob.svg)](https://starchart.cc/PowerJob/PowerJob)
 
 # License
 
