@@ -48,16 +48,16 @@ public class PEWorkflowDAG implements Serializable {
 
         private Long jobId;
         /**
-         * job alias or job name
+         * node name
          */
-        private String jobName;
+        private String nodeName;
 
         /* Instance running param, which is not required by DAG. */
 
         @JsonSerialize(using= ToStringSerializer.class)
         private Long instanceId;
 
-        private String jobParams;
+        private String nodeParams;
 
         private Integer status;
 
@@ -70,10 +70,10 @@ public class PEWorkflowDAG implements Serializable {
         private Boolean skipWhenFailed;
 
 
-        public Node(Long nodeId,Long jobId, String jobName) {
+        public Node(Long nodeId,Long jobId, String nodeName) {
             this.nodeId = nodeId;
             this.jobId = jobId;
-            this.jobName = jobName;
+            this.nodeName = nodeName;
         }
     }
 

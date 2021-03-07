@@ -184,7 +184,7 @@ public class WorkflowInstanceManager {
             readyNodes.forEach(readyNode -> {
                 // 注意：这里必须保证任务实例全部创建成功，如果在这里创建实例部分失败，会导致 DAG 信息不会更新，已经生成的实例节点在工作流日志中没法展示
                 // instanceParam 传递的是工作流实例的 wfContext
-                Long instanceId = instanceService.create(readyNode.getJobId(), wfInfo.getAppId(), readyNode.getJobParams(), wfInstanceInfo.getWfContext(), wfInstanceId, System.currentTimeMillis());
+                Long instanceId = instanceService.create(readyNode.getJobId(), wfInfo.getAppId(), readyNode.getNodeParams(), wfInstanceInfo.getWfContext(), wfInstanceId, System.currentTimeMillis());
                 readyNode.setInstanceId(instanceId);
                 readyNode.setStatus(InstanceStatus.RUNNING.getV());
 
@@ -321,7 +321,7 @@ public class WorkflowInstanceManager {
                 for (PEWorkflowDAG.Node readyNode : readyNodes) {
                     // 同理：这里必须保证任务实例全部创建成功，避免部分失败导致已经生成的实例节点在工作流日志中没法展示
                     // instanceParam 传递的是工作流实例的 wfContext
-                    Long newInstanceId = instanceService.create(readyNode.getJobId(), wfInstance.getAppId(), readyNode.getJobParams(), wfInstance.getWfContext(), wfInstanceId, System.currentTimeMillis());
+                    Long newInstanceId = instanceService.create(readyNode.getJobId(), wfInstance.getAppId(), readyNode.getNodeParams(), wfInstance.getWfContext(), wfInstanceId, System.currentTimeMillis());
                     readyNode.setInstanceId(newInstanceId);
                     readyNode.setStatus(InstanceStatus.RUNNING.getV());
                     log.debug("[Workflow-{}|{}] workflowInstance start to process new node(nodeId={},jobId={},instanceId={})", wfId, wfInstanceId, readyNode.getNodeId(), readyNode.getJobId(), newInstanceId);
@@ -394,18 +394,18 @@ public class WorkflowInstanceManager {
                 // 默认启用 + 不允许失败跳过
                 node.setEnable(true)
                         .setSkipWhenFailed(false)
-                        .setJobParams(jobInfo.getJobParams());
+                        .setNodeParams(jobInfo.getJobParams());
             } else {
                 WorkflowNodeInfoDO nodeInfo = nodeInfoOpt.get();
                 // 使用节点别名覆盖
-                node.setJobName(nodeInfo.getNodeAlias())
+                node.setNodeName(nodeInfo.getNodeName())
                         .setEnable(nodeInfo.getEnable())
                         .setSkipWhenFailed(nodeInfo.getSkipWhenFailed());
                 // 如果节点中指定了参数信息，则取节点的，否则取 Job 上的
                 if (!StringUtils.isBlank(nodeInfo.getNodeParams())) {
-                    node.setJobParams(nodeInfo.getNodeParams());
+                    node.setNodeParams(nodeInfo.getNodeParams());
                 } else {
-                    node.setJobParams(jobInfo.getJobParams());
+                    node.setNodeParams(jobInfo.getJobParams());
                 }
 
             }

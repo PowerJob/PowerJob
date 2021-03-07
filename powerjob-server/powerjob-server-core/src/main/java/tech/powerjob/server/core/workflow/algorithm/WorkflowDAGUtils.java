@@ -212,7 +212,7 @@ public class WorkflowDAGUtils {
         // 创建节点
         peWorkflowDAG.getNodes().forEach(node -> {
             Long nodeId = node.getNodeId();
-            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), node.getNodeId(), node.getJobId(), node.getJobName(), InstanceStatus.WAITING_DISPATCH.getV());
+            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), node.getNodeId(), node.getJobId(), node.getNodeName(), InstanceStatus.WAITING_DISPATCH.getV());
             id2Node.put(nodeId, n);
 
             // 初始阶段，每一个点都设为顶点

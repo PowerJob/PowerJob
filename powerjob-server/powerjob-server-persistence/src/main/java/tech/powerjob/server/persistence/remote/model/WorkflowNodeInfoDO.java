@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
+import tech.powerjob.server.common.constants.NodeType;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -34,15 +35,18 @@ public class WorkflowNodeInfoDO {
     @Column(nullable = false)
     private Long workflowId;
     /**
+     * 节点类型 {@link NodeType}
+     */
+    private Integer type;
+    /**
      * 任务 ID
      */
     @Column(nullable = false)
     private Long jobId;
     /**
-     * 节点别名，默认为对应的任务名称
+     * 节点名称，默认为对应的任务名称
      */
-    @Column(nullable = false)
-    private String nodeAlias;
+    private String nodeName;
     /**
      * 节点参数
      */
@@ -58,6 +62,9 @@ public class WorkflowNodeInfoDO {
      */
     @Column(nullable = false)
     private Boolean skipWhenFailed;
+
+    @Lob
+    private String extra;
     /**
      * 创建时间
      */

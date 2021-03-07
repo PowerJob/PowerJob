@@ -361,48 +361,21 @@ public class OhMyClient {
 
 
     /**
-     * 保存工作流 DAG
-     *
-     * @param request DAG of Workflow
-     * @return Standard return object
-     */
-    public ResultDTO<Void> saveWorkflowDag(SaveWorkflowDAGRequest request) {
-        request.setAppId(appId);
-        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
-        String json = JsonUtils.toJSONStringUnsafe(request);
-        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW_DAG, RequestBody.create(jsonType, json));
-        return JSON.parseObject(post, VOID_RESULT_TYPE);
-    }
-
-    /**
      * 添加工作流节点
      *
      * @param requestList Node info list of Workflow
      * @return Standard return object
      */
-    public ResultDTO<List<WorkflowNodeInfoDTO>> addWorkflowNode(List<AddWorkflowNodeRequest> requestList) {
-        for (AddWorkflowNodeRequest addWorkflowNodeRequest : requestList) {
-            addWorkflowNodeRequest.setAppId(appId);
+    public ResultDTO<List<WorkflowNodeInfoDTO>> saveWorkflowNode(List<SaveWorkflowNodeRequest> requestList) {
+        for (SaveWorkflowNodeRequest saveWorkflowNodeRequest : requestList) {
+            saveWorkflowNodeRequest.setAppId(appId);
         }
         MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
         String json = JsonUtils.toJSONStringUnsafe(requestList);
-        String post = postHA(OpenAPIConstant.ADD_WORKFLOW_NODE, RequestBody.create(jsonType, json));
+        String post = postHA(OpenAPIConstant.SAVE_WORKFLOW_NODE, RequestBody.create(jsonType, json));
         return JSON.parseObject(post, WF_NODE_LIST_RESULT_TYPE);
     }
 
-    /**
-     * 修改工作流节点
-     *
-     * @param request Node info of Workflow
-     * @return Standard return object
-     */
-    public ResultDTO<Void> modifyWorkflowNode(ModifyWorkflowNodeRequest request) {
-        request.setAppId(appId);
-        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
-        String json = JsonUtils.toJSONStringUnsafe(request);
-        String post = postHA(OpenAPIConstant.MODIFY_WORKFLOW_NODE, RequestBody.create(jsonType, json));
-        return JSON.parseObject(post, VOID_RESULT_TYPE);
-    }
 
 
     /**

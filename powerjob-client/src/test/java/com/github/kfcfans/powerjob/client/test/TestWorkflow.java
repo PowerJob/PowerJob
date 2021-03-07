@@ -62,57 +62,55 @@ class TestWorkflow extends ClientInitializer {
         System.out.println(res);
         Assertions.assertNotNull(res);
 
+        req.setId(res.getData());
+
+        // 创建节点
+        SaveWorkflowNodeRequest saveWorkflowNodeRequest1 = new SaveWorkflowNodeRequest();
+        saveWorkflowNodeRequest1.setJobId(1L);
+        saveWorkflowNodeRequest1.setWorkflowId(req.getId());
+        saveWorkflowNodeRequest1.setNodeName("DAG-Node-1");
+
+        SaveWorkflowNodeRequest saveWorkflowNodeRequest2 = new SaveWorkflowNodeRequest();
+        saveWorkflowNodeRequest2.setJobId(1L);
+        saveWorkflowNodeRequest2.setWorkflowId(req.getId());
+        saveWorkflowNodeRequest2.setNodeName("DAG-Node-2");
+
+
+        SaveWorkflowNodeRequest saveWorkflowNodeRequest3 = new SaveWorkflowNodeRequest();
+        saveWorkflowNodeRequest3.setJobId(1L);
+        saveWorkflowNodeRequest3.setWorkflowId(req.getId());
+        saveWorkflowNodeRequest3.setNodeName("DAG-Node-3");
+
+
+        List<WorkflowNodeInfoDTO> nodeList = ohMyClient.saveWorkflowNode(Lists.newArrayList(saveWorkflowNodeRequest1,saveWorkflowNodeRequest2,saveWorkflowNodeRequest3)).getData();
+        System.out.println(nodeList);
+        Assertions.assertNotNull(nodeList);
+
+
+        // DAG 图
+        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
+        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
+
+        nodes.add(new PEWorkflowDAG.Node(nodeList.get(0).getId(), 1L, "DAG-Node-1"));
+        nodes.add(new PEWorkflowDAG.Node(nodeList.get(1).getId(), 1L, "DAG-Node-2"));
+        nodes.add(new PEWorkflowDAG.Node(nodeList.get(2).getId(), 1L, "DAG-Node-3"));
+
+        edges.add(new PEWorkflowDAG.Edge(nodeList.get(0).getId(), nodeList.get(1).getId()));
+        edges.add(new PEWorkflowDAG.Edge(nodeList.get(1).getId(), nodeList.get(2).getId()));
+        PEWorkflowDAG peWorkflowDAG = new PEWorkflowDAG(nodes, edges);
+
+        // 保存完整信息
+        req.setDag(peWorkflowDAG);
+        res = ohMyClient.saveWorkflow(req);
+
+        System.out.println(res);
+        Assertions.assertNotNull(res);
+
     }
 
     @Test
     void testCopyWorkflow() {
         ResultDTO<Long> res = ohMyClient.copyWorkflow(WF_ID);
-        System.out.println(res);
-        Assertions.assertNotNull(res);
-    }
-
-    @Test
-    void testAddWorkflowNode() {
-        AddWorkflowNodeRequest addWorkflowNodeRequest = new AddWorkflowNodeRequest();
-        addWorkflowNodeRequest.setJobId(1L);
-        addWorkflowNodeRequest.setWorkflowId(WF_ID);
-        ResultDTO<List<WorkflowNodeInfoDTO>> res = ohMyClient.addWorkflowNode(Lists.newArrayList(addWorkflowNodeRequest));
-        System.out.println(res);
-        Assertions.assertNotNull(res);
-    }
-
-    @Test
-    void testModifyWorkflowNode() {
-        ModifyWorkflowNodeRequest modifyWorkflowNodeRequest = new ModifyWorkflowNodeRequest();
-        modifyWorkflowNodeRequest.setWorkflowId(WF_ID);
-        modifyWorkflowNodeRequest.setId(1L);
-        modifyWorkflowNodeRequest.setNodeAlias("(๑•̀ㅂ•́)و✧");
-        modifyWorkflowNodeRequest.setEnable(false);
-        modifyWorkflowNodeRequest.setSkipWhenFailed(false);
-        ResultDTO<Void> res = ohMyClient.modifyWorkflowNode(modifyWorkflowNodeRequest);
-        System.out.println(res);
-        Assertions.assertNotNull(res);
-    }
-
-    @Test
-    void testSaveWorkflowDag() {
-        // DAG 图
-        List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
-        List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
-
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "DAG-Node-1"));
-        nodes.add(new PEWorkflowDAG.Node(2L, 1L, "DAG-Node-2"));
-        nodes.add(new PEWorkflowDAG.Node(3L, 1L, "DAG-Node-3"));
-
-        edges.add(new PEWorkflowDAG.Edge(1L, 2L));
-        edges.add(new PEWorkflowDAG.Edge(2L, 3L));
-
-        PEWorkflowDAG peWorkflowDAG = new PEWorkflowDAG(nodes, edges);
-
-        SaveWorkflowDAGRequest saveWorkflowDAGRequest = new SaveWorkflowDAGRequest();
-        saveWorkflowDAGRequest.setId(WF_ID);
-        saveWorkflowDAGRequest.setDag(peWorkflowDAG);
-        ResultDTO<Void> res = ohMyClient.saveWorkflowDag(saveWorkflowDAGRequest);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }

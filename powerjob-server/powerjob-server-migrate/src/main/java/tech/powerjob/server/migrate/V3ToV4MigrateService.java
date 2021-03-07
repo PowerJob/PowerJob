@@ -224,7 +224,7 @@ public class V3ToV4MigrateService {
             nodeInfo.setAppId(workflowInfo.getAppId());
             nodeInfo.setJobId(jobInfo.getId());
             // 默认启用，不允许失败跳过，参数和 Job 保持一致
-            nodeInfo.setNodeAlias(jobInfo.getJobName());
+            nodeInfo.setNodeName(jobInfo.getJobName());
             nodeInfo.setNodeParams(jobInfo.getJobParams());
             nodeInfo.setEnable(true);
             nodeInfo.setSkipWhenFailed(false);
@@ -234,7 +234,7 @@ public class V3ToV4MigrateService {
             nodeInfo = workflowNodeInfoRepository.saveAndFlush(nodeInfo);
             // 更新节点 ID
             node.setNodeId(nodeInfo.getId());
-            node.setJobName(nodeInfo.getNodeAlias());
+            node.setNodeName(nodeInfo.getNodeName());
 
             jobId2NodeIdMap.put(node.getJobId(), node.getNodeId());
         }

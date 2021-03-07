@@ -1,8 +1,6 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
-import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
-import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
+import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
@@ -100,22 +98,11 @@ public class WorkflowController {
         return ResultDTO.success(WorkflowInfoVO.from(workflowInfoDO));
     }
 
-    @PostMapping("/addNode")
-    public ResultDTO<List<WorkflowNodeInfoDO>> addWorkflowNode(@RequestBody List<AddWorkflowNodeRequest> request) {
-        return ResultDTO.success(workflowService.addWorkflowNode(request));
+    @PostMapping("/saveNode")
+    public ResultDTO<List<WorkflowNodeInfoDO>> addWorkflowNode(@RequestBody List<SaveWorkflowNodeRequest> request) {
+        return ResultDTO.success(workflowService.saveWorkflowNode(request));
     }
 
-    @PostMapping("/saveDAG")
-    public ResultDTO<Void> saveWorkflowDAG(@RequestBody SaveWorkflowDAGRequest request) {
-        workflowService.saveWorkflowDAG(request);
-        return ResultDTO.success(null);
-    }
-
-    @PostMapping("/modifyNode")
-    public ResultDTO<Void> modifyWorkflowNode(@RequestBody ModifyWorkflowNodeRequest request) {
-        workflowService.modifyWorkflowNode(request);
-        return ResultDTO.success(null);
-    }
 
     private static PageResult<WorkflowInfoVO> convertPage(Page<WorkflowInfoDO> originPage) {
 

@@ -193,21 +193,9 @@ public class OpenAPIController {
         return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, initParams, delay));
     }
 
-    @PostMapping(OpenAPIConstant.ADD_WORKFLOW_NODE)
-    public ResultDTO<List<WorkflowNodeInfoDO>> addWorkflowNode(@RequestBody List<AddWorkflowNodeRequest> request) {
-        return ResultDTO.success(workflowService.addWorkflowNode(request));
-    }
-
-    @PostMapping(OpenAPIConstant.SAVE_WORKFLOW_DAG)
-    public ResultDTO<Void> saveWorkflowDAG(@RequestBody SaveWorkflowDAGRequest request) {
-        workflowService.saveWorkflowDAG(request);
-        return ResultDTO.success(null);
-    }
-
-    @PostMapping(OpenAPIConstant.MODIFY_WORKFLOW_NODE)
-    public ResultDTO<Void> modifyWorkflowNode(@RequestBody ModifyWorkflowNodeRequest request) {
-        workflowService.modifyWorkflowNode(request);
-        return ResultDTO.success(null);
+    @PostMapping(OpenAPIConstant.SAVE_WORKFLOW_NODE)
+    public ResultDTO<List<WorkflowNodeInfoDO>> saveWorkflowNode(@RequestBody List<SaveWorkflowNodeRequest> request) {
+        return ResultDTO.success(workflowService.saveWorkflowNode(request));
     }
 
     /* ************* Workflow Instance 区 ************* */

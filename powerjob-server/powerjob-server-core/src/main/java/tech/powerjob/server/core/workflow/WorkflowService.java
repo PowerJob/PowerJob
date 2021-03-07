@@ -4,9 +4,18 @@ import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
+import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
 import tech.powerjob.server.common.utils.CronExpression;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
@@ -16,17 +25,6 @@ import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
-import com.github.kfcfans.powerjob.common.request.http.AddWorkflowNodeRequest;
-import com.github.kfcfans.powerjob.common.request.http.ModifyWorkflowNodeRequest;
-import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowDAGRequest;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
@@ -61,8 +59,8 @@ public class WorkflowService {
      *
      * @param req 请求
      * @return 工作流ID
-     * @exception ParseException 异常
      */
+    @Transactional(rollbackOn = Exception.class)
     public Long saveWorkflow(SaveWorkflowRequest req) throws ParseException {
 
         req.valid();
@@ -93,10 +91,55 @@ public class WorkflowService {
         } else {
             wf.setTimeExpression(null);
         }
+        // 在当前的交互设计下首次创建一定不会有 DAG 信息
+        if (req.getId() != null) {
+            wf.setPeDAG(validateDAGAndConvert2String(req));
+        }
 
         WorkflowInfoDO newEntity = workflowInfoRepository.saveAndFlush(wf);
+
         return newEntity.getId();
     }
+
+    /**
+     * 保存 DAG 信息
+     * 这里会物理删除游离的节点信息
+     */
+    private String validateDAGAndConvert2String(SaveWorkflowRequest req) {
+        if (req.getDag() == null || CollectionUtils.isEmpty(req.getDag().getNodes())) {
+            return "{}";
+        }
+        PEWorkflowDAG dag = req.getDag();
+        if (!WorkflowDAGUtils.valid(dag)) {
+            throw new PowerJobException("illegal DAG");
+        }
+        // 注意：这里只会保存图相关的基础信息，nodeId,jobId,jobName(nodeAlias)
+        // 其中 jobId，jobName 均以节点中的信息为准
+        List<Long> nodeIdList = Lists.newArrayList();
+        HashMap<Long, WorkflowNodeInfoDO> nodeIdNodInfoMap = Maps.newHashMap();
+        workflowNodeInfoRepository.findByWorkflowId(req.getId()).forEach(
+                e -> nodeIdNodInfoMap.put(e.getId(), e)
+        );
+        for (PEWorkflowDAG.Node node : dag.getNodes()) {
+            WorkflowNodeInfoDO nodeInfo = nodeIdNodInfoMap.get(node.getNodeId());
+            if (nodeInfo == null) {
+                throw new PowerJobException("can't find node info by id :" + node.getNodeId());
+            }
+            if (!req.getId().equals(nodeInfo.getWorkflowId())) {
+                throw new PowerJobException("workflowId of current node must be same to workflowId");
+            }
+            // 节点中的名称信息一定是非空的
+            node.setNodeName(nodeInfo.getNodeName()).setJobId(nodeInfo.getJobId());
+            // 清空其他信息
+            node.setEnable(null).setSkipWhenFailed(null).setInstanceId(null).setResult(null);
+            nodeIdList.add(node.getNodeId());
+        }
+
+        int deleteCount = workflowNodeInfoRepository.deleteByWorkflowIdAndIdNotIn(req.getId(), nodeIdList);
+        log.warn("[WorkflowService-{}]delete {} dissociative nodes of workflow", req.getId(), deleteCount);
+        return JSON.toJSONString(dag);
+    }
+
 
     /**
      * 深度复制工作流
@@ -238,89 +281,39 @@ public class WorkflowService {
         return wfInstanceId;
     }
 
+
     /**
-     * 添加工作流节点
+     * 保存工作流节点（新增 或者 保存）
      *
-     * @param requestList 工作流节点列表
-     * @return 新增的节点信息
+     * @param workflowNodeRequestList 工作流节点
+     * @return 更新 或者 创建后的工作流节点信息
      */
-    public List<WorkflowNodeInfoDO> addWorkflowNode(List<AddWorkflowNodeRequest> requestList) {
-        if (CollectionUtils.isEmpty(requestList)) {
-            throw new PowerJobException("requestList must be not null");
+    public List<WorkflowNodeInfoDO> saveWorkflowNode(List<SaveWorkflowNodeRequest> workflowNodeRequestList) {
+        if (CollectionUtils.isEmpty(workflowNodeRequestList)) {
+            return Collections.emptyList();
         }
-
-        List<WorkflowNodeInfoDO> saveList = new ArrayList<>();
-        for (AddWorkflowNodeRequest addWorkflowNodeRequest : requestList) {
-            // 校验
-            addWorkflowNodeRequest.valid();
-            permissionCheck(addWorkflowNodeRequest.getWorkflowId(), addWorkflowNodeRequest.getAppId());
-
-            WorkflowNodeInfoDO workflowNodeInfoDO = new WorkflowNodeInfoDO();
-            BeanUtils.copyProperties(addWorkflowNodeRequest, workflowNodeInfoDO);
+        ArrayList<WorkflowNodeInfoDO> res = new ArrayList<>(workflowNodeRequestList.size());
+        for (SaveWorkflowNodeRequest req : workflowNodeRequestList) {
+            req.valid();
+            permissionCheck(req.getWorkflowId(), req.getAppId());
+            WorkflowNodeInfoDO workflowNodeInfo;
+            if (req.getId() != null) {
+                workflowNodeInfo = workflowNodeInfoRepository.findById(req.getId()).orElseThrow(() -> new IllegalArgumentException("can't find workflow Node by id: " + req.getId()));
+            } else {
+                workflowNodeInfo = new WorkflowNodeInfoDO();
+                workflowNodeInfo.setGmtCreate(new Date());
+            }
+            BeanUtils.copyProperties(req, workflowNodeInfo);
             // 如果名称为空则默认取任务名称
-            if (StringUtils.isEmpty(addWorkflowNodeRequest.getNodeAlias())) {
-                JobInfoDO jobInfoDO = jobInfoRepository.findById(addWorkflowNodeRequest.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + addWorkflowNodeRequest.getJobId()));
-                workflowNodeInfoDO.setNodeAlias(jobInfoDO.getJobName());
+            if (StringUtils.isEmpty(workflowNodeInfo.getNodeName())) {
+                JobInfoDO jobInfoDO = jobInfoRepository.findById(req.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + req.getJobId()));
+                workflowNodeInfo.setNodeName(jobInfoDO.getJobName());
             }
-            Date current = new Date();
-            workflowNodeInfoDO.setGmtCreate(current);
-            workflowNodeInfoDO.setGmtModified(current);
-            saveList.add(workflowNodeInfoDO);
+            workflowNodeInfo.setGmtModified(new Date());
+            workflowNodeInfo = workflowNodeInfoRepository.saveAndFlush(workflowNodeInfo);
+            res.add(workflowNodeInfo);
         }
-        return workflowNodeInfoRepository.saveAll(saveList);
-    }
-
-    /**
-     * 修改工作流节点信息
-     *
-     * @param req 工作流节点信息
-     */
-    public void modifyWorkflowNode(ModifyWorkflowNodeRequest req) {
-        req.valid();
-        permissionCheck(req.getWorkflowId(), req.getAppId());
-        WorkflowNodeInfoDO workflowNodeInfoDO = workflowNodeInfoRepository.findById(req.getId()).orElseThrow(() -> new IllegalArgumentException("can't find workflow Node by id: " + req.getId()));
-        BeanUtils.copyProperties(req, workflowNodeInfoDO);
-        workflowNodeInfoDO.setGmtModified(new Date());
-        workflowNodeInfoRepository.saveAndFlush(workflowNodeInfoDO);
-    }
-
-    /**
-     * 保存 DAG 信息
-     * 这里会物理删除游离的节点信息
-     */
-    @Transactional(rollbackOn = Exception.class)
-    public void saveWorkflowDAG(SaveWorkflowDAGRequest req) {
-        req.valid();
-        Long workflowId = req.getId();
-        WorkflowInfoDO workflowInfoDO = permissionCheck(workflowId, req.getAppId());
-        PEWorkflowDAG dag = req.getDag();
-        if (!WorkflowDAGUtils.valid(dag)) {
-            throw new PowerJobException("illegal DAG");
-        }
-        // 注意：这里只会保存图相关的基础信息，nodeId,jobId,jobName(nodeAlias)
-        // 其中 jobId，jobName 均以节点中的信息为准
-        List<Long> nodeIdList = Lists.newArrayList();
-        HashMap<Long, WorkflowNodeInfoDO> nodeIdNodInfoMap = Maps.newHashMap();
-        workflowNodeInfoRepository.findByWorkflowId(workflowId).forEach(
-                e -> nodeIdNodInfoMap.put(e.getId(), e)
-        );
-        for (PEWorkflowDAG.Node node : dag.getNodes()) {
-            WorkflowNodeInfoDO nodeInfo = nodeIdNodInfoMap.get(node.getNodeId());
-            if (nodeInfo == null) {
-                throw new PowerJobException("can't find node info by id :" + node.getNodeId());
-            }
-            if (!workflowInfoDO.getId().equals(nodeInfo.getWorkflowId())) {
-                throw new PowerJobException("node workflowId must be same to workflowId");
-            }
-            // 节点中的别名一定是非空的
-            node.setJobName(nodeInfo.getNodeAlias()).setJobId(nodeInfo.getJobId());
-            nodeIdList.add(node.getNodeId());
-        }
-        workflowInfoDO.setPeDAG(JSON.toJSONString(dag));
-        workflowInfoRepository.saveAndFlush(workflowInfoDO);
-        // 物理删除当前工作流中 “游离” 的节点 (不在工作流 DAG 中的节点)
-        int deleteCount = workflowNodeInfoRepository.deleteByWorkflowIdAndIdNotIn(workflowId, nodeIdList);
-        log.warn("[WorkflowService-{}]delete {} dissociative nodes of workflow", workflowId, deleteCount);
+        return res;
     }
 
 
@@ -349,8 +342,8 @@ public class WorkflowService {
                 if (nodeInfo != null) {
                     node.setEnable(nodeInfo.getEnable())
                             .setSkipWhenFailed(nodeInfo.getSkipWhenFailed())
-                            .setJobName(nodeInfo.getNodeAlias())
-                            .setJobParams(nodeInfo.getNodeParams());
+                            .setNodeName(nodeInfo.getNodeName())
+                            .setNodeParams(nodeInfo.getNodeParams());
 
                 } else {
                     // 默认开启 并且 不允许失败跳过
