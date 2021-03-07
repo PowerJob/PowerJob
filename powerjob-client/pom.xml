@@ -10,13 +10,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-client</artifactId>
-    <version>3.4.7</version>
+    <version>3.4.8</version>
     <packaging>jar</packaging>
 
     <properties>
         <junit.version>5.6.1</junit.version>
         <fastjson.version>1.2.68</fastjson.version>
-        <powerjob.common.version>3.4.7</powerjob.common.version>
+        <powerjob.common.version>3.4.8</powerjob.common.version>
 
         <mvn.shade.plugin.version>3.2.4</mvn.shade.plugin.version>
     </properties>
