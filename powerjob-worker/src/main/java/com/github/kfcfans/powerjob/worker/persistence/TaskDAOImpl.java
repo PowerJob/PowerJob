@@ -4,6 +4,7 @@ import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskResult;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.AllArgsConstructor;
 
 import java.sql.*;
 import java.util.Collection;
@@ -16,7 +17,10 @@ import java.util.Map;
  * @author tjq
  * @since 2020/3/17
  */
+@AllArgsConstructor
 public class TaskDAOImpl implements TaskDAO {
+    
+    private final ConnectionFactory connectionFactory;
 
     @Override
     public void initTable() throws Exception {
@@ -26,7 +30,7 @@ public class TaskDAOImpl implements TaskDAO {
         // bigint(20) 与 Java Long 取值范围完全一致
         String createTableSQL = "create table task_info (task_id varchar(255), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(255), task_content blob, address varchar(255), status int(5), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), last_report_time bigint(20), unique KEY pkey (instance_id, task_id))";
 
-        try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
+        try (Connection conn = connectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);
             stat.execute(createTableSQL);
         }
@@ -35,7 +39,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean save(TaskDO task) throws SQLException {
         String insertSQL = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time, last_report_time) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
+        try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
             fillInsertPreparedStatement(task, ps);
             return ps.executeUpdate() == 1;
         }
@@ -44,7 +48,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean batchSave(Collection<TaskDO> tasks) throws SQLException {
         String insertSQL = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time, last_report_time) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
+        try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
 
             for (TaskDO task : tasks) {
 
@@ -63,7 +67,7 @@ public class TaskDAOImpl implements TaskDAO {
     public boolean simpleDelete(SimpleTaskQuery condition) throws SQLException {
         String deleteSQL = "delete from task_info where %s";
         String sql = String.format(deleteSQL, condition.getQueryCondition());
-        try (Connection conn = ConnectionFactory.getConnection(); Statement stat = conn.createStatement()) {
+        try (Connection conn = connectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.executeUpdate(sql);
             return true;
         }
@@ -74,7 +78,7 @@ public class TaskDAOImpl implements TaskDAO {
         ResultSet rs = null;
         String sql = "select * from task_info where " + query.getQueryCondition();
         List<TaskDO> result = Lists.newLinkedList();
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             rs = ps.executeQuery();
             while (rs.next()) {
                 result.add(convert(rs));
@@ -96,7 +100,7 @@ public class TaskDAOImpl implements TaskDAO {
         String sqlFormat = "select %s from task_info where %s";
         String sql = String.format(sqlFormat, query.getQueryContent(), query.getQueryCondition());
         List<Map<String, Object>> result = Lists.newLinkedList();
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             rs = ps.executeQuery();
             // 原数据，包含了列名
             ResultSetMetaData  metaData = rs.getMetaData();
@@ -125,7 +129,7 @@ public class TaskDAOImpl implements TaskDAO {
     public boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField) throws SQLException {
         String sqlFormat = "update task_info set %s where %s";
         String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getQueryCondition());
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
+        try (Connection conn = connectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
             stat.executeUpdate();
             return true;
         }
@@ -136,7 +140,7 @@ public class TaskDAOImpl implements TaskDAO {
         ResultSet rs = null;
         List<TaskResult> taskResults = Lists.newLinkedList();
         String sql = "select task_id, status, result from task_info where instance_id = ? and sub_instance_id = ?";
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, instanceId);
             ps.setLong(2, subInstanceId);
             rs = ps.executeQuery();
@@ -168,7 +172,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean updateTaskStatus(Long instanceId, String taskId, int status, long lastReportTime, String result) throws SQLException {
         String sql = "update task_info set status = ?, last_report_time = ?, result = ?, last_modified_time = ? where instance_id = ? and task_id = ?";
-        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, status);
             ps.setLong(2, lastReportTime);

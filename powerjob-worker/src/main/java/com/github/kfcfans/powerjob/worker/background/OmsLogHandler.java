@@ -1,11 +1,11 @@
 package com.github.kfcfans.powerjob.worker.background;
 
 import akka.actor.ActorSelection;
+import akka.actor.ActorSystem;
 import com.github.kfcfans.powerjob.common.LogLevel;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.model.InstanceLogContent;
 import com.github.kfcfans.powerjob.common.request.WorkerLogReportReq;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
@@ -27,22 +27,27 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class OmsLogHandler {
 
-    private OmsLogHandler() {
-    }
+    private final String workerAddress;
+    private final ActorSystem actorSystem;
+    private final ServerDiscoveryService serverDiscoveryService;
 
-    // 单例
-    public static final OmsLogHandler INSTANCE = new OmsLogHandler();
-    // 生产者消费者模式，异步上传日志
-    private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue();
     // 处理线程，需要通过线程池启动
     public final Runnable logSubmitter = new LogSubmitter();
     // 上报锁，只需要一个线程上报即可
     private final Lock reportLock = new ReentrantLock();
+    // 生产者消费者模式，异步上传日志
+    private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue();
 
     // 每次上报携带的数据条数
     private static final int BATCH_SIZE = 20;
     // 本地囤积阈值
     private static final int REPORT_SIZE = 1024;
+
+    public OmsLogHandler(String workerAddress, ActorSystem actorSystem, ServerDiscoveryService serverDiscoveryService) {
+        this.workerAddress = workerAddress;
+        this.actorSystem = actorSystem;
+        this.serverDiscoveryService = serverDiscoveryService;
+    }
 
     /**
      * 提交日志
@@ -74,7 +79,7 @@ public class OmsLogHandler {
 
             try {
 
-                String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
+                String serverPath = AkkaUtils.getServerActorPath(serverDiscoveryService.getCurrentServerAddress());
                 // 当前无可用 Server
                 if (StringUtils.isEmpty(serverPath)) {
                     if (!logQueue.isEmpty()) {
@@ -84,7 +89,7 @@ public class OmsLogHandler {
                     return;
                 }
 
-                ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
+                ActorSelection serverActor = actorSystem.actorSelection(serverPath);
                 List<InstanceLogContent> logs = Lists.newLinkedList();
 
                 while (!logQueue.isEmpty()) {
@@ -93,7 +98,7 @@ public class OmsLogHandler {
                         logs.add(logContent);
 
                         if (logs.size() >= BATCH_SIZE) {
-                            WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), Lists.newLinkedList(logs));
+                            WorkerLogReportReq req = new WorkerLogReportReq(workerAddress, Lists.newLinkedList(logs));
                             // 不可靠请求，WEB日志不追求极致
                             serverActor.tell(req, null);
                             logs.clear();
@@ -105,7 +110,7 @@ public class OmsLogHandler {
                 }
 
                 if (!logs.isEmpty()) {
-                    WorkerLogReportReq req = new WorkerLogReportReq(OhMyWorker.getWorkerAddress(), logs);
+                    WorkerLogReportReq req = new WorkerLogReportReq(workerAddress, logs);
                     serverActor.tell(req, null);
                 }
 

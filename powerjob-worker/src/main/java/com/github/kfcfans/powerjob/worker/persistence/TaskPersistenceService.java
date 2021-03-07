@@ -4,11 +4,14 @@ package com.github.kfcfans.powerjob.worker.persistence;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.SupplierPlus;
+import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
+import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskResult;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
@@ -26,24 +29,25 @@ import java.util.Optional;
 @Slf4j
 public class TaskPersistenceService {
 
+    private final StoreStrategy strategy;
+
     // 默认重试参数
     private static final int RETRY_TIMES = 3;
     private static final long RETRY_INTERVAL_MS = 100;
 
-    private static volatile boolean initialized = false;
-    public static TaskPersistenceService INSTANCE = new TaskPersistenceService();
+    private TaskDAO taskDAO;
 
-    private TaskPersistenceService() {
+    public TaskPersistenceService(StoreStrategy strategy) {
+        this.strategy = strategy;
     }
 
-    private final TaskDAO taskDAO = new TaskDAOImpl();
-
     public void init() throws Exception {
-        if (initialized) {
-            return;
-        }
+
+        ConnectionFactory connectionFactory = new ConnectionFactory();
+        connectionFactory.initDatasource(strategy);
+
+        taskDAO = new TaskDAOImpl(connectionFactory);
         taskDAO.initTable();
-        initialized = true;
     }
 
     public boolean save(TaskDO task) {

@@ -31,11 +31,11 @@ public class AkkaUtils {
         return String.format(AKKA_NODE_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, actorName);
     }
 
-    public static String getAkkaServerPath(String actorName) {
-        if (StringUtils.isEmpty(OhMyWorker.getCurrentServer())) {
+    public static String getServerActorPath(String serverAddress) {
+        if (StringUtils.isEmpty(serverAddress)) {
             return null;
         }
-        return String.format(AKKA_NODE_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, OhMyWorker.getCurrentServer(), actorName);
+        return String.format(AKKA_NODE_PATH, RemoteConstant.SERVER_ACTOR_SYSTEM_NAME, serverAddress, RemoteConstant.SERVER_ACTOR_NAME);
     }
 
     /**

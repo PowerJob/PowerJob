@@ -18,16 +18,15 @@ public class WorkflowContextUtils {
     }
 
 
-    public static boolean isExceededLengthLimit(Map<String, String> appendedWfContext) {
+    public static boolean isExceededLengthLimit(Map<String, String> appendedWfContext, int maxLength) {
 
         String jsonString = JsonUtils.toJSONString(appendedWfContext);
         if (jsonString == null) {
             // impossible
             return true;
         }
-        int maxAppendedWfContextLength = OhMyWorker.getConfig().getMaxAppendedWfContextLength();
 
-        return maxAppendedWfContextLength < jsonString.length();
+        return maxLength < jsonString.length();
 
     }
 

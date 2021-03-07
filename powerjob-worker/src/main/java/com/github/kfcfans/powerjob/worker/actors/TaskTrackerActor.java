@@ -1,10 +1,12 @@
 package com.github.kfcfans.powerjob.worker.actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.Props;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
+import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTrackerPool;
@@ -14,6 +16,7 @@ import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatus
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -25,7 +28,14 @@ import java.util.List;
  * @since 2020/3/17
  */
 @Slf4j
+@AllArgsConstructor
 public class TaskTrackerActor extends AbstractActor {
+
+    private final RuntimeMeta runtimeMeta;
+
+    public static Props props(RuntimeMeta runtimeMeta) {
+        return Props.create(TaskTrackerActor.class, () -> new TaskTrackerActor(runtimeMeta));
+    }
 
     @Override
     public Receive createReceive() {
@@ -123,7 +133,7 @@ public class TaskTrackerActor extends AbstractActor {
 
         log.debug("[TaskTrackerActor] server schedule job by request: {}.", req);
         // 原子创建，防止多实例的存在
-        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req));
+        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req, runtimeMeta));
     }
 
     /**

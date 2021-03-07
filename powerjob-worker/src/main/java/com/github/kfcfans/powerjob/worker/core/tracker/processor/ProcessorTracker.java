@@ -3,7 +3,7 @@ package com.github.kfcfans.powerjob.worker.core.tracker.processor;
 import akka.actor.ActorSelection;
 import com.github.kfcfans.powerjob.common.*;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
+import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SpringUtils;
@@ -42,6 +42,7 @@ public class ProcessorTracker {
      * 记录创建时间
      */
     private long startTime;
+    private RuntimeMeta runtimeMeta;
     /**
      * 任务实例信息
      */
@@ -99,17 +100,18 @@ public class ProcessorTracker {
      * 创建 ProcessorTracker（其实就是创建了个执行用的线程池 T_T）
      */
     @SuppressWarnings("squid:S1181")
-    public ProcessorTracker(TaskTrackerStartTaskReq request) {
+    public ProcessorTracker(TaskTrackerStartTaskReq request, RuntimeMeta runtimeMeta) {
         try {
             // 赋值
             this.startTime = System.currentTimeMillis();
+            this.runtimeMeta = runtimeMeta;
             this.instanceInfo = request.getInstanceInfo();
             this.instanceId = request.getInstanceInfo().getInstanceId();
             this.taskTrackerAddress = request.getTaskTrackerAddress();
             String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
-            this.taskTrackerActorRef = OhMyWorker.actorSystem.actorSelection(akkaRemotePath);
+            this.taskTrackerActorRef = runtimeMeta.getActorSystem().actorSelection(akkaRemotePath);
 
-            this.omsLogger = new OmsServerLogger(instanceId);
+            this.omsLogger = new OmsServerLogger(instanceId, runtimeMeta.getOmsLogHandler());
             this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
             this.lastIdleTime = -1L;
             this.lastCompletedTaskCount = 0L;
@@ -162,7 +164,7 @@ public class ProcessorTracker {
         newTask.setAddress(taskTrackerAddress);
 
         ClassLoader classLoader = omsContainer == null ? getClass().getClassLoader() : omsContainer.getContainerClassLoader();
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader, statusReportRetryQueue);
+        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader, statusReportRetryQueue, runtimeMeta);
         try {
             threadPool.submit(processorRunnable);
             success = true;
@@ -284,7 +286,9 @@ public class ProcessorTracker {
                         log.warn("[ProcessorTracker-{}] ProcessorTracker have been idle for {}ms, it's time to tell TaskTracker and then destroy self.", instanceId, idleTime);
 
                         // 不可靠通知，如果该请求失败，则整个任务处理集群缺失一个 ProcessorTracker，影响可接受
-                        taskTrackerActorRef.tell(ProcessorTrackerStatusReportReq.buildIdleReport(instanceId), null);
+                        ProcessorTrackerStatusReportReq statusReportReq = ProcessorTrackerStatusReportReq.buildIdleReport(instanceId);
+                        statusReportReq.setAddress(runtimeMeta.getWorkerAddress());
+                        taskTrackerActorRef.tell(statusReportReq, null);
                         destroy();
                         return;
                     }
@@ -306,7 +310,9 @@ public class ProcessorTracker {
 
             // 上报当前 ProcessorTracker 负载
             long waitingNum = threadPool.getQueue().size();
-            taskTrackerActorRef.tell(ProcessorTrackerStatusReportReq.buildLoadReport(instanceId, waitingNum), null);
+            ProcessorTrackerStatusReportReq statusReportReq = ProcessorTrackerStatusReportReq.buildLoadReport(instanceId, waitingNum);
+            statusReportReq.setAddress(runtimeMeta.getWorkerAddress());
+            taskTrackerActorRef.tell(statusReportReq, null);
             log.debug("[ProcessorTracker-{}] send heartbeat to TaskTracker, current waiting task num is {}.", instanceId, waitingNum);
         }
 
@@ -339,7 +345,9 @@ public class ProcessorTracker {
                 String[] split = processorInfo.split("#");
                 log.info("[ProcessorTracker-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
 
-                omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), true);
+                String serverPath = AkkaUtils.getServerActorPath(runtimeMeta.getServerDiscoveryService().getCurrentServerAddress());
+                ActorSelection actorSelection = runtimeMeta.getActorSystem().actorSelection(serverPath);
+                omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), actorSelection);
                 if (omsContainer != null) {
                     processor = omsContainer.getProcessor(split[1]);
                 } else {

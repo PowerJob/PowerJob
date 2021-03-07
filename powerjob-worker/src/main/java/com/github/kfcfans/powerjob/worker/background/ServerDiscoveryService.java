@@ -1,19 +1,22 @@
 package com.github.kfcfans.powerjob.worker.background;
 
+import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.common.utils.HttpUtils;
+import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTrackerPool;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 服务发现
@@ -24,8 +27,13 @@ import java.util.Map;
 @Slf4j
 public class ServerDiscoveryService {
 
-    // 配置的可发起HTTP请求的Server（IP:Port）
-    private static final Map<String, String> IP2ADDRESS = Maps.newHashMap();
+    private final Long appId;
+    private final OhMyConfig config;
+
+    private String currentServerAddress;
+
+    private final Map<String, String> ip2Address = Maps.newHashMap();
+
     // 服务发现地址
     private static final String DISCOVERY_URL = "http://%s/server/acquire?appId=%d&currentServer=%s&protocol=AKKA";
     // 失败次数
@@ -33,27 +41,44 @@ public class ServerDiscoveryService {
     // 最大失败次数
     private static final int MAX_FAILED_COUNT = 3;
 
+    public ServerDiscoveryService(Long appId, OhMyConfig config) {
+        this.appId = appId;
+        this.config = config;
+    }
 
-    public static String discovery() {
+    public void start(ScheduledExecutorService timingPool) {
+        this.currentServerAddress = discovery();
+        if (org.springframework.util.StringUtils.isEmpty(this.currentServerAddress) && !config.isEnableTestMode()) {
+            throw new PowerJobException("can't find any available server, this worker has been quarantined.");
+        }
+        timingPool.scheduleAtFixedRate(() -> this.currentServerAddress = discovery(), 10, 10, TimeUnit.SECONDS);
+    }
 
-        if (IP2ADDRESS.isEmpty()) {
-            OhMyWorker.getConfig().getServerAddress().forEach(x -> IP2ADDRESS.put(x.split(":")[0], x));
+    public String getCurrentServerAddress() {
+        return currentServerAddress;
+    }
+
+
+    private String discovery() {
+
+        if (ip2Address.isEmpty()) {
+            config.getServerAddress().forEach(x -> ip2Address.put(x.split(":")[0], x));
         }
 
         String result = null;
 
         // 先对当前机器发起请求
-        String currentServer = OhMyWorker.getCurrentServer();
+        String currentServer = currentServerAddress;
         if (!StringUtils.isEmpty(currentServer)) {
             String ip = currentServer.split(":")[0];
             // 直接请求当前Server的HTTP服务，可以少一次网络开销，减轻Server负担
-            String firstServerAddress = IP2ADDRESS.get(ip);
+            String firstServerAddress = ip2Address.get(ip);
             if (firstServerAddress != null) {
                 result = acquire(firstServerAddress);
             }
         }
 
-        for (String httpServerAddress : OhMyWorker.getConfig().getServerAddress()) {
+        for (String httpServerAddress : config.getServerAddress()) {
             if (StringUtils.isEmpty(result)) {
                 result = acquire(httpServerAddress);
             }else {
@@ -62,36 +87,36 @@ public class ServerDiscoveryService {
         }
 
         if (StringUtils.isEmpty(result)) {
-            log.warn("[OmsServerDiscovery] can't find any available server, this worker has been quarantined.");
+            log.warn("[PowerDiscovery] can't find any available server, this worker has been quarantined.");
 
             // 在 Server 高可用的前提下，连续失败多次，说明该节点与外界失联，Server已经将秒级任务转移到其他Worker，需要杀死本地的任务
             if (FAILED_COUNT++ > MAX_FAILED_COUNT) {
 
-                log.warn("[OmsServerDiscovery] can't find any available server for 3 consecutive times, It's time to kill all frequent job in this worker.");
+                log.warn("[PowerDiscovery] can't find any available server for 3 consecutive times, It's time to kill all frequent job in this worker.");
                 List<Long> frequentInstanceIds = TaskTrackerPool.getAllFrequentTaskTrackerKeys();
                 if (!CollectionUtils.isEmpty(frequentInstanceIds)) {
                     frequentInstanceIds.forEach(instanceId -> {
                         TaskTracker taskTracker = TaskTrackerPool.remove(instanceId);
                         taskTracker.destroy();
-                        log.warn("[OmsServerDiscovery] kill frequent instance(instanceId={}) due to can't find any available server.", instanceId);
+                        log.warn("[PowerDiscovery] kill frequent instance(instanceId={}) due to can't find any available server.", instanceId);
                     });
                 }
 
                 FAILED_COUNT = 0;
             }
             return null;
-        }else {
+        } else {
             // 重置失败次数
             FAILED_COUNT = 0;
-            log.debug("[OmsServerDiscovery] current server is {}.", result);
+            log.debug("[PowerDiscovery] current server is {}.", result);
             return result;
         }
     }
 
     @SuppressWarnings("rawtypes")
-    private static String acquire(String httpServerAddress) {
+    private String acquire(String httpServerAddress) {
         String result = null;
-        String url = String.format(DISCOVERY_URL, httpServerAddress, OhMyWorker.getAppId(), OhMyWorker.getCurrentServer());
+        String url = String.format(DISCOVERY_URL, httpServerAddress, appId, currentServerAddress);
         try {
             result = CommonUtils.executeWithRetry0(() -> HttpUtils.get(url));
         }catch (Exception ignore) {

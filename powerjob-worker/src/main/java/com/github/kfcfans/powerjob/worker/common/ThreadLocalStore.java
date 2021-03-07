@@ -15,6 +15,8 @@ public class ThreadLocalStore {
 
     private static final ThreadLocal<TaskDO> TASK_THREAD_LOCAL = new ThreadLocal<>();
 
+    private static final ThreadLocal<RuntimeMeta> RUNTIME_META_LOCAL = new ThreadLocal<>();
+
     private static final ThreadLocal<AtomicLong> TASK_ID_THREAD_LOCAL = new ThreadLocal<>();
 
 
@@ -26,6 +28,14 @@ public class ThreadLocalStore {
         TASK_THREAD_LOCAL.set(task);
     }
 
+    public static RuntimeMeta getRuntimeMeta() {
+        return RUNTIME_META_LOCAL.get();
+    }
+
+    public static void setRuntimeMeta(RuntimeMeta runtimeMeta) {
+        RUNTIME_META_LOCAL.set(runtimeMeta);
+    }
+
     public static AtomicLong getTaskIDAddr() {
         if (TASK_ID_THREAD_LOCAL.get() == null) {
             TASK_ID_THREAD_LOCAL.set(new AtomicLong(0));
@@ -35,6 +45,7 @@ public class ThreadLocalStore {
 
     public static void clear() {
         TASK_ID_THREAD_LOCAL.remove();
+        RUNTIME_META_LOCAL.remove();
         TASK_THREAD_LOCAL.remove();
     }
 

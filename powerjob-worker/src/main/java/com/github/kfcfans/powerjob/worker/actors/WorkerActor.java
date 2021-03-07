@@ -1,9 +1,13 @@
 package com.github.kfcfans.powerjob.worker.actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
+import akka.actor.Props;
 import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.request.ServerDestroyContainerRequest;
+import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
 import com.github.kfcfans.powerjob.worker.container.OmsContainerFactory;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -13,7 +17,14 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2020/3/24
  */
 @Slf4j
+@AllArgsConstructor
 public class WorkerActor extends AbstractActor {
+
+    private final ActorRef taskTrackerActorRef;
+
+    public static Props props(ActorRef taskTrackerActorRef) {
+        return Props.create(WorkerActor.class, () -> new WorkerActor(taskTrackerActorRef));
+    }
 
     @Override
     public Receive createReceive() {

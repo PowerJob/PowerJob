@@ -6,6 +6,7 @@ import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
+import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
@@ -62,8 +63,8 @@ public class FrequentTaskTracker extends TaskTracker {
     private static final String LAST_TASK_ID_PREFIX = "L";
     private static final int MIN_INTERVAL = 50;
 
-    protected FrequentTaskTracker(ServerScheduleJobReq req) {
-        super(req);
+    protected FrequentTaskTracker(ServerScheduleJobReq req, RuntimeMeta runtimeMeta) {
+        super(req, runtimeMeta);
     }
 
     @Override
@@ -112,7 +113,7 @@ public class FrequentTaskTracker extends TaskTracker {
         // 填充基础信息
         detail.setActualTriggerTime(createTime);
         detail.setStatus(InstanceStatus.RUNNING.getV());
-        detail.setTaskTrackerAddress(OhMyWorker.getWorkerAddress());
+        detail.setTaskTrackerAddress(runtimeMeta.getWorkerAddress());
 
         List<InstanceDetail.SubInstanceDetail> history = Lists.newLinkedList();
         recentSubInstanceInfo.forEach((subId, subInstanceInfo) -> {
@@ -152,7 +153,7 @@ public class FrequentTaskTracker extends TaskTracker {
             subInstanceInfo.startTime = System.currentTimeMillis();
             recentSubInstanceInfo.put(subInstanceId, subInstanceInfo);
 
-            String myAddress = OhMyWorker.getWorkerAddress();
+            String myAddress = runtimeMeta.getWorkerAddress();
             String taskId = String.valueOf(subInstanceId);
 
             TaskDO newRootTask = new TaskDO();
@@ -301,7 +302,7 @@ public class FrequentTaskTracker extends TaskTracker {
                                 newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
                                 newLastTask.setTaskId(LAST_TASK_ID_PREFIX + subInstanceId);
                                 newLastTask.setSubInstanceId(subInstanceId);
-                                newLastTask.setAddress(OhMyWorker.getWorkerAddress());
+                                newLastTask.setAddress(runtimeMeta.getWorkerAddress());
                                 submitTask(Lists.newArrayList(newLastTask));
                             }
                     }
@@ -313,7 +314,8 @@ public class FrequentTaskTracker extends TaskTracker {
 
         private void reportStatus() {
 
-            if (StringUtils.isEmpty(OhMyWorker.getCurrentServer())) {
+            String currentServerAddress = runtimeMeta.getServerDiscoveryService().getCurrentServerAddress();
+            if (StringUtils.isEmpty(currentServerAddress)) {
                 return;
             }
 
@@ -327,14 +329,14 @@ public class FrequentTaskTracker extends TaskTracker {
             req.setTotalTaskNum(triggerTimes.get());
             req.setSucceedTaskNum(succeedTimes.get());
             req.setFailedTaskNum(failedTimes.get());
-            req.setSourceAddress(OhMyWorker.getWorkerAddress());
+            req.setSourceAddress(runtimeMeta.getWorkerAddress());
 
-            String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
+            String serverPath = AkkaUtils.getServerActorPath(currentServerAddress);
             if (StringUtils.isEmpty(serverPath)) {
                 return;
             }
             // 非可靠通知，Server挂掉后任务的kill工作交由其他线程去做
-            ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
+            ActorSelection serverActor = runtimeMeta.getActorSystem().actorSelection(serverPath);
             serverActor.tell(req, null);
         }
 
