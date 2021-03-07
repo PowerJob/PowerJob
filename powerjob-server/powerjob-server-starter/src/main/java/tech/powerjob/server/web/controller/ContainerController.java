@@ -7,11 +7,11 @@ import tech.powerjob.server.common.constants.ContainerSourceType;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.core.container.ContainerTemplateGenerator;
 import tech.powerjob.server.common.utils.OmsFileUtils;
-import tech.powerjob.server.persistence.core.model.AppInfoDO;
-import tech.powerjob.server.persistence.core.model.ContainerInfoDO;
-import tech.powerjob.server.persistence.core.repository.AppInfoRepository;
-import tech.powerjob.server.persistence.core.repository.ContainerInfoRepository;
-import tech.powerjob.server.service.ContainerService;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
+import tech.powerjob.server.core.container.ContainerService;
 import tech.powerjob.server.web.request.GenerateContainerTemplateRequest;
 import tech.powerjob.server.web.request.SaveContainerInfoRequest;
 import tech.powerjob.server.web.response.ContainerInfoVO;
@@ -75,7 +75,14 @@ public class ContainerController {
 
     @PostMapping("/save")
     public ResultDTO<Void> saveContainer(@RequestBody SaveContainerInfoRequest request) {
-        containerService.save(request);
+        request.valid();
+
+        ContainerInfoDO container = new ContainerInfoDO();
+        BeanUtils.copyProperties(request, container);
+        container.setSourceType(request.getSourceType().getV());
+        container.setStatus(request.getStatus().getV());
+
+        containerService.save(container);
         return ResultDTO.success(null);
     }
 

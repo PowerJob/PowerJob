@@ -7,7 +7,7 @@ import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.SJ;
 import com.github.kfcfans.powerjob.common.DispatchStrategy;
 import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.persistence.core.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

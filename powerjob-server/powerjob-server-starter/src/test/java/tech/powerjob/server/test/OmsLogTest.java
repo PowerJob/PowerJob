@@ -2,7 +2,7 @@ package tech.powerjob.server.test;
 
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
-import tech.powerjob.server.service.timing.CleanService;
+import tech.powerjob.server.core.scheduler.CleanService;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.junit.Test;
 import org.junit.runner.RunWith;

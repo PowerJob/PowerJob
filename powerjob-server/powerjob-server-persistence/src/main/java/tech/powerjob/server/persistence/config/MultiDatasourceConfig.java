@@ -28,7 +28,7 @@ public class MultiDatasourceConfig {
     private static final int H2_MAX_ACTIVE_SIZE = 10;
 
     @Primary
-    @Bean("omsCoreDatasource")
+    @Bean("omsRemoteDatasource")
     @ConfigurationProperties(prefix = "spring.datasource.core")
     public DataSource initOmsCoreDatasource() {
         return DataSourceBuilder.create().build();

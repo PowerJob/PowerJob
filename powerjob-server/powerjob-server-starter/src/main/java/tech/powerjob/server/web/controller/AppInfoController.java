@@ -2,9 +2,9 @@ package tech.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.persistence.core.model.AppInfoDO;
-import tech.powerjob.server.persistence.core.repository.AppInfoRepository;
-import tech.powerjob.server.service.AppInfoService;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.web.request.AppAssertRequest;
 import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import com.google.common.collect.Lists;

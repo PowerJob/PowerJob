@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.service;
 
-import tech.powerjob.server.persistence.core.model.UserInfoDO;
-import tech.powerjob.server.persistence.core.repository.UserInfoRepository;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;

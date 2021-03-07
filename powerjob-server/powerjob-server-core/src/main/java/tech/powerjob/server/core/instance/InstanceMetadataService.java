@@ -1,9 +1,9 @@
 package tech.powerjob.server.core.instance;
 
-import tech.powerjob.server.persistence.core.model.InstanceInfoDO;
-import tech.powerjob.server.persistence.core.model.JobInfoDO;
-import tech.powerjob.server.persistence.core.repository.InstanceInfoRepository;
-import tech.powerjob.server.persistence.core.repository.JobInfoRepository;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.springframework.beans.factory.InitializingBean;

@@ -1,6 +1,6 @@
 package tech.powerjob.server.extension;
 
-import tech.powerjob.server.persistence.core.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.common.module.WorkerInfo;
 
 /**

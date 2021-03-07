@@ -5,7 +5,7 @@ import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.common.SJ;
-import tech.powerjob.server.persistence.core.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
 import com.google.common.cache.Cache;

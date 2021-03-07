@@ -2,7 +2,7 @@ package tech.powerjob.server.test;
 
 import tech.powerjob.server.core.uid.IdGenerateService;
 import tech.powerjob.server.extension.LockService;
-import tech.powerjob.server.service.timing.CleanService;
+import tech.powerjob.server.core.scheduler.CleanService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,7 +1,7 @@
 package tech.powerjob.server.web.websocket;
 
-import tech.powerjob.server.common.config.OmsEndpointConfigure;
-import tech.powerjob.server.service.ContainerService;
+import tech.powerjob.server.config.OmsEndpointConfigure;
+import tech.powerjob.server.core.container.ContainerService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Component;

@@ -5,7 +5,7 @@ import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.persistence.core.model.WorkflowInfoDO;
+import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;

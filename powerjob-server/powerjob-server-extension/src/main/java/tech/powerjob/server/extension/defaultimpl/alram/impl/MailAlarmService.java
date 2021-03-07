@@ -1,6 +1,6 @@
 package tech.powerjob.server.extension.defaultimpl.alram.impl;
 
-import tech.powerjob.server.persistence.core.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
 import lombok.extern.slf4j.Slf4j;

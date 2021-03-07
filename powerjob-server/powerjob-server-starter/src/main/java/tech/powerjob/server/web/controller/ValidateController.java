@@ -2,7 +2,7 @@ package tech.powerjob.server.web.controller;
 
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.service.ValidateService;
+import tech.powerjob.server.core.service.ValidateService;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.bind.annotation.GetMapping;

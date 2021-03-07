@@ -1,7 +1,7 @@
 package tech.powerjob.server.test;
 
-import tech.powerjob.server.persistence.core.model.ServerInfoDO;
-import tech.powerjob.server.persistence.core.repository.ServerInfoRepository;
+import tech.powerjob.server.persistence.remote.model.ServerInfoDO;
+import tech.powerjob.server.persistence.remote.repository.ServerInfoRepository;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.Test;

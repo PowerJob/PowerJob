@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
-import tech.powerjob.server.persistence.core.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
