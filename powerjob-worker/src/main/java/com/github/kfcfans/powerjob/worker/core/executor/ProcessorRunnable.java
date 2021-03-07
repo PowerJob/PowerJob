@@ -2,8 +2,7 @@ package com.github.kfcfans.powerjob.worker.core.executor;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
@@ -19,7 +18,6 @@ import com.github.kfcfans.powerjob.worker.core.processor.sdk.BroadcastProcessor;
 import com.github.kfcfans.powerjob.worker.core.processor.sdk.MapReduceProcessor;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
-import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
 import com.github.kfcfans.powerjob.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
 import com.google.common.base.Stopwatch;
@@ -58,7 +56,7 @@ public class ProcessorRunnable implements Runnable {
      * 重试队列，ProcessorTracker 将会定期重新上报处理结果
      */
     private final Queue<ProcessorReportTaskStatusReq> statusReportRetryQueue;
-    private final RuntimeMeta runtimeMeta;
+    private final WorkerRuntime workerRuntime;
 
     public void innerRun() throws InterruptedException {
 
@@ -67,7 +65,7 @@ public class ProcessorRunnable implements Runnable {
 
         log.debug("[ProcessorRunnable-{}] start to run task(taskId={}&taskName={})", instanceId, taskId, task.getTaskName());
         ThreadLocalStore.setTask(task);
-        ThreadLocalStore.setRuntimeMeta(runtimeMeta);
+        ThreadLocalStore.setRuntimeMeta(workerRuntime);
 
         // 0. 构造任务上下文
         WorkflowContext workflowContext = constructWorkflowContext();
@@ -117,7 +115,7 @@ public class ProcessorRunnable implements Runnable {
         if (task.getTaskContent() != null && task.getTaskContent().length > 0) {
             taskContext.setSubTask(SerializerUtils.deSerialized(task.getTaskContent()));
         }
-        taskContext.setUserContext(runtimeMeta.getOhMyConfig().getUserContext());
+        taskContext.setUserContext(workerRuntime.getOhMyConfig().getUserContext());
         return taskContext;
     }
 
@@ -135,7 +133,7 @@ public class ProcessorRunnable implements Runnable {
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.debug("[ProcessorRunnable-{}] the last task(taskId={}) start to process.", instanceId, taskId);
 
-        List<TaskResult> taskResults = runtimeMeta.getTaskPersistenceService().getAllTaskResult(instanceId, task.getSubInstanceId());
+        List<TaskResult> taskResults = workerRuntime.getTaskPersistenceService().getAllTaskResult(instanceId, task.getSubInstanceId());
         try {
             switch (executeType) {
                 case BROADCAST:
@@ -213,8 +211,8 @@ public class ProcessorRunnable implements Runnable {
         req.setReportTime(System.currentTimeMillis());
         req.setCmd(cmd);
         // 检查追加的上下文大小是否超出限制
-        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, runtimeMeta.getOhMyConfig().getMaxAppendedWfContextLength())) {
-            log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), runtimeMeta.getOhMyConfig().getMaxAppendedWfContextLength());
+        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength())) {
+            log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength());
             // ignore appended workflow context data
             appendedWfContext = Collections.emptyMap();
         }
@@ -258,7 +256,7 @@ public class ProcessorRunnable implements Runnable {
         if (StringUtils.isEmpty(result)) {
             return "";
         }
-        final int maxLength = runtimeMeta.getOhMyConfig().getMaxResultLength();
+        final int maxLength = workerRuntime.getOhMyConfig().getMaxResultLength();
         if (result.length() <= maxLength) {
             return result;
         }

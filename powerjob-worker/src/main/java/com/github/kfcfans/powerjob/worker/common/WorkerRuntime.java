@@ -7,13 +7,13 @@ import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
 import lombok.Data;
 
 /**
- * store worker's runtime meta info
+ * store worker's runtime
  *
  * @author tjq
  * @since 2021/3/7
  */
 @Data
-public class RuntimeMeta {
+public class WorkerRuntime {
 
     private Long appId;
 

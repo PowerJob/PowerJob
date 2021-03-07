@@ -1,8 +1,7 @@
 package com.github.kfcfans.powerjob.worker.core.processor.sdk;
 
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
@@ -48,14 +47,14 @@ public abstract class MapProcessor implements BasicProcessor {
         }
 
         TaskDO task = ThreadLocalStore.getTask();
-        RuntimeMeta runtimeMeta = ThreadLocalStore.getRuntimeMeta();
+        WorkerRuntime workerRuntime = ThreadLocalStore.getRuntimeMeta();
 
         // 1. 构造请求
         ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(task, taskList, taskName);
 
         // 2. 可靠发送请求（任务不允许丢失，需要使用 ask 方法，失败抛异常）
         String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(task.getAddress(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
-        boolean requestSucceed = AkkaUtils.reliableTransmit(runtimeMeta.getActorSystem().actorSelection(akkaRemotePath), req);
+        boolean requestSucceed = AkkaUtils.reliableTransmit(workerRuntime.getActorSystem().actorSelection(akkaRemotePath), req);
 
         if (requestSucceed) {
             return new ProcessResult(true, "MAP_SUCCESS");

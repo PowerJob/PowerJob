@@ -3,11 +3,8 @@ package tech.powerjob.server.remote.transport.starter;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.common.utils.PropertyUtils;
@@ -20,10 +17,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CompletionStage;
 
 /**
  * 服务端 ActorSystem 启动器
@@ -84,28 +79,8 @@ public class AkkaStarter {
         return actorSystem.actorSelection(path);
     }
 
-    public static ActorSelection getTaskTrackerActor(String address) {
-        String path = String.format(AKKA_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, RemoteConstant.Task_TRACKER_ACTOR_NAME);
-        return actorSystem.actorSelection(path);
-    }
-
     public static ActorSelection getWorkerActor(String address) {
         String path = String.format(AKKA_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, RemoteConstant.WORKER_ACTOR_NAME);
         return actorSystem.actorSelection(path);
-    }
-
-    /**
-     * ASK 其他 powerjob-server，要求 AskResponse 中的 Data 为 String
-     * @param address 其他 powerjob-server 的地址（ip:port）
-     * @param request 请求
-     * @return 返回值 OR 异常
-     */
-    public static String askFriend(String address, Object request) throws Exception {
-        CompletionStage<Object> askCS = Patterns.ask(getFriendActor(address), request, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-        AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get();
-        if (askResponse.isSuccess()) {
-            return askResponse.parseDataAsString();
-        }
-        throw new PowerJobException("remote server process failed:" + askResponse.getMessage());
     }
 }

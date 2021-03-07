@@ -2,6 +2,7 @@ package tech.powerjob.server.core.container;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.powerjob.common.OmsConstant;
+import com.github.kfcfans.powerjob.common.Protocol;
 import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
 import com.github.kfcfans.powerjob.common.model.GitRepoInfo;
 import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
@@ -17,6 +18,7 @@ import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
+import tech.powerjob.server.remote.transport.TransportService;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import tech.powerjob.server.common.module.WorkerInfo;
@@ -73,6 +75,8 @@ public class ContainerService {
     private ContainerInfoRepository containerInfoRepository;
     @Resource
     private GridFsManager gridFsManager;
+    @Resource
+    private TransportService transportService;
 
     @Resource
     private WorkerClusterQueryService workerClusterQueryService;
@@ -124,8 +128,7 @@ public class ContainerService {
 
         ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getId());
         workerClusterQueryService.getAllAliveWorkers(container.getAppId()).forEach(workerInfo -> {
-            ActorSelection workerActor = AkkaStarter.getWorkerActor(workerInfo.getAddress());
-            workerActor.tell(destroyRequest, null);
+            transportService.tell(Protocol.AKKA, workerInfo.getAddress(), destroyRequest);
         });
 
         log.info("[ContainerService] delete container: {}.", container);
@@ -261,8 +264,7 @@ public class ContainerService {
 
             AtomicInteger count = new AtomicInteger();
             workerAddressList.forEach(akkaAddress -> {
-                ActorSelection workerActor = AkkaStarter.getWorkerActor(akkaAddress);
-                workerActor.tell(req, null);
+                transportService.tell(Protocol.AKKA, akkaAddress, req);
 
                 remote.sendText("SYSTEM: send deploy request to " + akkaAddress);
 

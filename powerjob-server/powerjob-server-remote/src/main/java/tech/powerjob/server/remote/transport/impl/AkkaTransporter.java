@@ -35,13 +35,13 @@ public class AkkaTransporter implements Transporter {
 
     @Override
     public void tell(String address, OmsSerializable object) {
-        ActorSelection taskTrackerActor = AkkaStarter.getTaskTrackerActor(address);
+        ActorSelection taskTrackerActor = AkkaStarter.getWorkerActor(address);
         taskTrackerActor.tell(object, null);
     }
 
     @Override
     public AskResponse ask(String address, OmsSerializable object) throws Exception {
-        ActorSelection taskTrackerActor = AkkaStarter.getTaskTrackerActor(address);
+        ActorSelection taskTrackerActor = AkkaStarter.getWorkerActor(address);
         CompletionStage<Object> askCS = Patterns.ask(taskTrackerActor, object, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
         return  (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }

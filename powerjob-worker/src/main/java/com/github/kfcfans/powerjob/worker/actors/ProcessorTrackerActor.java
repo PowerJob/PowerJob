@@ -2,7 +2,7 @@ package com.github.kfcfans.powerjob.worker.actors;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.core.tracker.processor.ProcessorTracker;
 import com.github.kfcfans.powerjob.worker.core.tracker.processor.ProcessorTrackerPool;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
@@ -24,10 +24,10 @@ import java.util.List;
 @AllArgsConstructor
 public class ProcessorTrackerActor extends AbstractActor {
 
-    private final RuntimeMeta runtimeMeta;
+    private final WorkerRuntime workerRuntime;
 
-    public static Props props(RuntimeMeta runtimeMeta) {
-        return Props.create(ProcessorTrackerActor.class, () -> new ProcessorTrackerActor(runtimeMeta));
+    public static Props props(WorkerRuntime workerRuntime) {
+        return Props.create(ProcessorTrackerActor.class, () -> new ProcessorTrackerActor(workerRuntime));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class ProcessorTrackerActor extends AbstractActor {
         ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(
                 instanceId,
                 req.getTaskTrackerAddress(),
-                () -> new ProcessorTracker(req, runtimeMeta));
+                () -> new ProcessorTracker(req, workerRuntime));
 
         TaskDO task = new TaskDO();
 

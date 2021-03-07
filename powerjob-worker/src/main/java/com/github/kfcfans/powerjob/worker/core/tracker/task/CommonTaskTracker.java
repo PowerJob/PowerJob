@@ -7,8 +7,7 @@ import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
@@ -50,8 +49,8 @@ public class CommonTaskTracker extends TaskTracker {
 
     private static final int MAX_REPORT_FAILED_THRESHOLD = 5;
 
-    protected CommonTaskTracker(ServerScheduleJobReq req, RuntimeMeta runtimeMeta) {
-        super(req, runtimeMeta);
+    protected CommonTaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
+        super(req, workerRuntime);
     }
 
     @Override
@@ -86,7 +85,7 @@ public class CommonTaskTracker extends TaskTracker {
         // 填充基础信息
         detail.setActualTriggerTime(createTime);
         detail.setStatus(InstanceStatus.RUNNING.getV());
-        detail.setTaskTrackerAddress(runtimeMeta.getWorkerAddress());
+        detail.setTaskTrackerAddress(workerRuntime.getWorkerAddress());
 
         // 填充详细信息
         InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
@@ -117,7 +116,7 @@ public class CommonTaskTracker extends TaskTracker {
         rootTask.setInstanceId(instanceInfo.getInstanceId());
         rootTask.setTaskId(ROOT_TASK_ID);
         rootTask.setFailedCnt(0);
-        rootTask.setAddress(runtimeMeta.getWorkerAddress());
+        rootTask.setAddress(workerRuntime.getWorkerAddress());
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
         rootTask.setCreatedTime(System.currentTimeMillis());
         rootTask.setLastModifiedTime(System.currentTimeMillis());
@@ -159,7 +158,7 @@ public class CommonTaskTracker extends TaskTracker {
             req.setFailedTaskNum(holder.failedNum);
             req.setReportTime(System.currentTimeMillis());
             req.setStartTime(createTime);
-            req.setSourceAddress(runtimeMeta.getWorkerAddress());
+            req.setSourceAddress(workerRuntime.getWorkerAddress());
 
             boolean success = false;
             String result = null;
@@ -218,7 +217,7 @@ public class CommonTaskTracker extends TaskTracker {
                                 newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
                                 newLastTask.setTaskId(LAST_TASK_ID);
                                 newLastTask.setSubInstanceId(instanceId);
-                                newLastTask.setAddress(runtimeMeta.getWorkerAddress());
+                                newLastTask.setAddress(workerRuntime.getWorkerAddress());
                                 submitTask(Lists.newArrayList(newLastTask));
                             }
                     }
@@ -232,8 +231,8 @@ public class CommonTaskTracker extends TaskTracker {
                 result = SystemInstanceResult.INSTANCE_EXECUTE_TIMEOUT;
             }
 
-            String serverPath = AkkaUtils.getServerActorPath(runtimeMeta.getServerDiscoveryService().getCurrentServerAddress());
-            ActorSelection serverActor = runtimeMeta.getActorSystem().actorSelection(serverPath);
+            String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
+            ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
 
             // 4. 执行完毕，报告服务器
             if (finished.get()) {

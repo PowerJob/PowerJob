@@ -14,8 +14,7 @@ import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
@@ -63,7 +62,7 @@ public abstract class TaskTracker {
     /**
      * worker 运行时元数据
      */
-    protected final RuntimeMeta runtimeMeta;
+    protected final WorkerRuntime workerRuntime;
     /**
      * 任务实例ID，使用频率过高，从 InstanceInfo 提取出来单独保存一份
      */
@@ -105,11 +104,11 @@ public abstract class TaskTracker {
     private final SegmentLock segmentLock;
     private static final int UPDATE_CONCURRENCY = 4;
 
-    protected TaskTracker(ServerScheduleJobReq req, RuntimeMeta runtimeMeta) {
+    protected TaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
 
         // 初始化成员变量
         this.createTime = System.currentTimeMillis();
-        this.runtimeMeta = runtimeMeta;
+        this.workerRuntime = workerRuntime;
         this.instanceId = req.getInstanceId();
         this.instanceInfo = new InstanceInfo();
         BeanUtils.copyProperties(req, instanceInfo);
@@ -124,7 +123,7 @@ public abstract class TaskTracker {
         instanceInfo.setThreadConcurrency(Math.max(1, instanceInfo.getThreadConcurrency()));
 
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
-        this.taskPersistenceService = runtimeMeta.getTaskPersistenceService();
+        this.taskPersistenceService = workerRuntime.getTaskPersistenceService();
         this.finished = new AtomicBoolean(false);
         // 只有工作流中的任务允许向工作流中追加上下文数据
         this.appendedWfContext = req.getWfInstanceId() == null ? Collections.emptyMap() : Maps.newConcurrentMap();
@@ -146,15 +145,15 @@ public abstract class TaskTracker {
      * @param req 服务端调度任务请求
      * @return API/CRON -> CommonTaskTracker, FIX_RATE/FIX_DELAY -> FrequentTaskTracker
      */
-    public static TaskTracker create(ServerScheduleJobReq req, RuntimeMeta runtimeMeta) {
+    public static TaskTracker create(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
         try {
             TimeExpressionType timeExpressionType = TimeExpressionType.valueOf(req.getTimeExpressionType());
             switch (timeExpressionType) {
                 case FIXED_RATE:
                 case FIXED_DELAY:
-                    return new FrequentTaskTracker(req, runtimeMeta);
+                    return new FrequentTaskTracker(req, workerRuntime);
                 default:
-                    return new CommonTaskTracker(req, runtimeMeta);
+                    return new CommonTaskTracker(req, workerRuntime);
             }
         } catch (Exception e) {
             log.warn("[TaskTracker-{}] create TaskTracker from request({}) failed.", req.getInstanceId(), req, e);
@@ -166,10 +165,10 @@ public abstract class TaskTracker {
             response.setResult(String.format("init TaskTracker failed, reason: %s", e.toString()));
             response.setReportTime(System.currentTimeMillis());
             response.setStartTime(System.currentTimeMillis());
-            response.setSourceAddress(runtimeMeta.getWorkerAddress());
+            response.setSourceAddress(workerRuntime.getWorkerAddress());
 
-            String serverPath = AkkaUtils.getServerActorPath(runtimeMeta.getServerDiscoveryService().getCurrentServerAddress());
-            ActorSelection serverActor = runtimeMeta.getActorSystem().actorSelection(serverPath);
+            String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
+            ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
             serverActor.tell(response, null);
         }
         return null;
@@ -191,8 +190,8 @@ public abstract class TaskTracker {
             return;
         }
         // 检查追加的上下文大小是否超出限制
-        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, runtimeMeta.getOhMyConfig().getMaxAppendedWfContextLength())) {
-            log.warn("[TaskTracker-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), runtimeMeta.getOhMyConfig().getMaxAppendedWfContextLength());
+        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength())) {
+            log.warn("[TaskTracker-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength());
             // ignore appended workflow context data
             return;
         }
@@ -410,7 +409,7 @@ public abstract class TaskTracker {
         stopRequest.setInstanceId(instanceId);
         ptStatusHolder.getAllProcessorTrackers().forEach(ptIP -> {
             String ptPath = AkkaUtils.getAkkaWorkerPath(ptIP, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-            ActorSelection ptActor = runtimeMeta.getActorSystem().actorSelection(ptPath);
+            ActorSelection ptActor = workerRuntime.getActorSystem().actorSelection(ptPath);
             // 不可靠通知，ProcessorTracker 也可以靠自己的定时任务/问询等方式关闭
             ptActor.tell(stopRequest, null);
         });
@@ -462,9 +461,9 @@ public abstract class TaskTracker {
         taskId2LastReportTime.put(task.getTaskId(), -1L);
 
         // 4. 任务派发
-        TaskTrackerStartTaskReq startTaskReq = new TaskTrackerStartTaskReq(instanceInfo, task, runtimeMeta.getWorkerAddress());
+        TaskTrackerStartTaskReq startTaskReq = new TaskTrackerStartTaskReq(instanceInfo, task, workerRuntime.getWorkerAddress());
         String ptActorPath = AkkaUtils.getAkkaWorkerPath(processorTrackerAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-        ActorSelection ptActor = runtimeMeta.getActorSystem().actorSelection(ptActorPath);
+        ActorSelection ptActor = workerRuntime.getActorSystem().actorSelection(ptActorPath);
         ptActor.tell(startTaskReq, null);
 
         log.debug("[TaskTracker-{}] dispatch task(taskId={},taskName={}) successfully.", instanceId, task.getTaskId(), task.getTaskName());
@@ -555,13 +554,13 @@ public abstract class TaskTracker {
     protected class WorkerDetector implements Runnable {
         @Override
         public void run() {
-            String serverPath = AkkaUtils.getServerActorPath(runtimeMeta.getServerDiscoveryService().getCurrentServerAddress());
+            String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
             if (StringUtils.isEmpty(serverPath)) {
                 log.warn("[TaskTracker-{}] no server available, won't start worker detective!", instanceId);
                 return;
             }
-            WorkerQueryExecutorClusterReq req = new WorkerQueryExecutorClusterReq(runtimeMeta.getAppId(), instanceInfo.getJobId());
-            AskResponse response = AkkaUtils.easyAsk(runtimeMeta.getActorSystem().actorSelection(serverPath), req);
+            WorkerQueryExecutorClusterReq req = new WorkerQueryExecutorClusterReq(workerRuntime.getAppId(), instanceInfo.getJobId());
+            AskResponse response = AkkaUtils.easyAsk(workerRuntime.getActorSystem().actorSelection(serverPath), req);
             if (!response.isSuccess()) {
                 log.warn("[TaskTracker-{}] detective failed due to ask failed, message is {}", instanceId, response.getMessage());
                 return;

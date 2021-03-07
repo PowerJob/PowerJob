@@ -6,7 +6,7 @@ import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTrackerPool;
@@ -31,10 +31,10 @@ import java.util.List;
 @AllArgsConstructor
 public class TaskTrackerActor extends AbstractActor {
 
-    private final RuntimeMeta runtimeMeta;
+    private final WorkerRuntime workerRuntime;
 
-    public static Props props(RuntimeMeta runtimeMeta) {
-        return Props.create(TaskTrackerActor.class, () -> new TaskTrackerActor(runtimeMeta));
+    public static Props props(WorkerRuntime workerRuntime) {
+        return Props.create(TaskTrackerActor.class, () -> new TaskTrackerActor(workerRuntime));
     }
 
     @Override
@@ -133,7 +133,7 @@ public class TaskTrackerActor extends AbstractActor {
 
         log.debug("[TaskTrackerActor] server schedule job by request: {}.", req);
         // 原子创建，防止多实例的存在
-        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req, runtimeMeta));
+        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req, workerRuntime));
     }
 
     /**

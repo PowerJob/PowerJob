@@ -21,7 +21,7 @@ import com.github.kfcfans.powerjob.worker.background.ServerDiscoveryService;
 import com.github.kfcfans.powerjob.worker.background.WorkerHealthReporter;
 import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
 import com.github.kfcfans.powerjob.worker.common.PowerBannerPrinter;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 public class OhMyWorker implements ApplicationContextAware, InitializingBean, DisposableBean {
 
     private ScheduledExecutorService timingPool;
-    private final RuntimeMeta runtimeMeta = new RuntimeMeta();
+    private final WorkerRuntime workerRuntime = new WorkerRuntime();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -71,7 +71,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyWorker] start to initialize OhMyWorker...");
 
-        OhMyConfig config = runtimeMeta.getOhMyConfig();
+        OhMyConfig config = workerRuntime.getOhMyConfig();
         CommonUtils.requireNonNull(config, "can't find OhMyConfig, please set OhMyConfig first");
 
         try {
@@ -84,20 +84,20 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
             }
 
             // 初始化文件系统
-            OmsWorkerFileUtils.init(runtimeMeta.getOhMyConfig());
+            OmsWorkerFileUtils.init(workerRuntime.getOhMyConfig());
 
             // 初始化元数据
             String workerAddress = NetUtils.getLocalHost() + ":" + config.getPort();
-            runtimeMeta.setWorkerAddress(workerAddress);
+            workerRuntime.setWorkerAddress(workerAddress);
 
             // 初始化定时线程池
             ThreadFactory timingPoolFactory = new ThreadFactoryBuilder().setNameFormat("oms-worker-timing-pool-%d").build();
             timingPool = Executors.newScheduledThreadPool(3, timingPoolFactory);
 
             // 连接 server
-            ServerDiscoveryService serverDiscoveryService = new ServerDiscoveryService(runtimeMeta.getAppId(), runtimeMeta.getOhMyConfig());
+            ServerDiscoveryService serverDiscoveryService = new ServerDiscoveryService(workerRuntime.getAppId(), workerRuntime.getOhMyConfig());
             serverDiscoveryService.start(timingPool);
-            runtimeMeta.setServerDiscoveryService(serverDiscoveryService);
+            workerRuntime.setServerDiscoveryService(serverDiscoveryService);
 
             // 初始化 ActorSystem（macOS上 new ServerSocket 检测端口占用的方法并不生效，可能是AKKA是Scala写的缘故？没办法...只能靠异常重试了）
             Map<String, Object> overrideConfig = Maps.newHashMap();
@@ -109,12 +109,12 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
             int cores = Runtime.getRuntime().availableProcessors();
             ActorSystem actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
-            runtimeMeta.setActorSystem(actorSystem);
+            workerRuntime.setActorSystem(actorSystem);
 
-            ActorRef taskTrackerActorRef = actorSystem.actorOf(TaskTrackerActor.props(runtimeMeta)
+            ActorRef taskTrackerActorRef = actorSystem.actorOf(TaskTrackerActor.props(workerRuntime)
                     .withDispatcher("akka.task-tracker-dispatcher")
                     .withRouter(new RoundRobinPool(cores * 2)), RemoteConstant.Task_TRACKER_ACTOR_NAME);
-            actorSystem.actorOf(ProcessorTrackerActor.props(runtimeMeta)
+            actorSystem.actorOf(ProcessorTrackerActor.props(workerRuntime)
                     .withDispatcher("akka.processor-tracker-dispatcher")
                     .withRouter(new RoundRobinPool(cores)), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
             actorSystem.actorOf(WorkerActor.props(taskTrackerActorRef)
@@ -130,16 +130,16 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
             // 初始化日志系统
             OmsLogHandler omsLogHandler = new OmsLogHandler(workerAddress, actorSystem, serverDiscoveryService);
-            runtimeMeta.setOmsLogHandler(omsLogHandler);
+            workerRuntime.setOmsLogHandler(omsLogHandler);
 
             // 初始化存储
-            TaskPersistenceService taskPersistenceService = new TaskPersistenceService(runtimeMeta.getOhMyConfig().getStoreStrategy());
+            TaskPersistenceService taskPersistenceService = new TaskPersistenceService(workerRuntime.getOhMyConfig().getStoreStrategy());
             taskPersistenceService.init();
-            runtimeMeta.setTaskPersistenceService(taskPersistenceService);
+            workerRuntime.setTaskPersistenceService(taskPersistenceService);
             log.info("[OhMyWorker] local storage initialized successfully.");
 
             // 初始化定时任务
-            timingPool.scheduleAtFixedRate(new WorkerHealthReporter(runtimeMeta), 0, 15, TimeUnit.SECONDS);
+            timingPool.scheduleAtFixedRate(new WorkerHealthReporter(workerRuntime), 0, 15, TimeUnit.SECONDS);
             timingPool.scheduleWithFixedDelay(omsLogHandler.logSubmitter, 0, 5, TimeUnit.SECONDS);
 
             log.info("[OhMyWorker] OhMyWorker initialized successfully, using time: {}, congratulations!", stopwatch);
@@ -150,13 +150,13 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
     }
 
     public void setConfig(OhMyConfig config) {
-        runtimeMeta.setOhMyConfig(config);
+        workerRuntime.setOhMyConfig(config);
     }
 
     @SuppressWarnings("rawtypes")
     private void assertAppName() {
 
-        OhMyConfig config = runtimeMeta.getOhMyConfig();
+        OhMyConfig config = workerRuntime.getOhMyConfig();
         String appName = config.getAppName();
         Objects.requireNonNull(appName, "appName can't be empty!");
 
@@ -169,7 +169,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
                 if (resultDTO.isSuccess()) {
                     Long appId = Long.valueOf(resultDTO.getData().toString());
                     log.info("[OhMyWorker] assert appName({}) succeed, the appId for this application is {}.", appName, appId);
-                    runtimeMeta.setAppId(appId);
+                    workerRuntime.setAppId(appId);
                     return;
                 }else {
                     log.error("[OhMyWorker] assert appName failed, this appName is invalid, please register the appName {} first.", appName);

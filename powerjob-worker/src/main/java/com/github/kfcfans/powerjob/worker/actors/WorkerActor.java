@@ -3,9 +3,7 @@ package com.github.kfcfans.powerjob.worker.actors;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
-import com.github.kfcfans.powerjob.common.request.ServerDestroyContainerRequest;
-import com.github.kfcfans.powerjob.worker.common.RuntimeMeta;
+import com.github.kfcfans.powerjob.common.request.*;
 import com.github.kfcfans.powerjob.worker.container.OmsContainerFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +29,9 @@ public class WorkerActor extends AbstractActor {
         return receiveBuilder()
                 .match(ServerDeployContainerRequest.class, this::onReceiveServerDeployContainerRequest)
                 .match(ServerDestroyContainerRequest.class, this::onReceiveServerDestroyContainerRequest)
+                .match(ServerScheduleJobReq.class, this::forward2TaskTracker)
+                .match(ServerStopInstanceReq.class, this::forward2TaskTracker)
+                .match(ServerQueryInstanceStatusReq.class, this::forward2TaskTracker)
                 .matchAny(obj -> log.warn("[WorkerActor] receive unknown request: {}.", obj))
                 .build();
     }
@@ -41,5 +42,9 @@ public class WorkerActor extends AbstractActor {
 
     private void onReceiveServerDestroyContainerRequest(ServerDestroyContainerRequest request) {
         OmsContainerFactory.destroyContainer(request.getContainerId());
+    }
+
+    private void forward2TaskTracker(Object obj) {
+        taskTrackerActorRef.forward(obj, getContext());
     }
 }
