@@ -17,8 +17,8 @@ import java.lang.annotation.Target;
 public @interface DesignateServer {
 
     /**
-     * 转发请求需要 AppInfo 下的 currentServer 信息，因此必须要有 appId 作为入参，该字段指定了 appId 字段的参数名称
+     * 转发请求需要 AppInfo 下的 currentServer 信息，因此必须要有 appId 作为入参，该字段指定了 appId 字段的参数名称，默认为 appId
      * @return appId 参数名称
      */
-    String appIdParameterName();
+    String appIdParameterName() default "appId";
 }

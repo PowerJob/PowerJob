@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
+import org.springframework.core.annotation.Order;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
@@ -37,12 +38,13 @@ import java.util.concurrent.CompletionStage;
 @Slf4j
 @Aspect
 @Component
+@Order(0)
 public class DesignateServerAspect {
 
     @Resource
     private AppInfoRepository appInfoRepository;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Around(value = "@annotation(designateServer))")
     public Object execute(ProceedingJoinPoint point, DesignateServer designateServer) throws Throwable {
@@ -99,7 +101,7 @@ public class DesignateServerAspect {
         Method method = methodSignature.getMethod();
         JavaType returnType = getMethodReturnJavaType(method);
 
-        return objectMapper.readValue(askResponse.getData(), returnType);
+        return OBJECT_MAPPER.readValue(askResponse.getData(), returnType);
     }
 
 

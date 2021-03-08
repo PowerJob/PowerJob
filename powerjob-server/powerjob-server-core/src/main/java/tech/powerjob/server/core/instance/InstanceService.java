@@ -104,7 +104,7 @@ public class InstanceService {
      *
      * @param instanceId 任务实例ID
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
     public void stopInstance(Long appId,Long instanceId) {
 
         log.info("[Instance-{}] try to stop the instance instance in appId: {}", instanceId,appId);
@@ -152,7 +152,7 @@ public class InstanceService {
      *
      * @param instanceId 任务实例ID
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
     public void retryInstance(Long appId, Long instanceId) {
 
         log.info("[Instance-{}] retry instance in appId: {}", instanceId, appId);
@@ -186,6 +186,7 @@ public class InstanceService {
      *
      * @param instanceId 任务实例
      */
+    @DesignateServer
     public void cancelInstance(Long instanceId) {
         log.info("[Instance-{}] try to cancel the instance.", instanceId);
 

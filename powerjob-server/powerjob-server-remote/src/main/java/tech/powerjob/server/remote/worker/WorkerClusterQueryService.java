@@ -53,7 +53,7 @@ public class WorkerClusterQueryService {
         return workers;
     }
 
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
     public List<WorkerInfo> getAllWorkers(Long appId) {
         List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(appId).values());
         workers.sort((o1, o2) -> o2 .getSystemMetrics().calculateScore() - o1.getSystemMetrics().calculateScore());

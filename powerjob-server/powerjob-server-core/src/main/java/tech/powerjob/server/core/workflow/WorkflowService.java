@@ -265,7 +265,7 @@ public class WorkflowService {
      * @param delay      延迟时间
      * @return 该 workflow 实例的 instanceId（wfInstanceId）
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
     public Long runWorkflow(Long wfId, Long appId, String initParams, Long delay) {
 
         delay = delay == null ? 0 : delay;

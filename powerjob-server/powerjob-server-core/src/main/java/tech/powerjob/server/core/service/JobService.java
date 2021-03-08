@@ -145,7 +145,7 @@ public class JobService {
      * @param delay          延迟时间，单位 毫秒
      * @return 任务实例ID
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
     public long runJob(Long appId, Long jobId, String instanceParams, Long delay) {
 
         delay = delay == null ? 0 : delay;

@@ -1,6 +1,7 @@
 package tech.powerjob.server.core.lock;
 
 import com.github.kfcfans.powerjob.common.utils.SegmentLock;
+import org.springframework.core.annotation.Order;
 import tech.powerjob.server.common.utils.AOPUtils;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.Map;
 @Slf4j
 @Aspect
 @Component
+@Order(1)
 public class UseSegmentLockAspect {
 
     private final Map<String, SegmentLock> lockStore = Maps.newConcurrentMap();

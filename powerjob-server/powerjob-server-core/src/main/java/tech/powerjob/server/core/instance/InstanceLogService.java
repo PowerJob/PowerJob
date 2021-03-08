@@ -55,24 +55,36 @@ public class InstanceLogService {
     private InstanceMetadataService instanceMetadataService;
     @Resource
     private GridFsManager gridFsManager;
-    // 本地数据库操作bean
+    /**
+     * 本地数据库操作bean
+     */
     @Resource(name = "localTransactionTemplate")
     private TransactionTemplate localTransactionTemplate;
     @Resource
     private LocalInstanceLogRepository localInstanceLogRepository;
 
-    // 本地维护了在线日志的任务实例ID
+    /**
+     * 本地维护了在线日志的任务实例ID
+     */
     private final Map<Long, Long> instanceId2LastReportTime = Maps.newConcurrentMap();
     private final ExecutorService workerPool;
 
-    // 分段锁
+    /**
+     *  分段锁
+     */
     private final SegmentLock segmentLock = new SegmentLock(8);
 
-    // 格式化时间戳
-    private static final FastDateFormat dateFormat = FastDateFormat.getInstance(OmsConstant.TIME_PATTERN_PLUS);
-    // 每一个展示的行数
+    /**
+     * 格式化时间戳
+     */
+    private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance(OmsConstant.TIME_PATTERN_PLUS);
+    /**
+     * 每一个展示的行数
+     */
     private static final int MAX_LINE_COUNT = 100;
-    // 过期时间
+    /**
+     * 过期时间
+     */
     private static final long EXPIRE_INTERVAL_MS = 60000;
 
     public InstanceLogService() {
@@ -110,7 +122,7 @@ public class InstanceLogService {
      * @param index 页码，从0开始
      * @return 文本字符串
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
     public StringPage fetchInstanceLog(Long appId, Long instanceId, Long index) {
         try {
             Future<File> fileFuture = prepareLogFile(instanceId);
@@ -154,7 +166,7 @@ public class InstanceLogService {
      * @param instanceId 任务实例 ID
      * @return 下载链接
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
     public String fetchDownloadUrl(Long appId, Long instanceId) {
         String url = "http://" + NetUtils.getLocalHost() + ":" + port + "/instance/downloadLog?instanceId=" + instanceId;
         log.info("[InstanceLog-{}] downloadURL for appId[{}]: {}", instanceId, appId, url);
@@ -326,7 +338,7 @@ public class InstanceLogService {
      */
     private static String convertLog(LocalInstanceLogDO instanceLog) {
         return String.format("%s [%s] %s %s",
-                dateFormat.format(instanceLog.getLogTime()),
+                DATE_FORMAT.format(instanceLog.getLogTime()),
                 instanceLog.getWorkerAddress(),
                 LogLevel.genLogLevelString(instanceLog.getLogLevel()),
                 instanceLog.getLogContent());

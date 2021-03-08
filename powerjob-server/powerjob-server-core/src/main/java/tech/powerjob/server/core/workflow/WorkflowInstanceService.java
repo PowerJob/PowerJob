@@ -8,6 +8,7 @@ import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.response.WorkflowInstanceInfoDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.core.lock.UseSegmentLock;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
@@ -53,7 +54,8 @@ public class WorkflowInstanceService {
      * @param wfInstanceId 工作流实例ID
      * @param appId        所属应用ID
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
+    @UseSegmentLock(type = "processWfInstance", key = "#wfInstanceId.intValue()", concurrencyLevel = 1024)
     public void stopWorkflowInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
@@ -92,7 +94,8 @@ public class WorkflowInstanceService {
      * @param wfInstanceId 工作流实例ID
      * @param appId        应用ID
      */
-    @DesignateServer(appIdParameterName = "appId")
+    @DesignateServer
+    @UseSegmentLock(type = "processWfInstance", key = "#wfInstanceId.intValue()", concurrencyLevel = 1024)
     public void retryWorkflowInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         // 仅允许重试 失败的工作流
@@ -107,7 +110,7 @@ public class WorkflowInstanceService {
             throw new PowerJobException("you can't retry the workflow instance which is missing job info!");
         }
         // 校验 DAG 信息
-        PEWorkflowDAG dag = null;
+        PEWorkflowDAG dag;
         try {
             dag = JSON.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
             if (!WorkflowDAGUtils.valid(dag)) {
@@ -161,13 +164,17 @@ public class WorkflowInstanceService {
      * 而且仅会操作工作流实例 DAG 中的节点信息（状态、result）
      * 并不会改变对应任务实例中的任何信息
      *
+     * 还是加把锁保平安 ~
+     *
      * @param wfInstanceId 工作流实例 ID
      * @param nodeId       节点 ID
      */
+    @DesignateServer
+    @UseSegmentLock(type = "processWfInstance", key = "#wfInstanceId.intValue()", concurrencyLevel = 1024)
     public void markNodeAsSuccess(Long appId, Long wfInstanceId, Long nodeId) {
 
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
-        // 校验工作流实例状态，运行中的不允许处理，
+        // 校验工作流实例状态，运行中的不允许处理
         if (WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
             throw new PowerJobException("you can't mark the node in a running workflow!");
         }
