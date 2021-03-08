@@ -35,6 +35,7 @@ import java.util.Queue;
  * Processor 执行器
  *
  * @author tjq
+ * @author Echo009
  * @since 2020/3/23
  */
 @Slf4j
@@ -106,7 +107,6 @@ public class ProcessorRunnable implements Runnable {
         TaskContext taskContext = new TaskContext();
         BeanUtils.copyProperties(task, taskContext);
         taskContext.setJobId(instanceInfo.getJobId());
-        taskContext.setWfInstanceId(instanceInfo.getWfInstanceId());
         taskContext.setMaxRetryTimes(instanceInfo.getTaskRetryNum());
         taskContext.setCurrentRetryTimes(task.getFailedCnt());
         taskContext.setJobParams(instanceInfo.getJobParams());
@@ -120,7 +120,7 @@ public class ProcessorRunnable implements Runnable {
     }
 
     private WorkflowContext constructWorkflowContext() {
-        return new WorkflowContext(task.getInstanceId(), instanceInfo.getInstanceParams());
+        return new WorkflowContext(instanceInfo.getWfInstanceId(),instanceInfo.getInstanceParams());
     }
 
     /**
@@ -211,7 +211,7 @@ public class ProcessorRunnable implements Runnable {
         req.setReportTime(System.currentTimeMillis());
         req.setCmd(cmd);
         // 检查追加的上下文大小是否超出限制
-        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength())) {
+        if (instanceInfo.getWfInstanceId() !=null && WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength())) {
             log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength());
             // ignore appended workflow context data
             appendedWfContext = Collections.emptyMap();

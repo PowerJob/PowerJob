@@ -19,9 +19,9 @@ import java.util.Map;
 @Slf4j
 public class WorkflowContext {
     /**
-     * 任务实例 ID
+     * 工作流实例 ID
      */
-    private final Long instanceId;
+    private final Long  wfInstanceId;
     /**
      * 当前工作流上下文数据
      * 这里的 data 实际上等价于 {@link TaskContext} 中的 instanceParams
@@ -33,16 +33,16 @@ public class WorkflowContext {
     private final Map<String, String> appendedContextData = Maps.newConcurrentMap();
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public WorkflowContext(Long instanceId, String data) {
-        this.instanceId = instanceId;
-        if (StringUtils.isBlank(data)) {
+    public WorkflowContext(Long wfInstanceId, String data) {
+        this.wfInstanceId = wfInstanceId;
+        if (wfInstanceId == null || StringUtils.isBlank(data)) {
             return;
         }
         try {
             Map originMap = JsonUtils.parseObject(data, Map.class);
             originMap.forEach((k, v) -> this.data.put(String.valueOf(k), v == null ? null : String.valueOf(v)));
         } catch (Exception exception) {
-            log.warn("[WorkflowContext-{}] parse workflow context failed, {}", instanceId, exception.getMessage());
+            log.warn("[WorkflowContext-{}] parse workflow context failed, {}", wfInstanceId, exception.getMessage());
         }
     }
 
@@ -64,13 +64,16 @@ public class WorkflowContext {
      * 注意：如果 key 在当前上下文中已存在，那么会直接覆盖
      */
     public void appendData2WfContext(String key, Object value) {
+        if (wfInstanceId == null) {
+            // 非工作流中的任务，直接忽略
+            return;
+        }
         String finalValue;
         try {
             // 这里不限制长度，完成任务之后上报至 TaskTracker 时再校验
             finalValue = JsonUtils.toJSONStringUnsafe(value);
-
         } catch (Exception e) {
-            log.warn("[WorkflowContext-{}] fail to append data to workflow context, key : {}", instanceId, key);
+            log.warn("[WorkflowContext-{}] fail to append data to workflow context, key : {}", wfInstanceId, key);
             return;
         }
         appendedContextData.put(key, finalValue);

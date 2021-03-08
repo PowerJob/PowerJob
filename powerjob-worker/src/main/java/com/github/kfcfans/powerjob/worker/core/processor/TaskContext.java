@@ -31,8 +31,6 @@ public class TaskContext {
 
     private Long instanceId;
 
-    private Long wfInstanceId;
-
     private Long subInstanceId;
 
     private String taskId;
