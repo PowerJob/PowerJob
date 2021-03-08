@@ -86,6 +86,12 @@ public class DispatchService {
             log.info("[Dispatcher-{}|{}] cancel dispatch due to instance has been canceled", jobId, instanceId);
             return;
         }
+        // 已经被派发过则不再派发
+        // fix 并发场景下重复派发的问题
+        if (instanceInfo.getStatus() != WAITING_DISPATCH.getV()) {
+            log.info("[Dispatcher-{}|{}] cancel dispatch due to instance has been dispatched", jobId, instanceId);
+            return;
+        }
         // 任务信息已经被删除
         if (jobInfo.getId() == null) {
             log.warn("[Dispatcher-{}|{}] cancel dispatch due to job(id={}) has been deleted!", jobId, instanceId, jobId);
@@ -194,6 +200,7 @@ public class DispatchService {
                 return workerInfos.get(0);
             case RANDOM:
                 return workerInfos.get(ThreadLocalRandom.current().nextInt(workerInfos.size()));
+            default:
         }
         // impossible, indian java
         return workerInfos.get(0);
