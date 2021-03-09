@@ -30,6 +30,7 @@ import javax.annotation.Resource;
 import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Workflow 服务
@@ -288,14 +289,28 @@ public class WorkflowService {
      * @param workflowNodeRequestList 工作流节点
      * @return 更新 或者 创建后的工作流节点信息
      */
+    @Transactional(rollbackOn = Exception.class)
     public List<WorkflowNodeInfoDO> saveWorkflowNode(List<SaveWorkflowNodeRequest> workflowNodeRequestList) {
         if (CollectionUtils.isEmpty(workflowNodeRequestList)) {
             return Collections.emptyList();
         }
         ArrayList<WorkflowNodeInfoDO> res = new ArrayList<>(workflowNodeRequestList.size());
+        // 记录变更过任务的节点
+        ArrayList<WorkflowNodeInfoDO> changeJobNodeList = new ArrayList<>(workflowNodeRequestList.size());
+        //
+        WorkflowInfoDO workflowInfo = null;
         for (SaveWorkflowNodeRequest req : workflowNodeRequestList) {
             req.valid();
             permissionCheck(req.getWorkflowId(), req.getAppId());
+            if (workflowInfo == null) {
+                // check workflow info
+                workflowInfo = workflowInfoRepository.findById(req.getWorkflowId()).orElseThrow(() -> new IllegalArgumentException("can't find workflow by id:" + req.getWorkflowId()));
+            } else {
+                // 每次只允许更改同一个工作流中的节点信息
+                if (!workflowInfo.getId().equals(req.getWorkflowId())) {
+                    throw new PowerJobException("changed node list must are in the same workflow");
+                }
+            }
             WorkflowNodeInfoDO workflowNodeInfo;
             if (req.getId() != null) {
                 workflowNodeInfo = workflowNodeInfoRepository.findById(req.getId()).orElseThrow(() -> new IllegalArgumentException("can't find workflow Node by id: " + req.getId()));
@@ -303,15 +318,35 @@ public class WorkflowService {
                 workflowNodeInfo = new WorkflowNodeInfoDO();
                 workflowNodeInfo.setGmtCreate(new Date());
             }
+            JobInfoDO jobInfoDO = jobInfoRepository.findById(req.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + req.getJobId()));
+            // 变更任务的节点
+            if (workflowNodeInfo.getJobId() != null && !workflowNodeInfo.getJobId().equals(req.getJobId())) {
+                changeJobNodeList.add(workflowNodeInfo);
+            }
             BeanUtils.copyProperties(req, workflowNodeInfo);
             // 如果名称为空则默认取任务名称
             if (StringUtils.isEmpty(workflowNodeInfo.getNodeName())) {
-                JobInfoDO jobInfoDO = jobInfoRepository.findById(req.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + req.getJobId()));
                 workflowNodeInfo.setNodeName(jobInfoDO.getJobName());
             }
             workflowNodeInfo.setGmtModified(new Date());
             workflowNodeInfo = workflowNodeInfoRepository.saveAndFlush(workflowNodeInfo);
             res.add(workflowNodeInfo);
+        }
+        // 同步变更 DAG 中的任务信息
+        if (!changeJobNodeList.isEmpty()) {
+            PEWorkflowDAG dag = JSON.parseObject(workflowInfo.getPeDAG(), PEWorkflowDAG.class);
+            if (!CollectionUtils.isEmpty(dag.getNodes())) {
+                Map<Long, PEWorkflowDAG.Node> nodeId2NodeMap = dag.getNodes().stream().collect(Collectors.toMap(PEWorkflowDAG.Node::getNodeId, e -> e));
+                for (WorkflowNodeInfoDO nodeInfo : changeJobNodeList) {
+                    PEWorkflowDAG.Node node = nodeId2NodeMap.get(nodeInfo.getId());
+                    if (node != null) {
+                        node.setJobId(nodeInfo.getJobId());
+                    }
+                }
+            }
+            workflowInfo.setPeDAG(JSON.toJSONString(dag));
+            workflowInfo.setGmtModified(new Date());
+            workflowInfoRepository.saveAndFlush(workflowInfo);
         }
         return res;
     }
