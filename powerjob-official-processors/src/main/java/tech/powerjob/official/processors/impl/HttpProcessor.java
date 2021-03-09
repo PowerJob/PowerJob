@@ -20,19 +20,27 @@ import java.util.concurrent.TimeUnit;
  * common http processor
  *
  * @author tjq
+ * @author Jiang Jining
  * @since 2021/1/30
  */
 public class HttpProcessor extends CommonBasicProcessor {
 
-    // 60 seconds
+    /**
+     * Default timeout is 60 seconds.
+     */
     private static final int DEFAULT_TIMEOUT = 60;
+    private static final int HTTP_SUCCESS_CODE = 200;
     private static final Map<Integer, OkHttpClient> CLIENT_STORE = new ConcurrentHashMap<>();
 
     @Override
     public ProcessResult process0(TaskContext taskContext) throws Exception {
         OmsLogger omsLogger = taskContext.getOmsLogger();
         HttpParams httpParams = JSONObject.parseObject(CommonUtils.parseParams(taskContext), HttpParams.class);
-
+        if (httpParams == null) {
+            String message = "httpParams is null, please check jobParam configuration.";
+            omsLogger.warn(message);
+            return new ProcessResult(false, message);
+        }
         if (StringUtils.isEmpty(httpParams.url)) {
             return new ProcessResult(false, "url can't be empty!");
         }
@@ -95,9 +103,15 @@ public class HttpProcessor extends CommonBasicProcessor {
             msgBody = response.body().string();
         }
 
-        String res = String.format("code:%d,body:%s", response.code(), msgBody);
-
-        return new ProcessResult(true, res);
+        int responseCode = response.code();
+        String res = String.format("code:%d, body:%s", responseCode, msgBody);
+        boolean success = true;
+        if (responseCode != HTTP_SUCCESS_CODE) {
+            success = false;
+            omsLogger.warn("{} url: {} failed, response code is {}, response body is {}",
+                    httpParams.method, httpParams.url, responseCode, msgBody);
+        }
+        return new ProcessResult(success, res);
     }
 
     @Data
