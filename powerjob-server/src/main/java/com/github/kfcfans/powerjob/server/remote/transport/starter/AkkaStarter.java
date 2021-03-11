@@ -90,7 +90,7 @@ public class AkkaStarter {
     }
 
     public static ActorSelection getTaskTrackerActor(String address) {
-        String path = String.format(AKKA_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, RemoteConstant.Task_TRACKER_ACTOR_NAME);
+        String path = String.format(AKKA_PATH, RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, address, RemoteConstant.TASK_TRACKER_ACTOR_NAME);
         return actorSystem.actorSelection(path);
     }
 
