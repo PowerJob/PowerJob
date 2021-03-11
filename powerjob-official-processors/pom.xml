@@ -21,6 +21,8 @@
         <junit.version>5.6.1</junit.version>
         <logback.version>1.2.3</logback.version>
         <powerjob.worker.version>3.4.6</powerjob.worker.version>
+        <spring.jdbc.version>5.2.9.RELEASE</spring.jdbc.version>
+        <h2.db.version>1.4.200</h2.db.version>
 
         <!-- 全部 shade 化，避免依赖冲突 -->
         <fastjson.version>1.2.68</fastjson.version>
@@ -65,6 +67,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.jdbc.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Junit tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -78,6 +87,14 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- h2 database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.db.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -104,6 +121,7 @@
                             <shadedPattern>shade.powerjob.org</shadedPattern>
                             <excludes>
                                 <exclude>org.slf4j.*</exclude>
+                                <exclude>org.springframework.*</exclude>
                             </excludes>
                         </relocation>
                         <relocation>

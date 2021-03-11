@@ -1,6 +1,5 @@
 package com.github.kfcfans.powerjob.worker.persistence;
 
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.zaxxer.hikari.HikariConfig;
