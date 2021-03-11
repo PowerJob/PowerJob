@@ -43,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 客户端启动类
@@ -55,6 +56,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
     private ScheduledExecutorService timingPool;
     private final WorkerRuntime workerRuntime = new WorkerRuntime();
+    private final AtomicBoolean initialized = new AtomicBoolean();
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -67,6 +69,11 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
     }
 
     public void init() throws Exception {
+
+        if (!initialized.compareAndSet(false, true)) {
+            log.warn("[OhMyWorker] please do not repeat the initialization");
+            return;
+        }
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.info("[OhMyWorker] start to initialize OhMyWorker...");
