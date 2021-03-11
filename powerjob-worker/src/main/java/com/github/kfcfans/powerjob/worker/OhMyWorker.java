@@ -195,5 +195,6 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
     @Override
     public void destroy() throws Exception {
         timingPool.shutdownNow();
+        workerRuntime.getActorSystem().terminate();
     }
 }
