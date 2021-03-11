@@ -121,7 +121,7 @@
                             <shadedPattern>shade.powerjob.org</shadedPattern>
                             <excludes>
                                 <exclude>org.slf4j.*</exclude>
-                                <exclude>org.springframework.*</exclude>
+                                <exclude>org.springframework.**</exclude>
                             </excludes>
                         </relocation>
                         <relocation>
