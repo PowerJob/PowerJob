@@ -60,8 +60,13 @@ public class HttpProcessor extends CommonBasicProcessor {
         }
 
         // set default mediaType
-        if (!"GET".equals(httpParams.method) && StringUtils.isEmpty(httpParams.mediaType)) {
-            if (JSONValidator.from(httpParams.body).validate()) {
+        if (!"GET".equals(httpParams.method)) {
+            // set default request body
+            if (StringUtils.isEmpty(httpParams.body)) {
+                httpParams.body = new JSONObject().toJSONString();
+                omsLogger.warn("try to use default request body:{}", httpParams.body);
+            }
+            if (JSONValidator.from(httpParams.body).validate() && StringUtils.isEmpty(httpParams.mediaType)) {
                 httpParams.mediaType = "application/json";
                 omsLogger.warn("try to use 'application/json' as media type");
             }
