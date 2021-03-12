@@ -11,6 +11,14 @@ import tech.powerjob.official.processors.TestUtils;
  * @since 2021/1/31
  */
 class HttpProcessorTest {
+    
+    @Test
+    void testDefaultMethod() throws Exception {
+        String url = "https://www.baidu.com";
+        JSONObject params = new JSONObject();
+        params.put("url", url);
+        System.out.println(new HttpProcessor().process(TestUtils.genTaskContext(params.toJSONString())));
+    }
 
     @Test
     void testGet() throws Exception {
