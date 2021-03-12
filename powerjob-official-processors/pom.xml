@@ -107,6 +107,7 @@
                 <version>${mvn.shade.plugin.version}</version>
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <minimizeJar>true</minimizeJar>
                     <relocations>
                         <relocation>
                             <pattern>okhttp3</pattern>
@@ -122,6 +123,7 @@
                             <excludes>
                                 <exclude>org.slf4j.*</exclude>
                                 <exclude>org.springframework.**</exclude>
+                                <exclude>org.w3c.**</exclude>
                             </excludes>
                         </relocation>
                         <relocation>
