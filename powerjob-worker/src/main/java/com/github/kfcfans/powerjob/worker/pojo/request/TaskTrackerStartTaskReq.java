@@ -37,9 +37,9 @@ public class TaskTrackerStartTaskReq implements OmsSerializable {
     /**
      * 创建 TaskTrackerStartTaskReq，该构造方法必须在 TaskTracker 节点调用
      */
-    public TaskTrackerStartTaskReq(InstanceInfo instanceInfo, TaskDO task) {
+    public TaskTrackerStartTaskReq(InstanceInfo instanceInfo, TaskDO task, String taskTrackerAddress) {
 
-        this.taskTrackerAddress = OhMyWorker.getWorkerAddress();
+        this.taskTrackerAddress = taskTrackerAddress;
         this.instanceInfo = instanceInfo;
 
         this.taskId = task.getTaskId();

@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.common.request.http;
 
+import com.github.kfcfans.powerjob.common.DispatchStrategy;
 import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.ProcessorType;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
@@ -125,6 +126,12 @@ public class SaveJobInfoRequest {
      */
     private List<Long> notifyUserIds;
 
+    private String extra;
+
+    private DispatchStrategy dispatchStrategy;
+
+    private String lifecycle;
+
 
     /**
      * Check non-null properties.
@@ -136,5 +143,12 @@ public class SaveJobInfoRequest {
         CommonUtils.requireNonNull(executeType, "executeType can't be empty");
         CommonUtils.requireNonNull(processorType, "processorType can't be empty");
         CommonUtils.requireNonNull(timeExpressionType, "timeExpressionType can't be empty");
+    }
+
+    public DispatchStrategy getDispatchStrategy() {
+        if (dispatchStrategy == null) {
+            return DispatchStrategy.HEALTH_FIRST;
+        }
+        return dispatchStrategy;
     }
 }

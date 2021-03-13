@@ -15,20 +15,27 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public enum WorkflowInstanceStatus {
-
+    /**
+     * 初始状态为等待调度
+     */
     WAITING(1, "等待调度"),
     RUNNING(2, "运行中"),
     FAILED(3, "失败"),
     SUCCEED(4, "成功"),
     STOPPED(10, "手动停止");
 
-    // 广义的运行状态
-    public static final List<Integer> generalizedRunningStatus = Lists.newArrayList(WAITING.v, RUNNING.v);
-    // 结束状态
-    public static final List<Integer> finishedStatus = Lists.newArrayList(FAILED.v, SUCCEED.v, STOPPED.v);
+    /**
+     * 广义的运行状态
+     */
+    public static final List<Integer> GENERALIZED_RUNNING_STATUS = Lists.newArrayList(WAITING.v, RUNNING.v);
+    /**
+     * 结束状态
+     */
+    public static final List<Integer> FINISHED_STATUS = Lists.newArrayList(FAILED.v, SUCCEED.v, STOPPED.v);
 
-    private int v;
-    private String des;
+    private final int v;
+
+    private final String des;
 
     public static WorkflowInstanceStatus of(int v) {
         for (WorkflowInstanceStatus is : values()) {

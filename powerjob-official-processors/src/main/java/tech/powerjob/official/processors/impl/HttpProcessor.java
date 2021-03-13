@@ -1,6 +1,6 @@
 package tech.powerjob.official.processors.impl;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONValidator;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
@@ -24,14 +24,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class HttpProcessor extends CommonBasicProcessor {
 
-    // 60 seconds
+    /**
+     * 60 seconds
+     */
     private static final int DEFAULT_TIMEOUT = 60;
     private static final Map<Integer, OkHttpClient> CLIENT_STORE = new ConcurrentHashMap<>();
 
     @Override
     public ProcessResult process0(TaskContext taskContext) throws Exception {
         OmsLogger omsLogger = taskContext.getOmsLogger();
-        HttpParams httpParams = JSONObject.parseObject(CommonUtils.parseParams(taskContext), HttpParams.class);
+        HttpParams httpParams = JSON.parseObject(CommonUtils.parseParams(taskContext), HttpParams.class);
 
         if (StringUtils.isEmpty(httpParams.url)) {
             return new ProcessResult(false, "url can't be empty!");
@@ -52,11 +54,9 @@ public class HttpProcessor extends CommonBasicProcessor {
         }
 
         // set default mediaType
-        if (!"GET".equals(httpParams.method) && StringUtils.isEmpty(httpParams.mediaType)) {
-            if (JSONValidator.from(httpParams.body).validate()) {
-                httpParams.mediaType = "application/json";
-                omsLogger.warn("try to use 'application/json' as media type");
-            }
+        if (!"GET".equals(httpParams.method) && StringUtils.isEmpty(httpParams.mediaType) && JSONValidator.from(httpParams.body).validate()) {
+            httpParams.mediaType = "application/json";
+            omsLogger.warn("try to use 'application/json' as media type");
         }
 
         // set default timeout

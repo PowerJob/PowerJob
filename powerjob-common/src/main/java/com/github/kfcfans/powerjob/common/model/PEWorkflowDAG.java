@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,28 +36,49 @@ public class PEWorkflowDAG implements Serializable {
      * Point.
      */
     @Data
+    @Accessors(chain = true)
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Node implements Serializable {
-        private Long jobId;
-        private String jobName;
-
         /**
-         * Instance running param, which is not required by DAG.
+         * node id
+         * @since 20210128
          */
+        private Long nodeId;
+
+        private Long jobId;
+        /**
+         * node name
+         */
+        private String nodeName;
+
+        /* Instance running param, which is not required by DAG. */
+
         @JsonSerialize(using= ToStringSerializer.class)
         private Long instanceId;
-        private Integer status;
-        private String result;
 
-        public Node(Long jobId, String jobName) {
+        private String nodeParams;
+
+        private Integer status;
+
+        private String result;
+        /**
+         * instanceId will be null if disable .
+         */
+        private Boolean enable;
+
+        private Boolean skipWhenFailed;
+
+
+        public Node(Long nodeId,Long jobId, String nodeName) {
+            this.nodeId = nodeId;
             this.jobId = jobId;
-            this.jobName = jobName;
+            this.nodeName = nodeName;
         }
     }
 
     /**
-     * Edge formed by two job ids.
+     * Edge formed by two node ids.
      */
     @Data
     @NoArgsConstructor

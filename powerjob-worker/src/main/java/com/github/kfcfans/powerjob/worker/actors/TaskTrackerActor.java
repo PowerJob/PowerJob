@@ -1,10 +1,12 @@
 package com.github.kfcfans.powerjob.worker.actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.Props;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
 import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTrackerPool;
@@ -14,18 +16,26 @@ import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorReportTaskStatus
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import com.google.common.collect.Lists;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 /**
- * worker的master节点，处理来自server的jobInstance请求和来自worker的task请求
+ * worker 的 master 节点，处理来自 server 的 jobInstance 请求和来自 worker 的task 请求
  *
  * @author tjq
  * @since 2020/3/17
  */
 @Slf4j
+@AllArgsConstructor
 public class TaskTrackerActor extends AbstractActor {
+
+    private final WorkerRuntime workerRuntime;
+
+    public static Props props(WorkerRuntime workerRuntime) {
+        return Props.create(TaskTrackerActor.class, () -> new TaskTrackerActor(workerRuntime));
+    }
 
     @Override
     public Receive createReceive() {
@@ -66,6 +76,9 @@ public class TaskTrackerActor extends AbstractActor {
         }
 
         taskTracker.updateTaskStatus(req.getSubInstanceId(), req.getTaskId(), taskStatus, req.getReportTime(), req.getResult());
+
+        // 更新工作流上下文
+        taskTracker.updateAppendedWfContext(req.getAppendedWfContext());
     }
 
     /**
@@ -120,7 +133,7 @@ public class TaskTrackerActor extends AbstractActor {
 
         log.debug("[TaskTrackerActor] server schedule job by request: {}.", req);
         // 原子创建，防止多实例的存在
-        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req));
+        TaskTrackerPool.atomicCreateTaskTracker(instanceId, ignore -> TaskTracker.create(req, workerRuntime));
     }
 
     /**

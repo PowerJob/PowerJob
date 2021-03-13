@@ -2,6 +2,8 @@ package com.github.kfcfans.powerjob.worker.common.utils;
 
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
+import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 文件工具类
@@ -9,20 +11,26 @@ import com.github.kfcfans.powerjob.worker.OhMyWorker;
  * @author tjq
  * @since 2020/5/16
  */
+@Slf4j
 public class OmsWorkerFileUtils {
 
-    private static final String USER_HOME = System.getProperty("user.home", "powerjob");
-    private static final String WORKER_DIR = USER_HOME + "/powerjob/" + OhMyWorker.getConfig().getAppName() + "/";
+    private static String basePath;
+
+    public static void init(OhMyConfig config) {
+        String userHome = System.getProperty("user.home", "powerjob");
+        basePath = userHome + "/powerjob/" + config.getAppName() + "/";
+        log.info("[PowerFile] use base file path: {}", basePath);
+    }
 
     public static String getScriptDir() {
-        return WORKER_DIR + "script/";
+        return basePath + "script/";
     }
 
     public static String getContainerDir() {
-        return WORKER_DIR + "container/";
+        return basePath + "container/";
     }
 
     public static String getH2WorkDir() {
-        return WORKER_DIR + "h2/" + CommonUtils.genUUID() + "/";
+        return basePath + "h2/" + CommonUtils.genUUID() + "/";
     }
 }

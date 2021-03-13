@@ -7,7 +7,7 @@ import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
@@ -33,16 +33,24 @@ import java.util.concurrent.*;
 @ToString
 public class CommonTaskTracker extends TaskTracker {
 
-    private static final String ROOT_TASK_ID = "0";
-    // 可以是除 ROOT_TASK_ID 的任何数字
-    private static final String LAST_TASK_ID = "1111";
-
-    // 连续上报多次失败后放弃上报，视为结果不可达，TaskTracker down
+    /**
+     * 连续上报多次失败后放弃上报，视为结果不可达，TaskTracker down
+     */
     private int reportFailedCnt = 0;
+    /**
+     * 根任务 ID
+     */
+    public static final String ROOT_TASK_ID = "0";
+    /**
+     * 最后一个任务 ID
+     * 除 {@link #ROOT_TASK_ID} 外任何数都可以
+     */
+    public static final String LAST_TASK_ID = "9999";
+
     private static final int MAX_REPORT_FAILED_THRESHOLD = 5;
 
-    protected CommonTaskTracker(ServerScheduleJobReq req) {
-        super(req);
+    protected CommonTaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
+        super(req, workerRuntime);
     }
 
     @Override
@@ -77,7 +85,7 @@ public class CommonTaskTracker extends TaskTracker {
         // 填充基础信息
         detail.setActualTriggerTime(createTime);
         detail.setStatus(InstanceStatus.RUNNING.getV());
-        detail.setTaskTrackerAddress(OhMyWorker.getWorkerAddress());
+        detail.setTaskTrackerAddress(workerRuntime.getWorkerAddress());
 
         // 填充详细信息
         InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
@@ -108,7 +116,7 @@ public class CommonTaskTracker extends TaskTracker {
         rootTask.setInstanceId(instanceInfo.getInstanceId());
         rootTask.setTaskId(ROOT_TASK_ID);
         rootTask.setFailedCnt(0);
-        rootTask.setAddress(OhMyWorker.getWorkerAddress());
+        rootTask.setAddress(workerRuntime.getWorkerAddress());
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
         rootTask.setCreatedTime(System.currentTimeMillis());
         rootTask.setLastModifiedTime(System.currentTimeMillis());
@@ -131,6 +139,7 @@ public class CommonTaskTracker extends TaskTracker {
 
         private static final long DISPATCH_TIME_OUT_MS = 15000;
 
+        @SuppressWarnings("squid:S3776")
         private void innerRun() {
 
             InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
@@ -144,13 +153,12 @@ public class CommonTaskTracker extends TaskTracker {
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
             req.setWfInstanceId(instanceInfo.getWfInstanceId());
-
             req.setTotalTaskNum(finishedNum + unfinishedNum);
             req.setSucceedTaskNum(holder.succeedNum);
             req.setFailedTaskNum(holder.failedNum);
             req.setReportTime(System.currentTimeMillis());
             req.setStartTime(createTime);
-            req.setSourceAddress(OhMyWorker.getWorkerAddress());
+            req.setSourceAddress(workerRuntime.getWorkerAddress());
 
             boolean success = false;
             String result = null;
@@ -161,7 +169,6 @@ public class CommonTaskTracker extends TaskTracker {
                 // 数据库中一个任务都没有，说明根任务创建失败，该任务实例失败
                 if (finishedNum == 0) {
                     finished.set(true);
-                    success = false;
                     result = SystemInstanceResult.TASK_INIT_FAILED;
                 }else {
                     ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
@@ -210,7 +217,7 @@ public class CommonTaskTracker extends TaskTracker {
                                 newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
                                 newLastTask.setTaskId(LAST_TASK_ID);
                                 newLastTask.setSubInstanceId(instanceId);
-                                newLastTask.setAddress(OhMyWorker.getWorkerAddress());
+                                newLastTask.setAddress(workerRuntime.getWorkerAddress());
                                 submitTask(Lists.newArrayList(newLastTask));
                             }
                     }
@@ -224,13 +231,15 @@ public class CommonTaskTracker extends TaskTracker {
                 result = SystemInstanceResult.INSTANCE_EXECUTE_TIMEOUT;
             }
 
-            String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
-            ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
+            String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
+            ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
 
             // 4. 执行完毕，报告服务器
             if (finished.get()) {
 
                 req.setResult(result);
+                // 上报追加的工作流上下文信息
+                req.setAppendedWfContext(appendedWfContext);
                 req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
 
                 CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));

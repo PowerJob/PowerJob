@@ -19,6 +19,7 @@ import org.slf4j.helpers.MessageFormatter;
 public class OmsServerLogger implements OmsLogger {
 
     private final long instanceId;
+    private final OmsLogHandler omsLogHandler;
 
     @Override
     public void debug(String messagePattern, Object... args) {
@@ -59,7 +60,7 @@ public class OmsServerLogger implements OmsLogger {
 
     private void process(LogLevel level, String messagePattern, Object... args) {
         String logContent = genLogContent(messagePattern, args);
-        OmsLogHandler.INSTANCE.submitLog(instanceId, level, logContent);
+        omsLogHandler.submitLog(instanceId, level, logContent);
     }
 
 }

@@ -1,14 +1,16 @@
 package com.github.kfcfans.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.kfcfans.powerjob.client.OhMyClient;
 import com.github.kfcfans.powerjob.common.ExecuteType;
 import com.github.kfcfans.powerjob.common.ProcessorType;
 import com.github.kfcfans.powerjob.common.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
+import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import com.github.kfcfans.powerjob.client.OhMyClient;
-import org.junit.jupiter.api.BeforeAll;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -17,6 +19,7 @@ import java.util.concurrent.TimeUnit;
  * Test cases for {@link OhMyClient}
  *
  * @author tjq
+ * @author Echo009
  * @since 2020/4/15
  */
 class TestClient extends ClientInitializer {
@@ -24,12 +27,12 @@ class TestClient extends ClientInitializer {
     public static final long JOB_ID = 4L;
 
     @Test
-    public void testSaveJob() throws Exception {
+    void testSaveJob() {
 
         SaveJobInfoRequest newJobInfo = new SaveJobInfoRequest();
         newJobInfo.setId(JOB_ID);
         newJobInfo.setJobName("omsOpenAPIJobccccc");
-        newJobInfo.setJobDescription("tes OpenAPI");
+        newJobInfo.setJobDescription("test OpenAPI");
         newJobInfo.setJobParams("{'aa':'bb'}");
         newJobInfo.setTimeExpressionType(TimeExpressionType.CRON);
         newJobInfo.setTimeExpression("0 0 * * * ? ");
@@ -44,64 +47,91 @@ class TestClient extends ClientInitializer {
 
         ResultDTO<Long> resultDTO = ohMyClient.saveJob(newJobInfo);
         System.out.println(JSONObject.toJSONString(resultDTO));
+        Assertions.assertNotNull(resultDTO);
     }
 
     @Test
-    public void testFetchJob() throws Exception {
+    void testCopyJob() {
+        ResultDTO<Long> copyJobRes = ohMyClient.copyJob(JOB_ID);
+        System.out.println(JSONObject.toJSONString(copyJobRes));
+        Assertions.assertNotNull(copyJobRes);
+    }
+
+    @Test
+    void testFetchJob() {
         ResultDTO<JobInfoDTO> fetchJob = ohMyClient.fetchJob(JOB_ID);
         System.out.println(JSONObject.toJSONString(fetchJob));
+        Assertions.assertNotNull(fetchJob);
     }
 
     @Test
-    public void testDisableJob() throws Exception {
-        System.out.println(ohMyClient.disableJob(JOB_ID));
+    void testDisableJob() {
+        ResultDTO<Void> res = ohMyClient.disableJob(JOB_ID);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 
     @Test
-    public void testEnableJob() throws Exception {
-        System.out.println(ohMyClient.enableJob(JOB_ID));
+    void testEnableJob() {
+        ResultDTO<Void> res = ohMyClient.enableJob(JOB_ID);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 
     @Test
-    public void testDeleteJob() throws Exception {
-        System.out.println(ohMyClient.deleteJob(JOB_ID));
+    void testDeleteJob() {
+        ResultDTO<Void> res = ohMyClient.deleteJob(JOB_ID);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 
     @Test
-    public void testRun() {
-        System.out.println(ohMyClient.runJob(JOB_ID));
+    void testRun() {
+        ResultDTO<Long> res = ohMyClient.runJob(JOB_ID);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 
     @Test
-    public void testRunJobDelay() throws Exception {
-        System.out.println(ohMyClient.runJob(JOB_ID, "this is instanceParams", 60000));
+    void testRunJobDelay() {
+        ResultDTO<Long> res = ohMyClient.runJob(JOB_ID, "this is instanceParams", 60000);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 
     @Test
-    public void testFetchInstanceInfo() throws Exception {
-        System.out.println(ohMyClient.fetchInstanceInfo(205436386851946560L));
+    void testFetchInstanceInfo() {
+        ResultDTO<InstanceInfoDTO> res = ohMyClient.fetchInstanceInfo(205436386851946560L);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 
     @Test
-    public void testStopInstance() throws Exception {
+    void testStopInstance() {
         ResultDTO<Void> res = ohMyClient.stopInstance(205436995885858880L);
-        System.out.println(res.toString());
-    }
-    @Test
-    public void testFetchInstanceStatus() throws Exception {
-        System.out.println(ohMyClient.fetchInstanceStatus(205436995885858880L));
+        System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 
     @Test
-    public void testCancelInstanceInTimeWheel() throws Exception {
+    void testFetchInstanceStatus() {
+        ResultDTO<Integer> res = ohMyClient.fetchInstanceStatus(205436995885858880L);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
+    }
+
+    @Test
+    void testCancelInstanceInTimeWheel() {
         ResultDTO<Long> startRes = ohMyClient.runJob(JOB_ID, "start by OhMyClient", 20000);
         System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
         ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
         System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
+        Assertions.assertTrue(cancelRes.isSuccess());
     }
 
     @Test
-    public void testCancelInstanceInDatabase() throws Exception {
+    @SneakyThrows
+    void testCancelInstanceInDatabase() {
         ResultDTO<Long> startRes = ohMyClient.runJob(15L, "start by OhMyClient", 2000000);
         System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
 
@@ -110,11 +140,13 @@ class TestClient extends ClientInitializer {
 
         ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
         System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
+        Assertions.assertTrue(cancelRes.isSuccess());
     }
 
     @Test
-    public void testRetryInstance() throws Exception {
+    void testRetryInstance() {
         ResultDTO<Void> res = ohMyClient.retryInstance(169557545206153344L);
         System.out.println(res);
+        Assertions.assertNotNull(res);
     }
 }

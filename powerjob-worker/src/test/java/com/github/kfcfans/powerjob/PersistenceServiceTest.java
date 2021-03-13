@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob;
 
+import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
@@ -18,7 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class PersistenceServiceTest {
 
-    private static TaskPersistenceService taskPersistenceService = TaskPersistenceService.INSTANCE;
+    private static TaskPersistenceService taskPersistenceService = new TaskPersistenceService(StoreStrategy.DISK);
 
     @BeforeAll
     public static void initTable() throws Exception {

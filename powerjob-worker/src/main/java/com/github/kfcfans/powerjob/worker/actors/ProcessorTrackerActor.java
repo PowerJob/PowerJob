@@ -1,11 +1,14 @@
 package com.github.kfcfans.powerjob.worker.actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.Props;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.core.tracker.processor.ProcessorTracker;
 import com.github.kfcfans.powerjob.worker.core.tracker.processor.ProcessorTrackerPool;
 import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStopInstanceReq;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
@@ -18,7 +21,14 @@ import java.util.List;
  * @since 2020/3/17
  */
 @Slf4j
+@AllArgsConstructor
 public class ProcessorTrackerActor extends AbstractActor {
+
+    private final WorkerRuntime workerRuntime;
+
+    public static Props props(WorkerRuntime workerRuntime) {
+        return Props.create(ProcessorTrackerActor.class, () -> new ProcessorTrackerActor(workerRuntime));
+    }
 
     @Override
     public Receive createReceive() {
@@ -38,7 +48,10 @@ public class ProcessorTrackerActor extends AbstractActor {
         Long instanceId = req.getInstanceInfo().getInstanceId();
 
         // 创建 ProcessorTracker 一定能成功
-        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(instanceId, req.getTaskTrackerAddress(), () -> new ProcessorTracker(req));
+        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(
+                instanceId,
+                req.getTaskTrackerAddress(),
+                () -> new ProcessorTracker(req, workerRuntime));
 
         TaskDO task = new TaskDO();
 

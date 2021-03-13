@@ -1,14 +1,12 @@
 package com.github.kfcfans.powerjob.worker.core.processor;
 
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
-import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.util.StringUtils;
-
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 任务上下文
@@ -16,21 +14,28 @@ import java.util.Map;
  * 单机任务：整个Job变成一个Task
  * 广播任务：整个job变成一堆一样的Task
  * MR 任务：被map出来的任务都视为根Task的子Task
+ * <p>
+ * 2021/02/04 移除 fetchUpstreamTaskResult 方法
  *
  * @author tjq
+ * @author Echo009
  * @since 2020/3/18
  */
 @Getter
 @Setter
 @ToString
+@Slf4j
 public class TaskContext {
 
     private Long jobId;
-    private Long instanceId;
-    private Long subInstanceId;
-    private String taskId;
-    private String taskName;
 
+    private Long instanceId;
+
+    private Long subInstanceId;
+
+    private String taskId;
+
+    private String taskName;
     /**
      * 通过控制台传递的参数
      */
@@ -38,7 +43,7 @@ public class TaskContext {
     /**
      * 任务实例运行中参数
      * 若该任务实例通过 OpenAPI 触发，则该值为 OpenAPI 传递的参数
-     * 若该任务为工作流的某个节点，则该值为上游任务传递下来的数据，推荐通过 {@link TaskContext#fetchUpstreamTaskResult()} 方法获取
+     * 若该任务为工作流的某个节点，则该值为工作流实例的上下文 ( wfContext )
      */
     private String instanceParams;
     /**
@@ -56,29 +61,15 @@ public class TaskContext {
     /**
      * 在线日志记录
      */
+    @JsonIgnore
     private OmsLogger omsLogger;
     /**
-     * 用户自定义上下文
+     * 用户自定义上下文，通过 {@link OhMyConfig} 初始化
      */
     private Object userContext;
-
-
     /**
-     * 获取工作流上游任务传递的数据（仅该任务实例由工作流触发时存在）
-     * @return key: 上游任务的 jobId；value: 上游任务的 ProcessResult#result
+     * 工作流上下文数据
      */
-    @SuppressWarnings("rawtypes, unchecked")
-    public Map<Long, String> fetchUpstreamTaskResult() {
-        Map<Long, String> res = Maps.newHashMap();
-        if (StringUtils.isEmpty(instanceParams)) {
-            return res;
-        }
-        try {
-            Map originMap = JsonUtils.parseObject(instanceParams, Map.class);
-            originMap.forEach((k, v) -> res.put(Long.valueOf(String.valueOf(k)), String.valueOf(v)));
-            return res;
-        }catch (Exception ignore) {
-        }
-        return Maps.newHashMap();
-    }
+    private WorkflowContext workflowContext;
+
 }

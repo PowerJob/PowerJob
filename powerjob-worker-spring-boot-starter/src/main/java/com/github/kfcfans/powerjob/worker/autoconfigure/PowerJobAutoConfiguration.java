@@ -70,6 +70,10 @@ public class PowerJobAutoConfiguration {
          */
         config.setEnableTestMode(worker.isEnableTestMode());
         /*
+         * Max length of appended workflow context . Appended workflow context value that is longer than the value will be ignore.
+         */
+        config.setMaxAppendedWfContextLength(worker.getMaxAppendedWfContextLength());
+        /*
          * Create OhMyWorker object and set properties.
          */
         OhMyWorker ohMyWorker = new OhMyWorker();

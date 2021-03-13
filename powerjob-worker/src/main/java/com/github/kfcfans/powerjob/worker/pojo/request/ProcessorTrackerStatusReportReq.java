@@ -45,7 +45,6 @@ public class ProcessorTrackerStatusReportReq implements OmsSerializable {
         req.type = IDLE;
         req.instanceId = instanceId;
         req.time = System.currentTimeMillis();
-        req.address = OhMyWorker.getWorkerAddress();
         req.setRemainTaskNum(0);
         return req;
     }
@@ -55,7 +54,6 @@ public class ProcessorTrackerStatusReportReq implements OmsSerializable {
         req.type = LOAD;
         req.instanceId = instanceId;
         req.time = System.currentTimeMillis();
-        req.address = OhMyWorker.getWorkerAddress();
         req.setRemainTaskNum(remainTaskNum);
         return req;
     }

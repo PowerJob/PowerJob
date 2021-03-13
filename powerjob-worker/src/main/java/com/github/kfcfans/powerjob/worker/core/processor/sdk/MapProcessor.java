@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.worker.core.processor.sdk;
 
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
+import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
@@ -40,14 +40,21 @@ public abstract class MapProcessor implements BasicProcessor {
             log.warn("[MapProcessor] map task size is too large, network maybe overload... please try to split the tasks.");
         }
 
+        // 修复 map 任务命名和根任务名或者最终任务名称一致导致的问题（无限生成子任务或者直接失败）
+        if (TaskConstant.ROOT_TASK_NAME.equals(taskName) || TaskConstant.LAST_TASK_NAME.equals(taskName)) {
+            log.warn("[MapProcessor] illegal map task name : {}! please do not use 'OMS_ROOT_TASK' or 'OMS_LAST_TASK' as map task name. as a precaution, it will be renamed 'X-{}' automatically.",taskName,taskName);
+            taskName ="X-"+taskName;
+        }
+
         TaskDO task = ThreadLocalStore.getTask();
+        WorkerRuntime workerRuntime = ThreadLocalStore.getRuntimeMeta();
 
         // 1. 构造请求
         ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(task, taskList, taskName);
 
         // 2. 可靠发送请求（任务不允许丢失，需要使用 ask 方法，失败抛异常）
         String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(task.getAddress(), RemoteConstant.Task_TRACKER_ACTOR_NAME);
-        boolean requestSucceed = AkkaUtils.reliableTransmit(OhMyWorker.actorSystem.actorSelection(akkaRemotePath), req);
+        boolean requestSucceed = AkkaUtils.reliableTransmit(workerRuntime.getActorSystem().actorSelection(akkaRemotePath), req);
 
         if (requestSucceed) {
             return new ProcessResult(true, "MAP_SUCCESS");

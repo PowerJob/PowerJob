@@ -39,17 +39,17 @@ public class OmsContainerFactory {
     /**
      * 获取容器
      * @param containerId 容器ID
-     * @param loadFromServer 当本地不存在时尝试从 server 加载
+     * @param serverActor 当容器不存在且 serverActor 非空时，尝试从服务端重新拉取容器
      * @return 容器示例，可能为 null
      */
-    public static OmsContainer fetchContainer(Long containerId, boolean loadFromServer) {
+    public static OmsContainer fetchContainer(Long containerId, ActorSelection serverActor) {
 
         OmsContainer omsContainer = CARGO.get(containerId);
         if (omsContainer != null) {
             return omsContainer;
         }
 
-        if (!loadFromServer) {
+        if (serverActor == null) {
             return null;
         }
 
@@ -57,11 +57,6 @@ public class OmsContainerFactory {
         log.info("[OmsContainer-{}] can't find the container in factory, try to deploy from server.", containerId);
         WorkerNeedDeployContainerRequest request = new WorkerNeedDeployContainerRequest(containerId);
 
-        String serverPath = AkkaUtils.getAkkaServerPath(RemoteConstant.SERVER_ACTOR_NAME);
-        if (StringUtils.isEmpty(serverPath)) {
-            return null;
-        }
-        ActorSelection serverActor = OhMyWorker.actorSystem.actorSelection(serverPath);
         try {
 
             CompletionStage<Object> askCS = Patterns.ask(serverActor, request, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));

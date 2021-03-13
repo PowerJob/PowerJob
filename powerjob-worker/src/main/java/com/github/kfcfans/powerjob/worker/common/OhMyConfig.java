@@ -3,6 +3,7 @@ package com.github.kfcfans.powerjob.worker.common;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
+import com.github.kfcfans.powerjob.worker.core.processor.WorkflowContext;
 import com.github.kfcfans.powerjob.worker.extension.SystemMetricsCollector;
 import com.google.common.collect.Lists;
 import lombok.Getter;
@@ -54,7 +55,15 @@ public class OhMyConfig {
      * Test mode is used for conditions that your have no powerjob-server in your develop env so you can't startup the application
      */
     private boolean enableTestMode = false;
+    /**
+     * Max length of appended workflow context value length. Appended workflow context value that is longer than the value will be ignore.
+     * {@link WorkflowContext} max length for #appendedContextData
+     */
+    private int maxAppendedWfContextLength = 8192;
+
 
     private SystemMetricsCollector systemMetricsCollector;
+
+    private String tag;
 
 }
