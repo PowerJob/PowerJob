@@ -70,7 +70,7 @@ public class JobController {
     @PostMapping("/list")
     public ResultDTO<PageResult<JobInfoVO>> listJobs(@RequestBody QueryJobInfoRequest request) {
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "gmtCreate");
+        Sort sort = Sort.by(Sort.Direction.ASC, "id");
         PageRequest pageRequest = PageRequest.of(request.getIndex(), request.getPageSize(), sort);
         Page<JobInfoDO> jobInfoPage;
 

@@ -35,3 +35,10 @@ build/
 *.log
 */.DS_Store
 .DS_Store
+
+.phd
+.txt
+.trc
+*/.phd
+*/.txt
+*/.trc

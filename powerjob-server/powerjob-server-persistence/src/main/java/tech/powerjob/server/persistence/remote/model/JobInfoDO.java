@@ -44,6 +44,8 @@ public class JobInfoDO {
     /**
      * 任务自带的参数
      */
+    @Lob
+    @Column
     private String jobParams;
 
     /* ************************** 定时参数 ************************** */

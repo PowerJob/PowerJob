@@ -53,7 +53,7 @@ class FileCleanupProcessorTest {
     @Test
     void testCleanWorkerScript() throws Exception {
         JSONObject params = new JSONObject();
-        params.put("dirPath", "/Users/tjq/powerjob/script");
+        params.put("dirPath", "/");
         params.put("filePattern", "(shell|python)_[0-9]*\\.(sh|py)");
         params.put("retentionTime", 24);
         JSONArray array = new JSONArray();
