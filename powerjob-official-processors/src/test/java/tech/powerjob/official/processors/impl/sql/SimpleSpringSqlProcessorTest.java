@@ -1,4 +1,4 @@
-package tech.powerjob.official.processors.impl;
+package tech.powerjob.official.processors.impl.sql;
 
 import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
@@ -10,9 +10,9 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import tech.powerjob.official.processors.TestUtils;
-import tech.powerjob.official.processors.impl.sql.SimpleSpringSqlProcessor;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Echo009
@@ -35,8 +35,17 @@ class SimpleSpringSqlProcessorTest {
         simpleSpringSqlProcessor.registerSqlValidator("fakeSqlValidator", (sql) -> true);
         // 排除掉包含 drop 的 SQL
         simpleSpringSqlProcessor.registerSqlValidator("interceptDropValidator", (sql) -> sql.matches("^(?i)((?!drop).)*$"));
-        // do nothing
-        simpleSpringSqlProcessor.setSqlParser((sql, taskContext) -> sql);
+        // add ';'
+        simpleSpringSqlProcessor.setSqlParser((sql, taskContext) -> {
+            if (!sql.endsWith(";")) {
+                return sql + ";";
+            }
+            return sql;
+        });
+
+        // just invoke clean datasource method
+        simpleSpringSqlProcessor.removeDataSource("NULL_DATASOURCE");
+
         log.info("init sql processor successfully!");
 
     }
@@ -87,9 +96,19 @@ class SimpleSpringSqlProcessorTest {
 
     }
 
+    @Test
+    public void testQuery() {
+        SimpleSpringSqlProcessor.SqlParams insertParams = constructSqlParam("insert into test_table (id, content) values (1, '?');insert into test_table (id, content) values (0, 'Fight for a better tomorrow')");
+        simpleSpringSqlProcessor.process0(TestUtils.genTaskContext(JSON.toJSONString(insertParams)));
+
+        SimpleSpringSqlProcessor.SqlParams queryParams = constructSqlParam("select * from test_table");
+        simpleSpringSqlProcessor.process0(TestUtils.genTaskContext(JSON.toJSONString(queryParams)));
+    }
+
     static SimpleSpringSqlProcessor.SqlParams constructSqlParam(String sql){
         SimpleSpringSqlProcessor.SqlParams sqlParams = new SimpleSpringSqlProcessor.SqlParams();
         sqlParams.setSql(sql);
+        sqlParams.setShowResult(true);
         return sqlParams;
     }
 

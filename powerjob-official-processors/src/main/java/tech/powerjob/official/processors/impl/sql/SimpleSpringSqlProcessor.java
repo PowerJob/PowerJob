@@ -2,14 +2,11 @@ package tech.powerjob.official.processors.impl.sql;
 
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.google.common.collect.Maps;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.Map;
 
 /**
@@ -64,34 +61,9 @@ public class SimpleSpringSqlProcessor extends AbstractSqlProcessor {
         });
     }
 
-    /**
-     * 执行 SQL，忽略返回值
-     *
-     * @param sqlParams   SQL processor 参数信息
-     * @param taskContext 任务上下文
-     */
     @Override
-    @SneakyThrows
-    @SuppressWarnings({"squid:S1181"})
-    protected void executeSql(SqlParams sqlParams, TaskContext taskContext) {
-        DataSource currentDataSource = dataSourceMap.get(sqlParams.getDataSourceName());
-        boolean originAutoCommitFlag ;
-        try (Connection connection = currentDataSource.getConnection()) {
-            originAutoCommitFlag = connection.getAutoCommit();
-            connection.setAutoCommit(false);
-            try (Statement statement = connection.createStatement()) {
-                statement.setQueryTimeout(sqlParams.getTimeout() == null ? DEFAULT_TIMEOUT : sqlParams.getTimeout());
-                statement.execute(sqlParams.getSql());
-                connection.commit();
-            } catch (Throwable e) {
-                connection.rollback();
-                // rethrow
-                throw e;
-            } finally {
-                // reset
-                connection.setAutoCommit(originAutoCommitFlag);
-            }
-        }
+    DataSource getDataSource(SqlParams sqlParams, TaskContext taskContext) {
+        return dataSourceMap.get(sqlParams.getDataSourceName());
     }
 
     /**
