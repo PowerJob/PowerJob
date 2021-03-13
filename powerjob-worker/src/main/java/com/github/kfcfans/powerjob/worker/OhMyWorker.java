@@ -120,7 +120,7 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
 
             ActorRef taskTrackerActorRef = actorSystem.actorOf(TaskTrackerActor.props(workerRuntime)
                     .withDispatcher("akka.task-tracker-dispatcher")
-                    .withRouter(new RoundRobinPool(cores * 2)), RemoteConstant.Task_TRACKER_ACTOR_NAME);
+                    .withRouter(new RoundRobinPool(cores * 2)), RemoteConstant.TASK_TRACKER_ACTOR_NAME);
             actorSystem.actorOf(ProcessorTrackerActor.props(workerRuntime)
                     .withDispatcher("akka.processor-tracker-dispatcher")
                     .withRouter(new RoundRobinPool(cores)), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);

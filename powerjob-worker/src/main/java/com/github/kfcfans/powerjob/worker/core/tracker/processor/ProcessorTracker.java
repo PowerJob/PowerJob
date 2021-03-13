@@ -108,7 +108,8 @@ public class ProcessorTracker {
             this.instanceInfo = request.getInstanceInfo();
             this.instanceId = request.getInstanceInfo().getInstanceId();
             this.taskTrackerAddress = request.getTaskTrackerAddress();
-            String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.Task_TRACKER_ACTOR_NAME);
+
+            String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.TASK_TRACKER_ACTOR_NAME);
             this.taskTrackerActorRef = workerRuntime.getActorSystem().actorSelection(akkaRemotePath);
 
             this.omsLogger = new OmsServerLogger(instanceId, workerRuntime.getOmsLogHandler());
