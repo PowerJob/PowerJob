@@ -3,7 +3,7 @@ package tech.powerjob.server.migrate;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.ProcessorType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
@@ -92,7 +92,7 @@ public class V3ToV4MigrateService {
                 ProcessorType oldProcessorType = ProcessorType.of(job.getProcessorType());
 
                 job.setJobParams(job.getProcessorInfo());
-                job.setProcessorType(ProcessorType.EMBEDDED_JAVA.getV());
+                job.setProcessorType(ProcessorType.BUILT_IN.getV());
 
                 if (oldProcessorType == ProcessorType.PYTHON) {
                     job.setProcessorInfo("tech.powerjob.official.processors.impl.script.PythonProcessor");

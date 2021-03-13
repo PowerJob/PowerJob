@@ -2,7 +2,7 @@ package tech.powerjob.server.core.handler;
 
 import akka.actor.Props;
 import akka.routing.RoundRobinPool;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import tech.powerjob.server.core.handler.impl.WorkerRequestAkkaHandler;
 import tech.powerjob.server.core.handler.impl.WorkerRequestHttpHandler;

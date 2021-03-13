@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.common.response;
 
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import lombok.Data;
 
 import java.util.Date;

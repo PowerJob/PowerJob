@@ -2,9 +2,9 @@ package com.github.kfcfans.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.client.OhMyClient;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
@@ -37,7 +37,7 @@ class TestClient extends ClientInitializer {
         newJobInfo.setTimeExpressionType(TimeExpressionType.CRON);
         newJobInfo.setTimeExpression("0 0 * * * ? ");
         newJobInfo.setExecuteType(ExecuteType.STANDALONE);
-        newJobInfo.setProcessorType(ProcessorType.EMBEDDED_JAVA);
+        newJobInfo.setProcessorType(ProcessorType.BUILT_IN);
         newJobInfo.setProcessorInfo("com.github.kfcfans.powerjob.samples.processors.StandaloneProcessorDemo");
         newJobInfo.setDesignatedWorkers("");
 

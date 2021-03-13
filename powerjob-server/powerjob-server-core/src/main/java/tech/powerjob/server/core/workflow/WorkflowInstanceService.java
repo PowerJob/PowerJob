@@ -1,10 +1,10 @@
 package tech.powerjob.server.core.workflow;
 
 import com.alibaba.fastjson.JSON;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.SystemInstanceResult;
-import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.response.WorkflowInstanceInfoDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;

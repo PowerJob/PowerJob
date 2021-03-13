@@ -4,7 +4,7 @@ import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.Protocol;
+import com.github.kfcfans.powerjob.common.enums.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.JsonUtils;
 import tech.powerjob.server.extension.LockService;

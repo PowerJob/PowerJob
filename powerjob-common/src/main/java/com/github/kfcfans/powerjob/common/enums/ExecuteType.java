@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.common;
+package com.github.kfcfans.powerjob.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

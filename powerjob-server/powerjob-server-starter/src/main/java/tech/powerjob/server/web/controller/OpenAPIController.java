@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.PowerQuery;
 import com.github.kfcfans.powerjob.common.request.http.*;

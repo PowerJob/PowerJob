@@ -2,7 +2,7 @@ package tech.powerjob.server.core.workflow;
 
 import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import com.github.kfcfans.powerjob.common.request.http.SaveWorkflowRequest;
@@ -117,7 +117,7 @@ public class WorkflowService {
         // 注意：这里只会保存图相关的基础信息，nodeId,jobId,jobName(nodeAlias)
         // 其中 jobId，jobName 均以节点中的信息为准
         List<Long> nodeIdList = Lists.newArrayList();
-        HashMap<Long, WorkflowNodeInfoDO> nodeIdNodInfoMap = Maps.newHashMap();
+        Map<Long, WorkflowNodeInfoDO> nodeIdNodInfoMap = Maps.newHashMap();
         workflowNodeInfoRepository.findByWorkflowId(req.getId()).forEach(
                 e -> nodeIdNodInfoMap.put(e.getId(), e)
         );
@@ -294,9 +294,9 @@ public class WorkflowService {
         if (CollectionUtils.isEmpty(workflowNodeRequestList)) {
             return Collections.emptyList();
         }
-        ArrayList<WorkflowNodeInfoDO> res = new ArrayList<>(workflowNodeRequestList.size());
+        List<WorkflowNodeInfoDO> res = new ArrayList<>(workflowNodeRequestList.size());
         // 记录变更过任务的节点
-        ArrayList<WorkflowNodeInfoDO> changeJobNodeList = new ArrayList<>(workflowNodeRequestList.size());
+        List<WorkflowNodeInfoDO> changeJobNodeList = new ArrayList<>(workflowNodeRequestList.size());
         //
         WorkflowInfoDO workflowInfo = null;
         for (SaveWorkflowNodeRequest req : workflowNodeRequestList) {

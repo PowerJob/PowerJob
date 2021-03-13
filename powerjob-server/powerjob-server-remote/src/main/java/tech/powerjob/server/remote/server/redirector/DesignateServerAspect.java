@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 
 /**
- * 执行服务器运行切面
+ * 指定服务器运行切面
  *
  * @author tjq
  * @since 12/13/20

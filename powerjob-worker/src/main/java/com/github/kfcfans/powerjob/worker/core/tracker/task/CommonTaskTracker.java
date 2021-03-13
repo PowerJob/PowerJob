@@ -3,6 +3,8 @@ package com.github.kfcfans.powerjob.worker.core.tracker.task;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.*;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;

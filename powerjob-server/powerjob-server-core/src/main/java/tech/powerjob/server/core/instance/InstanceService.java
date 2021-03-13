@@ -1,6 +1,8 @@
 package tech.powerjob.server.core.instance;
 
 import com.github.kfcfans.powerjob.common.*;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.Protocol;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
 import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
@@ -30,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.github.kfcfans.powerjob.common.InstanceStatus.RUNNING;
-import static com.github.kfcfans.powerjob.common.InstanceStatus.STOPPED;
+import static com.github.kfcfans.powerjob.common.enums.InstanceStatus.RUNNING;
+import static com.github.kfcfans.powerjob.common.enums.InstanceStatus.STOPPED;
 
 /**
  * 任务运行实例服务

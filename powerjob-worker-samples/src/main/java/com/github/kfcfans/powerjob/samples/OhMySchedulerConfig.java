@@ -14,7 +14,7 @@ public class OhMySchedulerConfig {
 
     /*
 
-    @Bean
+    @Bean(name = "worker2")
     public OhMyWorker initOMS() throws Exception {
 
         // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）
@@ -22,8 +22,8 @@ public class OhMySchedulerConfig {
 
         // 1. 创建配置文件
         OhMyConfig config = new OhMyConfig();
-        config.setPort(27777);
-        config.setAppName("powerjob-agent-test");
+        config.setPort(28888);
+        config.setAppName("powerjob-multi-worker-2");
         config.setServerAddress(serverAddress);
         // 如果没有大型 Map/MapReduce 的需求，建议使用内存来加速计算
         config.setStoreStrategy(StoreStrategy.DISK);
@@ -32,8 +32,10 @@ public class OhMySchedulerConfig {
         OhMyWorker ohMyWorker = new OhMyWorker();
         ohMyWorker.setConfig(config);
         return ohMyWorker;
-
     }
 
+
      */
+
+
 }

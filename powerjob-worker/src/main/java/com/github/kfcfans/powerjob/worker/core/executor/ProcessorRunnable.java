@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.worker.core.executor;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.powerjob.common.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
 import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.ThreadLocalStore;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskConstant;

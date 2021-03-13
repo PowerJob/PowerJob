@@ -2,8 +2,8 @@ package com.github.kfcfans.powerjob;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
@@ -56,7 +56,7 @@ public class CommonTest {
         instanceInfo.setInstanceId(10086L);
 
         instanceInfo.setExecuteType(ExecuteType.STANDALONE.name());
-        instanceInfo.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
+        instanceInfo.setProcessorType(ProcessorType.BUILT_IN.name());
         instanceInfo.setProcessorInfo(processor);
 
         instanceInfo.setInstanceTimeoutMS(500000);

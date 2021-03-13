@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.client;
 
 import com.alibaba.fastjson.JSON;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.OmsConstant;
 import com.github.kfcfans.powerjob.common.OpenAPIConstant;
 import com.github.kfcfans.powerjob.common.PowerJobException;

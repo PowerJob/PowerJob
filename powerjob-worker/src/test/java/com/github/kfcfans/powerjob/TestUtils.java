@@ -1,9 +1,9 @@
 package com.github.kfcfans.powerjob;
 
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.google.common.collect.Lists;
@@ -25,7 +25,7 @@ public class TestUtils {
 
         req.setJobParams("JobParams");
         req.setInstanceParams("InstanceParams");
-        req.setProcessorType(ProcessorType.EMBEDDED_JAVA.name());
+        req.setProcessorType(ProcessorType.BUILT_IN.name());
         req.setTaskRetryNum(3);
         req.setThreadConcurrency(10);
         req.setInstanceTimeoutMS(500000);

@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.common.request.http;
 
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.google.common.collect.Lists;

@@ -1,20 +1,6 @@
 package com.github.kfcfans.powerjob;
 
-import akka.actor.ActorSelection;
-import akka.actor.ActorSystem;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
-import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.worker.core.tracker.processor.ProcessorTracker;
-import com.github.kfcfans.powerjob.worker.pojo.model.InstanceInfo;
 import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
-import com.typesafe.config.ConfigFactory;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 

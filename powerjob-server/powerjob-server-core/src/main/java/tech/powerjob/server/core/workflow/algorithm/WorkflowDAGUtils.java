@@ -1,6 +1,6 @@
 package tech.powerjob.server.core.workflow.algorithm;
 
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.SystemInstanceResult;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;

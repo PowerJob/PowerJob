@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.common;
+package com.github.kfcfans.powerjob.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,8 +13,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ProcessorType {
 
-    EMBEDDED_JAVA(1, "内置JAVA处理器"),
-    JAVA_CONTAINER(4, "Java容器"),
+    BUILT_IN(1, "内建处理器"),
+    EXTERNAL(4, "外部处理器（动态加载）"),
 
     @Deprecated
     SHELL(2, "SHELL脚本"),

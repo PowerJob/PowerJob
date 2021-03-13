@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.worker.log.impl;
 
-import com.github.kfcfans.powerjob.common.LogLevel;
+import com.github.kfcfans.powerjob.common.enums.LogLevel;
 import com.github.kfcfans.powerjob.worker.background.OmsLogHandler;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
 import lombok.AllArgsConstructor;

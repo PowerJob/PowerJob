@@ -1,9 +1,9 @@
 package tech.powerjob.server.core.service;
 
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.PowerJobException;
 import com.github.kfcfans.powerjob.common.PowerQuery;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.server.common.SJ;

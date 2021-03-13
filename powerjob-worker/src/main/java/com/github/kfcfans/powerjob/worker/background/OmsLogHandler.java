@@ -2,8 +2,7 @@ package com.github.kfcfans.powerjob.worker.background;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import com.github.kfcfans.powerjob.common.LogLevel;
-import com.github.kfcfans.powerjob.common.RemoteConstant;
+import com.github.kfcfans.powerjob.common.enums.LogLevel;
 import com.github.kfcfans.powerjob.common.model.InstanceLogContent;
 import com.github.kfcfans.powerjob.common.request.WorkerLogReportReq;
 import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;

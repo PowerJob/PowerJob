@@ -2,8 +2,8 @@ package com.github.kfcfans.powerjob.function;
 
 import com.github.kfcfans.powerjob.CommonTest;
 import com.github.kfcfans.powerjob.TestUtils;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.core.tracker.processor.ProcessorTracker;

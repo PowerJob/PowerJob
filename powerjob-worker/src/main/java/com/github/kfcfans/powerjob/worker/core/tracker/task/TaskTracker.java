@@ -2,10 +2,10 @@ package com.github.kfcfans.powerjob.worker.core.tracker.task;
 
 import akka.actor.ActorSelection;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.InstanceDetail;
 import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;

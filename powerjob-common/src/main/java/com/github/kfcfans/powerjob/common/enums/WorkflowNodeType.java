@@ -1,4 +1,4 @@
-package tech.powerjob.server.common.constants;
+package com.github.kfcfans.powerjob.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,11 +11,11 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum NodeType {
+public enum WorkflowNodeType {
     /**
-     * 普通节点
+     * 任务节点
      */
-    COMMON(1);
+    JOB(1);
 
 
     private final int code;

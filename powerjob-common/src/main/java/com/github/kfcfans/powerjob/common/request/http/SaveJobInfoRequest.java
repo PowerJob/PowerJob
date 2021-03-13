@@ -1,9 +1,9 @@
 package com.github.kfcfans.powerjob.common.request.http;
 
-import com.github.kfcfans.powerjob.common.DispatchStrategy;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.DispatchStrategy;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import lombok.Data;
 

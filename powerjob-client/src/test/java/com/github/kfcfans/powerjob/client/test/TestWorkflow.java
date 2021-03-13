@@ -2,9 +2,10 @@ package com.github.kfcfans.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.kfcfans.powerjob.client.OhMyClient;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.WorkflowNodeType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import com.github.kfcfans.powerjob.common.request.http.*;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
@@ -34,7 +35,7 @@ class TestWorkflow extends ClientInitializer {
         base.setJobName("DAG-Node-");
         base.setTimeExpressionType(TimeExpressionType.WORKFLOW);
         base.setExecuteType(ExecuteType.STANDALONE);
-        base.setProcessorType(ProcessorType.EMBEDDED_JAVA);
+        base.setProcessorType(ProcessorType.BUILT_IN);
         base.setProcessorInfo("com.github.kfcfans.powerjob.samples.workflow.WorkflowStandaloneProcessor");
 
         for (int i = 0; i < 5; i++) {
@@ -69,17 +70,20 @@ class TestWorkflow extends ClientInitializer {
         saveWorkflowNodeRequest1.setJobId(1L);
         saveWorkflowNodeRequest1.setWorkflowId(req.getId());
         saveWorkflowNodeRequest1.setNodeName("DAG-Node-1");
+        saveWorkflowNodeRequest1.setType(WorkflowNodeType.JOB);
 
         SaveWorkflowNodeRequest saveWorkflowNodeRequest2 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest2.setJobId(1L);
         saveWorkflowNodeRequest2.setWorkflowId(req.getId());
         saveWorkflowNodeRequest2.setNodeName("DAG-Node-2");
+        saveWorkflowNodeRequest2.setType(WorkflowNodeType.JOB);
 
 
         SaveWorkflowNodeRequest saveWorkflowNodeRequest3 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest3.setJobId(1L);
         saveWorkflowNodeRequest3.setWorkflowId(req.getId());
         saveWorkflowNodeRequest3.setNodeName("DAG-Node-3");
+        saveWorkflowNodeRequest3.setType(WorkflowNodeType.JOB);
 
 
         List<WorkflowNodeInfoDTO> nodeList = ohMyClient.saveWorkflowNode(Lists.newArrayList(saveWorkflowNodeRequest1,saveWorkflowNodeRequest2,saveWorkflowNodeRequest3)).getData();

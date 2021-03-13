@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.worker.background;
 
 import akka.actor.ActorSelection;
-import com.github.kfcfans.powerjob.common.Protocol;
+import com.github.kfcfans.powerjob.common.enums.Protocol;
 import com.github.kfcfans.powerjob.common.model.SystemMetrics;
 import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
 import com.github.kfcfans.powerjob.worker.common.PowerJobWorkerVersion;

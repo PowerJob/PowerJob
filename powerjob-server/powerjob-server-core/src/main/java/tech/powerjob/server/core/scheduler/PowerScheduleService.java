@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.scheduler;
 
-import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.CronExpression;

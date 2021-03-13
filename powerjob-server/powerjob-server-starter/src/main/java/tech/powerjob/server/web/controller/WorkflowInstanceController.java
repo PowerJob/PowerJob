@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.WorkflowInstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.WorkflowInstanceStatus;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;

@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.common.request.http;
 
+import com.github.kfcfans.powerjob.common.enums.WorkflowNodeType;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import lombok.Data;
 
@@ -23,7 +24,7 @@ public class SaveWorkflowNodeRequest {
     /**
      * 节点类型
      */
-    private int type = 1;
+    private WorkflowNodeType type;
     /**
      * 任务 ID
      */
@@ -48,7 +49,9 @@ public class SaveWorkflowNodeRequest {
     public void valid(){
         CommonUtils.requireNonNull(this.appId, "appId can't be empty");
         CommonUtils.requireNonNull(this.workflowId, "workflowId can't be empty");
-        CommonUtils.requireNonNull(this.jobId, "jobId can't be empty");
         CommonUtils.requireNonNull(this.type, "type can't be empty");
+        if (type == WorkflowNodeType.JOB) {
+            CommonUtils.requireNonNull(this.jobId, "jobId can't be empty");
+        }
     }
 }

@@ -3,7 +3,7 @@ package tech.powerjob.server.remote.transport.impl;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.github.kfcfans.powerjob.common.OmsSerializable;
-import com.github.kfcfans.powerjob.common.Protocol;
+import com.github.kfcfans.powerjob.common.enums.Protocol;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import tech.powerjob.server.remote.transport.Transporter;

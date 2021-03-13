@@ -2,9 +2,9 @@ package com.github.kfcfans.powerjob;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
-import com.github.kfcfans.powerjob.common.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
 import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;
 import com.github.kfcfans.powerjob.worker.OhMyWorker;
 import com.github.kfcfans.powerjob.worker.common.OhMyConfig;

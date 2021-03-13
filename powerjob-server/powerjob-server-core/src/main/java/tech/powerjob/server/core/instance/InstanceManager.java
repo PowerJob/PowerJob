@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.instance;
 
-import com.github.kfcfans.powerjob.common.InstanceStatus;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;

@@ -2,6 +2,9 @@ package com.github.kfcfans.powerjob.worker.core.tracker.processor;
 
 import akka.actor.ActorSelection;
 import com.github.kfcfans.powerjob.common.*;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
 import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
@@ -328,7 +331,7 @@ public class ProcessorTracker {
         String processorInfo = instanceInfo.getProcessorInfo();
 
         switch (processorType) {
-            case EMBEDDED_JAVA:
+            case BUILT_IN:
                 // 先使用 Spring 加载
                 if (SpringUtils.supportSpringBean()) {
                     try {
@@ -342,7 +345,7 @@ public class ProcessorTracker {
                     processor = ProcessorBeanFactory.getInstance().getLocalProcessor(processorInfo);
                 }
                 break;
-            case JAVA_CONTAINER:
+            case EXTERNAL:
                 String[] split = processorInfo.split("#");
                 log.info("[ProcessorTracker-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
 

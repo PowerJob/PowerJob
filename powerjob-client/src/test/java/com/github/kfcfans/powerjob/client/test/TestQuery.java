@@ -2,9 +2,8 @@ package com.github.kfcfans.powerjob.client.test;
 
 import com.alibaba.fastjson.JSON;
 import com.github.kfcfans.powerjob.common.request.query.JobInfoQuery;
-import com.github.kfcfans.powerjob.common.ExecuteType;
-import com.github.kfcfans.powerjob.common.ProcessorType;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.ExecuteType;
+import com.github.kfcfans.powerjob.common.enums.ProcessorType;
 import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
 import com.github.kfcfans.powerjob.common.response.ResultDTO;
 import com.google.common.collect.Lists;
@@ -39,7 +38,7 @@ class TestQuery extends ClientInitializer {
                 .setGmtModifiedGt(DateUtils.addYears(new Date(), -10))
                 .setGmtCreateLt(DateUtils.addDays(new Date(), 10))
                 .setExecuteTypeIn(Lists.newArrayList(ExecuteType.STANDALONE.getV(), ExecuteType.BROADCAST.getV(), ExecuteType.MAP_REDUCE.getV()))
-                .setProcessorTypeIn(Lists.newArrayList(ProcessorType.EMBEDDED_JAVA.getV(), ProcessorType.SHELL.getV(), ProcessorType.JAVA_CONTAINER.getV()))
+                .setProcessorTypeIn(Lists.newArrayList(ProcessorType.BUILT_IN.getV(), ProcessorType.SHELL.getV(), ProcessorType.EXTERNAL.getV()))
                 .setProcessorInfoLike("com.github.kfcfans");
 
         ResultDTO<List<JobInfoDTO>> jobQueryResult = ohMyClient.queryJob(jobInfoQuery);

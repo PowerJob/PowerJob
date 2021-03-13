@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import tech.powerjob.server.common.constants.NodeType;
+import com.github.kfcfans.powerjob.common.enums.WorkflowNodeType;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -35,7 +35,7 @@ public class WorkflowNodeInfoDO {
     @Column(nullable = false)
     private Long workflowId;
     /**
-     * 节点类型 {@link NodeType}
+     * 节点类型 {@link WorkflowNodeType}
      */
     private Integer type;
     /**

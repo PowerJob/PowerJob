@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.common;
+package com.github.kfcfans.powerjob.common.enums;
 
 /**
  * Environment Enum class.

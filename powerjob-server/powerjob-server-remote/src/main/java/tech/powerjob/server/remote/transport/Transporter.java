@@ -1,7 +1,7 @@
 package tech.powerjob.server.remote.transport;
 
 import com.github.kfcfans.powerjob.common.OmsSerializable;
-import com.github.kfcfans.powerjob.common.Protocol;
+import com.github.kfcfans.powerjob.common.enums.Protocol;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 
 /**

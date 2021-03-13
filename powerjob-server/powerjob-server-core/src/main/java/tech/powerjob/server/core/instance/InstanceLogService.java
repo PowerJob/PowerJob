@@ -1,8 +1,8 @@
 package tech.powerjob.server.core.instance;
 
-import com.github.kfcfans.powerjob.common.LogLevel;
+import com.github.kfcfans.powerjob.common.enums.LogLevel;
 import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.InstanceLogContent;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.common.utils.NetUtils;

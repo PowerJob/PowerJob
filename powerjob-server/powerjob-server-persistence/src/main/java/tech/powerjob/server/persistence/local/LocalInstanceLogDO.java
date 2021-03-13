@@ -1,5 +1,6 @@
 package tech.powerjob.server.persistence.local;
 
+import com.github.kfcfans.powerjob.common.enums.LogLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,7 +30,7 @@ public class LocalInstanceLogDO {
      */
     private Long logTime;
     /**
-     * 日志级别 {@link com.github.kfcfans.powerjob.common.LogLevel}
+     * 日志级别 {@link LogLevel}
      */
     private Integer logLevel;
     /**

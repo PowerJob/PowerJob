@@ -1,7 +1,7 @@
 package tech.powerjob.server.web.response;
 
 import com.alibaba.fastjson.JSON;
-import com.github.kfcfans.powerjob.common.TimeExpressionType;
+import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
 import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
