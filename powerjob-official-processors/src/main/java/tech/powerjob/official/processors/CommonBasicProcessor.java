@@ -1,5 +1,6 @@
 package tech.powerjob.official.processors;
 
+import tech.powerjob.official.processors.util.SecurityUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
@@ -21,10 +22,17 @@ public abstract class CommonBasicProcessor implements BasicProcessor {
     @Override
     public ProcessResult process(TaskContext ctx) throws Exception {
 
+        OmsLogger omsLogger = ctx.getOmsLogger();
+        String securityDKey = getSecurityDKey();
+        if (SecurityUtils.disable(securityDKey)) {
+            String msg = String.format("%s is not enabled, please set '-D%s=true' to enable it", this.getClass().getSimpleName(), securityDKey);
+            omsLogger.warn(msg);
+            return new ProcessResult(false, msg);
+        }
+
         String status = "unknown";
         Stopwatch sw = Stopwatch.createStarted();
 
-        OmsLogger omsLogger = ctx.getOmsLogger();
         omsLogger.info("using params: {}", CommonUtils.parseParams(ctx));
 
         try {
@@ -42,5 +50,9 @@ public abstract class CommonBasicProcessor implements BasicProcessor {
     }
 
     protected abstract ProcessResult process0(TaskContext taskContext) throws Exception;
+
+    protected String getSecurityDKey() {
+        return null;
+    }
 }
 

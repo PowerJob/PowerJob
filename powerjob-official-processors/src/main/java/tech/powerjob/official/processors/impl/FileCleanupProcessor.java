@@ -2,6 +2,7 @@ package tech.powerjob.official.processors.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import tech.powerjob.official.processors.util.SecurityUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.BroadcastProcessor;
@@ -24,6 +25,16 @@ import java.util.regex.Pattern;
  * @since 2021/2/1
  */
 public class FileCleanupProcessor extends BroadcastProcessor {
+
+    @Override
+    public ProcessResult preProcess(TaskContext context) throws Exception {
+        if (SecurityUtils.disable(SecurityUtils.ENABLE_FILE_CLEANUP_PROCESSOR)) {
+            String msg = String.format("FileCleanupProcessor is not enabled, please set '-D%s=true' to enable it", SecurityUtils.ENABLE_FILE_CLEANUP_PROCESSOR);
+            context.getOmsLogger().warn(msg);
+            return new ProcessResult(false, msg);
+        }
+        return new ProcessResult(true);
+    }
 
     @Override
     public ProcessResult process(TaskContext taskContext) throws Exception {
