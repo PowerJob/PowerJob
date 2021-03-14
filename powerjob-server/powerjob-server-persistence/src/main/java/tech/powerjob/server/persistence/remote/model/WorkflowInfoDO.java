@@ -73,4 +73,8 @@ public class WorkflowInfoDO {
     private Date gmtCreate;
 
     private Date gmtModified;
+
+    private String extra;
+
+    private String lifecycle;
 }

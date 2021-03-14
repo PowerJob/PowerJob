@@ -41,7 +41,6 @@ public class WorkflowNodeInfoDO {
     /**
      * 任务 ID
      */
-    @Column(nullable = false)
     private Long jobId;
     /**
      * 节点名称，默认为对应的任务名称
