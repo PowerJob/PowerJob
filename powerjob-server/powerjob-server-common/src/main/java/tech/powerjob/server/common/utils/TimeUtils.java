@@ -1,6 +1,6 @@
 package tech.powerjob.server.common.utils;
 
-import com.github.kfcfans.powerjob.common.RemoteConstant;
+import tech.powerjob.common.RemoteConstant;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ntp.NTPUDPClient;

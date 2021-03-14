@@ -1,6 +1,6 @@
 package tech.powerjob.server.extension.defaultimpl.workerfilter;
 
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.server.extension.WorkerFilter;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.common.module.WorkerInfo;

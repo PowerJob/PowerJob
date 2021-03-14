@@ -1,6 +1,6 @@
 package tech.powerjob.official.processors.util;
 
-import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
+import tech.powerjob.worker.core.processor.TaskContext;
 import org.apache.commons.lang3.StringUtils;
 
 /**

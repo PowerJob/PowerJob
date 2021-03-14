@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.scheduler;
 
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;

@@ -70,7 +70,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
                 <configuration>
-                    <mainClass>com.github.kfcfans.powerjob.samples.SampleApplication</mainClass>
+                    <mainClass>tech.powerjob.samples.SampleApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

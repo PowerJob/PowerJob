@@ -1,15 +1,15 @@
 package tech.powerjob.server.core.container;
 
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.enums.Protocol;
-import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
-import com.github.kfcfans.powerjob.common.model.GitRepoInfo;
-import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
-import com.github.kfcfans.powerjob.common.request.ServerDestroyContainerRequest;
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.common.utils.SegmentLock;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.model.DeployedContainerInfo;
+import tech.powerjob.common.model.GitRepoInfo;
+import tech.powerjob.common.request.ServerDeployContainerRequest;
+import tech.powerjob.common.request.ServerDestroyContainerRequest;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.server.common.constants.ContainerSourceType;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.OmsFileUtils;

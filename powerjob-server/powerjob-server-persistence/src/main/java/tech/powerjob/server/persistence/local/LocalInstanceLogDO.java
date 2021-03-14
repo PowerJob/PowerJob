@@ -1,6 +1,6 @@
 package tech.powerjob.server.persistence.local;
 
-import com.github.kfcfans.powerjob.common.enums.LogLevel;
+import tech.powerjob.common.enums.LogLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,8 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;

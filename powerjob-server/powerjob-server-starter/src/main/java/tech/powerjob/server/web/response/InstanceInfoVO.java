@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.response;
 
-import com.github.kfcfans.powerjob.common.OmsConstant;
+import tech.powerjob.common.OmsConstant;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import lombok.Data;
 import org.apache.commons.lang3.time.DateFormatUtils;

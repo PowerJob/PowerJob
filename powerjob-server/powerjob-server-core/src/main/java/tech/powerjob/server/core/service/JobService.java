@@ -1,11 +1,11 @@
 package tech.powerjob.server.core.service;
 
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.PowerQuery;
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.request.http.SaveJobInfoRequest;
-import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.request.http.SaveJobInfoRequest;
+import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.CronExpression;

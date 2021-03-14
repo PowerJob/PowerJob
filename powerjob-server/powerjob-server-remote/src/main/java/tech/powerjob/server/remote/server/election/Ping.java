@@ -1,6 +1,6 @@
 package tech.powerjob.server.remote.server.election;
 
-import com.github.kfcfans.powerjob.common.OmsSerializable;
+import tech.powerjob.common.PowerSerializable;
 import lombok.Data;
 
 
@@ -11,6 +11,6 @@ import lombok.Data;
  * @since 2020/4/5
  */
 @Data
-public class Ping implements OmsSerializable {
+public class Ping implements PowerSerializable {
     private long currentTime;
 }

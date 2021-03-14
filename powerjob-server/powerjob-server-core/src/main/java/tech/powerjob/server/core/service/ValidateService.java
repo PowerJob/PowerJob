@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.service;
 
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.server.common.utils.CronExpression;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.DateFormatUtils;

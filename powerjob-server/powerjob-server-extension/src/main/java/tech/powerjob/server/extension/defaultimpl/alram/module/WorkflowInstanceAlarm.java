@@ -1,6 +1,6 @@
 package tech.powerjob.server.extension.defaultimpl.alram.module;
 
-import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
+import tech.powerjob.common.model.PEWorkflowDAG;
 import lombok.Data;
 
 /**

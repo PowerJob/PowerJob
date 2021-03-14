@@ -1,6 +1,6 @@
 package tech.powerjob.official.processors.impl.sql;
 
-import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
+import tech.powerjob.worker.core.processor.TaskContext;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;

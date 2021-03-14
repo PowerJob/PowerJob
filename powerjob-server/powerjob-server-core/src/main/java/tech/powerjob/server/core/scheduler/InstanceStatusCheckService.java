@@ -1,9 +1,9 @@
 package tech.powerjob.server.core.scheduler;
 
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.SystemInstanceResult;
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.persistence.remote.model.*;

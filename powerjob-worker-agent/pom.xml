@@ -66,7 +66,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
                 <configuration>
-                    <mainClass>com.github.kfcfans.powerjob.worker.MainApplication</mainClass>
+                    <mainClass>tech.powerjob.agent.MainApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

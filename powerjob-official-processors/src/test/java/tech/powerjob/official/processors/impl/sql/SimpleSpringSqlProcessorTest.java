@@ -1,7 +1,7 @@
 package tech.powerjob.official.processors.impl.sql;
 
 import com.alibaba.fastjson.JSON;
-import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
+import tech.powerjob.worker.core.processor.ProcessResult;
 import lombok.extern.slf4j.Slf4j;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.junit.jupiter.api.BeforeAll;

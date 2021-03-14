@@ -1,7 +1,7 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.StringPage;

@@ -1,12 +1,12 @@
 package tech.powerjob.server.core.instance;
 
-import com.github.kfcfans.powerjob.common.enums.LogLevel;
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.model.InstanceLogContent;
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.common.utils.SegmentLock;
+import tech.powerjob.common.enums.LogLevel;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.InstanceLogContent;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.StringPage;

@@ -1,30 +1,32 @@
 package tech.powerjob.server.core.instance;
 
-import com.github.kfcfans.powerjob.common.*;
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.enums.Protocol;
-import com.github.kfcfans.powerjob.common.model.InstanceDetail;
-import com.github.kfcfans.powerjob.common.request.ServerQueryInstanceStatusReq;
-import com.github.kfcfans.powerjob.common.request.ServerStopInstanceReq;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.common.response.InstanceInfoDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
+import tech.powerjob.common.request.ServerStopInstanceReq;
+import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.server.common.constants.InstanceType;
-import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
-import tech.powerjob.server.persistence.QueryConvertUtils;
+import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.timewheel.TimerFuture;
+import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
+import tech.powerjob.server.core.DispatchService;
+import tech.powerjob.server.core.uid.IdGenerateService;
+import tech.powerjob.server.persistence.QueryConvertUtils;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
-import tech.powerjob.server.core.DispatchService;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.remote.transport.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
-import tech.powerjob.server.common.module.WorkerInfo;
-import tech.powerjob.server.core.uid.IdGenerateService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -32,8 +34,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.github.kfcfans.powerjob.common.enums.InstanceStatus.RUNNING;
-import static com.github.kfcfans.powerjob.common.enums.InstanceStatus.STOPPED;
+import static tech.powerjob.common.enums.InstanceStatus.RUNNING;
+import static tech.powerjob.common.enums.InstanceStatus.STOPPED;
 
 /**
  * 任务运行实例服务

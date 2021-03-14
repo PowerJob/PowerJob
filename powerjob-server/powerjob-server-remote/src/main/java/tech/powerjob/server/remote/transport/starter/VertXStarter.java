@@ -1,7 +1,7 @@
 package tech.powerjob.server.remote.transport.starter;
 
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.common.utils.PropertyUtils;
 import com.google.common.base.Stopwatch;

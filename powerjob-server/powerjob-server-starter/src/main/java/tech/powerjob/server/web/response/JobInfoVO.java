@@ -1,11 +1,11 @@
 package tech.powerjob.server.web.response;
 
-import com.github.kfcfans.powerjob.common.enums.ExecuteType;
-import com.github.kfcfans.powerjob.common.enums.ProcessorType;
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.enums.ExecuteType;
+import tech.powerjob.common.enums.ProcessorType;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.SJ;
-import com.github.kfcfans.powerjob.common.enums.DispatchStrategy;
+import tech.powerjob.common.enums.DispatchStrategy;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import com.google.common.collect.Lists;

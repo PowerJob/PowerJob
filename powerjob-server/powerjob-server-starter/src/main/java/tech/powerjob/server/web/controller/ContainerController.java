@@ -1,7 +1,7 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.common.constants.ContainerSourceType;
 import tech.powerjob.server.common.constants.SwitchableStatus;

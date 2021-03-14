@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob;
 
-import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
+import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import org.junit.jupiter.api.Test;
 
 

@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.response.ResultDTO;
 import org.springframework.beans.BeanUtils;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;

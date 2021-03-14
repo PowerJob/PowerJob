@@ -1,10 +1,10 @@
 package tech.powerjob.server.core.workflow.algorithm;
 
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.SystemInstanceResult;
-import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.model.PEWorkflowDAG;
+import tech.powerjob.common.utils.JsonUtils;
 import com.google.common.collect.*;
 
 import java.util.*;

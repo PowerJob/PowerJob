@@ -1,8 +1,8 @@
 package tech.powerjob.server.remote.server;
 
-import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.ServerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ServerInfoRepository;

@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.request;
 
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.ContainerSourceType;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import lombok.Data;

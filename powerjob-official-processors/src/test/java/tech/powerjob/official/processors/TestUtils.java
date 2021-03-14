@@ -1,8 +1,8 @@
 package tech.powerjob.official.processors;
 
-import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
-import com.github.kfcfans.powerjob.worker.core.processor.WorkflowContext;
-import com.github.kfcfans.powerjob.worker.log.impl.OmsLocalLogger;
+import tech.powerjob.worker.core.processor.TaskContext;
+import tech.powerjob.worker.core.processor.WorkflowContext;
+import tech.powerjob.worker.log.impl.OmsLocalLogger;
 
 import java.util.concurrent.ThreadLocalRandom;
 

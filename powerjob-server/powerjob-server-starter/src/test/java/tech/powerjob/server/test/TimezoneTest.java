@@ -1,6 +1,6 @@
 package tech.powerjob.server.test;
 
-import com.github.kfcfans.powerjob.common.OmsConstant;
+import tech.powerjob.common.OmsConstant;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.jupiter.api.Test;
 

@@ -1,11 +1,11 @@
 package com.github.kfcfans.powerjob;
 
-import com.github.kfcfans.powerjob.common.enums.ExecuteType;
-import com.github.kfcfans.powerjob.common.enums.ProcessorType;
-import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.enums.ExecuteType;
+import tech.powerjob.common.enums.ProcessorType;
+import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.request.ServerScheduleJobReq;
+import tech.powerjob.common.utils.NetUtils;
 import com.google.common.collect.Lists;
 
 /**

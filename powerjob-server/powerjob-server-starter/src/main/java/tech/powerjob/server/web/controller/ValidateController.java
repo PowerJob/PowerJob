@@ -1,7 +1,7 @@
 package tech.powerjob.server.web.controller;
 
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.core.service.ValidateService;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;

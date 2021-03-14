@@ -1,10 +1,10 @@
 package com.github.kfcfans.powerjob;
 
-import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
-import com.github.kfcfans.powerjob.worker.common.constants.TaskStatus;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
-import com.github.kfcfans.powerjob.worker.persistence.TaskDO;
-import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.common.constants.StoreStrategy;
+import tech.powerjob.worker.common.constants.TaskStatus;
+import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.TaskPersistenceService;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.*;
 

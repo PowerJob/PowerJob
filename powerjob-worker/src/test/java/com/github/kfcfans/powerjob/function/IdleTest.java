@@ -2,14 +2,14 @@ package com.github.kfcfans.powerjob.function;
 
 import com.github.kfcfans.powerjob.CommonTest;
 import com.github.kfcfans.powerjob.TestUtils;
-import com.github.kfcfans.powerjob.common.enums.ExecuteType;
-import com.github.kfcfans.powerjob.common.enums.TimeExpressionType;
-import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
-import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
-import com.github.kfcfans.powerjob.worker.core.tracker.processor.ProcessorTracker;
-import com.github.kfcfans.powerjob.worker.core.tracker.task.TaskTracker;
-import com.github.kfcfans.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
-import com.github.kfcfans.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
+import tech.powerjob.common.enums.ExecuteType;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.request.ServerScheduleJobReq;
+import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.worker.core.tracker.processor.ProcessorTracker;
+import tech.powerjob.worker.core.tracker.task.TaskTracker;
+import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
+import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import org.junit.jupiter.api.Test;
 
 /**

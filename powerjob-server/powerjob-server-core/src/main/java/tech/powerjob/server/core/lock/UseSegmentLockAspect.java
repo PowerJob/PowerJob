@@ -1,6 +1,6 @@
 package tech.powerjob.server.core.lock;
 
-import com.github.kfcfans.powerjob.common.utils.SegmentLock;
+import tech.powerjob.common.utils.SegmentLock;
 import org.springframework.core.annotation.Order;
 import tech.powerjob.server.common.utils.AOPUtils;
 import com.google.common.collect.Maps;

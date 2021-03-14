@@ -1,8 +1,8 @@
 package com.github.kfcfans.powerjob.function;
 
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
-import com.github.kfcfans.powerjob.worker.common.utils.SystemInfoUtils;
+import tech.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.worker.common.utils.SystemInfoUtils;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;

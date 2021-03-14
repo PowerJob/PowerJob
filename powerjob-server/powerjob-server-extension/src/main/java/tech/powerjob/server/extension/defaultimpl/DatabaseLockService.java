@@ -1,7 +1,7 @@
 package tech.powerjob.server.extension.defaultimpl;
 
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.OmsLockDO;
 import tech.powerjob.server.persistence.remote.repository.OmsLockRepository;

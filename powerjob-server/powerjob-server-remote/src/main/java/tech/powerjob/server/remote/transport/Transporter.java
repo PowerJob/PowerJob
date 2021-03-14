@@ -1,8 +1,8 @@
 package tech.powerjob.server.remote.transport;
 
-import com.github.kfcfans.powerjob.common.OmsSerializable;
-import com.github.kfcfans.powerjob.common.enums.Protocol;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
+import tech.powerjob.common.PowerSerializable;
+import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.response.AskResponse;
 
 /**
  * Transporter
@@ -16,7 +16,7 @@ public interface Transporter {
 
     String getAddress();
 
-    void tell(String address, OmsSerializable object);
+    void tell(String address, PowerSerializable object);
 
-    AskResponse ask(String address, OmsSerializable object) throws Exception;
+    AskResponse ask(String address, PowerSerializable object) throws Exception;
 }

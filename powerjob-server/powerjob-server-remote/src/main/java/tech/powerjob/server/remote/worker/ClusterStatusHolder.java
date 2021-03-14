@@ -1,7 +1,7 @@
 package tech.powerjob.server.remote.worker;
 
-import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
-import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
+import tech.powerjob.common.model.DeployedContainerInfo;
+import tech.powerjob.common.request.WorkerHeartbeat;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;

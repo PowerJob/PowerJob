@@ -1,8 +1,9 @@
 package tech.powerjob.server.core;
 
-import com.github.kfcfans.powerjob.common.*;
-import com.github.kfcfans.powerjob.common.enums.*;
-import com.github.kfcfans.powerjob.common.request.ServerScheduleJobReq;
+import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.enums.*;
+import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.server.core.instance.InstanceManager;
 import tech.powerjob.server.core.instance.InstanceMetadataService;
 import tech.powerjob.server.core.lock.UseSegmentLock;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-import static com.github.kfcfans.powerjob.common.enums.InstanceStatus.*;
+import static tech.powerjob.common.enums.InstanceStatus.*;
 
 
 /**

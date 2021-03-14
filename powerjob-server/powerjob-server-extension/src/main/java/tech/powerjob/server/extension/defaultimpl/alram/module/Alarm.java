@@ -1,9 +1,9 @@
 package tech.powerjob.server.extension.defaultimpl.alram.module;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.OmsSerializable;
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.PowerSerializable;
+import tech.powerjob.common.utils.CommonUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author tjq
  * @since 2020/8/1
  */
-public interface Alarm extends OmsSerializable {
+public interface Alarm extends PowerSerializable {
 
     String fetchTitle();
 

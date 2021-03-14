@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.response;
 
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.server.common.module.WorkerInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;

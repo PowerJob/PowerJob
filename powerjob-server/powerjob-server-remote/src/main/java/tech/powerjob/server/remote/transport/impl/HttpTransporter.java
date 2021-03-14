@@ -1,10 +1,10 @@
 package tech.powerjob.server.remote.transport.impl;
 
-import com.github.kfcfans.powerjob.common.OmsSerializable;
-import com.github.kfcfans.powerjob.common.enums.Protocol;
-import com.github.kfcfans.powerjob.common.RemoteConstant;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.PowerSerializable;
+import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.remote.transport.Transporter;
 import tech.powerjob.server.remote.transport.starter.VertXStarter;
 import io.vertx.core.Future;
@@ -50,18 +50,18 @@ public class HttpTransporter implements Transporter {
     }
 
     @Override
-    public void tell(String address, OmsSerializable object) {
+    public void tell(String address, PowerSerializable object) {
         postRequest(address, object);
     }
 
     @Override
-    public AskResponse ask(String address, OmsSerializable object) throws Exception {
+    public AskResponse ask(String address, PowerSerializable object) throws Exception {
         CompletableFuture<HttpResponse<Buffer>> future = postRequest(address, object).toCompletionStage().toCompletableFuture();
         HttpResponse<Buffer> httpResponse = future.get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         return httpResponse.bodyAsJson(AskResponse.class);
     }
 
-    private Future<HttpResponse<Buffer>> postRequest(String address, OmsSerializable object) {
+    private Future<HttpResponse<Buffer>> postRequest(String address, PowerSerializable object) {
         Pair<String, Integer> ipAndPort = NetUtils.splitAddress2IpAndPort(address);
         String ip = ipAndPort.getLeft();
         int port = ipAndPort.getRight();

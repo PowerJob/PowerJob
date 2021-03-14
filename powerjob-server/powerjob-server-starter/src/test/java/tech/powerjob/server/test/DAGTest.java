@@ -2,9 +2,9 @@ package tech.powerjob.server.test;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.kfcfans.powerjob.common.enums.InstanceStatus;
-import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
-import com.github.kfcfans.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.model.PEWorkflowDAG;
+import tech.powerjob.common.utils.JsonUtils;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import com.google.common.collect.Lists;

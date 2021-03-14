@@ -1,8 +1,8 @@
 package tech.powerjob.server.web.response;
 
-import com.github.kfcfans.powerjob.common.OmsSerializable;
-import com.github.kfcfans.powerjob.common.model.InstanceDetail;
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.PowerSerializable;
+import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.utils.CommonUtils;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -74,7 +74,7 @@ public class InstanceDetailVO {
      */
     @Data
     @NoArgsConstructor
-    public static class SubInstanceDetail implements OmsSerializable {
+    public static class SubInstanceDetail implements PowerSerializable {
         private long subInstanceId;
         private String startTime;
         private String finishedTime;
@@ -87,7 +87,7 @@ public class InstanceDetailVO {
      */
     @Data
     @NoArgsConstructor
-    public static class TaskDetail implements OmsSerializable {
+    public static class TaskDetail implements PowerSerializable {
         private long totalTaskNum;
         private long succeedTaskNum;
         private long failedTaskNum;

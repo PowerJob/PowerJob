@@ -1,8 +1,8 @@
 package tech.powerjob.server.extension.defaultimpl.alram.impl;
 
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;

@@ -1,6 +1,6 @@
 package com.github.kfcfans.powerjob.function;
 
-import com.github.kfcfans.powerjob.worker.common.utils.LRUCache;
+import tech.powerjob.worker.common.utils.LRUCache;
 import org.junit.jupiter.api.Test;
 
 /**

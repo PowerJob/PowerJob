@@ -1,6 +1,6 @@
 package tech.powerjob.server.common.timewheel;
 
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.RejectedExecutionHandlerFactory;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;

@@ -1,8 +1,8 @@
 package tech.powerjob.server.web.response;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.model.PEWorkflowDAG;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import lombok.Data;
 import org.apache.commons.lang3.time.DateFormatUtils;

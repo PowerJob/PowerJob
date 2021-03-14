@@ -1,8 +1,8 @@
 package tech.powerjob.server.core.handler.impl;
 
 import akka.actor.AbstractActor;
-import com.github.kfcfans.powerjob.common.request.*;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
+import tech.powerjob.common.request.*;
+import tech.powerjob.common.response.AskResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;

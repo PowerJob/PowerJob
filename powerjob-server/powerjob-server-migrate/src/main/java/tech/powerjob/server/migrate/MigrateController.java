@@ -1,8 +1,7 @@
 package tech.powerjob.server.migrate;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.migrate.V3ToV4MigrateService;
+import tech.powerjob.common.response.ResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

@@ -1,8 +1,8 @@
 package tech.powerjob.server.common.module;
 
-import com.github.kfcfans.powerjob.common.model.DeployedContainerInfo;
-import com.github.kfcfans.powerjob.common.model.SystemMetrics;
-import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
+import tech.powerjob.common.model.DeployedContainerInfo;
+import tech.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.request.WorkerHeartbeat;
 import lombok.Data;
 
 import java.util.List;

@@ -1,8 +1,8 @@
 package tech.powerjob.server.extension.defaultimpl.alram.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.OmsConstant;
-import com.github.kfcfans.powerjob.common.utils.HttpUtils;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.utils.HttpUtils;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;

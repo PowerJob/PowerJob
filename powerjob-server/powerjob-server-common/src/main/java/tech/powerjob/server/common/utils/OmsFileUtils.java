@@ -1,6 +1,6 @@
 package tech.powerjob.server.common.utils;
 
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.CommonUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.DigestUtils;
 

@@ -1,6 +1,6 @@
 package tech.powerjob.server.remote.worker;
 
-import com.github.kfcfans.powerjob.common.request.WorkerHeartbeat;
+import tech.powerjob.common.request.WorkerHeartbeat;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;

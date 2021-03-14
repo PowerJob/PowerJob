@@ -1,7 +1,7 @@
 package tech.powerjob.server.web;
 
-import com.github.kfcfans.powerjob.common.PowerJobException;
-import com.github.kfcfans.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.response.ResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.converter.HttpMessageNotReadableException;

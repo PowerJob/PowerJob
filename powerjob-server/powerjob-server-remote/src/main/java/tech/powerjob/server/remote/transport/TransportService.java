@@ -1,8 +1,8 @@
 package tech.powerjob.server.remote.transport;
 
-import com.github.kfcfans.powerjob.common.OmsSerializable;
-import com.github.kfcfans.powerjob.common.enums.Protocol;
-import com.github.kfcfans.powerjob.common.response.AskResponse;
+import tech.powerjob.common.PowerSerializable;
+import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.response.AskResponse;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +36,11 @@ public class TransportService {
         });
     }
 
-    public void tell(Protocol protocol, String address, OmsSerializable object) {
+    public void tell(Protocol protocol, String address, PowerSerializable object) {
         getTransporter(protocol).tell(address, object);
     }
 
-    public AskResponse ask(Protocol protocol, String address, OmsSerializable object) throws Exception {
+    public AskResponse ask(Protocol protocol, String address, PowerSerializable object) throws Exception {
 
         return getTransporter(protocol).ask(address, object);
     }

@@ -1,8 +1,8 @@
 package tech.powerjob.server.test;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.common.PowerQuery;
-import com.github.kfcfans.powerjob.common.response.JobInfoDTO;
+import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.server.core.service.JobService;
 import lombok.Getter;
 import lombok.Setter;

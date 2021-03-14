@@ -2,10 +2,10 @@ package tech.powerjob.official.processors.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
-import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
-import com.github.kfcfans.powerjob.worker.core.processor.sdk.BroadcastProcessor;
-import com.github.kfcfans.powerjob.worker.log.OmsLogger;
+import tech.powerjob.worker.core.processor.ProcessResult;
+import tech.powerjob.worker.core.processor.TaskContext;
+import tech.powerjob.worker.core.processor.sdk.BroadcastProcessor;
+import tech.powerjob.worker.log.OmsLogger;
 import com.google.common.base.Stopwatch;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
