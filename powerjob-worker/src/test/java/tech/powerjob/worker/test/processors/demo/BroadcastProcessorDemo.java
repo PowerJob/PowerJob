@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.processors.demo;
+package tech.powerjob.worker.test.processors.demo;
 
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;

@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob;
+package tech.powerjob.worker.test;
 
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;

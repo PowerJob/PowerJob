@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob;
+package tech.powerjob.worker.test;
 
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
@@ -39,15 +39,15 @@ public class TestUtils {
         switch (executeType) {
             case STANDALONE:
                 req.setExecuteType(ExecuteType.STANDALONE.name());
-                req.setProcessorInfo("com.github.kfcfans.powerjob.processors.TestBasicProcessor");
+                req.setProcessorInfo("tech.powerjob.worker.test.processors.TestBasicProcessor");
                 break;
             case MAP_REDUCE:
                 req.setExecuteType(ExecuteType.MAP_REDUCE.name());
-                req.setProcessorInfo("com.github.kfcfans.powerjob.processors.TestMapReduceProcessor");
+                req.setProcessorInfo("tech.powerjob.worker.test.processors.TestMapReduceProcessor");
                 break;
             case BROADCAST:
                 req.setExecuteType(ExecuteType.BROADCAST.name());
-                req.setProcessorInfo("com.github.kfcfans.powerjob.processors.TestBroadcastProcessor");
+                req.setProcessorInfo("tech.powerjob.worker.test.processors.TestBroadcastProcessor");
                 break;
         }
 

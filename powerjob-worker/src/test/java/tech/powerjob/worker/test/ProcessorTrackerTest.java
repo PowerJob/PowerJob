@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob;
+package tech.powerjob.worker.test;
 
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import org.junit.jupiter.api.Test;
@@ -15,14 +15,14 @@ public class ProcessorTrackerTest extends CommonTest {
     @Test
     public void testBasicProcessor() throws Exception {
 
-        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("com.github.kfcfans.powerjob.processors.TestBasicProcessor");
+        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("tech.powerjob.worker.test.processors.TestBasicProcessor");
         remoteProcessorTracker.tell(req, null);
         Thread.sleep(30000);
     }
 
     @Test
     public void testMapReduceProcessor() throws Exception {
-        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("com.github.kfcfans.powerjob.processors.TestMapReduceProcessor");
+        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("tech.powerjob.worker.test.processors.TestMapReduceProcessor");
         remoteProcessorTracker.tell(req, null);
         Thread.sleep(30000);
     }

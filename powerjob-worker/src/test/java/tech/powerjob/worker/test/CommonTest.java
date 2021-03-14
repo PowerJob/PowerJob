@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob;
+package tech.powerjob.worker.test;
 
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;

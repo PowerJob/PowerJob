@@ -1,7 +1,7 @@
-package com.github.kfcfans.powerjob.function;
+package tech.powerjob.worker.test.function;
 
-import com.github.kfcfans.powerjob.CommonTest;
-import com.github.kfcfans.powerjob.TestUtils;
+import tech.powerjob.worker.test.CommonTest;
+import tech.powerjob.worker.test.TestUtils;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.ServerScheduleJobReq;
@@ -22,7 +22,7 @@ public class IdleTest extends CommonTest {
 
     @Test
     public void testProcessorTrackerSendIdleReport() throws Exception {
-        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("com.github.kfcfans.powerjob.processors.TestBasicProcessor");
+        TaskTrackerStartTaskReq req = genTaskTrackerStartTaskReq("tech.powerjob.worker.test.processors.TestBasicProcessor");
         ProcessorTracker pt = new ProcessorTracker(req, new WorkerRuntime());
         Thread.sleep(300000);
     }

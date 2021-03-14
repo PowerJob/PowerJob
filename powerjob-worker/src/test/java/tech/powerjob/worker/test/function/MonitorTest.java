@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.function;
+package tech.powerjob.worker.test.function;
 
 import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.common.utils.JsonUtils;

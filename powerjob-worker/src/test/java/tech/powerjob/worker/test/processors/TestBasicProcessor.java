@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.processors;
+package tech.powerjob.worker.test.processors;
 
 import tech.powerjob.common.utils.JsonUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;

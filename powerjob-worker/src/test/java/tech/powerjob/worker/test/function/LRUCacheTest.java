@@ -1,4 +1,4 @@
-package com.github.kfcfans.powerjob.function;
+package tech.powerjob.worker.test.function;
 
 import tech.powerjob.worker.common.utils.LRUCache;
 import org.junit.jupiter.api.Test;
