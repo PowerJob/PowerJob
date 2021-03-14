@@ -1,6 +1,5 @@
 package tech.powerjob.official.processors.impl.script;
 
-import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
 import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
 import com.github.kfcfans.powerjob.worker.log.OmsLogger;
@@ -30,7 +29,9 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
 
     private static final ForkJoinPool POOL = new ForkJoinPool(4 * Runtime.getRuntime().availableProcessors());
     private static final Set<String> DOWNLOAD_PROTOCOL = Sets.newHashSet("http", "https", "ftp");
-    static final String SH_SHELL = "/bin/sh";
+    protected static final String SH_SHELL = "/bin/sh";
+
+    private static final String WORKER_DIR = System.getProperty("user.home") + "/powerjob/official_script_processor/";
 
     @Override
     protected ProcessResult process0(TaskContext context) throws Exception {
@@ -83,7 +84,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
     }
 
     private String prepareScriptFile(Long instanceId, String processorInfo) throws IOException {
-        String scriptPath = OmsWorkerFileUtils.getScriptDir() + getScriptName(instanceId);
+        String scriptPath = WORKER_DIR + getScriptName(instanceId);
         File script = new File(scriptPath);
         if (script.exists()) {
             return scriptPath;

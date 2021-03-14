@@ -22,7 +22,6 @@ import com.github.kfcfans.powerjob.worker.background.WorkerHealthReporter;
 import com.github.kfcfans.powerjob.worker.common.OhMyConfig;
 import com.github.kfcfans.powerjob.worker.common.PowerBannerPrinter;
 import com.github.kfcfans.powerjob.worker.common.WorkerRuntime;
-import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.github.kfcfans.powerjob.worker.common.utils.SpringUtils;
 import com.github.kfcfans.powerjob.worker.persistence.TaskPersistenceService;
 import com.google.common.base.Stopwatch;
@@ -89,9 +88,6 @@ public class OhMyWorker implements ApplicationContextAware, InitializingBean, Di
             }else {
                 log.warn("[OhMyWorker] using TestMode now, it's dangerous if this is production env.");
             }
-
-            // 初始化文件系统
-            OmsWorkerFileUtils.init(workerRuntime.getOhMyConfig());
 
             // 初始化元数据
             String workerAddress = NetUtils.getLocalHost() + ":" + config.getPort();

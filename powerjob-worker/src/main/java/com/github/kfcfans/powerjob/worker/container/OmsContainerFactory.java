@@ -8,14 +8,10 @@ import com.github.kfcfans.powerjob.common.request.ServerDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.request.WorkerNeedDeployContainerRequest;
 import com.github.kfcfans.powerjob.common.response.AskResponse;
 import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.worker.OhMyWorker;
-import com.github.kfcfans.powerjob.worker.common.utils.AkkaUtils;
-import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.net.URL;
@@ -34,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class OmsContainerFactory {
 
+    private static final String CONTAINER_DIR = System.getProperty("user.home") + "/powerjob/container/";
     private static final Map<Long, OmsContainer> CARGO = Maps.newConcurrentMap();
 
     /**
@@ -95,7 +92,7 @@ public class OmsContainerFactory {
             return;
         }
 
-        String filePath = OmsWorkerFileUtils.getContainerDir() + containerId + "/" + version + ".jar";
+        String filePath = CONTAINER_DIR + containerId + "/" + version + ".jar";
         // 下载Container到本地
         File jarFile = new File(filePath);
 

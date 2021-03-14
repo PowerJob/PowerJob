@@ -1,7 +1,7 @@
 package com.github.kfcfans.powerjob.worker.persistence;
 
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy;
-import com.github.kfcfans.powerjob.worker.common.utils.OmsWorkerFileUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class ConnectionFactory {
 
     private volatile DataSource dataSource;
 
-    private final String H2_PATH = OmsWorkerFileUtils.getH2WorkDir();
+    private final String H2_PATH = System.getProperty("user.home") + "/h2/" + CommonUtils.genUUID() + "/";
     private final String DISK_JDBC_URL = String.format("jdbc:h2:file:%spowerjob_worker_db;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false", H2_PATH);
     private final String MEMORY_JDBC_URL = String.format("jdbc:h2:mem:%spowerjob_worker_db;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false", H2_PATH);
 
