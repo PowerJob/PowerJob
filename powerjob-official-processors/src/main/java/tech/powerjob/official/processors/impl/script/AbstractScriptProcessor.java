@@ -36,27 +36,29 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
     @Override
     protected ProcessResult process0(TaskContext context) throws Exception {
         OmsLogger omsLogger = context.getOmsLogger();
-        omsLogger.info("SYSTEM ===> ScriptProcessor start to process");
         String scriptParams = CommonUtils.parseParams(context);
+        omsLogger.info("[SYSTEM] ScriptProcessor start to process, params: {}", scriptParams);
         if (scriptParams == null) {
-            String message = "scriptParams is null, please check jobParam configuration.";
+            String message = "[SYSTEM] ScriptParams is null, please check jobParam configuration.";
             omsLogger.warn(message);
             return new ProcessResult(false, message);
         }
         String scriptPath = prepareScriptFile(context.getInstanceId(), scriptParams);
+        omsLogger.info("[SYSTEM] Generate executable file successfully, path: {}", scriptPath);
         
         if (SystemUtils.IS_OS_WINDOWS) {
             if (StringUtils.equals(getRunCommand(), SH_SHELL)) {
-                String message = String.format("Current OS is %s where shell scripts cannot run.", SystemUtils.OS_NAME);
+                String message = String.format("[SYSTEM] Current OS is %s where shell scripts cannot run.", SystemUtils.OS_NAME);
                 omsLogger.warn(message);
                 return new ProcessResult(false, message);
             }
-        } else {
-            // 1. 授权
-            ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
-            // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
-            chmodPb.start().waitFor();
         }
+
+        // 授权
+        ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
+        // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
+        chmodPb.start().waitFor();
+        omsLogger.info("[SYSTEM] chmod 755 authorization complete, ready to start execution~");
 
         // 2. 执行目标脚本
         ProcessBuilder pb = new ProcessBuilder(getRunCommand(), scriptPath);
@@ -76,7 +78,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
             success = process.waitFor() == 0;
 
         } catch (InterruptedException ie) {
-            omsLogger.info("SYSTEM ===> ScriptProcessor has been interrupted");
+            omsLogger.info("[SYSTEM] ScriptProcessor has been interrupted");
         } finally {
             result = String.format("[INPUT]: %s;[ERROR]: %s", inputBuilder.toString(), errorBuilder.toString());
         }
@@ -122,7 +124,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
             }
         } catch (Exception e) {
             log.warn("[ScriptProcessor] copyStream failed.", e);
-            omsLogger.warn("[ScriptProcessor] copyStream failed.", e);
+            omsLogger.warn("[SYSTEM] copyStream failed.", e);
 
             sb.append("Exception: ").append(e);
         }

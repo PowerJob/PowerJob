@@ -1,5 +1,6 @@
 package com.github.kfcfans.powerjob.samples.config;
 
+import com.github.kfcfans.powerjob.common.utils.CommonUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.h2.Driver;
@@ -22,7 +23,7 @@ public class SqlProcessorConfiguration {
     @Bean
     @DependsOn({"initPowerJob"})
     public DataSource sqlProcessorDataSource() {
-        String path = System.getProperty("user.home") + "/test/h2/";
+        String path = System.getProperty("user.home") + "/test/h2/" + CommonUtils.genUUID() + "/";
         String jdbcUrl = String.format("jdbc:h2:file:%spowerjob_sql_processor_db;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false", path);
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(Driver.class.getName());
