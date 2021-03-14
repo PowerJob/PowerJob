@@ -31,7 +31,7 @@ public class StaticSliceProcessor extends MapReduceProcessor {
 
         // root task 负责分发任务
         if (isRootTask()) {
-            // 从控制台传递分片参数，架设格式为KV：1=a&2=b&3=c
+            // 从控制台传递分片参数，假设格式为KV：1=a&2=b&3=c
             String jobParams = context.getJobParams();
             Map<String, String> paramsMap = Splitter.on("&").withKeyValueSeparator("=").split(jobParams);
 

@@ -10,7 +10,6 @@ import java.util.Map;
 
 /**
  * 测试追加工作流上下文数据
- * com.github.kfcfans.powerjob.samples.tester.AppendWorkflowContextTester
  *
  * @author Echo009
  * @since 2021/2/6
