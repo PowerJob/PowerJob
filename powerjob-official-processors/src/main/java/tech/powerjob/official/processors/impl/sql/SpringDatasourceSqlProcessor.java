@@ -7,6 +7,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -15,16 +17,16 @@ import java.util.Map;
  *
  * 注意 :
  * 默认情况下没有过滤任何 SQL
- * 建议生产环境一定要使用 {@link SimpleSpringSqlProcessor#registerSqlValidator} 方法注册至少一个校验器拦截非法 SQL
+ * 建议生产环境一定要使用 {@link SpringDatasourceSqlProcessor#registerSqlValidator} 方法注册至少一个校验器拦截非法 SQL
  *
  * 默认情况下会直接执行参数中的 SQL
- * 可以通过添加  {@link SimpleSpringSqlProcessor.SqlParser} 来实现定制 SQL 解析逻辑的需求（比如 宏变量替换，参数替换等）
+ * 可以通过添加  {@link SpringDatasourceSqlProcessor.SqlParser} 来实现定制 SQL 解析逻辑的需求（比如 宏变量替换，参数替换等）
  *
  * @author Echo009
  * @since 2021/3/10
  */
 @Slf4j
-public class SimpleSpringSqlProcessor extends AbstractSqlProcessor {
+public class SpringDatasourceSqlProcessor extends AbstractSqlProcessor {
     /**
      * 默认的数据源名称
      */
@@ -39,9 +41,14 @@ public class SimpleSpringSqlProcessor extends AbstractSqlProcessor {
      *
      * @param defaultDataSource 默认数据源
      */
-    public SimpleSpringSqlProcessor(DataSource defaultDataSource) {
+    public SpringDatasourceSqlProcessor(DataSource defaultDataSource) {
         dataSourceMap = Maps.newConcurrentMap();
         registerDataSource(DEFAULT_DATASOURCE_NAME, defaultDataSource);
+    }
+
+    @Override
+    Connection getConnection(SqlParams sqlParams, TaskContext taskContext) throws SQLException {
+        return dataSourceMap.get(sqlParams.getDataSourceName()).getConnection();
     }
 
     /**
@@ -59,11 +66,6 @@ public class SimpleSpringSqlProcessor extends AbstractSqlProcessor {
         dataSourceMap.computeIfAbsent(sqlParams.getDataSourceName(), dataSourceName -> {
             throw new IllegalArgumentException("can't find data source with name " + dataSourceName);
         });
-    }
-
-    @Override
-    DataSource getDataSource(SqlParams sqlParams, TaskContext taskContext) {
-        return dataSourceMap.get(sqlParams.getDataSourceName());
     }
 
     /**

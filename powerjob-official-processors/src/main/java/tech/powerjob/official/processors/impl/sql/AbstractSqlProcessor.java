@@ -1,9 +1,6 @@
 package tech.powerjob.official.processors.impl.sql;
 
 import com.alibaba.fastjson.JSON;
-import tech.powerjob.worker.core.processor.ProcessResult;
-import tech.powerjob.worker.core.processor.TaskContext;
-import tech.powerjob.worker.log.OmsLogger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -13,8 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 import tech.powerjob.official.processors.CommonBasicProcessor;
 import tech.powerjob.official.processors.util.CommonUtils;
+import tech.powerjob.worker.core.processor.ProcessResult;
+import tech.powerjob.worker.core.processor.TaskContext;
+import tech.powerjob.worker.log.OmsLogger;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -94,7 +93,7 @@ public abstract class AbstractSqlProcessor extends CommonBasicProcessor {
         return new ProcessResult(true, message);
     }
 
-    abstract DataSource getDataSource(SqlParams sqlParams, TaskContext taskContext);
+    abstract Connection getConnection(SqlParams sqlParams, TaskContext taskContext) throws SQLException;
 
     /**
      * 执行 SQL
@@ -107,7 +106,7 @@ public abstract class AbstractSqlProcessor extends CommonBasicProcessor {
         OmsLogger omsLogger = ctx.getOmsLogger();
 
         boolean originAutoCommitFlag ;
-        try (Connection connection = getDataSource(sqlParams, ctx).getConnection()) {
+        try (Connection connection = getConnection(sqlParams, ctx)) {
             originAutoCommitFlag = connection.getAutoCommit();
             connection.setAutoCommit(false);
             try (Statement statement = connection.createStatement()) {

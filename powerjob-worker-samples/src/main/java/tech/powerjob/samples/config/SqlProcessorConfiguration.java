@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import tech.powerjob.official.processors.impl.sql.SimpleSpringSqlProcessor;
+import tech.powerjob.official.processors.impl.sql.SpringDatasourceSqlProcessor;
 
 import javax.sql.DataSource;
 
@@ -38,15 +38,15 @@ public class SqlProcessorConfiguration {
 
 
     @Bean
-    public SimpleSpringSqlProcessor simpleSpringSqlProcessor(@Qualifier("sqlProcessorDataSource") DataSource dataSource) {
-        SimpleSpringSqlProcessor simpleSpringSqlProcessor = new SimpleSpringSqlProcessor(dataSource);
+    public SpringDatasourceSqlProcessor simpleSpringSqlProcessor(@Qualifier("sqlProcessorDataSource") DataSource dataSource) {
+        SpringDatasourceSqlProcessor springDatasourceSqlProcessor = new SpringDatasourceSqlProcessor(dataSource);
         // do nothing
-        simpleSpringSqlProcessor.registerSqlValidator("fakeSqlValidator", sql -> true);
+        springDatasourceSqlProcessor.registerSqlValidator("fakeSqlValidator", sql -> true);
         // 排除掉包含 drop 的 SQL
-        simpleSpringSqlProcessor.registerSqlValidator("interceptDropValidator", sql -> sql.matches("^(?i)((?!drop).)*$"));
+        springDatasourceSqlProcessor.registerSqlValidator("interceptDropValidator", sql -> sql.matches("^(?i)((?!drop).)*$"));
         // do nothing
-        simpleSpringSqlProcessor.setSqlParser((sql, taskContext) -> sql);
-        return simpleSpringSqlProcessor;
+        springDatasourceSqlProcessor.setSqlParser((sql, taskContext) -> sql);
+        return springDatasourceSqlProcessor;
     }
 
 }
