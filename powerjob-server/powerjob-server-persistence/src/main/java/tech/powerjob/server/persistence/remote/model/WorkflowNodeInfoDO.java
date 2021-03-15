@@ -32,7 +32,7 @@ public class WorkflowNodeInfoDO {
     @Column(nullable = false)
     private Long appId;
 
-    @Column(nullable = false)
+    @Column
     private Long workflowId;
     /**
      * 节点类型 {@link WorkflowNodeType}

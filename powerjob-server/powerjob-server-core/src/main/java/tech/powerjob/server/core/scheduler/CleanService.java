@@ -6,6 +6,7 @@ import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
+import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
 import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 import tech.powerjob.server.extension.LockService;
 import com.google.common.annotations.VisibleForTesting;
@@ -37,6 +38,8 @@ public class CleanService {
     private InstanceInfoRepository instanceInfoRepository;
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
+    @Resource
+    private WorkflowNodeInfoRepository workflowNodeInfoRepository;
     @Resource
     private LockService lockService;
 
@@ -89,6 +92,8 @@ public class CleanService {
             // 删除数据库运行记录
             cleanInstanceLog();
             cleanWorkflowInstanceLog();
+            // 删除无用节点
+            cleanWorkflowNodeInfo();
             // 删除 GridFS 过期文件
             cleanRemote(GridFsManager.LOG_BUCKET, instanceInfoRetentionDay);
             cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
@@ -173,6 +178,19 @@ public class CleanService {
         }catch (Exception e) {
             log.warn("[CleanService] clean workflow instanceInfo failed.", e);
         }
+    }
+
+    @VisibleForTesting
+    public void cleanWorkflowNodeInfo(){
+        try {
+            // 清理一天前创建的，且没有工作流 ID 的节点信息
+            Date t = DateUtils.addDays(new Date(), -1);
+            int num = workflowNodeInfoRepository.deleteAllByWorkflowIdIsNullAndGmtCreateBefore(t);
+            log.info("[CleanService] deleted {} node records whose create time before {} and workflowId is null.", num, t);
+        } catch (Exception e) {
+            log.warn("[CleanService] clean workflow node info failed.", e);
+        }
+
     }
 
 }

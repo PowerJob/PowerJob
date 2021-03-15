@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import org.junit.jupiter.api.Assertions;
 import tech.powerjob.server.core.uid.IdGenerateService;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.core.scheduler.CleanService;
@@ -34,17 +35,23 @@ public class ServiceTest {
 
         lockService.tryLock(lockName, 10000);
         lockService.tryLock(lockName, 10000);
-        lockService.unlock(lockName);
+
+        Assertions.assertDoesNotThrow(() -> lockService.unlock(lockName));
     }
 
     @Test
     public void testIdGenerator() {
-        System.out.println(idGenerateService.allocate());
+        Assertions.assertDoesNotThrow(() -> idGenerateService.allocate());
     }
 
     @Test
     public void testCleanInstanceInfo() {
-        cleanService.cleanInstanceLog();
+        Assertions.assertDoesNotThrow(() -> cleanService.cleanInstanceLog());
+    }
+
+    @Test
+    public void testCleanWorkflowNodeInfo() {
+        Assertions.assertDoesNotThrow(() -> cleanService.cleanWorkflowNodeInfo());
     }
 
 }

@@ -1,8 +1,12 @@
 package tech.powerjob.server.persistence.remote.repository;
 
-import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 
+import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.List;
 
 
@@ -26,9 +30,20 @@ public interface WorkflowNodeInfoRepository extends JpaRepository<WorkflowNodeIn
      * 根据工作流节点 ID 删除节点
      *
      * @param workflowId 工作流ID
-     * @param id 节点 ID
+     * @param id         节点 ID
      * @return 删除记录数
      */
-    int deleteByWorkflowIdAndIdNotIn(Long workflowId,List<Long> id);
+    int deleteByWorkflowIdAndIdNotIn(Long workflowId, List<Long> id);
+
+    /**
+     * 删除工作流 ID 为空，且创建时间早于指定时间的节点信息
+     *
+     * @param crtTimeThreshold 创建时间阈值
+     * @return 删除记录条数
+     */
+    @Modifying
+    @Transactional(rollbackOn = Exception.class)
+    @Query(value = "delete from WorkflowNodeInfoDO where workflowId is null and gmtCreate < ?1")
+    int deleteAllByWorkflowIdIsNullAndGmtCreateBefore(Date crtTimeThreshold);
 
 }

@@ -22,9 +22,9 @@ public class SaveWorkflowNodeRequest {
 
     private Long workflowId;
     /**
-     * 节点类型
+     * 节点类型(默认为任务节点)
      */
-    private WorkflowNodeType type;
+    private WorkflowNodeType type = WorkflowNodeType.JOB;
     /**
      * 任务 ID
      */
@@ -48,7 +48,6 @@ public class SaveWorkflowNodeRequest {
 
     public void valid(){
         CommonUtils.requireNonNull(this.appId, "appId can't be empty");
-        CommonUtils.requireNonNull(this.workflowId, "workflowId can't be empty");
         CommonUtils.requireNonNull(this.type, "type can't be empty");
         if (type == WorkflowNodeType.JOB) {
             CommonUtils.requireNonNull(this.jobId, "jobId can't be empty");
