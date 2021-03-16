@@ -70,20 +70,17 @@ class TestWorkflow extends ClientInitializer {
         // 创建节点
         SaveWorkflowNodeRequest saveWorkflowNodeRequest1 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest1.setJobId(1L);
-        saveWorkflowNodeRequest1.setWorkflowId(req.getId());
         saveWorkflowNodeRequest1.setNodeName("DAG-Node-1");
         saveWorkflowNodeRequest1.setType(WorkflowNodeType.JOB);
 
         SaveWorkflowNodeRequest saveWorkflowNodeRequest2 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest2.setJobId(1L);
-        saveWorkflowNodeRequest2.setWorkflowId(req.getId());
         saveWorkflowNodeRequest2.setNodeName("DAG-Node-2");
         saveWorkflowNodeRequest2.setType(WorkflowNodeType.JOB);
 
 
         SaveWorkflowNodeRequest saveWorkflowNodeRequest3 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest3.setJobId(1L);
-        saveWorkflowNodeRequest3.setWorkflowId(req.getId());
         saveWorkflowNodeRequest3.setNodeName("DAG-Node-3");
         saveWorkflowNodeRequest3.setType(WorkflowNodeType.JOB);
 
@@ -97,9 +94,9 @@ class TestWorkflow extends ClientInitializer {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(nodeList.get(0).getId(), 1L, "DAG-Node-1"));
-        nodes.add(new PEWorkflowDAG.Node(nodeList.get(1).getId(), 1L, "DAG-Node-2"));
-        nodes.add(new PEWorkflowDAG.Node(nodeList.get(2).getId(), 1L, "DAG-Node-3"));
+        nodes.add(new PEWorkflowDAG.Node(nodeList.get(0).getId()));
+        nodes.add(new PEWorkflowDAG.Node(nodeList.get(1).getId()));
+        nodes.add(new PEWorkflowDAG.Node(nodeList.get(2).getId()));
 
         edges.add(new PEWorkflowDAG.Edge(nodeList.get(0).getId(), nodeList.get(1).getId()));
         edges.add(new PEWorkflowDAG.Edge(nodeList.get(1).getId(), nodeList.get(2).getId()));

@@ -45,6 +45,8 @@ public class SystemInstanceResult {
     public static final String MIDDLE_JOB_FAILED = "middle job failed";
     public static final String MIDDLE_JOB_STOPPED = "middle job stopped by user";
     public static final String CAN_NOT_FIND_JOB = "can't find some job";
+    public static final String CAN_NOT_FIND_NODE = "can't find some node";
+    public static final String ILLEGAL_NODE = "illegal node info";
 
     /**
      * 没有启用的节点

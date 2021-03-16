@@ -30,8 +30,8 @@ public class DAGTest {
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
         // 测试图1： 1 -> 2 -> 1，理论上报错
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
+        nodes.add(new PEWorkflowDAG.Node(1L));
+        nodes.add(new PEWorkflowDAG.Node(2L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 1L));
         Assert.assertFalse(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
@@ -43,10 +43,10 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
+        nodes.add(new PEWorkflowDAG.Node(1L));
+        nodes.add(new PEWorkflowDAG.Node(2L));
+        nodes.add(new PEWorkflowDAG.Node(3L));
+        nodes.add(new PEWorkflowDAG.Node(4L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(1L, 3L));
         edges.add(new PEWorkflowDAG.Edge(2L, 4L));
@@ -78,10 +78,10 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
+        nodes.add(new PEWorkflowDAG.Node(1L));
+        nodes.add(new PEWorkflowDAG.Node(2L));
+        nodes.add(new PEWorkflowDAG.Node(3L));
+        nodes.add(new PEWorkflowDAG.Node(4L));
         edges.add(new PEWorkflowDAG.Edge(1L, 3L));
         edges.add(new PEWorkflowDAG.Edge(2L, 4L));
 
@@ -102,10 +102,10 @@ public class DAGTest {
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
         // 测试图4：（双顶点 单个环） 1 -> 3 -> 1, 2 -> 4
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
+        nodes.add(new PEWorkflowDAG.Node(1L));
+        nodes.add(new PEWorkflowDAG.Node(2L));
+        nodes.add(new PEWorkflowDAG.Node(3L));
+        nodes.add(new PEWorkflowDAG.Node(4L));
         edges.add(new PEWorkflowDAG.Edge(1L, 3L));
         edges.add(new PEWorkflowDAG.Edge(3L, 1L));
         edges.add(new PEWorkflowDAG.Edge(2L, 4L));
@@ -130,12 +130,12 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2"));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
-        nodes.add(new PEWorkflowDAG.Node(5L, 5L, "5"));
-        nodes.add(new PEWorkflowDAG.Node(6L, 6L, "6"));
+        nodes.add(new PEWorkflowDAG.Node(1L));
+        nodes.add(new PEWorkflowDAG.Node(2L));
+        nodes.add(new PEWorkflowDAG.Node(3L));
+        nodes.add(new PEWorkflowDAG.Node(4L));
+        nodes.add(new PEWorkflowDAG.Node(5L));
+        nodes.add(new PEWorkflowDAG.Node(6L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 5L));
         edges.add(new PEWorkflowDAG.Edge(5L, 6L));
@@ -167,15 +167,15 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes1 = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges1 = Lists.newLinkedList();
 
-        nodes1.add(new PEWorkflowDAG.Node(1L, 1L, "1"));
-        nodes1.add(new PEWorkflowDAG.Node(2L, 2L, "2").setEnable(false));
-        nodes1.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes1.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
-        nodes1.add(new PEWorkflowDAG.Node(5L, 5L, "5"));
-        nodes1.add(new PEWorkflowDAG.Node(6L, 6L, "6").setEnable(false));
-        nodes1.add(new PEWorkflowDAG.Node(7L, 7L, "7").setEnable(false));
-        nodes1.add(new PEWorkflowDAG.Node(8L, 8L, "8").setEnable(false));
-        nodes1.add(new PEWorkflowDAG.Node(9L, 9L, "9"));
+        nodes1.add(new PEWorkflowDAG.Node(1L));
+        nodes1.add(new PEWorkflowDAG.Node(2L).setEnable(false));
+        nodes1.add(new PEWorkflowDAG.Node(3L));
+        nodes1.add(new PEWorkflowDAG.Node(4L));
+        nodes1.add(new PEWorkflowDAG.Node(5L));
+        nodes1.add(new PEWorkflowDAG.Node(6L).setEnable(false));
+        nodes1.add(new PEWorkflowDAG.Node(7L).setEnable(false));
+        nodes1.add(new PEWorkflowDAG.Node(8L).setEnable(false));
+        nodes1.add(new PEWorkflowDAG.Node(9L));
         edges1.add(new PEWorkflowDAG.Edge(1L, 3L));
         edges1.add(new PEWorkflowDAG.Edge(2L, 4L));
         edges1.add(new PEWorkflowDAG.Edge(4L, 5L));
@@ -209,12 +209,12 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3"));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
-        nodes.add(new PEWorkflowDAG.Node(5L, 5L, "5").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(6L, 6L, "6"));
+        nodes.add(new PEWorkflowDAG.Node(1L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(2L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(3L));
+        nodes.add(new PEWorkflowDAG.Node(4L));
+        nodes.add(new PEWorkflowDAG.Node(5L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(6L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 3L));
         edges.add(new PEWorkflowDAG.Edge(3L, 4L));
@@ -248,13 +248,13 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1").setStatus(InstanceStatus.FAILED.getV()));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3").setStatus(InstanceStatus.SUCCEED.getV()));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4"));
-        nodes.add(new PEWorkflowDAG.Node(5L, 5L, "5").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(6L, 6L, "6"));
-        nodes.add(new PEWorkflowDAG.Node(7L, 7L, "7"));
+        nodes.add(new PEWorkflowDAG.Node(1L).setStatus(InstanceStatus.FAILED.getV()));
+        nodes.add(new PEWorkflowDAG.Node(2L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(3L).setStatus(InstanceStatus.SUCCEED.getV()));
+        nodes.add(new PEWorkflowDAG.Node(4L));
+        nodes.add(new PEWorkflowDAG.Node(5L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(6L));
+        nodes.add(new PEWorkflowDAG.Node(7L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 4L));
         edges.add(new PEWorkflowDAG.Edge(3L, 4L));
@@ -291,12 +291,12 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1").setStatus(InstanceStatus.FAILED.getV()));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(5L, 5L, "5"));
-        nodes.add(new PEWorkflowDAG.Node(6L, 6L, "6"));
+        nodes.add(new PEWorkflowDAG.Node(1L).setStatus(InstanceStatus.FAILED.getV()));
+        nodes.add(new PEWorkflowDAG.Node(2L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(3L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(4L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(5L));
+        nodes.add(new PEWorkflowDAG.Node(6L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 5L));
         edges.add(new PEWorkflowDAG.Edge(5L, 6L));
@@ -334,13 +334,13 @@ public class DAGTest {
         List<PEWorkflowDAG.Node> nodes = Lists.newLinkedList();
         List<PEWorkflowDAG.Edge> edges = Lists.newLinkedList();
 
-        nodes.add(new PEWorkflowDAG.Node(1L, 1L, "1").setStatus(InstanceStatus.FAILED.getV()));
-        nodes.add(new PEWorkflowDAG.Node(2L, 2L, "2").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(3L, 3L, "3").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(4L, 4L, "4").setEnable(false));
-        nodes.add(new PEWorkflowDAG.Node(5L, 5L, "5"));
-        nodes.add(new PEWorkflowDAG.Node(6L, 6L, "6"));
-        nodes.add(new PEWorkflowDAG.Node(7L, 7L, "7"));
+        nodes.add(new PEWorkflowDAG.Node(1L).setStatus(InstanceStatus.FAILED.getV()));
+        nodes.add(new PEWorkflowDAG.Node(2L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(3L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(4L).setEnable(false));
+        nodes.add(new PEWorkflowDAG.Node(5L));
+        nodes.add(new PEWorkflowDAG.Node(6L));
+        nodes.add(new PEWorkflowDAG.Node(7L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 5L));
         edges.add(new PEWorkflowDAG.Edge(5L, 6L));

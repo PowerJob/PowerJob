@@ -14,6 +14,7 @@ import tech.powerjob.common.WorkflowContextConstant;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.utils.JsonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
@@ -83,8 +84,79 @@ public class WorkflowInstanceManager {
 
         Long wfId = wfInfo.getId();
         Long wfInstanceId = idGenerateService.allocate();
+        // 构造实例信息
+        WorkflowInstanceInfoDO newWfInstance = constructWfInstance(wfInfo, initParams, expectTriggerTime, wfId, wfInstanceId);
 
-        // 创建 并初始化 DAG 信息
+        PEWorkflowDAG dag;
+        try {
+            dag = JSON.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
+            // 校验 DAG 信息
+            if (!WorkflowDAGUtils.valid(dag)) {
+                log.error("[Workflow-{}|{}] DAG of this workflow is illegal! maybe you has modified the DAG info directly in database!", wfId, wfInstanceId);
+                throw new PowerJobException(SystemInstanceResult.INVALID_DAG);
+            }
+            // 初始化节点信息
+            initNodeInfo(dag);
+            newWfInstance.setDag(JSON.toJSONString(dag));
+            //  最后检查工作流中的任务是否均处于可用状态（没有被删除）
+            Set<Long> allJobIds = Sets.newHashSet();
+            dag.getNodes().forEach(node -> {
+                allJobIds.add(node.getJobId());
+                // 将节点的初始状态置为等待派发
+                node.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+            });
+            int needNum = allJobIds.size();
+            long dbNum = jobInfoRepository.countByAppIdAndStatusInAndIdIn(wfInfo.getAppId(), Sets.newHashSet(SwitchableStatus.ENABLE.getV(), SwitchableStatus.DISABLE.getV()), allJobIds);
+            log.debug("[Workflow-{}|{}] contains {} jobs, find {} jobs in database.", wfId, wfInstanceId, needNum, dbNum);
+            if (dbNum < allJobIds.size()) {
+                log.warn("[Workflow-{}|{}] this workflow need {} jobs, but just find {} jobs in database, maybe you delete or disable some job!", wfId, wfInstanceId, needNum, dbNum);
+                throw new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB);
+            }
+            workflowInstanceInfoRepository.saveAndFlush(newWfInstance);
+        } catch (Exception e) {
+            onWorkflowInstanceFailed(e.getMessage(), newWfInstance);
+        }
+        return wfInstanceId;
+    }
+
+    /**
+     * 初始化节点信息
+     */
+    private void initNodeInfo(PEWorkflowDAG dag) {
+        for (PEWorkflowDAG.Node node : dag.getNodes()) {
+            WorkflowNodeInfoDO workflowNodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(()->new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_NODE));
+            // 任务节点，需初始化 是否启用、是否允许失败跳过、节点参数 等信息
+            if (workflowNodeInfo.getType() == null || workflowNodeInfo.getType() == WorkflowNodeType.JOB.getCode()) {
+                // 任务节点缺失任务信息
+                if (workflowNodeInfo.getJobId() == null) {
+                    throw new PowerJobException(SystemInstanceResult.ILLEGAL_NODE);
+                }
+                JobInfoDO jobInfo = jobInfoRepository.findById(workflowNodeInfo.getJobId()).orElseThrow(()->new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB));
+
+                node.setNodeType(WorkflowNodeType.JOB.getCode());
+                // 初始化任务相关信息
+                node.setJobId(workflowNodeInfo.getJobId())
+                        .setNodeName(workflowNodeInfo.getNodeName())
+                        .setEnable(workflowNodeInfo.getEnable())
+                        .setSkipWhenFailed(workflowNodeInfo.getSkipWhenFailed());
+
+                if (!StringUtils.isBlank(workflowNodeInfo.getNodeParams())) {
+                    node.setNodeParams(workflowNodeInfo.getNodeParams());
+                } else {
+                    node.setNodeParams(jobInfo.getJobParams());
+                }
+            } else {
+                // 非任务节点
+                node.setNodeType(workflowNodeInfo.getType());
+            }
+        }
+    }
+
+    /**
+     * 构造工作流实例，并初始化基础信息（不包括 DAG ）
+     */
+    private WorkflowInstanceInfoDO constructWfInstance(WorkflowInfoDO wfInfo, String initParams, Long expectTriggerTime, Long wfId, Long wfInstanceId) {
+
         Date now = new Date();
         WorkflowInstanceInfoDO newWfInstance = new WorkflowInstanceInfoDO();
         newWfInstance.setAppId(wfInfo.getAppId());
@@ -101,43 +173,7 @@ public class WorkflowInstanceManager {
 
         newWfInstance.setGmtCreate(now);
         newWfInstance.setGmtModified(now);
-
-        // 校验 DAG 信息
-        PEWorkflowDAG dag;
-        try {
-            dag = JSON.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
-            // 校验
-            if (!WorkflowDAGUtils.valid(dag)) {
-                throw new PowerJobException(SystemInstanceResult.INVALID_DAG);
-            }
-        } catch (Exception e) {
-            log.error("[Workflow-{}|{}] DAG of this workflow is illegal! maybe you has modified the DAG info directly in database!", wfId, wfInstanceId);
-            onWorkflowInstanceFailed(SystemInstanceResult.INVALID_DAG, newWfInstance);
-            return newWfInstance.getWfInstanceId();
-        }
-        // 校验合法性（工作是否存在且启用）
-        Set<Long> allJobIds = Sets.newHashSet();
-        dag.getNodes().forEach(node -> {
-            allJobIds.add(node.getJobId());
-            // 将节点的初始状态置为等待派发
-            node.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-        });
-        int needNum = allJobIds.size();
-        // 检查工作流中的任务是否均处于可用状态（没有被删除）
-        long dbNum = jobInfoRepository.countByAppIdAndStatusInAndIdIn(wfInfo.getAppId(), Sets.newHashSet(SwitchableStatus.ENABLE.getV(), SwitchableStatus.DISABLE.getV()), allJobIds);
-        log.debug("[Workflow-{}|{}] contains {} jobs, find {} jobs in database.", wfId, wfInstanceId, needNum, dbNum);
-        // 先 set 一次，异常的话直接存这个信息
-        newWfInstance.setDag(JSON.toJSONString(dag));
-        if (dbNum < allJobIds.size()) {
-            log.warn("[Workflow-{}|{}] this workflow need {} jobs, but just find {} jobs in database, maybe you delete or disable some job!", wfId, wfInstanceId, needNum, dbNum);
-            onWorkflowInstanceFailed(SystemInstanceResult.CAN_NOT_FIND_JOB, newWfInstance);
-        } else {
-            initNodeInfo(dag);
-            // 再 set 一次，此时工作流中的节点信息已经完全初始化
-            newWfInstance.setDag(JSON.toJSONString(dag));
-            workflowInstanceInfoRepository.saveAndFlush(newWfInstance);
-        }
-        return wfInstanceId;
+        return newWfInstance;
     }
 
     /**
@@ -371,41 +407,6 @@ public class WorkflowInstanceManager {
             log.error("[WorkflowInstanceManager] update workflow(workflowInstanceId={}) context failed.", wfInstanceId, e);
         }
 
-    }
-
-    /**
-     * 初始化节点信息
-     *
-     * @param dag pe dag
-     * @since 20210205
-     */
-    private void initNodeInfo(PEWorkflowDAG dag) {
-        // 初始化节点信息（是否启用、是否允许失败跳过、节点参数）
-        for (PEWorkflowDAG.Node node : dag.getNodes()) {
-            Optional<WorkflowNodeInfoDO> nodeInfoOpt = workflowNodeInfoRepository.findById(node.getNodeId());
-            // 不考虑极端情况
-            JobInfoDO jobInfo = jobInfoRepository.findById(node.getJobId()).orElseGet(JobInfoDO::new);
-
-            if (!nodeInfoOpt.isPresent()) {
-                // 默认启用 + 不允许失败跳过
-                node.setEnable(true)
-                        .setSkipWhenFailed(false)
-                        .setNodeParams(jobInfo.getJobParams());
-            } else {
-                WorkflowNodeInfoDO nodeInfo = nodeInfoOpt.get();
-                // 使用节点别名覆盖
-                node.setNodeName(nodeInfo.getNodeName())
-                        .setEnable(nodeInfo.getEnable())
-                        .setSkipWhenFailed(nodeInfo.getSkipWhenFailed());
-                // 如果节点中指定了参数信息，则取节点的，否则取 Job 上的
-                if (!StringUtils.isBlank(nodeInfo.getNodeParams())) {
-                    node.setNodeParams(nodeInfo.getNodeParams());
-                } else {
-                    node.setNodeParams(jobInfo.getJobParams());
-                }
-
-            }
-        }
     }
 
     /**

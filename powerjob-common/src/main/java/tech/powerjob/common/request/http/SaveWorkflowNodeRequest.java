@@ -7,20 +7,18 @@ import lombok.Data;
 
 
 /**
- * 新增工作流节点信息请求
+ * 保存工作流节点信息请求
+ * 工作流节点的
  *
  * @author zenggonggu
  * @since 2021/02/02
  */
 @Data
-
 public class SaveWorkflowNodeRequest {
 
     private Long id;
 
     private Long appId;
-
-    private Long workflowId;
     /**
      * 节点类型(默认为任务节点)
      */
