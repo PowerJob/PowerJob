@@ -345,18 +345,14 @@ public class WorkflowService {
         // 填充节点信息
         if (!CollectionUtils.isEmpty(dagInfo.getNodes())) {
             for (PEWorkflowDAG.Node node : dagInfo.getNodes()) {
-
                 WorkflowNodeInfoDO nodeInfo = nodeIdNodInfoMap.get(node.getNodeId());
                 if (nodeInfo != null) {
-                    node.setEnable(nodeInfo.getEnable())
+                    node.setNodeType(nodeInfo.getType())
+                            .setJobId(nodeInfo.getJobId())
+                            .setEnable(nodeInfo.getEnable())
                             .setSkipWhenFailed(nodeInfo.getSkipWhenFailed())
                             .setNodeName(nodeInfo.getNodeName())
                             .setNodeParams(nodeInfo.getNodeParams());
-
-                } else {
-                    // 默认开启 并且 不允许失败跳过
-                    node.setEnable(true)
-                            .setSkipWhenFailed(false);
                 }
             }
         }
