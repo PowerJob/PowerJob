@@ -87,7 +87,7 @@ public class WorkflowInstanceManager {
         // 构造实例信息
         WorkflowInstanceInfoDO newWfInstance = constructWfInstance(wfInfo, initParams, expectTriggerTime, wfId, wfInstanceId);
 
-        PEWorkflowDAG dag;
+        PEWorkflowDAG dag = null;
         try {
             dag = JSON.parseObject(wfInfo.getPeDAG(), PEWorkflowDAG.class);
             // 校验 DAG 信息
@@ -97,7 +97,6 @@ public class WorkflowInstanceManager {
             }
             // 初始化节点信息
             initNodeInfo(dag);
-            newWfInstance.setDag(JSON.toJSONString(dag));
             //  最后检查工作流中的任务是否均处于可用状态（没有被删除）
             Set<Long> allJobIds = Sets.newHashSet();
             dag.getNodes().forEach(node -> {
@@ -112,8 +111,12 @@ public class WorkflowInstanceManager {
                 log.warn("[Workflow-{}|{}] this workflow need {} jobs, but just find {} jobs in database, maybe you delete or disable some job!", wfId, wfInstanceId, needNum, dbNum);
                 throw new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB);
             }
+            newWfInstance.setDag(JSON.toJSONString(dag));
             workflowInstanceInfoRepository.saveAndFlush(newWfInstance);
         } catch (Exception e) {
+            if (dag != null) {
+                newWfInstance.setDag(JSON.toJSONString(dag));
+            }
             onWorkflowInstanceFailed(e.getMessage(), newWfInstance);
         }
         return wfInstanceId;
