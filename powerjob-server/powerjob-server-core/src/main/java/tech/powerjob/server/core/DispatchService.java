@@ -51,22 +51,28 @@ public class DispatchService {
     private InstanceMetadataService instanceMetadataService;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
-
+    @Resource
+    private DispatchService self;
 
     /**
-     * 重新派发任务
+     * 重新派发任务实例（不考虑实例当前的状态）
      *
      * @param jobInfo    任务信息（注意，这里传入的任务信息有可能为“空”）
      * @param instanceId 实例ID
      */
-    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId() ?: 0", concurrencyLevel = 1024)
     public void redispatch(JobInfoDO jobInfo, long instanceId) {
-        // 这里暂时保留
-        dispatch(jobInfo, instanceId);
+        InstanceInfoDO instance = instanceInfoRepository.findByInstanceId(instanceId);
+        // 将状态重置为等待派发
+        instance.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+        instance.setGmtModified(new Date());
+        instanceInfoRepository.saveAndFlush(instance);
+        // support for aop
+        self.dispatch(jobInfo, instanceId);
     }
 
     /**
      * 将任务从Server派发到Worker（TaskTracker）
+     * 只会派发当前状态为等待派发的任务实例
      * **************************************************
      * 2021-02-03 modify by Echo009
      * 1、移除参数 当前运行次数、工作流实例ID、实例参数
