@@ -4,19 +4,30 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>powerjob</artifactId>
-        <groupId>com.github.kfcfans</groupId>
+        <groupId>tech.powerjob</groupId>
         <version>3.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>3.4.8</version>
-    <packaging>jar</packaging>
+    <version>4.0.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>powerjob-server-common</module>
+        <module>powerjob-server-remote</module>
+        <module>powerjob-server-persistence</module>
+        <module>powerjob-server-starter</module>
+        <module>powerjob-server-extension</module>
+        <module>powerjob-server-migrate</module>
+        <module>powerjob-server-core</module>
+    </modules>
+
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.3.4.RELEASE</springboot.version>
-        <powerjob.common.version>3.4.8</powerjob.common.version>
+        <powerjob.common.version>4.0.0</powerjob.common.version>
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
         <mysql.version>8.0.19</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
@@ -33,15 +44,58 @@
         <dingding.version>1.0.1</dingding.version>
         <vertx-web.version>4.0.2</vertx-web.version>
 
-        <!-- Skip this module when deploying. -->
+        <!-- skip this module when deploying. -->
         <maven.deploy.skip>true</maven.deploy.skip>
+
+        <!-- self-internal dependency, generally no need to change the version -->
+        <powerjob-server-common.version>1.0.0</powerjob-server-common.version>
+        <powerjob-server-extension.version>1.0.0</powerjob-server-extension.version>
+        <powerjob-server-remote.version>1.0.0</powerjob-server-remote.version>
+        <powerjob-server-persistence.version>1.0.0</powerjob-server-persistence.version>
+        <powerjob-server-core.version>1.0.0</powerjob-server-core.version>
+        <powerjob-server-migrate.version>1.0.0</powerjob-server-migrate.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-common</artifactId>
+                <version>${powerjob-server-common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-extension</artifactId>
+                <version>${powerjob-server-extension.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-remote</artifactId>
+                <version>${powerjob-server-remote.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-persistence</artifactId>
+                <version>${powerjob-server-persistence.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-core</artifactId>
+                <version>${powerjob-server-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-migrate</artifactId>
+                <version>${powerjob-server-migrate.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
         <!-- oms-common -->
         <dependency>
-            <groupId>com.github.kfcfans</groupId>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
             <version>${powerjob.common.version}</version>
         </dependency>
@@ -211,27 +265,5 @@
         </dependency>
 
     </dependencies>
-
-    <!-- SpringBoot maven plugin -->
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${springboot.version}</version>
-                <configuration>
-                    <mainClass>com.github.kfcfans.powerjob.server.OhMyApplication</mainClass>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build-info</goal>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

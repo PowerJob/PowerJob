@@ -1,5 +1,4 @@
-import com.github.kfcfans.powerjob.common.utils.CommonUtils;
-import com.github.kfcfans.powerjob.common.utils.SegmentLock;
+import tech.powerjob.common.utils.SegmentLock;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;

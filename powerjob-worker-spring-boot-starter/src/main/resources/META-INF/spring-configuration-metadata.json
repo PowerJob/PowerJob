@@ -2,13 +2,13 @@
   "groups": [
     {
       "name": "powerjob",
-      "type": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties"
+      "type": "tech.powerjob.worker.autoconfigure.PowerJobProperties",
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties"
     },
     {
       "name": "powerjob.worker",
-      "type": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties",
+      "type": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties",
       "sourceMethod": "getWorker()"
     }
   ],
@@ -17,39 +17,45 @@
       "name": "powerjob.worker.akka-port",
       "type": "java.lang.Integer",
       "description": "Akka port of PowerJob-worker",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
       "name": "powerjob.worker.app-name",
       "type": "java.lang.String",
       "description": "Name of application. Register in PowerJob-console to prevent error.",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
       "name": "powerjob.worker.enable-test-mode",
       "type": "java.lang.Boolean",
       "description": "Whether to enable test mode. In test mode, worker will not connect to server.",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
       "defaultValue": false
     },
     {
       "name": "powerjob.worker.max-result-length",
       "type": "java.lang.Integer",
       "description": "Max length for {@link ProcessResult}#msg, result longer than this property will be truncated.",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker",
       "defaultValue": 8096
     },
     {
       "name": "powerjob.worker.server-address",
       "type": "java.lang.String",
       "description": "PowerJob-server node(s) address. Ip:port or domain, multiple addresses should be separated with comma",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     },
     {
       "name": "powerjob.worker.store-strategy",
-      "type": "com.github.kfcfans.powerjob.worker.common.constants.StoreStrategy",
+      "type": "tech.powerjob.worker.common.constants.StoreStrategy",
       "description": "Local store strategy, disk or memory",
-      "sourceType": "com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+    },
+    {
+      "name": "powerjob.worker.max-appended-wf-context-length",
+      "type": "java.lang.Integer",
+      "description": "Max length of appended workflow context. Appended workflow context that is longer than the value will be ignore.",
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     }
   ],
   "hints": []
