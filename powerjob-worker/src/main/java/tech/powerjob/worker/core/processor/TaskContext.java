@@ -1,7 +1,7 @@
 package tech.powerjob.worker.core.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import tech.powerjob.worker.common.OhMyConfig;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.log.OmsLogger;
 import lombok.Getter;
 import lombok.Setter;
@@ -64,7 +64,7 @@ public class TaskContext {
     @JsonIgnore
     private OmsLogger omsLogger;
     /**
-     * 用户自定义上下文，通过 {@link OhMyConfig} 初始化
+     * 用户自定义上下文，通过 {@link PowerJobWorkerConfig} 初始化
      */
     private Object userContext;
     /**

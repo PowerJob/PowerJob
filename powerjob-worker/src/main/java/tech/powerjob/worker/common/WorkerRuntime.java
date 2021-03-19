@@ -17,7 +17,7 @@ public class WorkerRuntime {
 
     private Long appId;
 
-    private OhMyConfig ohMyConfig;
+    private PowerJobWorkerConfig workerConfig;
 
     private String workerAddress;
 

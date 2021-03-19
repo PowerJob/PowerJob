@@ -1,8 +1,8 @@
 package tech.powerjob.agent;
 
 import tech.powerjob.common.RemoteConstant;
-import tech.powerjob.worker.OhMyWorker;
-import tech.powerjob.worker.common.OhMyConfig;
+import tech.powerjob.worker.PowerJobWorker;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import com.google.common.base.Splitter;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class MainApplication implements Runnable {
     @Override
     public void run() {
 
-        OhMyConfig cfg = new OhMyConfig();
+        PowerJobWorkerConfig cfg = new PowerJobWorkerConfig();
         try {
 
             cfg.setAppName(appName);
@@ -53,10 +53,10 @@ public class MainApplication implements Runnable {
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);
 
-            OhMyWorker ohMyWorker = new OhMyWorker();
-            ohMyWorker.setConfig(cfg);
+            PowerJobWorker worker = new PowerJobWorker();
+            worker.setConfig(cfg);
 
-            ohMyWorker.init();
+            worker.init();
         }catch (Exception e) {
             log.error("[OhMyAgent] startup failed by config: {}.", cfg, e);
             ExceptionUtils.rethrow(e);

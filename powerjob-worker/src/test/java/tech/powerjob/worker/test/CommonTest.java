@@ -6,8 +6,8 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.worker.OhMyWorker;
-import tech.powerjob.worker.common.OhMyConfig;
+import tech.powerjob.worker.PowerJobWorker;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
@@ -28,12 +28,12 @@ public class CommonTest {
 
     @BeforeAll
     public static void startWorker() throws Exception {
-        OhMyConfig ohMyConfig = new OhMyConfig();
-        ohMyConfig.setAppName("oms-test");
-        ohMyConfig.setEnableTestMode(true);
+        PowerJobWorkerConfig workerConfig = new PowerJobWorkerConfig();
+        workerConfig.setAppName("oms-test");
+        workerConfig.setEnableTestMode(true);
 
-        OhMyWorker worker = new OhMyWorker();
-        worker.setConfig(ohMyConfig);
+        PowerJobWorker worker = new PowerJobWorker();
+        worker.setConfig(workerConfig);
         worker.init();
 
         ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));

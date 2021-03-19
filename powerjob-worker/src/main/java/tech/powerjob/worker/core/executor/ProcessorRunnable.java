@@ -115,7 +115,7 @@ public class ProcessorRunnable implements Runnable {
         if (task.getTaskContent() != null && task.getTaskContent().length > 0) {
             taskContext.setSubTask(SerializerUtils.deSerialized(task.getTaskContent()));
         }
-        taskContext.setUserContext(workerRuntime.getOhMyConfig().getUserContext());
+        taskContext.setUserContext(workerRuntime.getWorkerConfig().getUserContext());
         return taskContext;
     }
 
@@ -211,8 +211,8 @@ public class ProcessorRunnable implements Runnable {
         req.setReportTime(System.currentTimeMillis());
         req.setCmd(cmd);
         // 检查追加的上下文大小是否超出限制
-        if (instanceInfo.getWfInstanceId() !=null && WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength())) {
-            log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength());
+        if (instanceInfo.getWfInstanceId() !=null && WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength())) {
+            log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength());
             // ignore appended workflow context data
             appendedWfContext = Collections.emptyMap();
         }
@@ -256,7 +256,7 @@ public class ProcessorRunnable implements Runnable {
         if (StringUtils.isEmpty(result)) {
             return "";
         }
-        final int maxLength = workerRuntime.getOhMyConfig().getMaxResultLength();
+        final int maxLength = workerRuntime.getWorkerConfig().getMaxResultLength();
         if (result.length() <= maxLength) {
             return result;
         }

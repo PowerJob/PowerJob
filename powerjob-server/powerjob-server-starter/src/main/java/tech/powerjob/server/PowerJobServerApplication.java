@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Slf4j
 @EnableScheduling
 @SpringBootApplication
-public class OhMyApplication {
+public class PowerJobServerApplication {
 
     private static final String TIPS = "\n\n" +
             "******************* PowerJob Tips *******************\n" +
@@ -35,7 +35,7 @@ public class OhMyApplication {
 
         // Start SpringBoot application.
         try {
-            SpringApplication.run(OhMyApplication.class, args);
+            SpringApplication.run(PowerJobServerApplication.class, args);
         } catch (Throwable t) {
             log.error(TIPS);
             throw t;

@@ -5,7 +5,7 @@ import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.JsonUtils;
 import tech.powerjob.common.utils.HttpUtils;
-import tech.powerjob.worker.common.OhMyConfig;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
 import tech.powerjob.worker.core.tracker.task.TaskTrackerPool;
 import com.google.common.collect.Maps;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class ServerDiscoveryService {
 
     private final Long appId;
-    private final OhMyConfig config;
+    private final PowerJobWorkerConfig config;
 
     private String currentServerAddress;
 
@@ -41,7 +41,7 @@ public class ServerDiscoveryService {
     // 最大失败次数
     private static final int MAX_FAILED_COUNT = 3;
 
-    public ServerDiscoveryService(Long appId, OhMyConfig config) {
+    public ServerDiscoveryService(Long appId, PowerJobWorkerConfig config) {
         this.appId = appId;
         this.config = config;
     }

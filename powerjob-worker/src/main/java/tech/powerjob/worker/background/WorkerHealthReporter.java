@@ -36,23 +36,23 @@ public class WorkerHealthReporter implements Runnable {
 
         SystemMetrics systemMetrics;
 
-        if (workerRuntime.getOhMyConfig().getSystemMetricsCollector() == null) {
+        if (workerRuntime.getWorkerConfig().getSystemMetricsCollector() == null) {
             systemMetrics = SystemInfoUtils.getSystemMetrics();
         } else {
-            systemMetrics = workerRuntime.getOhMyConfig().getSystemMetricsCollector().collect();
+            systemMetrics = workerRuntime.getWorkerConfig().getSystemMetricsCollector().collect();
         }
 
         WorkerHeartbeat heartbeat = new WorkerHeartbeat();
 
         heartbeat.setSystemMetrics(systemMetrics);
         heartbeat.setWorkerAddress(workerRuntime.getWorkerAddress());
-        heartbeat.setAppName(workerRuntime.getOhMyConfig().getAppName());
+        heartbeat.setAppName(workerRuntime.getWorkerConfig().getAppName());
         heartbeat.setAppId(workerRuntime.getAppId());
         heartbeat.setHeartbeatTime(System.currentTimeMillis());
         heartbeat.setVersion(PowerJobWorkerVersion.getVersion());
         heartbeat.setProtocol(Protocol.AKKA.name());
         heartbeat.setClient("Atlantis");
-        heartbeat.setTag(workerRuntime.getOhMyConfig().getTag());
+        heartbeat.setTag(workerRuntime.getWorkerConfig().getTag());
 
         // 获取当前加载的容器列表
         heartbeat.setContainerInfos(OmsContainerFactory.getDeployedContainerInfos());

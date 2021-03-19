@@ -6,8 +6,8 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.worker.OhMyWorker;
-import tech.powerjob.worker.common.OhMyConfig;
+import tech.powerjob.worker.PowerJobWorker;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.utils.AkkaUtils;
 import com.google.common.collect.Lists;
 import com.typesafe.config.ConfigFactory;
@@ -27,11 +27,11 @@ public class FrequentTaskTrackerTest {
     @BeforeAll
     public static void init() throws Exception {
 
-        OhMyConfig ohMyConfig = new OhMyConfig();
-        ohMyConfig.setAppName("oms-test");
-        ohMyConfig.setServerAddress(Lists.newArrayList("127.0.0.1:7700"));
-        OhMyWorker worker = new OhMyWorker();
-        worker.setConfig(ohMyConfig);
+        PowerJobWorkerConfig workerConfig = new PowerJobWorkerConfig();
+        workerConfig.setAppName("oms-test");
+        workerConfig.setServerAddress(Lists.newArrayList("127.0.0.1:7700"));
+        PowerJobWorker worker = new PowerJobWorker();
+        worker.setConfig(workerConfig);
         worker.init();
 
         ActorSystem testAS = ActorSystem.create("oms-test", ConfigFactory.load("oms-akka-test.conf"));

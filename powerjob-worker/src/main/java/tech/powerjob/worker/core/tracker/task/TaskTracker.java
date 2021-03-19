@@ -190,8 +190,8 @@ public abstract class TaskTracker {
             return;
         }
         // 检查追加的上下文大小是否超出限制
-        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength())) {
-            log.warn("[TaskTracker-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getOhMyConfig().getMaxAppendedWfContextLength());
+        if (WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength())) {
+            log.warn("[TaskTracker-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength());
             // ignore appended workflow context data
             return;
         }

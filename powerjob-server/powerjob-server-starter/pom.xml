@@ -53,7 +53,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
                 <configuration>
-                    <mainClass>tech.powerjob.server.OhMyApplication</mainClass>
+                    <mainClass>tech.powerjob.server.PowerJobServerApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

@@ -2,8 +2,8 @@ package tech.powerjob.worker.autoconfigure;
 
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.worker.OhMyWorker;
-import tech.powerjob.worker.common.OhMyConfig;
+import tech.powerjob.worker.PowerJobWorker;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,7 +28,7 @@ public class PowerJobAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public OhMyWorker initPowerJob(PowerJobProperties properties) {
+    public PowerJobWorker initPowerJob(PowerJobProperties properties) {
 
         PowerJobProperties.Worker worker = properties.getWorker();
 
@@ -42,7 +42,7 @@ public class PowerJobAutoConfiguration {
         /*
          * Create OhMyConfig object for setting properties.
          */
-        OhMyConfig config = new OhMyConfig();
+        PowerJobWorkerConfig config = new PowerJobWorkerConfig();
         /*
          * Configuration of worker port. Random port is enabled when port is set with non-positive number.
          */
@@ -76,7 +76,7 @@ public class PowerJobAutoConfiguration {
         /*
          * Create OhMyWorker object and set properties.
          */
-        OhMyWorker ohMyWorker = new OhMyWorker();
+        PowerJobWorker ohMyWorker = new PowerJobWorker();
         ohMyWorker.setConfig(config);
         return ohMyWorker;
     }

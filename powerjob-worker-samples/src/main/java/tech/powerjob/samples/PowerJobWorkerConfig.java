@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2020/4/17
  */
 @Configuration
-public class OhMySchedulerConfig {
+public class PowerJobWorkerConfig {
 
     /*
 
