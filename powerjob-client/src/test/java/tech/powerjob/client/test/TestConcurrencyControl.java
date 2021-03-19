@@ -28,7 +28,7 @@ class TestConcurrencyControl extends ClientInitializer {
         saveJobInfoRequest.setTimeExpressionType(TimeExpressionType.API);
         saveJobInfoRequest.setMaxInstanceNum(1);
 
-        Long jobId = ohMyClient.saveJob(saveJobInfoRequest).getData();
+        Long jobId = powerJobClient.saveJob(saveJobInfoRequest).getData();
 
         System.out.println("jobId: " + jobId);
 
@@ -37,7 +37,7 @@ class TestConcurrencyControl extends ClientInitializer {
         for (int i = 0; i < 100; i++) {
             String params = "index-" + i;
             pool.execute(() -> {
-                ResultDTO<Long> res = ohMyClient.runJob(jobId, params, 0);
+                ResultDTO<Long> res = powerJobClient.runJob(jobId, params, 0);
                 System.out.println(params + ": " + res);
             });
         }

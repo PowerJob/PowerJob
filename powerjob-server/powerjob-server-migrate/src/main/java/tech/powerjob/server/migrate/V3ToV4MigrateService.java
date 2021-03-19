@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class V3ToV4MigrateService {
 
-    private static final String MIGRATE_LOCK_TEMPLATE = "migrateLock-%s-%s";
+    private static final String MIGRATE_LOCK_TEMPLATE = "v3to4MigrateLock-%s-%s";
 
     @Resource
     private LockService lockService;
@@ -252,6 +252,4 @@ public class V3ToV4MigrateService {
         return true;
 
     }
-
-
 }

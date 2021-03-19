@@ -1,6 +1,6 @@
 package tech.powerjob.client.test;
 
-import tech.powerjob.client.OhMyClient;
+import tech.powerjob.client.PowerJobClient;
 import org.junit.jupiter.api.BeforeAll;
 
 /**
@@ -11,10 +11,10 @@ import org.junit.jupiter.api.BeforeAll;
  */
 public class ClientInitializer {
 
-    protected static OhMyClient ohMyClient;
+    protected static PowerJobClient powerJobClient;
 
     @BeforeAll
     public static void initClient() throws Exception {
-        ohMyClient = new OhMyClient("127.0.0.1:7700", "powerjob-agent-test", "123");
+        powerJobClient = new PowerJobClient("127.0.0.1:7700", "powerjob-agent-test", "123");
     }
 }

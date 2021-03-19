@@ -25,7 +25,7 @@ class TestQuery extends ClientInitializer {
 
     @Test
     void testFetchAllJob() {
-        ResultDTO<List<JobInfoDTO>> allJobRes = ohMyClient.fetchAllJob();
+        ResultDTO<List<JobInfoDTO>> allJobRes = powerJobClient.fetchAllJob();
         System.out.println(JSON.toJSONString(allJobRes));
     }
 
@@ -41,7 +41,7 @@ class TestQuery extends ClientInitializer {
                 .setProcessorTypeIn(Lists.newArrayList(ProcessorType.BUILT_IN.getV(), ProcessorType.SHELL.getV(), ProcessorType.EXTERNAL.getV()))
                 .setProcessorInfoLike("com.github.kfcfans");
 
-        ResultDTO<List<JobInfoDTO>> jobQueryResult = ohMyClient.queryJob(jobInfoQuery);
+        ResultDTO<List<JobInfoDTO>> jobQueryResult = powerJobClient.queryJob(jobInfoQuery);
         System.out.println(JSON.toJSONString(jobQueryResult));
         System.out.println(jobQueryResult.getData().size());
     }

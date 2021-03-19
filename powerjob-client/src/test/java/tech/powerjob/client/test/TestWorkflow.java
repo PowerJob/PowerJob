@@ -1,7 +1,7 @@
 package tech.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
-import tech.powerjob.client.OhMyClient;
+import tech.powerjob.client.PowerJobClient;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 /**
- * Test cases for {@link OhMyClient} workflow.
+ * Test cases for {@link PowerJobClient} workflow.
  *
  * @author tjq
  * @author Echo009
@@ -43,7 +43,7 @@ class TestWorkflow extends ClientInitializer {
         for (int i = 0; i < 5; i++) {
             SaveJobInfoRequest request = JSONObject.parseObject(JSONObject.toJSONBytes(base), SaveJobInfoRequest.class);
             request.setJobName(request.getJobName() + i);
-            ResultDTO<Long> res = ohMyClient.saveJob(request);
+            ResultDTO<Long> res = powerJobClient.saveJob(request);
             System.out.println(res);
             Assertions.assertNotNull(res);
 
@@ -61,7 +61,7 @@ class TestWorkflow extends ClientInitializer {
         req.setTimeExpressionType(TimeExpressionType.API);
 
         System.out.println("req ->" + JSONObject.toJSON(req));
-        ResultDTO<Long> res = ohMyClient.saveWorkflow(req);
+        ResultDTO<Long> res = powerJobClient.saveWorkflow(req);
         System.out.println(res);
         Assertions.assertNotNull(res);
 
@@ -85,7 +85,7 @@ class TestWorkflow extends ClientInitializer {
         saveWorkflowNodeRequest3.setType(WorkflowNodeType.JOB);
 
 
-        List<WorkflowNodeInfoDTO> nodeList = ohMyClient.saveWorkflowNode(Lists.newArrayList(saveWorkflowNodeRequest1,saveWorkflowNodeRequest2,saveWorkflowNodeRequest3)).getData();
+        List<WorkflowNodeInfoDTO> nodeList = powerJobClient.saveWorkflowNode(Lists.newArrayList(saveWorkflowNodeRequest1,saveWorkflowNodeRequest2,saveWorkflowNodeRequest3)).getData();
         System.out.println(nodeList);
         Assertions.assertNotNull(nodeList);
 
@@ -104,7 +104,7 @@ class TestWorkflow extends ClientInitializer {
 
         // 保存完整信息
         req.setDag(peWorkflowDAG);
-        res = ohMyClient.saveWorkflow(req);
+        res = powerJobClient.saveWorkflow(req);
 
         System.out.println(res);
         Assertions.assertNotNull(res);
@@ -113,7 +113,7 @@ class TestWorkflow extends ClientInitializer {
 
     @Test
     void testCopyWorkflow() {
-        ResultDTO<Long> res = ohMyClient.copyWorkflow(WF_ID);
+        ResultDTO<Long> res = powerJobClient.copyWorkflow(WF_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
@@ -121,70 +121,70 @@ class TestWorkflow extends ClientInitializer {
 
     @Test
     void testDisableWorkflow() {
-        ResultDTO<Void> res = ohMyClient.disableWorkflow(WF_ID);
+        ResultDTO<Void> res = powerJobClient.disableWorkflow(WF_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testDeleteWorkflow() {
-        ResultDTO<Void> res = ohMyClient.deleteWorkflow(WF_ID);
+        ResultDTO<Void> res = powerJobClient.deleteWorkflow(WF_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testEnableWorkflow() {
-        ResultDTO<Void> res = ohMyClient.enableWorkflow(WF_ID);
+        ResultDTO<Void> res = powerJobClient.enableWorkflow(WF_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testFetchWorkflowInfo() {
-        ResultDTO<WorkflowInfoDTO> res = ohMyClient.fetchWorkflow(WF_ID);
+        ResultDTO<WorkflowInfoDTO> res = powerJobClient.fetchWorkflow(WF_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testRunWorkflow() {
-        ResultDTO<Long> res = ohMyClient.runWorkflow(WF_ID);
+        ResultDTO<Long> res = powerJobClient.runWorkflow(WF_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testStopWorkflowInstance() {
-        ResultDTO<Void> res = ohMyClient.stopWorkflowInstance(149962433421639744L);
+        ResultDTO<Void> res = powerJobClient.stopWorkflowInstance(149962433421639744L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testRetryWorkflowInstance() {
-        ResultDTO<Void> res = ohMyClient.retryWorkflowInstance(149962433421639744L);
+        ResultDTO<Void> res = powerJobClient.retryWorkflowInstance(149962433421639744L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testMarkWorkflowNodeAsSuccess() {
-        ResultDTO<Void> res = ohMyClient.markWorkflowNodeAsSuccess(149962433421639744L, 1L);
+        ResultDTO<Void> res = powerJobClient.markWorkflowNodeAsSuccess(149962433421639744L, 1L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testFetchWfInstanceInfo() {
-        ResultDTO<WorkflowInstanceInfoDTO> res = ohMyClient.fetchWorkflowInstanceInfo(149962433421639744L);
+        ResultDTO<WorkflowInstanceInfoDTO> res = powerJobClient.fetchWorkflowInstanceInfo(149962433421639744L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testRunWorkflowPlus() {
-        ResultDTO<Long> res = ohMyClient.runWorkflow(WF_ID, "this is init Params 2", 90000);
+        ResultDTO<Long> res = powerJobClient.runWorkflow(WF_ID, "this is init Params 2", 90000);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }

@@ -1,7 +1,7 @@
 package tech.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
-import tech.powerjob.client.OhMyClient;
+import tech.powerjob.client.PowerJobClient;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Test cases for {@link OhMyClient}
+ * Test cases for {@link PowerJobClient}
  *
  * @author tjq
  * @author Echo009
@@ -45,86 +45,86 @@ class TestClient extends ClientInitializer {
         newJobInfo.setMinMemorySpace(1.2);
         newJobInfo.setMinDiskSpace(1.3);
 
-        ResultDTO<Long> resultDTO = ohMyClient.saveJob(newJobInfo);
+        ResultDTO<Long> resultDTO = powerJobClient.saveJob(newJobInfo);
         System.out.println(JSONObject.toJSONString(resultDTO));
         Assertions.assertNotNull(resultDTO);
     }
 
     @Test
     void testCopyJob() {
-        ResultDTO<Long> copyJobRes = ohMyClient.copyJob(JOB_ID);
+        ResultDTO<Long> copyJobRes = powerJobClient.copyJob(JOB_ID);
         System.out.println(JSONObject.toJSONString(copyJobRes));
         Assertions.assertNotNull(copyJobRes);
     }
 
     @Test
     void testFetchJob() {
-        ResultDTO<JobInfoDTO> fetchJob = ohMyClient.fetchJob(JOB_ID);
+        ResultDTO<JobInfoDTO> fetchJob = powerJobClient.fetchJob(JOB_ID);
         System.out.println(JSONObject.toJSONString(fetchJob));
         Assertions.assertNotNull(fetchJob);
     }
 
     @Test
     void testDisableJob() {
-        ResultDTO<Void> res = ohMyClient.disableJob(JOB_ID);
+        ResultDTO<Void> res = powerJobClient.disableJob(JOB_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testEnableJob() {
-        ResultDTO<Void> res = ohMyClient.enableJob(JOB_ID);
+        ResultDTO<Void> res = powerJobClient.enableJob(JOB_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testDeleteJob() {
-        ResultDTO<Void> res = ohMyClient.deleteJob(JOB_ID);
+        ResultDTO<Void> res = powerJobClient.deleteJob(JOB_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testRun() {
-        ResultDTO<Long> res = ohMyClient.runJob(JOB_ID);
+        ResultDTO<Long> res = powerJobClient.runJob(JOB_ID);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testRunJobDelay() {
-        ResultDTO<Long> res = ohMyClient.runJob(JOB_ID, "this is instanceParams", 60000);
+        ResultDTO<Long> res = powerJobClient.runJob(JOB_ID, "this is instanceParams", 60000);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testFetchInstanceInfo() {
-        ResultDTO<InstanceInfoDTO> res = ohMyClient.fetchInstanceInfo(205436386851946560L);
+        ResultDTO<InstanceInfoDTO> res = powerJobClient.fetchInstanceInfo(205436386851946560L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testStopInstance() {
-        ResultDTO<Void> res = ohMyClient.stopInstance(205436995885858880L);
+        ResultDTO<Void> res = powerJobClient.stopInstance(205436995885858880L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testFetchInstanceStatus() {
-        ResultDTO<Integer> res = ohMyClient.fetchInstanceStatus(205436995885858880L);
+        ResultDTO<Integer> res = powerJobClient.fetchInstanceStatus(205436995885858880L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testCancelInstanceInTimeWheel() {
-        ResultDTO<Long> startRes = ohMyClient.runJob(JOB_ID, "start by OhMyClient", 20000);
+        ResultDTO<Long> startRes = powerJobClient.runJob(JOB_ID, "start by OhMyClient", 20000);
         System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
-        ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
+        ResultDTO<Void> cancelRes = powerJobClient.cancelInstance(startRes.getData());
         System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
         Assertions.assertTrue(cancelRes.isSuccess());
     }
@@ -132,20 +132,20 @@ class TestClient extends ClientInitializer {
     @Test
     @SneakyThrows
     void testCancelInstanceInDatabase() {
-        ResultDTO<Long> startRes = ohMyClient.runJob(15L, "start by OhMyClient", 2000000);
+        ResultDTO<Long> startRes = powerJobClient.runJob(15L, "start by OhMyClient", 2000000);
         System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
 
         // Restart server manually and clear all the data in time wheeler.
         TimeUnit.MINUTES.sleep(1);
 
-        ResultDTO<Void> cancelRes = ohMyClient.cancelInstance(startRes.getData());
+        ResultDTO<Void> cancelRes = powerJobClient.cancelInstance(startRes.getData());
         System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
         Assertions.assertTrue(cancelRes.isSuccess());
     }
 
     @Test
     void testRetryInstance() {
-        ResultDTO<Void> res = ohMyClient.retryInstance(169557545206153344L);
+        ResultDTO<Void> res = powerJobClient.retryInstance(169557545206153344L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }

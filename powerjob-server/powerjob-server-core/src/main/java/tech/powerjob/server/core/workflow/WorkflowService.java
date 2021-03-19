@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import tech.powerjob.common.PowerJobException;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -134,7 +135,7 @@ public class WorkflowService {
         }
         dag.setNodes(newNodes);
         int deleteCount = workflowNodeInfoRepository.deleteByWorkflowIdAndIdNotIn(wfId, nodeIdList);
-        log.warn("[WorkflowService-{}]delete {} dissociative nodes of workflow", wfId, deleteCount);
+        log.warn("[WorkflowService-{}] delete {} dissociative nodes of workflow", wfId, deleteCount);
         return JSON.toJSONString(dag);
     }
 
@@ -282,7 +283,6 @@ public class WorkflowService {
 
     /**
      * 保存工作流节点（新增 或者 保存）
-     * 允许工作流 ID 为空
      *
      * @param workflowNodeRequestList 工作流节点
      * @return 更新 或者 创建后的工作流节点信息
@@ -307,16 +307,20 @@ public class WorkflowService {
                 workflowNodeInfo = new WorkflowNodeInfoDO();
                 workflowNodeInfo.setGmtCreate(new Date());
             }
-            JobInfoDO jobInfoDO = jobInfoRepository.findById(req.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + req.getJobId()));
-            if (!jobInfoDO.getAppId().equals(appId)) {
-                throw new PowerJobException("Permission Denied! can't use other app's job!");
+
+            // valid job info
+            if (req.getType() == WorkflowNodeType.JOB) {
+                JobInfoDO jobInfoDO = jobInfoRepository.findById(req.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + req.getJobId()));
+                if (!jobInfoDO.getAppId().equals(appId)) {
+                    throw new PowerJobException("Permission Denied! can't use other app's job!");
+                }
+                if (StringUtils.isEmpty(workflowNodeInfo.getNodeName())) {
+                    workflowNodeInfo.setNodeName(jobInfoDO.getJobName());
+                }
             }
+
             BeanUtils.copyProperties(req, workflowNodeInfo);
             workflowNodeInfo.setType(req.getType().getCode());
-            // 如果名称为空则默认取任务名称
-            if (StringUtils.isEmpty(workflowNodeInfo.getNodeName())) {
-                workflowNodeInfo.setNodeName(jobInfoDO.getJobName());
-            }
             workflowNodeInfo.setGmtModified(new Date());
             workflowNodeInfo = workflowNodeInfoRepository.saveAndFlush(workflowNodeInfo);
             res.add(workflowNodeInfo);

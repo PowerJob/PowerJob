@@ -27,13 +27,13 @@ import java.util.Objects;
 import static tech.powerjob.client.TypeStore.*;
 
 /**
- * OhMyClient, the client for OpenAPI.
+ * PowerJobClient, the client for OpenAPI.
  *
  * @author tjq
  * @since 2020/4/15
  */
 @Slf4j
-public class OhMyClient {
+public class PowerJobClient {
 
     private Long appId;
     private String currentAddress;
@@ -42,25 +42,25 @@ public class OhMyClient {
     private static final String URL_PATTERN = "http://%s%s%s";
 
     /**
-     * Init OhMyClient with domain, appName and password.
+     * Init PowerJobClient with domain, appName and password.
      *
      * @param domain   like powerjob-server.apple-inc.com (Intranet Domain)
      * @param appName  name of the application
      * @param password password of the application
      */
-    public OhMyClient(String domain, String appName, String password) {
+    public PowerJobClient(String domain, String appName, String password) {
         this(Lists.newArrayList(domain), appName, password);
     }
 
 
     /**
-     * Init OhMyClient with server address, appName and password.
+     * Init PowerJobClient with server address, appName and password.
      *
      * @param addressList IP:Port address list, like 192.168.1.1:7700
      * @param appName     name of the application
      * @param password    password of the application
      */
-    public OhMyClient(List<String> addressList, String appName, String password) {
+    public PowerJobClient(List<String> addressList, String appName, String password) {
 
         CommonUtils.requireNonNull(addressList, "addressList can't be null!");
         CommonUtils.requireNonNull(appName, "appName can't be null");
@@ -86,9 +86,9 @@ public class OhMyClient {
         }
 
         if (StringUtils.isEmpty(currentAddress)) {
-            throw new PowerJobException("no server available for OhMyClient");
+            throw new PowerJobException("no server available for PowerJobClient");
         }
-        log.info("[OhMyClient] {}'s OhMyClient bootstrap successfully, using server: {}", appName, currentAddress);
+        log.info("[PowerJobClient] {}'s PowerJobClient bootstrap successfully, using server: {}", appName, currentAddress);
     }
 
     private static String assertApp(String appName, String password, String url) throws IOException {
@@ -539,7 +539,7 @@ public class OhMyClient {
                 return res;
             }
         } catch (IOException e) {
-            log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
+            log.warn("[PowerJobClient] request url:{} failed, reason is {}.", url, e.toString());
         }
 
         // 失败，开始重试
@@ -551,16 +551,16 @@ public class OhMyClient {
             try {
                 String res = HttpUtils.post(url, requestBody);
                 if (StringUtils.isNotEmpty(res)) {
-                    log.warn("[OhMyClient] server change: from({}) -> to({}).", currentAddress, addr);
+                    log.warn("[PowerJobClient] server change: from({}) -> to({}).", currentAddress, addr);
                     currentAddress = addr;
                     return res;
                 }
             } catch (IOException e) {
-                log.warn("[OhMyClient] request url:{} failed, reason is {}.", url, e.toString());
+                log.warn("[PowerJobClient] request url:{} failed, reason is {}.", url, e.toString());
             }
         }
 
-        log.error("[OhMyClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
+        log.error("[PowerJobClient] do post for path: {} failed because of no server available in {}.", path, allAddress);
         throw new PowerJobException("no server available when send post request");
     }
 }

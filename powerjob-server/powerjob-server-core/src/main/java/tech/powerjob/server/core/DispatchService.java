@@ -51,8 +51,6 @@ public class DispatchService {
     private InstanceMetadataService instanceMetadataService;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
-    @Resource
-    private DispatchService self;
 
     /**
      * 重新派发任务实例（不考虑实例当前的状态）
@@ -60,14 +58,14 @@ public class DispatchService {
      * @param jobInfo    任务信息（注意，这里传入的任务信息有可能为“空”）
      * @param instanceId 实例ID
      */
+    @UseSegmentLock(type = "redispatch", key = "#jobInfo.getId() ?: 0", concurrencyLevel = 16)
     public void redispatch(JobInfoDO jobInfo, long instanceId) {
         InstanceInfoDO instance = instanceInfoRepository.findByInstanceId(instanceId);
         // 将状态重置为等待派发
         instance.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
         instance.setGmtModified(new Date());
         instanceInfoRepository.saveAndFlush(instance);
-        // support for aop
-        self.dispatch(jobInfo, instanceId);
+        dispatch(jobInfo, instanceId);
     }
 
     /**
