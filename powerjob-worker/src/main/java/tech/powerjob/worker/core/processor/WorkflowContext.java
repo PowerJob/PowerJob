@@ -1,7 +1,7 @@
 package tech.powerjob.worker.core.processor;
 
 import tech.powerjob.common.WorkflowContextConstant;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

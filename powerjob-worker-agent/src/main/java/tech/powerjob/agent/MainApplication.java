@@ -18,7 +18,7 @@ import picocli.CommandLine.Option;
  * @since 2020/5/20
  */
 @Slf4j
-@Command(name = "OhMyAgent", mixinStandardHelpOptions = true, version = "3.4.7", description = "powerjob-worker agent")
+@Command(name = "PowerJobAgent", mixinStandardHelpOptions = true, version = "4.0.0", description = "powerjob-worker agent")
 public class MainApplication implements Runnable {
 
     @Option(names = {"-a", "--app"}, description = "worker-agent's name", required = true)
@@ -58,7 +58,7 @@ public class MainApplication implements Runnable {
 
             worker.init();
         }catch (Exception e) {
-            log.error("[OhMyAgent] startup failed by config: {}.", cfg, e);
+            log.error("[PowerJobAgent] startup failed by config: {}.", cfg, e);
             ExceptionUtils.rethrow(e);
         }
     }

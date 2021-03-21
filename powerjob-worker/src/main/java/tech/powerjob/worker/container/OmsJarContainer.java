@@ -1,7 +1,7 @@
 package tech.powerjob.worker.container;
 
 import tech.powerjob.common.ContainerConstant;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;

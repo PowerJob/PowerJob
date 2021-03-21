@@ -1,7 +1,7 @@
 package tech.powerjob.server.extension.defaultimpl.alram.impl;
 
 import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.common.SJ;

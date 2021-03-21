@@ -15,7 +15,7 @@ import tech.powerjob.server.remote.transport.starter.VertXStarter;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.common.response.AskResponse;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.SpringUtils;

@@ -15,7 +15,7 @@
 
     <properties>
         <powerjob.worker.version>4.0.0</powerjob.worker.version>
-        <springboot.version>2.2.6.RELEASE</springboot.version>
+        <springboot.version>2.3.4.RELEASE</springboot.version>
     </properties>
 
     <dependencies>

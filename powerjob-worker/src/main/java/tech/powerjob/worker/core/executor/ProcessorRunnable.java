@@ -7,7 +7,7 @@ import tech.powerjob.worker.common.ThreadLocalStore;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.AkkaUtils;
-import tech.powerjob.worker.common.utils.SerializerUtils;
+import tech.powerjob.common.serialize.SerializerUtils;
 import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
@@ -91,14 +91,16 @@ public class ProcessorRunnable implements Runnable {
             return;
         }
 
-        // 4. 正式提交运行，
+        // 4. 正式提交运行
         try {
             processResult = processor.process(taskContext);
+            if (processResult == null) {
+                processResult = new ProcessResult(false, "ProcessResult can't be null");
+            }
         } catch (Throwable e) {
             log.warn("[ProcessorRunnable-{}] task(id={},name={}) process failed.", instanceId, taskContext.getTaskId(), taskContext.getTaskName(), e);
             processResult = new ProcessResult(false, e.toString());
         }
-        //
         reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), null, workflowContext.getAppendedContextData());
     }
 

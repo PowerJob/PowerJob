@@ -19,7 +19,6 @@
         <h2.db.version>1.4.200</h2.db.version>
         <hikaricp.version>3.4.2</hikaricp.version>
         <junit.version>5.6.1</junit.version>
-        <kryo.version>5.0.0-RC5</kryo.version>
 
         <logback.version>1.2.3</logback.version>
     </properties>
@@ -51,13 +50,6 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikaricp.version}</version>
-        </dependency>
-
-        <!-- kryo 超超超高性能序列化框架 -->
-        <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
-            <version>${kryo.version}</version>
         </dependency>
 
         <!-- Junit 测试 -->

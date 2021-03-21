@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author tjq
  * @since 2020/4/15
  */
-public class MapReduceProcessorDemo extends MapReduceProcessor {
+public class MapReduceProcessorDemo implements MapReduceProcessor {
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
@@ -33,7 +33,8 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
              */
 
             // 调用 map 方法，派发子任务
-            return map(subTaskList, "DATA_PROCESS_TASK");
+            map(subTaskList, "DATA_PROCESS_TASK");
+            return new ProcessResult(true, "map successfully");
         }
 
         // 非子任务，可根据 subTask 的类型 或 TaskName 来判断分支

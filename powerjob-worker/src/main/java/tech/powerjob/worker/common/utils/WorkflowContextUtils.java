@@ -1,6 +1,6 @@
 package tech.powerjob.worker.common.utils;
 
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 
 import java.util.Map;
 

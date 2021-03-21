@@ -1,6 +1,6 @@
 package tech.powerjob.samples.processors;
 
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.samples.MysteryService;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @since 2020/4/18
  */
 @Component
-public class MapProcessorDemo extends MapProcessor {
+public class MapProcessorDemo implements MapProcessor {
 
     @Resource
     private MysteryService mysteryService;
@@ -56,7 +56,8 @@ public class MapProcessorDemo extends MapProcessor {
                     subTask.itemIds.add(i);
                 }
             }
-            return map(subTasks, "MAP_TEST_TASK");
+            map(subTasks, "MAP_TEST_TASK");
+            return new ProcessResult(true, "map successfully");
         }else {
             // 测试在 Map 任务中追加上下文
             context.getWorkflowContext().appendData2WfContext("Yasuo","A sword's poor company for a long road.");

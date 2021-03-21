@@ -4,7 +4,7 @@ import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.response.AskResponse;
 import org.springframework.core.annotation.Order;
@@ -76,6 +76,11 @@ public class DesignateServerAspect {
         // 获取执行机器
         AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new PowerJobException("can't find app info"));
         String targetServer = appInfo.getCurrentServer();
+
+        // 目标IP为空，本地执行
+        if (StringUtils.isEmpty(targetServer)) {
+            return point.proceed();
+        }
 
         // 目标IP与本地符合则本地执行
         if (Objects.equals(targetServer, AkkaStarter.getActorSystemAddress())) {

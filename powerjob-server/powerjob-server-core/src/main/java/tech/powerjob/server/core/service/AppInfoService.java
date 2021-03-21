@@ -1,6 +1,6 @@
 package tech.powerjob.server.core.service;
 
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import org.springframework.stereotype.Service;

@@ -12,22 +12,22 @@ import java.util.List;
  * @author tjq
  * @since 2020/3/18
  */
-public abstract class BroadcastProcessor implements BasicProcessor {
+public interface BroadcastProcessor extends BasicProcessor {
 
     /**
      * 在所有节点广播执行前执行，只会在一台机器执行一次
      */
-    public ProcessResult preProcess(TaskContext context) throws Exception {
+    default ProcessResult preProcess(TaskContext context) throws Exception {
         return new ProcessResult(true);
     }
     /**
      * 在所有节点广播执行完成后执行，只会在一台机器执行一次
      */
-    public ProcessResult postProcess(TaskContext context, List<TaskResult> taskResults) throws Exception {
+    default ProcessResult postProcess(TaskContext context, List<TaskResult> taskResults) throws Exception {
         return defaultResult(taskResults);
     }
 
-    public static ProcessResult defaultResult(List<TaskResult> taskResults) {
+    static ProcessResult defaultResult(List<TaskResult> taskResults) {
         long succeed = 0, failed = 0;
         for (TaskResult ts : taskResults) {
             if (ts.isSuccess()) {

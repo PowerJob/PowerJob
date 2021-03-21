@@ -7,7 +7,7 @@ import tech.powerjob.common.model.GitRepoInfo;
 import tech.powerjob.common.request.ServerDeployContainerRequest;
 import tech.powerjob.common.request.ServerDestroyContainerRequest;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.server.common.constants.ContainerSourceType;
@@ -95,9 +95,9 @@ public class ContainerService {
 
         Long originId = container.getId();
         if (originId != null) {
-            container = containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
-        }else {
-            container = new ContainerInfoDO();
+            // just validate
+            containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
+        } else {
             container.setGmtCreate(new Date());
         }
         container.setGmtModified(new Date());

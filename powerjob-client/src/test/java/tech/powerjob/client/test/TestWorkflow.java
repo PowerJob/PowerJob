@@ -38,7 +38,7 @@ class TestWorkflow extends ClientInitializer {
         base.setTimeExpressionType(TimeExpressionType.WORKFLOW);
         base.setExecuteType(ExecuteType.STANDALONE);
         base.setProcessorType(ProcessorType.BUILT_IN);
-        base.setProcessorInfo("com.github.kfcfans.powerjob.samples.workflow.WorkflowStandaloneProcessor");
+        base.setProcessorInfo("tech.powerjob.samples.workflow.WorkflowStandaloneProcessor");
 
         for (int i = 0; i < 5; i++) {
             SaveJobInfoRequest request = JSONObject.parseObject(JSONObject.toJSONBytes(base), SaveJobInfoRequest.class);

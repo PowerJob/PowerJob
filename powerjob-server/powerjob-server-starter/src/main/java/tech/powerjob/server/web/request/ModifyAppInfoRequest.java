@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.request;
 
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.CommonUtils;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;

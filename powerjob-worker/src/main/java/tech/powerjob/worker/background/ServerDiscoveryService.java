@@ -1,9 +1,9 @@
 package tech.powerjob.worker.background;
 
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.HttpUtils;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;

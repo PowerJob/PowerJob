@@ -39,7 +39,7 @@ class TestQuery extends ClientInitializer {
                 .setGmtCreateLt(DateUtils.addDays(new Date(), 10))
                 .setExecuteTypeIn(Lists.newArrayList(ExecuteType.STANDALONE.getV(), ExecuteType.BROADCAST.getV(), ExecuteType.MAP_REDUCE.getV()))
                 .setProcessorTypeIn(Lists.newArrayList(ProcessorType.BUILT_IN.getV(), ProcessorType.SHELL.getV(), ProcessorType.EXTERNAL.getV()))
-                .setProcessorInfoLike("com.github.kfcfans");
+                .setProcessorInfoLike("tech.powerjob");
 
         ResultDTO<List<JobInfoDTO>> jobQueryResult = powerJobClient.queryJob(jobInfoQuery);
         System.out.println(JSON.toJSONString(jobQueryResult));

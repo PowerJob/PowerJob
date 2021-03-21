@@ -1,6 +1,6 @@
 package tech.powerjob.worker.test.processors;
 
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.TaskResult;
@@ -19,7 +19,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/3/24
  */
-public class TestMapReduceProcessor extends MapReduceProcessor {
+public class TestMapReduceProcessor implements MapReduceProcessor {
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
@@ -35,8 +35,7 @@ public class TestMapReduceProcessor extends MapReduceProcessor {
                     int x = j * 100 + i;
                     subTasks.add(new TestSubTask("name" + x, x));
                 }
-                ProcessResult mapResult = map(subTasks, "MAP_TEST_TASK");
-                System.out.println("mapResult: " + mapResult);
+                map(subTasks, "MAP_TEST_TASK");
                 subTasks.clear();
             }
             return new ProcessResult(true, "MAP_SUCCESS");

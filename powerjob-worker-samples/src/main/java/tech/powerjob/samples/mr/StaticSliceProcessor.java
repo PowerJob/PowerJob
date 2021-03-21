@@ -23,7 +23,7 @@ import java.util.Map;
  * @since 2020/5/21
  */
 @Component
-public class StaticSliceProcessor extends MapReduceProcessor {
+public class StaticSliceProcessor implements MapReduceProcessor {
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
@@ -37,7 +37,8 @@ public class StaticSliceProcessor extends MapReduceProcessor {
 
             List<SubTask> subTasks = Lists.newLinkedList();
             paramsMap.forEach((k, v) -> subTasks.add(new SubTask(Integer.parseInt(k), v)));
-            return map(subTasks, "SLICE_TASK");
+            map(subTasks, "SLICE_TASK");
+            return new ProcessResult(true, "map successfully");
         }
 
         Object subTask = context.getSubTask();

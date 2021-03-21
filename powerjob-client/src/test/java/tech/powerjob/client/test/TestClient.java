@@ -38,7 +38,7 @@ class TestClient extends ClientInitializer {
         newJobInfo.setTimeExpression("0 0 * * * ? ");
         newJobInfo.setExecuteType(ExecuteType.STANDALONE);
         newJobInfo.setProcessorType(ProcessorType.BUILT_IN);
-        newJobInfo.setProcessorInfo("com.github.kfcfans.powerjob.samples.processors.StandaloneProcessorDemo");
+        newJobInfo.setProcessorInfo("tech.powerjob.samples.processors.StandaloneProcessorDemo");
         newJobInfo.setDesignatedWorkers("");
 
         newJobInfo.setMinCpuCores(1.1);

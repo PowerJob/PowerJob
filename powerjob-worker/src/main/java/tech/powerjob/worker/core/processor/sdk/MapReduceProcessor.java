@@ -1,9 +1,8 @@
 package tech.powerjob.worker.core.processor.sdk;
 
-import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.ProcessResult;
+import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.TaskResult;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
@@ -14,8 +13,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/3/18
  */
-@Slf4j
-public abstract class MapReduceProcessor extends MapProcessor {
+public interface MapReduceProcessor extends MapProcessor {
 
     /**
      * reduce方法将在所有任务结束后调用
@@ -23,5 +21,5 @@ public abstract class MapReduceProcessor extends MapProcessor {
      * @param taskResults 保存了各个子Task的执行结果
      * @return reduce产生的结果将作为任务最终的返回结果
      */
-    public abstract ProcessResult reduce(TaskContext context, List<TaskResult> taskResults);
+    ProcessResult reduce(TaskContext context, List<TaskResult> taskResults);
 }

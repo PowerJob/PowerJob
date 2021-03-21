@@ -16,7 +16,7 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <logger name="com.github.kfcfans.powerjob" level="DEBUG" additivity="false">
+    <logger name="tech.powerjob" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
