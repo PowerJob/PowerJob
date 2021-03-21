@@ -19,9 +19,16 @@
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
 
-        <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
+        <spring.boot.version>2.3.4.RELEASE</spring.boot.version>
 
         <powerjob.official.processors.version>1.1.0</powerjob.official.processors.version>
+
+        <!-- dependency for dynamic sql processor -->
+        <mysql.version>8.0.19</mysql.version>
+        <ojdbc.version>19.7.0.0</ojdbc.version>
+        <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
+        <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
+        <postgresql.version>42.2.14</postgresql.version>
     </properties>
 
     <dependencies>
@@ -54,6 +61,42 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+        </dependency>
+
+        <!-- mysql -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        <!-- oracle -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>${ojdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.nls</groupId>
+            <artifactId>orai18n</artifactId>
+            <version>${ojdbc.version}</version>
+        </dependency>
+        <!-- sqlserver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql-jdbc.version}</version>
+        </dependency>
+        <!-- db2 -->
+        <dependency>
+            <groupId>com.ibm.db2</groupId>
+            <artifactId>jcc</artifactId>
+            <version>${db2-jdbc.version}</version>
+        </dependency>
+        <!-- postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
     </dependencies>
 
