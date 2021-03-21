@@ -26,6 +26,7 @@ EXPOSE 7700 10086 10010
 # 创建 docker 文件目录（盲猜这是用户目录）
 RUN mkdir -p /root/powerjob-server
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
+VOLUME /root/powerjob
 VOLUME /root/powerjob-server
 # 启动应用
 ENTRYPOINT ["sh","-c","java $JVMOPTIONS -jar /powerjob-server.jar $PARAMS"]
