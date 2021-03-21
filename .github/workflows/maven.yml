@@ -23,7 +23,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B clean package -Pdev -DskipTests --file pom.xml
     - name: upload build result
-      run: mkdir staging && cp powerjob-server/target/*.jar staging/powerjob-server.jar && cp powerjob-client/target/*.jar staging/powerjob-client.jar && cp powerjob-worker-agent/target/*.jar staging/powerjob-agent.jar
+      run: mkdir staging && cp powerjob-server/powerjob-server-starter/target/*.jar staging/powerjob-server.jar && cp powerjob-client/target/*.jar staging/powerjob-client.jar && cp powerjob-worker-agent/target/*.jar staging/powerjob-agent.jar
     - uses: actions/upload-artifact@v1
       with:
         name: powerjob-server.jar
