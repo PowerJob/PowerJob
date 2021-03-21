@@ -4,6 +4,7 @@ import akka.serialization.JSerializer;
 
 /**
  * Using custom serializers for akka-remote
+ * https://doc.akka.io/docs/akka/current/serialization.html
  *
  * @author tjq
  * @since 2021/3/21

@@ -75,8 +75,8 @@
 
         <!-- kryo 超超超高性能序列化框架 -->
         <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo</artifactId>
+            <groupId>com.esotericsoftware.kryo</groupId>
+            <artifactId>kryo5</artifactId>
             <version>${kryo.version}</version>
         </dependency>
 
@@ -90,8 +90,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-
-
 
         <!-- Junit tests -->
         <dependency>
