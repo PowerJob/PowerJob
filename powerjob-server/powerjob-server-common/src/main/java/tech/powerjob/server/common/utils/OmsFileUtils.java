@@ -17,7 +17,7 @@ import java.net.URLEncoder;
 public class OmsFileUtils {
 
     private static final String USER_HOME = System.getProperty("user.home", "oms");
-    private static final String COMMON_PATH = USER_HOME + "/powerjob-server/";
+    private static final String COMMON_PATH = USER_HOME + "/powerjob/server/";
 
     /**
      * 获取在线日志的存放路径

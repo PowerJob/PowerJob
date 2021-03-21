@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class OmsContainerFactory {
 
-    private static final String CONTAINER_DIR = System.getProperty("user.home") + "/powerjob/container/";
+    private static final String CONTAINER_DIR = System.getProperty("user.home") + "/powerjob/worker/container/";
     private static final Map<Long, OmsContainer> CARGO = Maps.newConcurrentMap();
 
     /**

@@ -31,7 +31,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
     private static final Set<String> DOWNLOAD_PROTOCOL = Sets.newHashSet("http", "https", "ftp");
     protected static final String SH_SHELL = "/bin/sh";
 
-    private static final String WORKER_DIR = System.getProperty("user.home") + "/powerjob/official_script_processor/";
+    private static final String WORKER_DIR = System.getProperty("user.home") + "/powerjob/worker/official_script_processor/";
 
     @Override
     protected ProcessResult process0(TaskContext context) throws Exception {
