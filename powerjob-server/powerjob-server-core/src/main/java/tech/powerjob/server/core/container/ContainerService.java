@@ -95,9 +95,9 @@ public class ContainerService {
 
         Long originId = container.getId();
         if (originId != null) {
-            container = containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
-        }else {
-            container = new ContainerInfoDO();
+            // just validate
+            containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
+        } else {
             container.setGmtCreate(new Date());
         }
         container.setGmtModified(new Date());
