@@ -3,7 +3,7 @@ package tech.powerjob.common.exception;
 /**
  * PowerJob 受检异常，需要开发者手动处理
  *
- * @author tjq
+ * @author KFC·D·Fans
  * @since 2021/3/21
  */
 public class PowerJobCheckedException extends Exception {
