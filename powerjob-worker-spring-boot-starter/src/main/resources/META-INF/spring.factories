@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.github.kfcfans.powerjob.worker.autoconfigure.PowerJobAutoConfiguration
+  tech.powerjob.worker.autoconfigure.PowerJobAutoConfiguration

@@ -2,10 +2,11 @@ package tech.powerjob.official.processors.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.github.kfcfans.powerjob.worker.core.processor.ProcessResult;
-import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
-import com.github.kfcfans.powerjob.worker.core.processor.sdk.BroadcastProcessor;
-import com.github.kfcfans.powerjob.worker.log.OmsLogger;
+import tech.powerjob.official.processors.util.SecurityUtils;
+import tech.powerjob.worker.core.processor.ProcessResult;
+import tech.powerjob.worker.core.processor.TaskContext;
+import tech.powerjob.worker.core.processor.sdk.BroadcastProcessor;
+import tech.powerjob.worker.log.OmsLogger;
 import com.google.common.base.Stopwatch;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
@@ -23,7 +24,17 @@ import java.util.regex.Pattern;
  * @author tjq
  * @since 2021/2/1
  */
-public class FileCleanupProcessor extends BroadcastProcessor {
+public class FileCleanupProcessor implements BroadcastProcessor {
+
+    @Override
+    public ProcessResult preProcess(TaskContext context) throws Exception {
+        if (SecurityUtils.disable(SecurityUtils.ENABLE_FILE_CLEANUP_PROCESSOR)) {
+            String msg = String.format("FileCleanupProcessor is not enabled, please set '-D%s=true' to enable it", SecurityUtils.ENABLE_FILE_CLEANUP_PROCESSOR);
+            context.getOmsLogger().warn(msg);
+            return new ProcessResult(false, msg);
+        }
+        return new ProcessResult(true);
+    }
 
     @Override
     public ProcessResult process(TaskContext taskContext) throws Exception {

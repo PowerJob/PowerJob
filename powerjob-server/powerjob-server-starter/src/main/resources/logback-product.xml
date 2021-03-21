@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!-- Configuration for production environment. -->
+<configuration>
+
+    <!-- Default configuration. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <!-- Configuration for console. -->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!--
+        Log path, pay attention to permission, logs may be unable to generate.
+        Bug recording: Setting `~/logs`, is unable to create folder in user home directory,
+        a folder with the name ~ is created in project folder.
+    -->
+    <property name="LOG_PATH" value="${user.home}/powerjob/server/logs"/>
+
+    <!-- Configuration for ERROR logs. All error logs will write twice. -->
+    <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/powerjob-server-error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_PATH}/powerjob-server-error.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+    <!-- End of configuration for ERROR logs. -->
+
+    <!-- Configuration for Web services. -->
+    <appender name="WEB_LOG_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/powerjob-server-web.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_PATH}/powerjob-server-web.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <append>true</append>
+    </appender>
+    <logger name="WEB_LOG" level="INFO" additivity="false">
+        <appender-ref ref="WEB_LOG_APPENDER"/>
+    </logger>
+    <!-- End of configuration for Web services. -->
+
+    <!-- Configuration for system logs. -->
+    <appender name="DEFAULT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/powerjob-server-application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_PATH}/powerjob-server-application.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <append>true</append>
+    </appender>
+    <!-- End of configuration for system logs. -->
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DEFAULT_APPENDER"/>
+        <appender-ref ref="ERROR_APPENDER"/>
+    </root>
+
+</configuration>

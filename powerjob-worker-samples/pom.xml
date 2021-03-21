@@ -4,18 +4,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>powerjob</artifactId>
-        <groupId>com.github.kfcfans</groupId>
+        <groupId>tech.powerjob</groupId>
         <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-worker-samples</artifactId>
-    <version>3.4.8</version>
+    <version>4.0.0</version>
 
     <properties>
-        <springboot.version>2.2.6.RELEASE</springboot.version>
-        <powerjob.worker.starter.version>3.4.8</powerjob.worker.starter.version>
+        <springboot.version>2.3.4.RELEASE</springboot.version>
+        <powerjob.worker.starter.version>4.0.0</powerjob.worker.starter.version>
         <fastjson.version>1.2.68</fastjson.version>
+        <powerjob.official.processors.version>1.1.0</powerjob.official.processors.version>
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -42,7 +43,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.kfcfans</groupId>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-worker-spring-boot-starter</artifactId>
             <version>${powerjob.worker.starter.version}</version>
         </dependency>
@@ -51,6 +52,11 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>${fastjson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-official-processors</artifactId>
+            <version>${powerjob.official.processors.version}</version>
         </dependency>
 
 
@@ -64,7 +70,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
                 <configuration>
-                    <mainClass>com.github.kfcfans.powerjob.samples.SampleApplication</mainClass>
+                    <mainClass>tech.powerjob.samples.SampleApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

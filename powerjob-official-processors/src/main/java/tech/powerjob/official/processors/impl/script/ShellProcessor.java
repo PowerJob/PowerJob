@@ -15,6 +15,6 @@ public class ShellProcessor extends AbstractScriptProcessor {
 
     @Override
     protected String getRunCommand() {
-        return "/bin/sh";
+        return SH_SHELL;
     }
 }

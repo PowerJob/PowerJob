@@ -21,11 +21,11 @@ ENV PARAMS=""
 ENV JVMOPTIONS=""
 # 将应用 jar 包拷入 docker
 COPY powerjob-server.jar /powerjob-server.jar
-# 暴露端口（HTTP + AKKA）
-EXPOSE 7700 10086
+# 暴露端口（HTTP + AKKA + VertX）
+EXPOSE 7700 10086 10010
 # 创建 docker 文件目录（盲猜这是用户目录）
 RUN mkdir -p /root/powerjob-server
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
-VOLUME /root/powerjob-server
+VOLUME /root/powerjob
 # 启动应用
 ENTRYPOINT ["sh","-c","java $JVMOPTIONS -jar /powerjob-server.jar $PARAMS"]

@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.kfcfans</groupId>
+    <groupId>tech.powerjob</groupId>
     <artifactId>powerjob</artifactId>
     <version>3.0.0</version>
     <packaging>pom</packaging>
     <name>powerjob</name>
     <url>http://www.powerjob.tech</url>
-    <description>Distributed scheduling and execution framework</description>
+    <description>Enterprise job scheduling middleware with distributed computing ability.</description>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -156,11 +156,11 @@
             <distributionManagement>
                 <snapshotRepository>
                     <id>ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
                 </snapshotRepository>
                 <repository>
                     <id>ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                    <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
         </profile>

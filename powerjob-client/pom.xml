@@ -4,19 +4,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>powerjob</artifactId>
-        <groupId>com.github.kfcfans</groupId>
+        <groupId>tech.powerjob</groupId>
         <version>3.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-client</artifactId>
-    <version>3.4.8</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
         <junit.version>5.6.1</junit.version>
         <fastjson.version>1.2.68</fastjson.version>
-        <powerjob.common.version>3.4.8</powerjob.common.version>
+        <powerjob.common.version>4.0.0</powerjob.common.version>
 
         <mvn.shade.plugin.version>3.2.4</mvn.shade.plugin.version>
     </properties>
@@ -32,7 +32,7 @@
 
         <!-- oms-common -->
         <dependency>
-            <groupId>com.github.kfcfans</groupId>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
             <version>${powerjob.common.version}</version>
         </dependency>

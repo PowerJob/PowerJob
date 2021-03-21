@@ -4,36 +4,43 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>powerjob</artifactId>
-        <groupId>com.github.kfcfans</groupId>
+        <groupId>tech.powerjob</groupId>
         <version>3.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-agent</artifactId>
-    <version>3.4.8</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
 
     <properties>
-        <powerjob.worker.version>3.4.8</powerjob.worker.version>
+        <powerjob.worker.version>4.0.0</powerjob.worker.version>
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
 
-        <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
+        <spring.boot.version>2.3.4.RELEASE</spring.boot.version>
 
-        <powerjob.official.processors.version>1.0.3</powerjob.official.processors.version>
+        <powerjob.official.processors.version>1.1.0</powerjob.official.processors.version>
+
+        <!-- dependency for dynamic sql processor -->
+        <mysql.version>8.0.19</mysql.version>
+        <ojdbc.version>19.7.0.0</ojdbc.version>
+        <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
+        <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
+        <postgresql.version>42.2.14</postgresql.version>
     </properties>
 
     <dependencies>
 
         <dependency>
-            <groupId>com.github.kfcfans</groupId>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-worker</artifactId>
             <version>${powerjob.worker.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.github.kfcfans</groupId>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-official-processors</artifactId>
             <version>${powerjob.official.processors.version}</version>
         </dependency>
@@ -55,6 +62,42 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
+
+        <!-- mysql -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        <!-- oracle -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>${ojdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.nls</groupId>
+            <artifactId>orai18n</artifactId>
+            <version>${ojdbc.version}</version>
+        </dependency>
+        <!-- sqlserver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql-jdbc.version}</version>
+        </dependency>
+        <!-- db2 -->
+        <dependency>
+            <groupId>com.ibm.db2</groupId>
+            <artifactId>jcc</artifactId>
+            <version>${db2-jdbc.version}</version>
+        </dependency>
+        <!-- postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+        </dependency>
     </dependencies>
 
 
@@ -66,7 +109,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
                 <configuration>
-                    <mainClass>com.github.kfcfans.powerjob.worker.MainApplication</mainClass>
+                    <mainClass>tech.powerjob.agent.MainApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

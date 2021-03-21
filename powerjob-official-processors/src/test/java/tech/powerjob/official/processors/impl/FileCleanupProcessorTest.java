@@ -2,7 +2,7 @@ package tech.powerjob.official.processors.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.github.kfcfans.powerjob.worker.core.processor.TaskContext;
+import tech.powerjob.worker.core.processor.TaskContext;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.official.processors.TestUtils;
 
@@ -53,7 +53,7 @@ class FileCleanupProcessorTest {
     @Test
     void testCleanWorkerScript() throws Exception {
         JSONObject params = new JSONObject();
-        params.put("dirPath", "/Users/tjq/powerjob/script");
+        params.put("dirPath", "/");
         params.put("filePattern", "(shell|python)_[0-9]*\\.(sh|py)");
         params.put("retentionTime", 24);
         JSONArray array = new JSONArray();

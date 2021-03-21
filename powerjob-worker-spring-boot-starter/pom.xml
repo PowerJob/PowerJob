@@ -4,24 +4,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>powerjob</artifactId>
-        <groupId>com.github.kfcfans</groupId>
+        <groupId>tech.powerjob</groupId>
         <version>3.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-spring-boot-starter</artifactId>
-    <version>3.4.8</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
-        <powerjob.worker.version>3.4.8</powerjob.worker.version>
-        <springboot.version>2.2.6.RELEASE</springboot.version>
+        <powerjob.worker.version>4.0.0</powerjob.worker.version>
+        <springboot.version>2.3.4.RELEASE</springboot.version>
     </properties>
 
     <dependencies>
         <!-- oms-worker -->
         <dependency>
-            <groupId>com.github.kfcfans</groupId>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-worker</artifactId>
             <version>${powerjob.worker.version}</version>
         </dependency>
