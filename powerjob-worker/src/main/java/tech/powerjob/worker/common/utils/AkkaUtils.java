@@ -2,7 +2,7 @@ package tech.powerjob.worker.common.utils;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.RemoteConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +47,7 @@ public class AkkaUtils {
         try {
             return easyAsk(remote, msg).isSuccess();
         }catch (Exception e) {
-            log.warn("[Oms-Transmitter] transmit {} failed, reason is {}", msg, e.toString());
+            log.warn("[PowerTransmitter] transmit {} failed", msg, e);
         }
         return false;
     }

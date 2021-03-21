@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.OpenAPIConstant;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;

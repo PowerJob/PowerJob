@@ -14,7 +14,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/3/25
  */
-public class TestBroadcastProcessor extends BroadcastProcessor {
+public class TestBroadcastProcessor implements BroadcastProcessor {
     @Override
     public ProcessResult preProcess(TaskContext taskContext) throws Exception {
         System.out.println("=============== TestBroadcastProcessor#preProcess ===============");

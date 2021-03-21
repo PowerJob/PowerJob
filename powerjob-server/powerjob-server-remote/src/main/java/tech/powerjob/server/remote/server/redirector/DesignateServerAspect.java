@@ -4,7 +4,7 @@ import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.response.AskResponse;
 import org.springframework.core.annotation.Order;

@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.service;
 
 import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;

@@ -1,7 +1,7 @@
 package tech.powerjob.server.persistence;
 
 import com.alibaba.fastjson.JSONArray;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.PowerQuery;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;

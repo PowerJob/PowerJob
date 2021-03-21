@@ -3,7 +3,7 @@ package tech.powerjob.server.remote.server.election;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import com.alibaba.fastjson.JSONObject;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.utils.JsonUtils;

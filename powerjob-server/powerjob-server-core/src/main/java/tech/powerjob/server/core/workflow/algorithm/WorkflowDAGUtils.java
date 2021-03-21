@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.workflow.algorithm;
 
 import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.utils.JsonUtils;

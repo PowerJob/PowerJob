@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @author tjq
  * @since 2021/2/1
  */
-public class FileCleanupProcessor extends BroadcastProcessor {
+public class FileCleanupProcessor implements BroadcastProcessor {
 
     @Override
     public ProcessResult preProcess(TaskContext context) throws Exception {

@@ -1,4 +1,4 @@
-package tech.powerjob.common;
+package tech.powerjob.common.exception;
 
 /**
  * PowerJob 运行时异常

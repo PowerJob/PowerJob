@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class BroadcastProcessorDemo extends BroadcastProcessor {
+public class BroadcastProcessorDemo implements BroadcastProcessor {
 
     @Override
     public ProcessResult preProcess(TaskContext context) throws Exception {

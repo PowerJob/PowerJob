@@ -2,7 +2,7 @@ package tech.powerjob.server.core.workflow;
 
 import com.alibaba.fastjson.JSON;
 import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.model.PEWorkflowDAG;

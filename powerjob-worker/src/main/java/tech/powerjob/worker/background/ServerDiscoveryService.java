@@ -1,6 +1,6 @@
 package tech.powerjob.worker.background;
 
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.JsonUtils;

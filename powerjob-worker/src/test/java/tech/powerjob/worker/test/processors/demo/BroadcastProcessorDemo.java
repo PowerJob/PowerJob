@@ -13,7 +13,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/15
  */
-public class BroadcastProcessorDemo extends BroadcastProcessor {
+public class BroadcastProcessorDemo implements BroadcastProcessor {
 
     @Override
     public ProcessResult preProcess(TaskContext taskContext) throws Exception {

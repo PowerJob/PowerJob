@@ -17,7 +17,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/5/15
  */
-public class DAGSimulationProcessor extends MapReduceProcessor {
+public class DAGSimulationProcessor implements MapReduceProcessor {
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
@@ -27,7 +27,12 @@ public class DAGSimulationProcessor extends MapReduceProcessor {
 
             // 执行完毕后产生子任务 A，需要传递的参数可以作为 TaskA 的属性进行传递
             TaskA taskA = new TaskA();
-            return map(Lists.newArrayList(taskA), "LEVEL1_TASK_A");
+            try {
+                map(Lists.newArrayList(taskA), "LEVEL1_TASK_A");
+                return new ProcessResult(true, "map success");
+            } catch (Exception e) {
+                return new ProcessResult(false, "map failed");
+            }
         }
 
         if (context.getSubTask() instanceof TaskA) {
@@ -36,7 +41,12 @@ public class DAGSimulationProcessor extends MapReduceProcessor {
             // 执行完成后产生子任务 B，C（并行执行）
             TaskB taskB = new TaskB();
             TaskC taskC = new TaskC();
-            return map(Lists.newArrayList(taskB, taskC), "LEVEL2_TASK_BC");
+
+            try {
+                map(Lists.newArrayList(taskB, taskC), "LEVEL2_TASK_BC");
+                return new ProcessResult(true, "map success");
+            } catch (Exception ignore) {
+            }
         }
 
         if (context.getSubTask() instanceof TaskB) {

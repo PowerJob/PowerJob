@@ -28,7 +28,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Slf4j
 @Component
-public class MapReduceProcessorDemo extends MapReduceProcessor {
+public class MapReduceProcessorDemo implements MapReduceProcessor {
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
@@ -54,8 +54,7 @@ public class MapReduceProcessorDemo extends MapReduceProcessor {
                     int x = j * batchSize + i;
                     subTasks.add(new TestSubTask("name" + x, x));
                 }
-                ProcessResult mapResult = map(subTasks, "MAP_TEST_TASK");
-                System.out.println("mapResult: " + mapResult);
+                map(subTasks, "MAP_TEST_TASK");
                 subTasks.clear();
             }
             omsLogger.info("[DemoMRProcessor] map success~");

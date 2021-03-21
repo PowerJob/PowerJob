@@ -1,6 +1,6 @@
 package tech.powerjob.common.utils;
 
-import tech.powerjob.common.PowerJobException;
+import tech.powerjob.common.exception.PowerJobException;
 import okhttp3.*;
 
 import java.io.IOException;
