@@ -23,6 +23,7 @@ public class AskResponse implements PowerSerializable {
     /*
     - 使用 Object 会报错：java.lang.ClassCastException: scala.collection.immutable.HashMap cannot be cast to XXX，只能自己序列化反序列化了
     - 嵌套类型（比如 Map<String, B>），如果B也是个复杂对象，那么反序列化后B的类型为 LinkedHashMap... 处理比较麻烦（转成JSON再转回来）
+    - 考虑到多语言通讯，data 必须使用 JSON 序列化为字节数组
      */
     private byte[] data;
 

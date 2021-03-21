@@ -77,6 +77,11 @@ public class DesignateServerAspect {
         AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new PowerJobException("can't find app info"));
         String targetServer = appInfo.getCurrentServer();
 
+        // 目标IP为空，本地执行
+        if (StringUtils.isEmpty(targetServer)) {
+            return point.proceed();
+        }
+
         // 目标IP与本地符合则本地执行
         if (Objects.equals(targetServer, AkkaStarter.getActorSystemAddress())) {
             return point.proceed();
