@@ -7,6 +7,13 @@ ENV APP_NAME=powerjob-worker-agent
 ENV PARAMS=""
 ENV JVMOPTIONS=""
 
+# 默认安装 python2.7
+RUN apt-get update && \
+    apt-get install -y python \
+    && apt-get clean \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY powerjob-agent.jar /powerjob-agent.jar
 # 暴露端口（AKKA-Client）
 EXPOSE 27777
