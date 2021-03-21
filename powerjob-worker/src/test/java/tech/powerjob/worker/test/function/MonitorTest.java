@@ -1,7 +1,7 @@
 package tech.powerjob.worker.test.function;
 
 import tech.powerjob.common.model.SystemMetrics;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.utils.SystemInfoUtils;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;

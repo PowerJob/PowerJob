@@ -7,7 +7,7 @@ import tech.powerjob.worker.common.ThreadLocalStore;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.AkkaUtils;
-import tech.powerjob.worker.common.utils.SerializerUtils;
+import tech.powerjob.common.serialize.SerializerUtils;
 import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;

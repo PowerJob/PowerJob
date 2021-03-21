@@ -12,7 +12,7 @@ import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.request.WorkerQueryExecutorClusterReq;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;

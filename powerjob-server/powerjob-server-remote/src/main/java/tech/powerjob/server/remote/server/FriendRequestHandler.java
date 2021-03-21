@@ -2,7 +2,7 @@ package tech.powerjob.server.remote.server;
 
 import akka.actor.AbstractActor;
 import tech.powerjob.common.response.AskResponse;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.remote.server.election.Ping;
 import tech.powerjob.server.remote.server.redirector.RemoteProcessReq;
 import tech.powerjob.server.remote.server.redirector.RemoteRequestProcessor;

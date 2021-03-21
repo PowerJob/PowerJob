@@ -7,7 +7,7 @@ import tech.powerjob.common.model.GitRepoInfo;
 import tech.powerjob.common.request.ServerDeployContainerRequest;
 import tech.powerjob.common.request.ServerDestroyContainerRequest;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.server.common.constants.ContainerSourceType;

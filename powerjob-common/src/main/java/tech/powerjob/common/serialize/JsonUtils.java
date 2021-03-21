@@ -1,4 +1,4 @@
-package tech.powerjob.common.utils;
+package tech.powerjob.common.serialize;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

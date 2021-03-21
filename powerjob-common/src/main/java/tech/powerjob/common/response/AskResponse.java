@@ -1,7 +1,7 @@
 package tech.powerjob.common.response;
 
 import tech.powerjob.common.PowerSerializable;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import lombok.*;
 
 import java.nio.charset.StandardCharsets;

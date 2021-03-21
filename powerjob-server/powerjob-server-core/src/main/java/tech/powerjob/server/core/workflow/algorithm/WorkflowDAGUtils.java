@@ -4,7 +4,7 @@ import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.model.PEWorkflowDAG;
-import tech.powerjob.common.utils.JsonUtils;
+import tech.powerjob.common.serialize.JsonUtils;
 import com.google.common.collect.*;
 
 import java.util.*;

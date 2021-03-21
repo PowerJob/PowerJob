@@ -1,4 +1,4 @@
-package tech.powerjob.worker.common.utils;
+package tech.powerjob.common.serialize;
 
 
 import com.esotericsoftware.kryo.Kryo;

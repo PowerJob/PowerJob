@@ -2,7 +2,7 @@ package tech.powerjob.worker.pojo.request;
 
 import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.worker.common.ThreadLocalStore;
-import tech.powerjob.worker.common.utils.SerializerUtils;
+import tech.powerjob.common.serialize.SerializerUtils;
 import tech.powerjob.worker.persistence.TaskDO;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
