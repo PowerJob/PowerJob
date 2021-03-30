@@ -1,5 +1,8 @@
 package tech.powerjob.server.persistence.config;
 
+import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -7,6 +10,7 @@ import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -39,6 +43,11 @@ public class RemoteJpaConfig {
     @Resource(name = "omsRemoteDatasource")
     private DataSource omsRemoteDatasource;
 
+    @Resource(name = "multiDatasourceProperties")
+    private MultiDatasourceProperties properties;
+
+
+
     public static final String CORE_PACKAGES = "tech.powerjob.server.persistence.remote";
 
     /**
@@ -55,6 +64,10 @@ public class RemoteJpaConfig {
         jpaProperties.setOpenInView(false);
         jpaProperties.setShowSql(false);
 
+
+
+
+
         HibernateProperties hibernateProperties = new HibernateProperties();
         hibernateProperties.setDdlAuto("update");
 
@@ -67,10 +80,11 @@ public class RemoteJpaConfig {
     @Primary
     @Bean(name = "remoteEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean initRemoteEntityManagerFactory(EntityManagerFactoryBuilder builder) {
-
+        Map< String,Object > datasourceProperties = genDatasourceProperties();
+        datasourceProperties.putAll( properties.getRemote().getHibernate().getProperties() );
         return builder
                 .dataSource(omsRemoteDatasource)
-                .properties(genDatasourceProperties())
+                .properties( datasourceProperties )
                 .packages(CORE_PACKAGES)
                 .persistenceUnit("remotePersistenceUnit")
                 .build();
