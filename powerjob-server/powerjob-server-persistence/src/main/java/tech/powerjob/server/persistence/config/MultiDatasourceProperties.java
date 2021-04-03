@@ -9,14 +9,12 @@ import java.util.*;
 /**
  * 多重数据源配置
  *
- * @author tjq
+ * @author Kung Yao
  * @since 2020/4/27
  */
 @Component
 @ConfigurationProperties("spring.datasource")
 public class MultiDatasourceProperties {
-
-
 
     private DataSourceProperties remote = new DataSourceProperties();
 
@@ -25,9 +23,9 @@ public class MultiDatasourceProperties {
 
     public static class DataSourceProperties {
 
-        private HibernateProperties hibernate  = new HibernateProperties();
+        private HibernateProperties hibernate = new HibernateProperties();
 
-        public void setHibernate( HibernateProperties hibernate ) {
+        public void setHibernate(HibernateProperties hibernate) {
             this.hibernate = hibernate;
         }
 
@@ -39,9 +37,9 @@ public class MultiDatasourceProperties {
 
     public static class HibernateProperties {
 
-        private Map<String,String> properties = Maps.newHashMap();
+        private Map<String, String> properties = Maps.newHashMap();
 
-        public void setProperties( Map<String, String> properties ) {
+        public void setProperties(Map<String, String> properties) {
             this.properties = properties;
         }
 
@@ -50,11 +48,11 @@ public class MultiDatasourceProperties {
         }
     }
 
-    public void setLocal( DataSourceProperties local ) {
+    public void setLocal(DataSourceProperties local) {
         this.local = local;
     }
 
-    public void setRemote( DataSourceProperties remote ) {
+    public void setRemote(DataSourceProperties remote) {
         this.remote = remote;
     }
 
