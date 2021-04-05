@@ -7,6 +7,9 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 import java.sql.Types;
 
 /**
+ * PostgreSQL 数据库支持，需要在 application.properties 中添加以下配置项进行激活
+ * spring.datasource.remote.hibernate.properties.hibernate.dialect=tech.powerjob.server.persistence.config.dialect.PowerJobPGDialect
+ *
  * @author Kung Yao
  * @author Echo009
  * 2021/3/24 下午 04:23
