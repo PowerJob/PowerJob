@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-server-persistence</artifactId>
-    <version>1.0.0</version>
+    <version>${project.parent.version}</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
