@@ -17,7 +17,7 @@
         <slf4j.version>1.7.30</slf4j.version>
         <commons.lang.version>3.10</commons.lang.version>
         <commons.io.version>2.6</commons.io.version>
-        <guava.version>29.0-jre</guava.version>
+        <guava.version>30.1.1-jre</guava.version>
         <okhttp.version>3.14.9</okhttp.version>
         <akka.version>2.6.12</akka.version>
         <kryo.version>5.0.4</kryo.version>
