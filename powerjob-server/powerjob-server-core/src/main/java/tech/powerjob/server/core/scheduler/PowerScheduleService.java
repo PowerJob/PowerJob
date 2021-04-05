@@ -1,23 +1,5 @@
 package tech.powerjob.server.core.scheduler;
 
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
-import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.common.utils.CronExpression;
-import tech.powerjob.server.persistence.remote.model.AppInfoDO;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
-import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
-import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
-import tech.powerjob.server.core.DispatchService;
-import tech.powerjob.server.core.service.JobService;
-import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
-import tech.powerjob.server.core.instance.InstanceService;
-import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
-import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -28,6 +10,24 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
+import tech.powerjob.server.common.utils.TimeUtils;
+import tech.powerjob.server.core.DispatchService;
+import tech.powerjob.server.core.instance.InstanceService;
+import tech.powerjob.server.core.service.JobService;
+import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
+import tech.powerjob.server.remote.transport.starter.AkkaStarter;
+import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -254,7 +254,7 @@ public class PowerScheduleService {
     }
 
     private void refreshJob(JobInfoDO jobInfo) throws ParseException {
-        Date nextTriggerTime = calculateNextTriggerTime(jobInfo.getNextTriggerTime(), jobInfo.getTimeExpression());
+        Date nextTriggerTime = calculateNextTriggerTime(jobInfo.getNextTriggerTime(), jobInfo.getTimeExpression(), jobInfo.getLifecycle());
 
         JobInfoDO updatedJobInfo = new JobInfoDO();
         BeanUtils.copyProperties(jobInfo, updatedJobInfo);
@@ -271,7 +271,7 @@ public class PowerScheduleService {
     }
 
     private void refreshWorkflow(WorkflowInfoDO wfInfo) throws ParseException {
-        Date nextTriggerTime = calculateNextTriggerTime(wfInfo.getNextTriggerTime(), wfInfo.getTimeExpression());
+        Date nextTriggerTime = calculateNextTriggerTime(wfInfo.getNextTriggerTime(), wfInfo.getTimeExpression(), wfInfo.getLifecycle());
 
         WorkflowInfoDO updateEntity = new WorkflowInfoDO();
         BeanUtils.copyProperties(wfInfo, updateEntity);
@@ -295,11 +295,10 @@ public class PowerScheduleService {
      * @return 下一次调度时间
      * @throws ParseException 异常
      */
-    private static Date calculateNextTriggerTime(Long preTriggerTime, String cronExpression) throws ParseException {
+    private static Date calculateNextTriggerTime(Long preTriggerTime, String cronExpression, String lifecycle) throws ParseException {
 
-        CronExpression ce = new CronExpression(cronExpression);
         // 取最大值，防止长时间未调度任务被连续调度（原来DISABLE的任务突然被打开，不取最大值会补上过去所有的调度）
         long benchmarkTime = Math.max(System.currentTimeMillis(), preTriggerTime);
-        return ce.getNextValidTimeAfter(new Date(benchmarkTime));
+        return TimeUtils.calculateNextCronTime(cronExpression, benchmarkTime, lifecycle);
     }
 }

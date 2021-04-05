@@ -1,28 +1,28 @@
 package tech.powerjob.server.core.service;
 
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.PowerQuery;
-import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.common.request.http.SaveJobInfoRequest;
-import tech.powerjob.common.response.JobInfoDTO;
-import tech.powerjob.server.common.SJ;
-import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.common.utils.CronExpression;
-import tech.powerjob.server.persistence.QueryConvertUtils;
-import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
-import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
-import tech.powerjob.server.core.DispatchService;
-import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.core.instance.InstanceService;
-import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.request.http.SaveJobInfoRequest;
+import tech.powerjob.common.response.JobInfoDTO;
+import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
+import tech.powerjob.server.common.utils.TimeUtils;
+import tech.powerjob.server.core.DispatchService;
+import tech.powerjob.server.core.instance.InstanceService;
+import tech.powerjob.server.persistence.QueryConvertUtils;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
+import tech.powerjob.server.remote.server.redirector.DesignateServer;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -238,8 +238,7 @@ public class JobService {
         TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
 
         if (timeExpressionType == TimeExpressionType.CRON) {
-            CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
-            Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
+            Date nextValidTime = TimeUtils.calculateNextCronTime(jobInfoDO.getTimeExpression(), System.currentTimeMillis(), jobInfoDO.getLifecycle());
             if (nextValidTime == null) {
                 throw new PowerJobException("cron expression is out of date: " + jobInfoDO.getTimeExpression());
             }
