@@ -39,10 +39,13 @@ public class RemoteJpaConfig {
     @Resource(name = "omsRemoteDatasource")
     private DataSource omsRemoteDatasource;
 
+    @Resource(name = "multiDatasourceProperties")
+    private MultiDatasourceProperties properties;
+
     public static final String CORE_PACKAGES = "tech.powerjob.server.persistence.remote";
 
     /**
-     * 生成配置文件，包括 JPA配置文件和Hibernate配置文件，相当于一下三个配置
+     * 生成配置文件，包括 JPA配置文件和Hibernate配置文件，相当于以下三个配置
      * spring.jpa.show-sql=false
      * spring.jpa.open-in-view=false
      * spring.jpa.hibernate.ddl-auto=update
@@ -67,10 +70,11 @@ public class RemoteJpaConfig {
     @Primary
     @Bean(name = "remoteEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean initRemoteEntityManagerFactory(EntityManagerFactoryBuilder builder) {
-
+        Map<String, Object> datasourceProperties = genDatasourceProperties();
+        datasourceProperties.putAll(properties.getRemote().getHibernate().getProperties());
         return builder
                 .dataSource(omsRemoteDatasource)
-                .properties(genDatasourceProperties())
+                .properties(datasourceProperties)
                 .packages(CORE_PACKAGES)
                 .persistenceUnit("remotePersistenceUnit")
                 .build();

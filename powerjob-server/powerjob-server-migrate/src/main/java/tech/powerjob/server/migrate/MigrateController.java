@@ -1,6 +1,7 @@
 package tech.powerjob.server.migrate;
 
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.web.bind.annotation.GetMapping;
 import tech.powerjob.common.response.ResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,7 @@ public class MigrateController {
     /**
      * 修复对应 APP 下的任务信息
      */
-    @RequestMapping("/v4/job")
+    @GetMapping("/v4/job")
     public ResultDTO<JSONObject> fixJobInfoFromV3ToV4(@RequestParam Long appId) {
         return ResultDTO.success(v3ToV4MigrateService.fixDeprecatedProcessType(appId));
     }
@@ -37,7 +38,7 @@ public class MigrateController {
     /**
      * 修复对应 APP 下的工作流信息
      */
-    @RequestMapping("/v4/workflow")
+    @GetMapping("/v4/workflow")
     public ResultDTO<JSONObject> fixWorkflowInfoFromV3ToV4(@RequestParam Long appId){
         return ResultDTO.success(v3ToV4MigrateService.fixWorkflowInfoFromV3ToV4(appId));
     }

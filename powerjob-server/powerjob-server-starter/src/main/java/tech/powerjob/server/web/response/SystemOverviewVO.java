@@ -1,6 +1,8 @@
 package tech.powerjob.server.web.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 /**
  * 系统概览
@@ -10,6 +12,7 @@ import lombok.Data;
  */
 @Data
 public class SystemOverviewVO {
+
     private long jobCount;
     private long runningInstanceCount;
     private long failedInstanceCount;
@@ -17,4 +20,14 @@ public class SystemOverviewVO {
     private String timezone;
     // 服务器时间
     private String serverTime;
+
+    private CurrentServerInfo currentServerInfo;
+
+    @Getter
+    @AllArgsConstructor
+    public static class CurrentServerInfo {
+        private final long id;
+        private final String ip;
+        private final String version;
+    }
 }

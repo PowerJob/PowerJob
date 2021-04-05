@@ -6,6 +6,7 @@ import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
+import tech.powerjob.server.remote.server.ServerInfoService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.web.response.SystemOverviewVO;
@@ -40,6 +41,8 @@ public class SystemInfoController {
     private InstanceInfoRepository instanceInfoRepository;
 
     @Resource
+    private ServerInfoService serverInfoService;
+    @Resource
     private WorkerClusterQueryService workerClusterQueryService;
 
     @GetMapping("/listWorker")
@@ -66,6 +69,9 @@ public class SystemInfoController {
         overview.setTimezone(TimeZone.getDefault().getDisplayName());
         // 服务器时间
         overview.setServerTime(DateFormatUtils.format(new Date(), OmsConstant.TIME_PATTERN));
+
+        SystemOverviewVO.CurrentServerInfo info = new SystemOverviewVO.CurrentServerInfo(serverInfoService.getServerId(), serverInfoService.getServerIp(), serverInfoService.getServerVersion());
+        overview.setCurrentServerInfo(info);
 
         return ResultDTO.success(overview);
     }

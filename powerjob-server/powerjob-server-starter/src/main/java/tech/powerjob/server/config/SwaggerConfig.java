@@ -1,10 +1,6 @@
 package tech.powerjob.server.config;
 
-import tech.powerjob.server.common.PowerJobServerConfigKey;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -12,6 +8,10 @@ import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import tech.powerjob.server.common.PowerJobServerConfigKey;
+import tech.powerjob.server.remote.server.ServerInfoService;
+
+import javax.annotation.Resource;
 
 import static springfox.documentation.builders.PathSelectors.any;
 
@@ -27,28 +27,19 @@ import static springfox.documentation.builders.PathSelectors.any;
 @ConditionalOnProperty(name = PowerJobServerConfigKey.SWAGGER_UI_ENABLE, havingValue = "true")
 public class SwaggerConfig {
     
-    private final BuildProperties buildProperties;
-    
-    public SwaggerConfig(@Autowired(required = false) final BuildProperties buildProperties) {
-        this.buildProperties = buildProperties;
-    }
+    @Resource
+    private ServerInfoService serverInfoService;
     
     @Bean
     public Docket createRestApi() {
-        String version = "unknown";
-        if (buildProperties != null) {
-            String pomVersion = buildProperties.getVersion();
-            if (StringUtils.isNotBlank(pomVersion)) {
-                version = pomVersion;
-            }
-        }
+
         // apiInfo()用来创建该Api的基本信息（这些基本信息会展现在文档页面中
         ApiInfo apiInfo = new ApiInfoBuilder()
                 .title("PowerJob")
                 .description("Distributed scheduling and computing framework.")
                 .license("Apache Licence 2")
                 .termsOfServiceUrl("https://github.com/PowerJob/PowerJob")
-                .version(version)
+                .version(serverInfoService.getServerVersion())
                 .build();
         
         return new Docket(DocumentationType.SWAGGER_2)
