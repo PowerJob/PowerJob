@@ -93,7 +93,7 @@ public class ServerElectionService {
 
                 // 可能上一台机器已经完成了Server选举，需要再次判断
                 AppInfoDO appInfo = appInfoRepository.findById(appId).orElseThrow(() -> new RuntimeException("impossible, unless we just lost our database."));
-                String address = activeAddress(originServer, downServerCache, protocol);
+                String address = activeAddress(appInfo.getCurrentServer(), downServerCache, protocol);
                 if (StringUtils.isNotEmpty(address)) {
                     return address;
                 }

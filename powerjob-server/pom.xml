@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -27,7 +27,7 @@
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.3.4.RELEASE</springboot.version>
-        <powerjob.common.version>4.0.0</powerjob.common.version>
+        <powerjob.common.version>4.0.1</powerjob.common.version>
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
         <mysql.version>8.0.19</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
@@ -47,13 +47,6 @@
         <!-- skip this module when deploying. -->
         <maven.deploy.skip>true</maven.deploy.skip>
 
-        <!-- self-internal dependency, generally no need to change the version -->
-        <powerjob-server-common.version>1.0.0</powerjob-server-common.version>
-        <powerjob-server-extension.version>1.0.0</powerjob-server-extension.version>
-        <powerjob-server-remote.version>1.0.0</powerjob-server-remote.version>
-        <powerjob-server-persistence.version>1.0.0</powerjob-server-persistence.version>
-        <powerjob-server-core.version>1.0.0</powerjob-server-core.version>
-        <powerjob-server-migrate.version>1.0.0</powerjob-server-migrate.version>
     </properties>
 
     <dependencyManagement>
@@ -61,32 +54,37 @@
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-common</artifactId>
-                <version>${powerjob-server-common.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-extension</artifactId>
-                <version>${powerjob-server-extension.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-remote</artifactId>
-                <version>${powerjob-server-remote.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-persistence</artifactId>
-                <version>${powerjob-server-persistence.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-core</artifactId>
-                <version>${powerjob-server-core.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-migrate</artifactId>
-                <version>${powerjob-server-migrate.version}</version>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-starter</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

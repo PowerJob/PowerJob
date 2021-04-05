@@ -5,13 +5,13 @@
     <parent>
         <artifactId>powerjob-server</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.0.0</version>
+        <version>4.0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-server-migrate</artifactId>
-    <version>1.0.0</version>
+    <version>${project.parent.version}</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

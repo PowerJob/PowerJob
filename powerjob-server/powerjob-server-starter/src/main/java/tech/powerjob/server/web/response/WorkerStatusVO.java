@@ -1,6 +1,7 @@
 package tech.powerjob.server.web.response;
 
 import tech.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.module.WorkerInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class WorkerStatusVO {
 
     private String protocol;
     private String tag;
+    private String lastActiveTime;
 
     // 1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色，9999 -> 非在线机器
     private int status;
@@ -39,9 +41,6 @@ public class WorkerStatusVO {
     public WorkerStatusVO(WorkerInfo workerInfo) {
 
         SystemMetrics systemMetrics = workerInfo.getSystemMetrics();
-
-        this.protocol = workerInfo.getProtocol();
-        this.tag = workerInfo.getTag();
 
         this.status = 1;
         this.address = workerInfo.getAddress();
@@ -69,5 +68,9 @@ public class WorkerStatusVO {
         if (workerInfo.timeout()) {
             this.status = 9999;
         }
+
+        this.protocol = workerInfo.getProtocol();
+        this.tag = CommonUtils.formatString(workerInfo.getTag());
+        this.lastActiveTime = CommonUtils.formatTime(workerInfo.getLastActiveTime());
     }
 }

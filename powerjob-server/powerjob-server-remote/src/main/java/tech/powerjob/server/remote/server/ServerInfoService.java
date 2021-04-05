@@ -1,5 +1,7 @@
 package tech.powerjob.server.remote.server;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.info.BuildProperties;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
@@ -33,6 +35,8 @@ public class ServerInfoService {
 
     private final ServerInfoRepository serverInfoRepository;
 
+    private String version = "UNKNOWN";
+
     private static final long MAX_SERVER_CLUSTER_SIZE = 10000;
 
     private static final String SERVER_INIT_LOCK = "server_init_lock";
@@ -41,6 +45,15 @@ public class ServerInfoService {
     public long getServerId() {
         return serverId;
     }
+
+    public String getServerIp() {
+        return ip;
+    }
+
+    public String getServerVersion() {
+        return version;
+    }
+
 
     @Autowired
     public ServerInfoService(LockService lockService, ServerInfoRepository serverInfoRepository) {
@@ -120,5 +133,16 @@ public class ServerInfoService {
             return i;
         }
         throw new PowerJobException("impossible");
+    }
+
+    @Autowired(required = false)
+    public void setBuildProperties(BuildProperties buildProperties) {
+        if (buildProperties == null) {
+            return;
+        }
+        String pomVersion = buildProperties.getVersion();
+        if (StringUtils.isNotBlank(pomVersion)) {
+            version = pomVersion;
+        }
     }
 }
