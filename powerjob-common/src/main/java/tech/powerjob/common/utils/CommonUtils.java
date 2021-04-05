@@ -148,6 +148,18 @@ public class CommonUtils {
     }
 
     /**
+     * 格式化字符串，如果是 null 或空则显示 N/A
+     * @param str 字符串
+     * @return 结果
+     */
+    public static String formatString(String str) {
+        if (StringUtils.isEmpty(str)) {
+            return OmsConstant.NONE;
+        }
+        return str;
+    }
+
+    /**
      * 生成 UUID
      * @return uuid
      */
