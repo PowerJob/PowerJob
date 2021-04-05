@@ -11,7 +11,7 @@
  Target Server Version : 80021
  File Encoding         : 65001
 
- Date: 14/03/2021 19:54:37
+ Date: 05/04/2021 13:15:19
 */
 
 SET NAMES utf8mb4;
@@ -68,7 +68,7 @@ CREATE TABLE `instance_info` (
                                  `job_id` bigint DEFAULT NULL,
                                  `job_params` longtext,
                                  `last_report_time` bigint DEFAULT NULL,
-                                 `result` longtext,
+                                 `result` text,
                                  `running_times` bigint DEFAULT NULL,
                                  `status` int DEFAULT NULL,
                                  `task_tracker_address` varchar(255) DEFAULT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE `job_info` (
                             `instance_time_limit` bigint DEFAULT NULL,
                             `job_description` varchar(255) DEFAULT NULL,
                             `job_name` varchar(255) DEFAULT NULL,
-                            `job_params` longtext,
+                            `job_params` text,
                             `lifecycle` varchar(255) DEFAULT NULL,
                             `max_instance_num` int DEFAULT NULL,
                             `max_worker_count` int DEFAULT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE `workflow_info` (
                                  `max_wf_instance_num` int DEFAULT NULL,
                                  `next_trigger_time` bigint DEFAULT NULL,
                                  `notify_user_ids` varchar(255) DEFAULT NULL,
-                                 `pedag` longtext,
+                                 `pedag` text,
                                  `status` int DEFAULT NULL,
                                  `time_expression` varchar(255) DEFAULT NULL,
                                  `time_expression_type` int DEFAULT NULL,
@@ -194,15 +194,15 @@ CREATE TABLE `workflow_instance_info` (
                                           `id` bigint NOT NULL AUTO_INCREMENT,
                                           `actual_trigger_time` bigint DEFAULT NULL,
                                           `app_id` bigint DEFAULT NULL,
-                                          `dag` longtext,
+                                          `dag` text,
                                           `expected_trigger_time` bigint DEFAULT NULL,
                                           `finished_time` bigint DEFAULT NULL,
                                           `gmt_create` datetime(6) DEFAULT NULL,
                                           `gmt_modified` datetime(6) DEFAULT NULL,
-                                          `result` longtext,
+                                          `result` text,
                                           `status` int DEFAULT NULL,
-                                          `wf_context` longtext,
-                                          `wf_init_params` longtext,
+                                          `wf_context` text,
+                                          `wf_init_params` text,
                                           `wf_instance_id` bigint DEFAULT NULL,
                                           `workflow_id` bigint DEFAULT NULL,
                                           PRIMARY KEY (`id`)
@@ -216,15 +216,15 @@ CREATE TABLE `workflow_node_info` (
                                       `id` bigint NOT NULL AUTO_INCREMENT,
                                       `app_id` bigint NOT NULL,
                                       `enable` bit(1) NOT NULL,
-                                      `extra` longtext,
+                                      `extra` text,
                                       `gmt_create` datetime(6) NOT NULL,
                                       `gmt_modified` datetime(6) NOT NULL,
                                       `job_id` bigint DEFAULT NULL,
                                       `node_name` varchar(255) DEFAULT NULL,
-                                      `node_params` longtext,
+                                      `node_params` text,
                                       `skip_when_failed` bit(1) NOT NULL,
                                       `type` int DEFAULT NULL,
-                                      `workflow_id` bigint NOT NULL,
+                                      `workflow_id` bigint DEFAULT NULL,
                                       PRIMARY KEY (`id`),
                                       KEY `IDX36t7rhj4mkg2a5pb4ttorscta` (`app_id`),
                                       KEY `IDXacr0i6my8jr002ou8i1gmygju` (`workflow_id`)
