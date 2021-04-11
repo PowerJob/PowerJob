@@ -9,7 +9,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 import tech.powerjob.official.processors.CommonBasicProcessor;
-import tech.powerjob.official.processors.util.CommonUtils;
+import tech.powerjob.official.processors.util.SimpleUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.log.OmsLogger;
@@ -173,7 +173,7 @@ public abstract class AbstractSqlProcessor extends CommonBasicProcessor {
      * @return SqlParams
      */
     protected SqlParams extractParams(TaskContext taskContext) {
-        return JSON.parseObject(CommonUtils.parseParams(taskContext), SqlParams.class);
+        return JSON.parseObject(SimpleUtils.parseParams(taskContext), SqlParams.class);
     }
 
     /**

@@ -8,7 +8,7 @@ import tech.powerjob.worker.log.OmsLogger;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import tech.powerjob.official.processors.util.CommonUtils;
+import tech.powerjob.official.processors.util.SimpleUtils;
 
 /**
  * CommonBasicProcessor
@@ -33,7 +33,7 @@ public abstract class CommonBasicProcessor implements BasicProcessor {
         String status = "unknown";
         Stopwatch sw = Stopwatch.createStarted();
 
-        omsLogger.info("using params: {}", CommonUtils.parseParams(ctx));
+        omsLogger.info("using params: {}", SimpleUtils.parseParams(ctx));
 
         try {
             ProcessResult result = process0(ctx);

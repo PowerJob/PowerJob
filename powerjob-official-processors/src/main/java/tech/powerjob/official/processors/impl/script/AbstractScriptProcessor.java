@@ -9,7 +9,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import tech.powerjob.official.processors.CommonBasicProcessor;
-import tech.powerjob.official.processors.util.CommonUtils;
+import tech.powerjob.official.processors.util.SimpleUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -36,7 +36,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
     @Override
     protected ProcessResult process0(TaskContext context) throws Exception {
         OmsLogger omsLogger = context.getOmsLogger();
-        String scriptParams = CommonUtils.parseParams(context);
+        String scriptParams = SimpleUtils.parseParams(context);
         omsLogger.info("[SYSTEM] ScriptProcessor start to process, params: {}", scriptParams);
         if (scriptParams == null) {
             String message = "[SYSTEM] ScriptParams is null, please check jobParam configuration.";

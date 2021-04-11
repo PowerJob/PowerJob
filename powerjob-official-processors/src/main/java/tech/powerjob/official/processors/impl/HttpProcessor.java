@@ -10,7 +10,7 @@ import lombok.Data;
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.official.processors.CommonBasicProcessor;
-import tech.powerjob.official.processors.util.CommonUtils;
+import tech.powerjob.official.processors.util.SimpleUtils;
 
 import java.time.Duration;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class HttpProcessor extends CommonBasicProcessor {
     @Override
     public ProcessResult process0(TaskContext taskContext) throws Exception {
         OmsLogger omsLogger = taskContext.getOmsLogger();
-        HttpParams httpParams = JSON.parseObject(CommonUtils.parseParams(taskContext), HttpParams.class);
+        HttpParams httpParams = JSON.parseObject(SimpleUtils.parseParams(taskContext), HttpParams.class);
 
         if (httpParams == null) {
             String message = "httpParams is null, please check jobParam configuration.";

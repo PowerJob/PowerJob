@@ -2,7 +2,7 @@ package tech.powerjob.official.processors.impl.sql;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import tech.powerjob.official.processors.util.CommonUtils;
+import tech.powerjob.official.processors.util.SimpleUtils;
 import tech.powerjob.official.processors.util.SecurityUtils;
 import tech.powerjob.worker.core.processor.TaskContext;
 
@@ -29,7 +29,7 @@ public class DynamicDatasourceSqlProcessor extends AbstractSqlProcessor {
     @Override
     Connection getConnection(SqlParams sqlParams, TaskContext taskContext) throws SQLException {
 
-        JSONObject params = JSONObject.parseObject(CommonUtils.parseParams(taskContext));
+        JSONObject params = JSONObject.parseObject(SimpleUtils.parseParams(taskContext));
         Properties properties = new Properties();
 
         // normally at least a "user" and "password" property should be included
