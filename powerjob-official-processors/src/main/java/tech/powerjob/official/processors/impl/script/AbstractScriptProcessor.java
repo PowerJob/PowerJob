@@ -55,11 +55,12 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
         }
 
         // 授权
-        ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
-        // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
-        chmodPb.start().waitFor();
-        omsLogger.info("[SYSTEM] chmod 755 authorization complete, ready to start execution~");
-
+        if  ( !SystemUtils.IS_OS_WINDOWS) {
+            ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
+            // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
+            chmodPb.start().waitFor();
+            omsLogger.info("[SYSTEM] chmod 755 authorization complete, ready to start execution~");
+        }
         // 2. 执行目标脚本
         ProcessBuilder pb = new ProcessBuilder(getRunCommand(), scriptPath);
         Process process = pb.start();
