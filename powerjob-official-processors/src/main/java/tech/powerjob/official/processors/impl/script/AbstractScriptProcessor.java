@@ -55,7 +55,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
         }
 
         // 授权
-        if  ( !SystemUtils.IS_OS_WINDOWS) {
+        if  (!SystemUtils.IS_OS_WINDOWS) {
             ProcessBuilder chmodPb = new ProcessBuilder("/bin/chmod", "755", scriptPath);
             // 等待返回，这里不可能导致死锁（shell产生大量数据可能导致死锁）
             chmodPb.start().waitFor();

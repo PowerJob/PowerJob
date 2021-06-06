@@ -1,7 +1,7 @@
 package tech.powerjob.official.processors.impl.script;
 
 /**
- * python processor
+ * PowerShellProcessor
  *
  * @author fddc
  * @since 2021/5/14
