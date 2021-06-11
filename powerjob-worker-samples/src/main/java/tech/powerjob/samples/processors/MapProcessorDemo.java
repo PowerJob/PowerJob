@@ -1,6 +1,6 @@
 package tech.powerjob.samples.processors;
 
-import tech.powerjob.common.serialize.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.samples.MysteryService;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
@@ -39,13 +39,9 @@ public class MapProcessorDemo implements MapProcessor {
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
 
-        System.out.println("============== MapProcessorDemo#process ==============");
-        System.out.println("isRootTask:" + isRootTask());
-        System.out.println("taskContext:" + JsonUtils.toJSONString(context));
-        System.out.println(mysteryService.hasaki());
 
         if (isRootTask()) {
-            System.out.println("==== MAP ====");
+            log.warn("[MapProcessor:MAP],taskId = {} !!!!!!!!!!!!!!",context.getTaskId());
             List<SubTask> subTasks = Lists.newLinkedList();
             for (int j = 0; j < BATCH_NUM; j++) {
                 SubTask subTask = new SubTask();
@@ -61,9 +57,8 @@ public class MapProcessorDemo implements MapProcessor {
         }else {
             // 测试在 Map 任务中追加上下文
             context.getWorkflowContext().appendData2WfContext("Yasuo","A sword's poor company for a long road.");
-            System.out.println("==== PROCESS ====");
-            System.out.println("subTask: " + JsonUtils.toJSONString(context.getSubTask()));
             boolean b = ThreadLocalRandom.current().nextBoolean();
+            log.warn("[MapProcessor:PROCESS],taskId = {},result={} !!!!!!!!!!!!!!",context.getTaskId(),b);
             return new ProcessResult(b, "RESULT:" + b);
         }
     }
