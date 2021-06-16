@@ -46,10 +46,6 @@ public class SpringDatasourceSqlProcessor extends AbstractSqlProcessor {
         registerDataSource(DEFAULT_DATASOURCE_NAME, defaultDataSource);
     }
 
-    public SpringDatasourceSqlProcessor() {
-        dataSourceMap = Maps.newConcurrentMap();
-    }
-
     @Override
     Connection getConnection(SqlParams sqlParams, TaskContext taskContext) throws SQLException {
         return dataSourceMap.get(sqlParams.getDataSourceName()).getConnection();
