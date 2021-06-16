@@ -12,7 +12,8 @@
         Bug recording: Setting `~/logs`, is unable to create folder in user home directory,
         a folder with the name ~ is created in project folder.
     -->
-    <property name="LOG_PATH" value="${user.home}/powerjob/server/logs"/>
+    <!--<property name="LOG_PATH" value="${user.home}/powerjob/server/logs"/>-->
+    <property name="LOG_PATH" value="logs"/>
 
     <!-- Configuration for ERROR logs. All error logs will write twice. -->
     <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">

@@ -22,6 +22,7 @@
         <akka.version>2.6.12</akka.version>
         <kryo.version>5.0.4</kryo.version>
         <jackson.version>2.12.2</jackson.version>
+        <commons.codec>1.10</commons.codec>
         <junit.version>5.6.1</junit.version>
     </properties>
 
@@ -89,6 +90,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons.codec}</version>
         </dependency>
 
         <!-- Junit tests -->
