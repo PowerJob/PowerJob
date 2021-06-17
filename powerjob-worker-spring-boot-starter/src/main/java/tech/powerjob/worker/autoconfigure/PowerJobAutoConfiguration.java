@@ -74,6 +74,10 @@ public class PowerJobAutoConfiguration {
          */
         config.setMaxAppendedWfContextLength(worker.getMaxAppendedWfContextLength());
         /*
+         * Worker Tag
+         */
+        config.setTag(worker.getTag());
+        /*
          * Create OhMyWorker object and set properties.
          */
         PowerJobWorker ohMyWorker = new PowerJobWorker();

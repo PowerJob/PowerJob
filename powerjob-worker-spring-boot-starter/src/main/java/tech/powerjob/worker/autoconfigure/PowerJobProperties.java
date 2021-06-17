@@ -90,6 +90,16 @@ public class PowerJobProperties {
         getWorker().setEnableTestMode(enableTestMode);
     }
 
+    @Deprecated
+    @DeprecatedConfigurationProperty(replacement = "powerjob.worker.tag")
+    public String getTag() {
+        return getWorker().tag;
+    }
+
+    @Deprecated
+    public void setTag(String tag) {
+        getWorker().setTag(tag);
+    }
 
     /**
      * Powerjob worker configuration properties.
@@ -139,6 +149,9 @@ public class PowerJobProperties {
          * {@link WorkflowContext} max length for #appendedContextData
          */
         private int maxAppendedWfContextLength = 8192;
-
+        /**
+         * Worker Tag
+         */
+        private String tag;
     }
 }
