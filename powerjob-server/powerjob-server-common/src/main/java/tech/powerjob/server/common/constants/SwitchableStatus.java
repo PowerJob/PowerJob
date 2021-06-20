@@ -13,10 +13,16 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SwitchableStatus {
     /**
-     *
+     * 启用
      */
     ENABLE(1),
+    /**
+     * 禁用
+     */
     DISABLE(2),
+    /**
+     * 已删除
+     */
     DELETED(99);
 
     private final int v;
