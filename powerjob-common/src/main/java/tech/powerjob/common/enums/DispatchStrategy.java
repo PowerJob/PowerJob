@@ -13,14 +13,14 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum DispatchStrategy {
 
-    HEALTH_FIRST(1),
+    PERFORMANCE_FIRST(1),
     RANDOM(2);
 
     private final int v;
 
     public static DispatchStrategy of(Integer v) {
         if (v == null) {
-            return HEALTH_FIRST;
+            return PERFORMANCE_FIRST;
         }
         for (DispatchStrategy ds : values()) {
             if (v.equals(ds.v)) {

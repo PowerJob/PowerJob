@@ -195,7 +195,7 @@ public class DispatchService {
     private WorkerInfo selectTaskTracker(JobInfoDO jobInfo, List<WorkerInfo> workerInfos) {
         DispatchStrategy dispatchStrategy = DispatchStrategy.of(jobInfo.getDispatchStrategy());
         switch (dispatchStrategy) {
-            case HEALTH_FIRST:
+            case PERFORMANCE_FIRST:
                 return workerInfos.get(0);
             case RANDOM:
                 return workerInfos.get(ThreadLocalRandom.current().nextInt(workerInfos.size()));

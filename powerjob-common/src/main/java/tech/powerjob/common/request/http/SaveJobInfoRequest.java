@@ -148,7 +148,7 @@ public class SaveJobInfoRequest {
 
     public DispatchStrategy getDispatchStrategy() {
         if (dispatchStrategy == null) {
-            return DispatchStrategy.HEALTH_FIRST;
+            return DispatchStrategy.PERFORMANCE_FIRST;
         }
         return dispatchStrategy;
     }
