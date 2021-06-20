@@ -2,6 +2,7 @@ package tech.powerjob.server.common;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import tech.powerjob.common.OmsConstant;
 
 /**
  * Splitter & Joiner
@@ -11,7 +12,7 @@ import com.google.common.base.Splitter;
  */
 public class SJ {
 
-    public static final Splitter COMMA_SPLITTER = Splitter.on(",");
-    public static final Joiner COMMA_JOINER = Joiner.on(",");
+    public static final Splitter COMMA_SPLITTER = Splitter.on(OmsConstant.COMMA);
+    public static final Joiner COMMA_JOINER = Joiner.on(OmsConstant.COMMA);
 
 }

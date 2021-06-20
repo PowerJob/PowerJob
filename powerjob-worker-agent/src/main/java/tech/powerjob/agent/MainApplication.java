@@ -1,5 +1,6 @@
 package tech.powerjob.agent;
 
+import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.worker.PowerJobWorker;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
@@ -52,7 +53,7 @@ public class MainApplication implements Runnable {
 
             cfg.setAppName(appName);
             cfg.setPort(port);
-            cfg.setServerAddress(Splitter.on(",").splitToList(server));
+            cfg.setServerAddress(Splitter.on(OmsConstant.COMMA).splitToList(server));
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);
             cfg.setTag(tag);

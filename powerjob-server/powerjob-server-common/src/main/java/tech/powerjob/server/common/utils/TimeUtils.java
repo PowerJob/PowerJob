@@ -2,6 +2,7 @@ package tech.powerjob.server.common.utils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.RemoteConstant;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -48,9 +49,9 @@ public class TimeUtils {
 
         // 只保留结束时间在当前时间前的生命周期
         lifeCycle.forEach(range -> {
-            String[] split = range.split("-");
+            String[] split = range.split(OmsConstant.MINUS);
             long end = Long.parseLong(split[1]);
-            if (end < startTime) {
+            if (end <= startTime) {
                 return;
             }
             remainingLifecycle.add(Pair.of(Long.valueOf(split[0]), end));

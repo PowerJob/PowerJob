@@ -1,5 +1,6 @@
 package tech.powerjob.worker.autoconfigure;
 
+import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.worker.PowerJobWorker;
@@ -37,7 +38,7 @@ public class PowerJobAutoConfiguration {
          * any prefix, i.e. http://.
          */
         CommonUtils.requireNonNull(worker.getServerAddress(), "serverAddress can't be empty!");
-        List<String> serverAddress = Arrays.asList(worker.getServerAddress().split(","));
+        List<String> serverAddress = Arrays.asList(worker.getServerAddress().split(OmsConstant.COMMA));
 
         /*
          * Create OhMyConfig object for setting properties.

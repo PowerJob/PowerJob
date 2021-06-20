@@ -17,6 +17,7 @@ public class OmsConstant {
     public static final String NONE = "N/A";
 
     public static final String COMMA = ",";
+    public static final String MINUS = "-";
     public static final String LINE_SEPARATOR = "\r\n";
 
     public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";

@@ -1,11 +1,11 @@
 package tech.powerjob.server.core.service;
 
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -45,7 +45,7 @@ public class UserService {
             return Lists.newLinkedList();
         }
         // 去重
-        Set<Long> userIdList = Splitter.on(",").splitToList(userIds).stream().map(Long::valueOf).collect(Collectors.toSet());
+        Set<Long> userIdList = SJ.COMMA_SPLITTER.splitToList(userIds).stream().map(Long::valueOf).collect(Collectors.toSet());
         List<UserInfoDO> res = userInfoRepository.findByIdIn(Lists.newLinkedList(userIdList));
         res.forEach(x -> x.setPassword(null));
         return res;
