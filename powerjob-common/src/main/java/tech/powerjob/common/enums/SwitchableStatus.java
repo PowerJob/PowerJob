@@ -1,4 +1,4 @@
-package tech.powerjob.server.common.constants;
+package tech.powerjob.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

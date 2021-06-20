@@ -3,7 +3,7 @@ package tech.powerjob.server.web.controller;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.remote.server.ServerInfoService;

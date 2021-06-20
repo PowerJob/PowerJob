@@ -37,6 +37,9 @@ public class JobInfoQuery extends PowerQuery {
     private String processorInfoEq;
     private String processorInfoLike;
 
+    /**
+     * {@link tech.powerjob.common.enums.SwitchableStatus}
+     */
     private List<Integer> statusIn;
     private Long nextTriggerTimeGt;
     private Long nextTriggerTimeLt;
