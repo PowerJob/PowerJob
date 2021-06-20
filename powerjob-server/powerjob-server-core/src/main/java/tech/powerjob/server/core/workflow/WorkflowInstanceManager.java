@@ -420,7 +420,7 @@ public class WorkflowInstanceManager {
      */
     private void runInstance(PEWorkflowDAG.Node node) {
 
-        JobInfoDO jobInfo = jobInfoRepository.findById(node.getJobId()).orElseGet(JobInfoDO::new);
+        JobInfoDO jobInfo = jobInfoRepository.findById(node.getJobId()).orElseThrow(() -> new PowerJobException("can't find job by jobId:" + node.getJobId()));
         // 洗去时间表达式类型
         jobInfo.setTimeExpressionType(TimeExpressionType.WORKFLOW.getV());
         dispatchService.dispatch(jobInfo, node.getInstanceId());

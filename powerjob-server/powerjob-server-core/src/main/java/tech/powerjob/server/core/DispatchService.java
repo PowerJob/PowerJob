@@ -97,12 +97,6 @@ public class DispatchService {
             log.info("[Dispatcher-{}|{}] cancel dispatch due to instance has been dispatched", jobId, instanceId);
             return;
         }
-        // 任务信息已经被删除
-        if (jobInfo.getId() == null) {
-            log.warn("[Dispatcher-{}|{}] cancel dispatch due to job(id={}) has been deleted!", jobId, instanceId, jobId);
-            instanceManager.processFinishedInstance(instanceId, instanceInfo.getWfInstanceId(), FAILED, "can't find job by id " + jobId);
-            return;
-        }
 
         Date now = new Date();
         String dbInstanceParams = instanceInfo.getInstanceParams() == null ? "" : instanceInfo.getInstanceParams();
