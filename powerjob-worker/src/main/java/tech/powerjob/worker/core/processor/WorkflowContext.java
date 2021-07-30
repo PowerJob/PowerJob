@@ -1,5 +1,6 @@
 package tech.powerjob.worker.core.processor;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import tech.powerjob.common.WorkflowContextConstant;
 import tech.powerjob.common.serialize.JsonUtils;
 import com.google.common.collect.Maps;
@@ -21,7 +22,7 @@ public class WorkflowContext {
     /**
      * 工作流实例 ID
      */
-    private final Long  wfInstanceId;
+    private final Long wfInstanceId;
     /**
      * 当前工作流上下文数据
      * 这里的 data 实际上等价于 {@link TaskContext} 中的 instanceParams
@@ -39,8 +40,9 @@ public class WorkflowContext {
             return;
         }
         try {
-            Map originMap = JsonUtils.parseObject(data, Map.class);
-            originMap.forEach((k, v) -> this.data.put(String.valueOf(k), v == null ? null : String.valueOf(v)));
+            Map<String, String> originMap = JsonUtils.parseObject(data, new TypeReference<Map<String, String>>() {
+            });
+            originMap.forEach((k, v) -> this.data.put(String.valueOf(k), v));
         } catch (Exception exception) {
             log.warn("[WorkflowContext-{}] parse workflow context failed, {}", wfInstanceId, exception.getMessage());
         }
@@ -58,6 +60,16 @@ public class WorkflowContext {
     public Map<String, String> fetchWorkflowContext() {
         return data;
     }
+
+
+    public <T> T fetchValueFromWorkflowContext(String key,Class<T> clazz){
+        String s = data.get(key);
+        if (StringUtils.isNotBlank(s)){
+            return JsonUtils.parseObjectUnsafe(s,clazz);
+        }
+        return null;
+    }
+
 
     /**
      * 往工作流上下文添加数据
@@ -78,6 +90,5 @@ public class WorkflowContext {
         }
         appendedContextData.put(key, finalValue);
     }
-
 
 }

@@ -1,6 +1,5 @@
 package tech.powerjob.samples.processors;
 
-import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;

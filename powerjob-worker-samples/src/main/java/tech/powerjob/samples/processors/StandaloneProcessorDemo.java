@@ -41,6 +41,6 @@ public class StandaloneProcessorDemo implements BasicProcessor {
         omsLogger.info("StandaloneProcessorDemo finished process,success: .", success);
 
         omsLogger.info("anyway, we finished the job successfully~Congratulations!");
-        return new ProcessResult(success, context + ": " + success);
+        return new ProcessResult(success, context + ":  " + success);
     }
 }
