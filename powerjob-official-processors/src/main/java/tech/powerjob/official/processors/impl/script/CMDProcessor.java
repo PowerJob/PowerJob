@@ -6,15 +6,15 @@ package tech.powerjob.official.processors.impl.script;
  * @author fddc
  * @since 2021/5/14
  */
-public class PowerShellProcessor extends AbstractScriptProcessor {
+public class CMDProcessor extends AbstractScriptProcessor {
 
     @Override
     protected String getScriptName(Long instanceId) {
-        return String.format("powershell_%d.bat", instanceId);
+        return String.format("cmd_%d.bat", instanceId);
     }
 
     @Override
     protected String getRunCommand() {
-        return "powershell.exe";
+        return "cmd.exe";
     }
 }

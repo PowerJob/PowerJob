@@ -10,7 +10,7 @@ public class PowerShellProcessor extends AbstractScriptProcessor {
 
     @Override
     protected String getScriptName(Long instanceId) {
-        return String.format("powershell_%d.bat", instanceId);
+        return String.format("powershell_%d.ps1", instanceId);
     }
 
     @Override
