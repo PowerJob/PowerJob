@@ -1,5 +1,6 @@
 # 基础镜像（支持 amd64 & arm64），based on Ubuntu 18.04.4 LTS
-FROM harbor-qzbeta.mail.netease.com/library/java/serverjre:1.8.0_241-b07
+#FROM harbor-qzbeta.mail.netease.com/library/java/serverjre:1.8.0_241-b07
+FROM harbor-qzbeta.mail.netease.com/library/java/spring-napm-base:1.1.1
 #FROM adoptopenjdk:8-jdk-hotspot
 MAINTAINER oubaodian@corp.netease.com
 # 下载并安装 maven ，其实这个步骤可有可无，暂时不需要这个功能点，先留着吧
@@ -17,18 +18,16 @@ ENV TZ=Asia/Shanghai
 # 设置其他环境变量
 ENV APP_NAME=powerjob-server
 # 传递 SpringBoot 启动参数 和 JVM参数
-ENV PARAMS=""
-ENV JVM_OPTIONS=""
-ENV DEPLOY_ENV="test"
-ENV LOG_PATH="/home/logs"
+ENV PARAMS="" \
+JVM_OPTIONS="" \
+DEPLOY_ENV="test" \
+LOG_PATH="/home/logs"
 
 # 将应用 jar 包拷入 docker
 COPY ./powerjob-server/powerjob-server-starter/target/powerjob-server.jar /powerjob-server.jar
 # 暴露端口（HTTP + AKKA + VertX）
 EXPOSE 7700 10086 10010
 # 创建 docker 文件目录（盲猜这是用户目录）
-RUN mkdir -p /root/powerjob-server
-# 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
-VOLUME /root/powerjob
+RUN mkdir -p /home/logs
 # 启动应用
 ENTRYPOINT ["sh","-c","java -Dspring.profiles.active=$DEPLOY_ENV $JVM_OPTIONS -jar /powerjob-server.jar $PARAMS"]
