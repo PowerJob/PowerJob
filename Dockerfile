@@ -1,5 +1,6 @@
 # 基础镜像（支持 amd64 & arm64），based on Ubuntu 18.04.4 LTS
 # todo 切换这边的基础镜像
+# harbor-qzbeta.mail.netease.com/library/java/jdk
 FROM adoptopenjdk:8-jdk-hotspot
 # 维护者
 MAINTAINER oubaodian@corp.netease.com
@@ -19,7 +20,10 @@ ENV TZ=Asia/Shanghai
 ENV APP_NAME=powerjob-server
 # 传递 SpringBoot 启动参数 和 JVM参数
 ENV PARAMS=""
-ENV JVMOPTIONS=""
+ENV JVM_OPTIONS=""
+ENV DEPLOY_ENV="test"
+ENV LOG_PATH="/home/logs"
+
 # 将应用 jar 包拷入 docker
 COPY ./powerjob-server/powerjob-server-starter/target/powerjob-server.jar /powerjob-server.jar
 # 暴露端口（HTTP + AKKA + VertX）
@@ -29,4 +33,4 @@ RUN mkdir -p /root/powerjob-server
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
 VOLUME /root/powerjob
 # 启动应用
-ENTRYPOINT ["sh","-c","java $JVMOPTIONS -jar /powerjob-server.jar $PARAMS"]
+ENTRYPOINT ["sh","-c","java -dSpring.profiles.active=$DEPLOY_ENV $JVM_OPTIONS -jar /powerjob-server.jar $PARAMS"]
