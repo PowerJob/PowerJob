@@ -1,8 +1,6 @@
 # 基础镜像（支持 amd64 & arm64），based on Ubuntu 18.04.4 LTS
-# todo 切换这边的基础镜像
-# harbor-qzbeta.mail.netease.com/library/java/jdk
-FROM adoptopenjdk:8-jdk-hotspot
-# 维护者
+FROM harbor-qzbeta.mail.netease.com/library/java/serverjre:1.8.0_241-b07
+#FROM adoptopenjdk:8-jdk-hotspot
 MAINTAINER oubaodian@corp.netease.com
 # 下载并安装 maven ，其实这个步骤可有可无，暂时不需要这个功能点，先留着吧
 RUN curl -O https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
@@ -33,4 +31,4 @@ RUN mkdir -p /root/powerjob-server
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
 VOLUME /root/powerjob
 # 启动应用
-ENTRYPOINT ["sh","-c","java -dSpring.profiles.active=$DEPLOY_ENV $JVM_OPTIONS -jar /powerjob-server.jar $PARAMS"]
+ENTRYPOINT ["sh","-c","java -Dspring.profiles.active=$DEPLOY_ENV $JVM_OPTIONS -jar /powerjob-server.jar $PARAMS"]
