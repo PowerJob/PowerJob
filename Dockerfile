@@ -9,7 +9,7 @@ RUN curl -O https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/bina
 RUN tar -zxvf apache-maven-3.6.3-bin.tar.gz && mv apache-maven-3.6.3 /opt/powerjob-maven && rm -rf apache-maven-3.6.3-bin.tar.gz
 # 替换 maven 配置文件
 RUN rm -rf /opt/powerjob-maven/conf/settings.xml
-COPY settings.xml /opt/powerjob-maven/conf/settings.xml
+COPY /powerjob-server/docker/settings.xml /opt/powerjob-maven/conf/settings.xml
 # 设置 maven 环境变量（maven invoker 读取该变量调用 maven）
 ENV M2_HOME=/opt/powerjob-maven
 
