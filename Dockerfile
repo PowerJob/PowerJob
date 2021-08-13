@@ -1,13 +1,11 @@
 # 基础镜像（支持 amd64 & arm64），based on Ubuntu 18.04.4 LTS
 #FROM harbor-qzbeta.mail.netease.com/library/java/serverjre:1.8.0_241-b07
-FROM harbor-qzbeta.mail.netease.com/library/java/spring-napm-base:1.1.1
-#FROM adoptopenjdk:8-jdk-hotspot
+#FROM harbor-qzbeta.mail.netease.com/library/java/spring-napm-base:1.1.1
+FROM adoptopenjdk:8-jdk-hotspot
 MAINTAINER oubaodian@corp.netease.com
-RUN yum install -y tar
+#RUN yum install -y tar
 # 下载并安装 maven ，其实这个步骤可有可无，暂时不需要这个功能点，先留着吧
 RUN curl -O https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-
-RUN mkdir /opt/powerjob-maven
 
 RUN tar -zxvf apache-maven-3.6.3-bin.tar.gz && mv apache-maven-3.6.3 /opt/powerjob-maven && rm -rf apache-maven-3.6.3-bin.tar.gz
 # 替换 maven 配置文件
