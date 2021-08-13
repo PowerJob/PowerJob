@@ -6,6 +6,9 @@ MAINTAINER oubaodian@corp.netease.com
 RUN yum install -y tar
 # 下载并安装 maven ，其实这个步骤可有可无，暂时不需要这个功能点，先留着吧
 RUN curl -O https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+
+RUN mkdir /opt/powerjob-maven
+
 RUN tar -zxvf apache-maven-3.6.3-bin.tar.gz && mv apache-maven-3.6.3 /opt/powerjob-maven && rm -rf apache-maven-3.6.3-bin.tar.gz
 # 替换 maven 配置文件
 RUN rm -rf /opt/powerjob-maven/conf/settings.xml
