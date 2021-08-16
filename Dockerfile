@@ -22,7 +22,7 @@ ENV APP_NAME=powerjob-server
 # 传递 SpringBoot 启动参数 和 JVM参数
 ENV PARAMS="" \
 JVM_OPTIONS="" \
-DEPLOY_ENV="test" \
+DEPLOY_ENV="" \
 LOG_PATH="/home/logs"
 
 # 将应用 jar 包拷入 docker
