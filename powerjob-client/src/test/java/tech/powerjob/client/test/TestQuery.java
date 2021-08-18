@@ -1,15 +1,18 @@
 package tech.powerjob.client.test;
 
 import com.alibaba.fastjson.JSON;
-import tech.powerjob.common.request.query.JobInfoQuery;
-import tech.powerjob.common.enums.ExecuteType;
-import tech.powerjob.common.enums.ProcessorType;
-import tech.powerjob.common.response.JobInfoDTO;
-import tech.powerjob.common.response.ResultDTO;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.Test;
+import tech.powerjob.common.enums.ExecuteType;
+import tech.powerjob.common.enums.ProcessorType;
+import tech.powerjob.common.request.query.InstanceInfoQuery;
+import tech.powerjob.common.request.query.JobInfoQuery;
+import tech.powerjob.common.response.InstanceInfoDTO;
+import tech.powerjob.common.response.JobInfoDTO;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -45,4 +48,21 @@ class TestQuery extends ClientInitializer {
         System.out.println(JSON.toJSONString(jobQueryResult));
         System.out.println(jobQueryResult.getData().size());
     }
+
+    @Test
+    void testQueryInstanceInfo() {
+        InstanceInfoQuery instanceInfoQuery = new InstanceInfoQuery();
+        instanceInfoQuery.setJobIdEq(89L);
+        ResultDTO<List<InstanceInfoDTO>> resultDTO = powerJobClient.queryInstanceInfo(instanceInfoQuery);
+        List<InstanceInfoDTO> instanceInfoDTOList = resultDTO.getData();
+        instanceInfoDTOList.size();
+    }
+
+    @Test
+    void testQueryWorkflowInstanceInfo() {
+        ResultDTO<List<WorkflowInstanceInfoDTO>> resultDTO = powerJobClient.queryWorkflowInstanceInfo(2L);
+        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = resultDTO.getData();
+        workflowInstanceInfoDTOList.size();
+    }
+
 }

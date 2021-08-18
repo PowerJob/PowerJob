@@ -1,26 +1,26 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.enums.InstanceStatus;
+import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.OpenAPIConstant;
-import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
+import tech.powerjob.common.request.query.InstanceInfoQuery;
 import tech.powerjob.common.request.query.JobInfoQuery;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
-import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
-import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
+import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.core.service.CacheService;
 import tech.powerjob.server.core.service.JobService;
-import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceService;
 import tech.powerjob.server.core.workflow.WorkflowService;
+import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
-import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -149,7 +149,7 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.QUERY_INSTANCE)
-    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody PowerQuery powerQuery) {
+    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody InstanceInfoQuery powerQuery) {
         return ResultDTO.success(instanceService.queryInstanceInfo(powerQuery));
     }
 
@@ -218,6 +218,12 @@ public class OpenAPIController {
     public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId, Long nodeId, Long appId) {
         workflowInstanceService.markNodeAsSuccess(appId, wfInstanceId, nodeId);
         return ResultDTO.success(null);
+    }
+
+    @PostMapping(OpenAPIConstant.QUERY_WORKFLOW_INSTANCE_INFO)
+    public ResultDTO<List<WorkflowInstanceInfoDTO>> queryWorkflowInstanceInfo(Long workflowId, Long appId) {
+        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = workflowInstanceService.queryWorkflowInstanceInfo(workflowId, appId);
+        return ResultDTO.success(workflowInstanceInfoDTOList);
     }
 
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO)

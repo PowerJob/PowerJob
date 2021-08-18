@@ -19,6 +19,15 @@ import java.util.Optional;
 public interface WorkflowInstanceInfoRepository extends JpaRepository<WorkflowInstanceInfoDO, Long> {
 
     /**
+     * 查找对应的工作流实例
+     *
+     * @param workflowId 工作流 ID
+     * @param appId      任务所属应用的ID
+     * @return 工作流实例
+     */
+    List<WorkflowInstanceInfoDO> findByWorkflowIdAndAppId(Long workflowId, Long appId);
+
+    /**
      * 查找对应工作流实例
      * @param wfInstanceId 实例 ID
      * @return 工作流实例

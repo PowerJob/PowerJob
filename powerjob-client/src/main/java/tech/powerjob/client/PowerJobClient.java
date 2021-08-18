@@ -1,24 +1,25 @@
 package tech.powerjob.client;
 
 import com.alibaba.fastjson.JSON;
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.OpenAPIConstant;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.request.http.SaveJobInfoRequest;
-import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
-import tech.powerjob.common.request.http.SaveWorkflowRequest;
-import tech.powerjob.common.request.query.JobInfoQuery;
-import tech.powerjob.common.response.*;
-import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.HttpUtils;
-import tech.powerjob.common.serialize.JsonUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.OpenAPIConstant;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.request.http.SaveJobInfoRequest;
+import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
+import tech.powerjob.common.request.http.SaveWorkflowRequest;
+import tech.powerjob.common.request.query.InstanceInfoQuery;
+import tech.powerjob.common.request.query.JobInfoQuery;
+import tech.powerjob.common.response.*;
+import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.HttpUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -179,6 +180,20 @@ public class PowerJobClient {
         String json = JsonUtils.toJSONStringUnsafe(powerQuery);
         String post = postHA(OpenAPIConstant.QUERY_JOB, RequestBody.create(jsonType, json));
         return JSON.parseObject(post, LIST_JOB_RESULT_TYPE);
+    }
+
+    /**
+     * 查询任务的示例
+     *
+     * @param instanceInfoQuery
+     * @return
+     */
+    public ResultDTO<List<InstanceInfoDTO>> queryInstanceInfo(InstanceInfoQuery instanceInfoQuery) {
+        instanceInfoQuery.setAppIdEq(appId);
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
+        String json = JsonUtils.toJSONStringUnsafe(instanceInfoQuery);
+        String post = postHA(OpenAPIConstant.QUERY_INSTANCE, RequestBody.create(jsonType, json));
+        return JSON.parseObject(post, LIST_INSTANCE_RESULT_TYPE);
     }
 
     /**
@@ -511,6 +526,21 @@ public class PowerJobClient {
                 .build();
         String post = postHA(OpenAPIConstant.MARK_WORKFLOW_NODE_AS_SUCCESS, body);
         return JSON.parseObject(post, VOID_RESULT_TYPE);
+    }
+
+    /**
+     * 查询工作流任务的示例
+     *
+     * @param workflowId
+     * @return
+     */
+    public ResultDTO<List<WorkflowInstanceInfoDTO>> queryWorkflowInstanceInfo(Long workflowId) {
+        FormBody body = new FormBody.Builder()
+                .add("workflowId", workflowId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.QUERY_WORKFLOW_INSTANCE_INFO, body);
+        return JSON.parseObject(post, LIST_WF_INSTANCE_RESULT_TYPE);
     }
 
     /**

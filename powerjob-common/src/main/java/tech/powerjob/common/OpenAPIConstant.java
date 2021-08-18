@@ -54,4 +54,5 @@ public class OpenAPIConstant {
     public static final String RETRY_WORKFLOW_INSTANCE = "/retryWfInstance";
     public static final String FETCH_WORKFLOW_INSTANCE_INFO = "/fetchWfInstanceInfo";
     public static final String MARK_WORKFLOW_NODE_AS_SUCCESS = "/markWorkflowNodeAsSuccess";
+    public static final String QUERY_WORKFLOW_INSTANCE_INFO = "/queryWfInstanceInfo";
 }

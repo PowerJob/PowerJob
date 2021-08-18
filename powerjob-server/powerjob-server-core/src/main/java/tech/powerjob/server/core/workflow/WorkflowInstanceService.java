@@ -1,13 +1,17 @@
 package tech.powerjob.server.core.workflow;
 
 import com.alibaba.fastjson.JSON;
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.exception.PowerJobException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
 import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.lock.UseSegmentLock;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
@@ -15,15 +19,13 @@ import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.core.instance.InstanceService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils.isNotAllowSkipWhenFailed;
 
@@ -71,7 +73,7 @@ public class WorkflowInstanceService {
                     node.setStatus(InstanceStatus.STOPPED.getV());
                     node.setResult(SystemInstanceResult.STOPPED_BY_USER);
                     // 注意，这里并不保证一定能终止正在运行的实例
-                    instanceService.stopInstance(appId,node.getInstanceId());
+                    instanceService.stopInstance(appId, node.getInstanceId());
                 }
             } catch (Exception e) {
                 log.warn("[WfInstance-{}] stop instance({}) failed.", wfInstanceId, JSON.toJSONString(node), e);
@@ -163,7 +165,7 @@ public class WorkflowInstanceService {
      * 即处于 [失败且不允许跳过] 的节点
      * 而且仅会操作工作流实例 DAG 中的节点信息（状态、result）
      * 并不会改变对应任务实例中的任何信息
-     *
+     * <p>
      * 还是加把锁保平安 ~
      *
      * @param wfInstanceId 工作流实例 ID
@@ -207,6 +209,25 @@ public class WorkflowInstanceService {
         // 其他情况均拒绝处理
         throw new PowerJobException("you can only mark the node which is failed and not allow to skip!");
 
+    }
+
+    /**
+     * 查找对应的工作流实例
+     *
+     * @param workflowId 工作流 ID
+     * @param appId      任务所属应用的ID
+     * @return 工作流实例
+     */
+    public List<WorkflowInstanceInfoDTO> queryWorkflowInstanceInfo(Long workflowId, Long appId) {
+        List<WorkflowInstanceInfoDO> workflowInstanceInfoDOList = wfInstanceInfoRepository.findByWorkflowIdAndAppId(workflowId, appId);
+        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = workflowInstanceInfoDOList.stream().map(WorkflowInstanceService::directConvert).collect(Collectors.toList());
+        return workflowInstanceInfoDTOList;
+    }
+
+    private static WorkflowInstanceInfoDTO directConvert(WorkflowInstanceInfoDO workflowInstanceInfoDO) {
+        WorkflowInstanceInfoDTO workflowInstanceInfoDTO = new WorkflowInstanceInfoDTO();
+        BeanUtils.copyProperties(workflowInstanceInfoDO, workflowInstanceInfoDTO);
+        return workflowInstanceInfoDTO;
     }
 
 }
