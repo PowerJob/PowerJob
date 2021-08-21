@@ -43,6 +43,7 @@
         <fastjson.version>1.2.68</fastjson.version>
         <dingding.version>1.0.1</dingding.version>
         <vertx-web.version>4.0.2</vertx-web.version>
+        <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
 
         <!-- skip this module when deploying. -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -264,4 +265,14 @@
 
     </dependencies>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven-dependency-plugin.version}</version>
+                </plugin>
+           </plugins>
+        </pluginManagement>
+    </build>
 </project>
