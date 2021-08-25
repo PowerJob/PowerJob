@@ -19,10 +19,15 @@ ENV TZ=Asia/Shanghai
 
 # 设置其他环境变量
 ENV APP_NAME=powerjob-server
+
+ARG ARG_PARAMS=""
+ARG ARG_JVM_OPTIONS="-Xms1g -Xmx1g"
+ARG ARG_DEPLOY_ENV="test"
+
 # 传递 SpringBoot 启动参数 和 JVM参数
-ENV PARAMS="" \
-JVM_OPTIONS="" \
-DEPLOY_ENV="" \
+ENV PARAMS=$ARG_PARAMS \
+JVM_OPTIONS=$ARG_JVM_OPTIONS \
+DEPLOY_ENV=$ARG_DEPLOY_ENV \
 LOG_PATH="/home/logs"
 
 # 将应用 jar 包拷入 docker

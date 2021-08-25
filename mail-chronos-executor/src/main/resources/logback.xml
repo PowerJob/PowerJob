@@ -1,26 +1,75 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
+<!-- Configuration for production environment. -->
 <configuration>
-    <!-- %m输出的信息,%p日志级别,%t线程名,%d日期,%c类的全名,%i索引【从数字0开始递增】,,, -->
-    <!-- appender是configuration的子节点，是负责写日志的组件。 -->
-    <!-- ConsoleAppender：把日志输出到控制台 -->
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <!--            <pattern>%red(%d{yyyy-MM-dd HH:mm:ss}) %highlight(%-5level) %green([%thread]) - %cyan(%msg%n)</pattern>-->
-            <pattern>%red(%d{yyyy-MM-dd HH:mm:ss}) %highlight(%-5level) - %cyan(%msg%n)</pattern>
+
+    <!-- Default configuration. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <!-- Configuration for console. -->
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!--
+        Log path, pay attention to permission, logs may be unable to generate.
+        Bug recording: Setting `~/logs`, is unable to create folder in user home directory,
+        a folder with the name ~ is created in project folder.
+    -->
+    <property name="LOG_PATH" value="/home/logs"/>
+
+    <!-- Configuration for ERROR logs. All error logs will write twice. -->
+    <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/executor-error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_PATH}/executor-error.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
     </appender>
+    <!-- End of configuration for ERROR logs. -->
 
-    <logger name="com.zaxxer.hikari" level="INFO">
-        <appender-ref ref="STDOUT"/>
+    <!-- Configuration for Web services. -->
+    <appender name="WEB_LOG_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/executor-web.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_PATH}/executor-web.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <append>true</append>
+    </appender>
+    <logger name="WEB_LOG" level="INFO" additivity="false">
+        <appender-ref ref="WEB_LOG_APPENDER"/>
     </logger>
+    <!-- End of configuration for Web services. -->
 
-    <logger name="com.netease.mail" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+    <!-- Configuration for system logs. -->
+    <appender name="DEFAULT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/executor-application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_PATH}/executor-application.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <append>true</append>
+    </appender>
+    <!-- End of configuration for system logs. -->
 
-    <!-- 控制台输出日志级别 -->
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DEFAULT_APPENDER"/>
+        <appender-ref ref="ERROR_APPENDER"/>
     </root>
+
 </configuration>
