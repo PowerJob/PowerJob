@@ -1,0 +1,12 @@
+powerjob:
+  worker:
+    # Akka port, default is 27777
+    akka-port: 27777
+    # Max length of appended workflow context . Appended workflow context value that is longer than the value will be ignore.
+    max-appended-wf-context-length: 4096
+    # Max length of result. Results that are longer than the value will be truncated.
+    max-result-length: 4096
+    # Address of PowerJob-server node(s). Ip:port or domain. Multiple addresses should be separated with comma.
+    server-address: apigw-qzbeta.test.mail.163.com/mail-scheduler-x
+    # Store strategy of H2 database. disk or memory. Default value is disk.
+    store-strategy: disk

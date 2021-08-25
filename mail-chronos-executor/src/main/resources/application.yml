@@ -1,0 +1,11 @@
+server:
+  port: 18087
+spring:
+  profiles:
+    active: test
+  jpa:
+    open-in-view: false
+powerjob:
+  worker:
+    # Application name, used for grouping applications. Recommend to set the same value as project name.
+    app-name: mail-common
