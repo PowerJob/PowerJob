@@ -28,6 +28,21 @@ public class OpenIdConstants {
      */
     public static final String DISPLAY = "display";
 
+    /**
+     * post
+     * https://login.netease.com/download/oidc_docs/flow/token_request.html
+     */
+    public static final String TOKEN_ENDPOINT = "https://login.netease.com/connect/token";
+    /**
+     * get
+     * https://login.netease.com/download/oidc_docs/flow/userinfo_request.html
+     */
+    public static final String USER_INFO_ENDPOINT = "https://login.netease.com//connect/userinfo";
+
+
+    public static final String LOGIN_BASE_URL = "https://login.netease.com/connect/authorize";
+
+
     private OpenIdConstants(){
 
     }

@@ -140,6 +140,15 @@
             <version>${h2.db.version}</version>
         </dependency>
 
+
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-jwt -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-jwt</artifactId>
+            <version>5.7.9</version>
+        </dependency>
+
+
         <!-- SpringBoot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
