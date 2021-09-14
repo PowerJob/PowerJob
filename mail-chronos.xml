@@ -103,6 +103,11 @@
                 <version>${chronos.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.netease.mail</groupId>
+                <artifactId>mail-chronos-client</artifactId>
+                <version>${chronos.version}</version>
+            </dependency>
         </dependencies>
 
 
