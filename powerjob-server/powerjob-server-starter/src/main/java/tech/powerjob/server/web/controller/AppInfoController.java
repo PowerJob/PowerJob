@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 /**
  * AppName Controller
- * vue axios 的POST请求必须使用 @RequestBody 接收
+ * vue axios 的 POST 请求必须使用 @RequestBody 接收
  *
  * @author tjq
  * @since 2020/4/1

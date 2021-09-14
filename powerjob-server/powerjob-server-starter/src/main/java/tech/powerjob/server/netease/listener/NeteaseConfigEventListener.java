@@ -42,11 +42,6 @@ public class NeteaseConfigEventListener implements GenericApplicationListener {
     private static final String DEFAULT_PROPERTIES = "defaultProperties";
 
 
-    public NeteaseConfigEventListener(){
-        System.out.println(" ????? ");
-    }
-
-
     @Override
     public boolean supportsEventType(ResolvableType resolvableType) {
         return isAssignableFrom(resolvableType.getRawClass(), EVENT_TYPES);

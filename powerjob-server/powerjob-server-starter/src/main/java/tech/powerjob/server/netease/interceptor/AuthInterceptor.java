@@ -43,8 +43,8 @@ public class AuthInterceptor implements HandlerInterceptor {
                 }
             }
         }
-        // 重定向至 OpenId 登录
-        response.sendRedirect(authService.getLoginUrl());
+        // 未认证，前端需拦截处理
+        response.setStatus(401);
         return false;
     }
 
