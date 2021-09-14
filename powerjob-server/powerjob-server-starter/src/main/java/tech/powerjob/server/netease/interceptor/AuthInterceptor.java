@@ -2,7 +2,8 @@ package tech.powerjob.server.netease.interceptor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import tech.powerjob.server.netease.config.AuthConfig;
 import tech.powerjob.server.netease.context.NeteaseContext;
@@ -29,6 +30,9 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
+        if (StringUtils.equalsIgnoreCase(request.getMethod(), HttpMethod.OPTIONS.name())) {
+            return true;
+        }
         Cookie[] cookies = request.getCookies();
         if (cookies != null && cookies.length != 0) {
             for (Cookie cookie : cookies) {
