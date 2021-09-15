@@ -7,6 +7,6 @@ powerjob:
     # Max length of result. Results that are longer than the value will be truncated.
     max-result-length: 4096
     # Address of PowerJob-server node(s). Ip:port or domain. Multiple addresses should be separated with comma.
-    server-address: apigw-qzbeta.test.mail.163.com/mail-scheduler-x
+    server-address: chronos-server-qzbeta.test.mail.163.com
     # Store strategy of H2 database. disk or memory. Default value is disk.
     store-strategy: disk
