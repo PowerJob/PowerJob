@@ -66,7 +66,7 @@
     </appender>
     <!-- End of configuration for system logs. -->
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="DEFAULT_APPENDER"/>
         <appender-ref ref="ERROR_APPENDER"/>
