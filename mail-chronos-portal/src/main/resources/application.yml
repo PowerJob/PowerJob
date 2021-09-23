@@ -1,0 +1,35 @@
+#[app]
+spring:
+  profiles:
+    active: local
+  application:
+    name: chronos-portal
+
+#[web server]
+server:
+  servlet:
+    application-display-name: chronos-portal
+  port: 18087
+
+management:
+  server:
+    port: 1101
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  logger:
+    app: com.netease.mail
+
+#[eureka]
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+
+
+

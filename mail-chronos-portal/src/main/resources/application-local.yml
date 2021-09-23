@@ -1,0 +1,19 @@
+datasource:
+  chronos:
+    base:
+      jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
+      username: Echo009
+      password: ironman
+    support:
+      jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
+      username: Echo009
+      password: ironman
+
+
+chronos:
+  table:
+    prefix: sx_
+
+
+logging:
+  config: classpath:logback/logback-local.xml

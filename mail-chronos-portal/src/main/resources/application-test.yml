@@ -1,0 +1,12 @@
+
+#[eureka]
+eureka:
+  instance:
+    metadata-map:
+      env: test
+  client:
+    serviceUrl:
+      defaultZone: http://10.110.46.35:1111/eureka/
+
+logging:
+  config: classpath:logback/logback-test.xml
