@@ -13,8 +13,24 @@
     <artifactId>mail-chronos-portal-client</artifactId>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <chronos.version>1.0.0-SNAPSHOT</chronos.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.netease.mail</groupId>
+            <artifactId>mail-chronos-base</artifactId>
+            <version>${chronos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-openfeign-core</artifactId>
+            <version>2.2.9.RELEASE</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
 
 </project>

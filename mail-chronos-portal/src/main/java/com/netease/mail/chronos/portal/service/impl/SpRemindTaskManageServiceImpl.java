@@ -36,6 +36,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
 
     private static final String ORIGIN_ID_COL = "origin_id";
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public SpRemindTaskManageServiceImpl(SpRemindTaskInfoMapper spRemindTaskInfoMapper, @Qualifier("remindTaskIdGenerator") Snowflake snowflake) {
         this.spRemindTaskInfoMapper = spRemindTaskInfoMapper;
         this.snowflake = snowflake;
