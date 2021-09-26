@@ -1,6 +1,6 @@
 package com.netease.mail.chronos.portal.config.datasource.base;
 
-import com.netease.mail.chronos.portal.config.datasource.MyBatisDataSourceConfigSupport;
+import com.netease.mail.chronos.portal.config.datasource.AbstractMyBatisDataSourceConfigSupport;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -18,7 +18,7 @@ import javax.sql.DataSource;
  */
 @MapperScan(basePackages = ChronosBaseDatasourceConfig.PACKAGE, sqlSessionFactoryRef = "chronosBaseSqlSessionFactory")
 @Getter
-public class ChronosBaseDatasourceConfig extends MyBatisDataSourceConfigSupport {
+public class ChronosBaseDatasourceConfig extends AbstractMyBatisDataSourceConfigSupport {
 
     @Value("${chronos.table.prefix:}")
     private String tablePrefix;

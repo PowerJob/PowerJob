@@ -1,11 +1,36 @@
 server:
+  servlet:
+    application-display-name: chronos-portal
   port: 18087
 spring:
+  application:
+    name: chronos-portal
   profiles:
-    active: test
+    active: local
   jpa:
     open-in-view: false
 powerjob:
   worker:
     # Application name, used for grouping applications. Recommend to set the same value as project name.
     app-name: mail-common
+
+
+management:
+  server:
+    port: 1101
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  logger:
+    app: com.netease.mail
+
+#[eureka]
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true

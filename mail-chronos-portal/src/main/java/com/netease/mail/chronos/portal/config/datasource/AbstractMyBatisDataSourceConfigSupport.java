@@ -19,7 +19,7 @@ import java.util.Objects;
  * @author Echo009
  * @since 2021/9/21
  */
-public abstract class MyBatisDataSourceConfigSupport {
+public abstract class AbstractMyBatisDataSourceConfigSupport {
 
     /**
      * 获取配置文件路径

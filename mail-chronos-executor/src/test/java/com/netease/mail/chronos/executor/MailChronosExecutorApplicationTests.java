@@ -8,6 +8,7 @@ class MailChronosExecutorApplicationTests {
 
     @Test
     void contextLoads() {
+        // do nothing
     }
 
 }

@@ -7,7 +7,7 @@ powerjob:
     # Max length of result. Results that are longer than the value will be truncated.
     max-result-length: 4096
     # Address of PowerJob-server node(s). Ip:port or domain. Multiple addresses should be separated with comma.
-    server-address: chronos-server-qzbeta.test.mail.163.com
+    server-address: localhost:7700
     # Store strategy of H2 database. disk or memory. Default value is disk.
     store-strategy: disk
 
@@ -16,11 +16,7 @@ powerjob:
 eureka:
   instance:
     metadata-map:
-      env: test
-  client:
-    serviceUrl:
-      defaultZone: http://10.110.46.35:1111/eureka/
-
+      env: local
 
 logging:
-  config: classpath:logback/logback-test.xml
+  config: classpath:logback/logback-local.xml

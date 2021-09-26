@@ -1,6 +1,6 @@
 package com.netease.mail.chronos.executor.controller;
 
-import com.netease.mail.chronos.executor.response.BaseResponse;
+import com.netease.mail.chronos.base.response.BaseResponse;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +14,7 @@ public class HealthController {
 
     @RequestMapping("/check")
     public BaseResponse<String> check(){
-        return BaseResponse.success();
+        return BaseResponse.success("SUCCESS");
     }
 
 }
