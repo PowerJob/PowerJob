@@ -1,4 +1,19 @@
-
+datasource:
+  chronos:
+    base:
+      jdbcUrl: jdbc:mysql://10.110.9.218:6306/alpine
+      username: scheduler_x
+      password: 4hI0MZm51P
+      poolName: chronos-base-datasource
+      maxPoolSize: 10
+      minIdle: 1
+    support:
+      jdbcUrl: jdbc:mysql://10.110.9.218:6306/alpine
+      username: scheduler_x
+      password: 4hI0MZm51P
+      poolName: chronos-support-datasource
+      maxPoolSize: 10
+      minIdle: 1
 #[eureka]
 eureka:
   instance:

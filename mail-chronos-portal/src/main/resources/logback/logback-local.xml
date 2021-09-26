@@ -25,6 +25,10 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
+    <logger name="com.netflix.discovery" level="ERROR" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
     <logger name="tech.powerjob" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
     </logger>

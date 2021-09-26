@@ -18,7 +18,9 @@ public enum BaseStatusEnum implements StatusEnum {
     ILLEGAL_ARGUMENT(400, "参数错误"),
     ILLEGAL_ACCESS(401, "非法访问"),
     TOO_FREQUENTLY(402, "访问过于频繁"),
-    UNKNOWN(500, "服务器异常");
+    UNKNOWN(500, "服务器异常")
+
+    ;
 
     private final Integer code;
 

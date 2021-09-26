@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Echo009
- * @since 2021/9/26
+ * @since 2021/9/18
  */
 @FeignClient(value = "mail-chronos-portal",configuration = {
         PortalAuthConfig.class
@@ -19,7 +19,7 @@ public interface TaskManagerFeignApi {
 
     /**
      * 创建提醒任务（幂等)
-     * 如果存在同一个 originId 的任务将会创建失败
+     * 如果存在同一个 originId 的任务将会创建失败（返回 code = 1001）
      *
      * @param task 任务详情
      * @return 任务信息（含下一次触发时间）

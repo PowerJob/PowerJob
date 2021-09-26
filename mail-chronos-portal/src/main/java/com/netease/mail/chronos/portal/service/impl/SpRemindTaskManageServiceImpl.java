@@ -7,6 +7,7 @@ import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.base.utils.SimpleBeanConvertUtil;
 import com.netease.mail.chronos.base.utils.TimeUtil;
 import com.netease.mail.chronos.portal.entity.support.SpRemindTaskInfo;
+import com.netease.mail.chronos.portal.enums.RemindTaskApiStatusEnum;
 import com.netease.mail.chronos.portal.mapper.support.SpRemindTaskInfoMapper;
 import com.netease.mail.chronos.portal.param.RemindTask;
 import com.netease.mail.chronos.portal.service.SpRemindTaskManageService;
@@ -53,6 +54,12 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         log.info("[opt:create,message:start,originId:{},detail:{}]", task.getOriginId(), task);
         // 校验 UID , 任务参数
         checkBaseProperties(task);
+        // 校验是否重复
+        SpRemindTaskInfo origin = spRemindTaskInfoMapper.selectOne(QueryWrapperUtil.construct(ORIGIN_ID_COL, task.getOriginId()));
+        if (origin != null) {
+            throw new BaseException(RemindTaskApiStatusEnum.ALREADY_EXISTS);
+        }
+
         val nextTriggerTime = checkCronAndGetNextTriggerTime(task.getCron(),task.getTimeZoneId(), task.getStartTime(), task.getEndTime());
 
         val spRemindTaskInfo = new SpRemindTaskInfo();
