@@ -5,6 +5,7 @@ import com.netease.mail.chronos.base.exception.BaseException;
 import lombok.val;
 
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.TimeZone;
 
 /**
@@ -26,9 +27,10 @@ public class TimeUtil {
     }
 
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static boolean checkTimeZoneId(String timeZoneId) {
         try {
-            val of = ZoneId.of(timeZoneId);
+            ZoneId.of(timeZoneId);
         } catch (Exception e) {
             return false;
         }

@@ -20,6 +20,10 @@ public class RemindTask {
      * 时区 ID
      */
     private String timeZoneId;
+    /**
+     * 下次触发时间
+     */
+    private Long nextTriggerTime;
 
     private String param;
 

@@ -16,6 +16,7 @@ import com.netease.mail.chronos.portal.vo.RemindTaskVo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import lombok.var;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,6 +37,8 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
     private final Snowflake snowflake;
 
     private static final String ORIGIN_ID_COL = "origin_id";
+
+    private static final Long MIN_INTERVAL = 60_000L;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public SpRemindTaskManageServiceImpl(SpRemindTaskInfoMapper spRemindTaskInfoMapper, @Qualifier("remindTaskIdGenerator") Snowflake snowflake) {
@@ -60,7 +63,8 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
             throw new BaseException(RemindTaskApiStatusEnum.ALREADY_EXISTS);
         }
 
-        val nextTriggerTime = checkCronAndGetNextTriggerTime(task.getCron(),task.getTimeZoneId(), task.getStartTime(), task.getEndTime());
+
+        val nextTriggerTime = checkCronAndGetNextTriggerTime(task);
 
         val spRemindTaskInfo = new SpRemindTaskInfo();
         BeanUtils.copyProperties(task, spRemindTaskInfo);
@@ -73,7 +77,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
 
         spRemindTaskInfoMapper.insert(spRemindTaskInfo);
         log.info("[opt:create,message:success,originId:{},id:{},detail:{}]", task.getOriginId(), spRemindTaskInfo.getOriginId(), task);
-        return SimpleBeanConvertUtil.convert(spRemindTaskInfo,RemindTaskVo.class);
+        return SimpleBeanConvertUtil.convert(spRemindTaskInfo, RemindTaskVo.class);
     }
 
     /**
@@ -91,7 +95,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         }
         spRemindTaskInfoMapper.deleteById(spRemindTaskInfo.getId());
         log.info("[opt:delete,message:success,originId:{},id:{},detail:{}]", originId, spRemindTaskInfo.getId(), spRemindTaskInfo);
-        return SimpleBeanConvertUtil.convert(spRemindTaskInfo,RemindTaskVo.class);
+        return SimpleBeanConvertUtil.convert(spRemindTaskInfo, RemindTaskVo.class);
     }
 
     /**
@@ -104,7 +108,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
     public RemindTaskVo update(RemindTask task) {
         log.info("[opt:update,message:start,originId:{},detail:{}]", task.getOriginId(), task);
         checkBaseProperties(task);
-        val nextTriggerTime = checkCronAndGetNextTriggerTime(task.getCron(),task.getTimeZoneId(), task.getStartTime(), task.getEndTime());
+        val nextTriggerTime = checkCronAndGetNextTriggerTime(task);
         val spRemindTaskInfo = spRemindTaskInfoMapper.selectOne(QueryWrapperUtil.construct(ORIGIN_ID_COL, task.getOriginId()));
         if (spRemindTaskInfo == null) {
             throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "更新失败，该任务不存在");
@@ -117,7 +121,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
 
         spRemindTaskInfoMapper.updateById(spRemindTaskInfo);
         log.info("[opt:update,message:success,originId:{},detail:{}]", task.getOriginId(), task);
-        return SimpleBeanConvertUtil.convert(spRemindTaskInfo,RemindTaskVo.class);
+        return SimpleBeanConvertUtil.convert(spRemindTaskInfo, RemindTaskVo.class);
     }
 
     /**
@@ -132,7 +136,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         if (spRemindTaskInfo == null) {
             throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "更新失败，该任务不存在");
         }
-        return SimpleBeanConvertUtil.convert(spRemindTaskInfo,RemindTaskVo.class);
+        return SimpleBeanConvertUtil.convert(spRemindTaskInfo, RemindTaskVo.class);
     }
 
 
@@ -166,19 +170,34 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
 
 
     @SneakyThrows
-    public long checkCronAndGetNextTriggerTime(String cron,String timeZoneId, Long startTime, Long endTime) {
+    public long checkCronAndGetNextTriggerTime(RemindTask task) {
 
+        if (task.getNextTriggerTime() == null && StringUtils.isBlank(task.getCron())) {
+            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "下次触发时间和 Cron 表达式不能都为空！");
+        }
         // 校验时区是否合法
-        val timeZone = TimeUtil.getTimeZoneByZoneId(timeZoneId);
+        val timeZone = TimeUtil.getTimeZoneByZoneId(task.getTimeZoneId());
+        val now = System.currentTimeMillis();
+        // 优先取 nextTriggerTime
+        if (task.getNextTriggerTime() != null) {
+            // 60 秒内触发的 直接失败
+            if (now < task.getNextTriggerTime() + MIN_INTERVAL) {
+                throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "下次触发时间距离当前时间小于 60 s！");
+            }
+            // 不需要转换时区
+            return task.getNextTriggerTime();
+        }
 
         // 首先校验 cron 是否合法
-        val validExpression = CronExpression.isValidExpression(cron);
+        val validExpression = CronExpression.isValidExpression(task.getCron());
         if (!validExpression) {
             throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "无效的 cron 表达式");
         }
         // 这里一定不会出异常
-        val cronExpression = new CronExpression(cron);
+        val cronExpression = new CronExpression(task.getCron());
         cronExpression.setTimeZone(timeZone);
+        // 处理开始时间
+        var startTime = task.getStartTime() != null && task.getStartTime() > now ? task.getStartTime() : now;
 
         val nextValidTimeAfter = cronExpression.getNextValidTimeAfter(new Date(startTime));
         if (nextValidTimeAfter == null) {
@@ -188,7 +207,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
 
         val nextTriggerTime = nextValidTimeAfter.getTime();
 
-        if (endTime != null && nextTriggerTime > endTime) {
+        if (task.getEndTime() != null && nextTriggerTime > task.getEndTime()) {
             throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "cron 表达式已过期，下次调度时间大于调度周期的结束时间");
         }
         return nextTriggerTime;
