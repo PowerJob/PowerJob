@@ -4,6 +4,7 @@ package tech.powerjob.common.serialize;
 import com.esotericsoftware.kryo.kryo5.Kryo;
 import com.esotericsoftware.kryo.kryo5.io.Input;
 import com.esotericsoftware.kryo.kryo5.io.Output;
+import com.esotericsoftware.kryo.kryo5.serializers.CompatibleFieldSerializer;
 
 /**
  * 序列化器
@@ -23,6 +24,8 @@ public class SerializerUtils {
         kryo.setReferences(true); //默认值就是 true，添加此行的目的是为了提醒维护者，不要改变这个配置
         // 关闭序列化注册，会导致性能些许下降，但在分布式环境中，注册类生成ID不一致会导致错误
         kryo.setRegistrationRequired(false);
+        // 支持删除或者新增字段
+        kryo.setDefaultSerializer(CompatibleFieldSerializer.class);
         // 设置类加载器为线程上下文类加载器（如果Processor来源于容器，必须使用容器的类加载器，否则妥妥的CNF）
         kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
 
