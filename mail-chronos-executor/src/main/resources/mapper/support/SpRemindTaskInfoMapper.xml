@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.mail.chronos.executor.support.mapper.SpRemindTaskInfoMapper">
+
+
+    <select id="selectIdListByNextTriggerTimeAndEnable" resultType="com.netease.mail.chronos.executor.support.po.SpRemindTaskSimpleInfo">
+        select id,
+               next_trigger_time as "nextTriggerTime"
+        from sx_sp_remind_task_info
+        where next_trigger_time <![CDATA[ < ]]> #{maxTriggerTime}
+          and enable = 1;
+    </select>
+
+
+</mapper>

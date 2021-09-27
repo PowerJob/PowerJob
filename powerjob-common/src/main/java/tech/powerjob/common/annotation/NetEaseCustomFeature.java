@@ -16,7 +16,12 @@ import java.lang.annotation.*;
         ElementType.ANNOTATION_TYPE,
         ElementType.FIELD,
         ElementType.METHOD,
-        ElementType.CONSTRUCTOR
+        ElementType.CONSTRUCTOR,
+        ElementType.LOCAL_VARIABLE,
+        ElementType.PARAMETER,
+        ElementType.TYPE_PARAMETER,
+        ElementType.TYPE_USE,
+        ElementType.PACKAGE,
 })
 @Documented
 @Retention(RetentionPolicy.CLASS)

@@ -1,10 +1,10 @@
-drop table if exists sp_remind_task_info;
-create table sp_remind_task_info
+drop table if exists sx_sp_remind_task_info;
+create table sx_sp_remind_task_info
 (
     id                bigint primary key,
     origin_id         varchar(128) not null comment '原始 ID',
     uid               varchar(128) not null comment '用户ID',
-    cron              varchar(256) not null comment 'cron 表达式',
+    cron              varchar(256) default null comment 'cron 表达式',
     time_zone_id      varchar(64)  not null comment '时区',
     param             longtext comment '任务参数',
     extra             longtext comment '附加信息',
@@ -17,9 +17,9 @@ create table sp_remind_task_info
     disable_time      datetime              default null comment '被禁用的时间',
     update_time       datetime     not null comment '更新时间',
     create_time       datetime     not null comment '创建时间',
-    key idx1_sp_remind_task_info (next_trigger_time),
-    key idx2_sp_remind_task_info (uid),
-    unique key udx1_sp_remind_task_info (origin_id)
+    key idx1_sx_sp_remind_task_info (next_trigger_time,enable),
+    key idx2_sx_sp_remind_task_info (uid),
+    unique key udx1_sx_sp_remind_task_info (origin_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='提醒任务原始信息';

@@ -21,6 +21,17 @@
         <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
     </properties>
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus</artifactId>
+            <version>3.4.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.47</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -83,6 +94,11 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.netease.mail.mp</groupId>-->
+<!--            <artifactId>mp-api-notify</artifactId>-->
+<!--            <version>1.1.7-SNAPSHOT</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <dependencyManagement>

@@ -73,18 +73,20 @@ CREATE TABLE `sx_instance_info`
     `expected_trigger_time` bigint       DEFAULT NULL COMMENT '计划触发时间',
     `finished_time`         bigint       DEFAULT NULL COMMENT '执行结束时间',
     `last_report_time`      bigint       DEFAULT NULL COMMENT '最后上报时间',
-    `result`                text COMMENT '执行结果',
+    `result`                longtext COMMENT '执行结果',
     `running_times`         bigint       DEFAULT NULL COMMENT '总执行次数,用于重试判断',
     `status`                int      not NULL COMMENT '任务状态,1:等待派发WAITING_DISPATCH/2:等待Worker接收WAITING_WORKER_RECEIVE/3:运行中RUNNING/4:失败FAILED/5:成功SUCCEED/9:取消CANCELED/10:手动停止STOPPED',
     `task_tracker_address`  varchar(255) DEFAULT NULL COMMENT 'TaskTracker地址',
     `wf_instance_id`        bigint       DEFAULT NULL COMMENT '工作流实例ID',
+    `additional_data`       longtext comment '附加信息 (JSON)',
     `gmt_create`            datetime not NULL COMMENT '创建时间',
     `gmt_modified`          datetime not NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
     KEY `idx01_instance_info` (`job_id`),
     KEY `idx02_instance_info` (`app_id`),
     KEY `idx03_instance_info` (`instance_id`),
-    KEY `idx04_instance_info` (`wf_instance_id`)
+    KEY `idx04_instance_info` (`wf_instance_id`),
+    KEY `idx05_instance_info` (`expected_trigger_time`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -126,7 +128,8 @@ CREATE TABLE `sx_job_info`
     `gmt_modified`         datetime not NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
     KEY `idx01_job_info` (`app_id`),
-    KEY `idx02_job_info` (`job_name`)
+    KEY `idx02_job_info` (`job_name`),
+    KEY `idx03_job_info` (`next_trigger_time`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -241,7 +244,7 @@ CREATE TABLE `sx_workflow_instance_info`
     PRIMARY KEY (`id`),
     unique index uidx01_sx_wf_instance (wf_instance_id),
     index idx01_sx_wf_instance (workflow_id),
-    index idx02_sx_wf_instance (app_id,status)
+    index idx02_sx_wf_instance (app_id, status)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4

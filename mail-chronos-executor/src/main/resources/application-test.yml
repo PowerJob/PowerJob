@@ -11,7 +11,15 @@ powerjob:
     # Store strategy of H2 database. disk or memory. Default value is disk.
     store-strategy: disk
 
-
+datasource:
+  chronos:
+    support:
+      jdbcUrl: jdbc:mysql://10.110.9.218:6306/alpine
+      username: scheduler_x
+      password: 4hI0MZm51P
+      poolName: chronos-support-datasource
+      maxPoolSize: 10
+      minIdle: 1
 #[eureka]
 eureka:
   instance:

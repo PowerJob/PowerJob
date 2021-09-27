@@ -1,10 +1,10 @@
 server:
   servlet:
-    application-display-name: chronos-portal
+    application-display-name: chronos-executor
   port: 18087
 spring:
   application:
-    name: chronos-portal
+    name: chronos-executor
   profiles:
     active: local
   jpa:

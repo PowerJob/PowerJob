@@ -1,6 +1,9 @@
 package tech.powerjob.worker.core.processor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
+import tech.powerjob.common.po.TaskAdditionalData;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.log.OmsLogger;
 import lombok.Getter;
@@ -71,5 +74,10 @@ public class TaskContext {
      * 工作流上下文数据
      */
     private WorkflowContext workflowContext;
+    /**
+     * 任务附加数据
+     */
+    @NetEaseCustomFeature(CustomFeatureEnum.TASK_ADDITIONAL_DATA)
+    private TaskAdditionalData additionalData;
 
 }

@@ -1,6 +1,8 @@
 package tech.powerjob.worker.pojo.request;
 
 import tech.powerjob.common.PowerSerializable;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 import lombok.Getter;
@@ -19,17 +21,23 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TaskTrackerStartTaskReq implements PowerSerializable {
 
-    // TaskTracker 地址
+    /**
+     * TaskTracker 地址
+     */
     private String taskTrackerAddress;
     private InstanceInfo instanceInfo;
 
     private String taskId;
     private String taskName;
     private byte[] taskContent;
-    // 子任务当前重试次数
+    /**
+     * 子任务当前重试次数
+     */
     private int taskCurrentRetryNums;
 
-    // 秒级任务专用
+    /**
+     *  秒级任务专用
+     */
     private long subInstanceId;
 
 

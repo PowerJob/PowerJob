@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.exception.PowerJobException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -15,6 +16,7 @@ import java.io.IOException;
  * @author tjq
  * @since 2020/4/16
  */
+@Slf4j
 public class JsonUtils {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -65,6 +67,16 @@ public class JsonUtils {
 
     public static <T> T parseObject(String json, TypeReference<T> typeReference) throws IOException {
         return OBJECT_MAPPER.readValue(json, typeReference);
+    }
+
+    public static <T> T parseObjectIgnoreException(String json, Class<T> clz) {
+        try {
+            return OBJECT_MAPPER.readValue(json, clz);
+        }catch (Exception e) {
+            log.error("unable to parse json string to object,current string:{}",json,e);
+            return null;
+        }
+
     }
 
     public static <T> T parseObjectUnsafe(String json, Class<T> clz) {

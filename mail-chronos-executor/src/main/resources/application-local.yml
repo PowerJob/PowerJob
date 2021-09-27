@@ -7,10 +7,16 @@ powerjob:
     # Max length of result. Results that are longer than the value will be truncated.
     max-result-length: 4096
     # Address of PowerJob-server node(s). Ip:port or domain. Multiple addresses should be separated with comma.
-    server-address: localhost:7700
+    server-address: localhost:80
     # Store strategy of H2 database. disk or memory. Default value is disk.
     store-strategy: disk
 
+datasource:
+  chronos:
+    support:
+      jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
+      username: Echo009
+      password: ironman
 
 #[eureka]
 eureka:

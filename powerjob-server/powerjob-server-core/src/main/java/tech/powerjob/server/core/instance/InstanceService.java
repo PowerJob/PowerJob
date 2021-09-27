@@ -3,16 +3,20 @@ package tech.powerjob.server.core.instance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.po.TaskAdditionalData;
 import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerStopInstanceReq;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.response.InstanceInfoDTO;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.common.constants.InstanceType;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.timewheel.TimerFuture;
@@ -99,6 +103,12 @@ public class InstanceService {
         newInstanceInfo.setGmtCreate(now);
         newInstanceInfo.setGmtModified(now);
 
+        @NetEaseCustomFeature(CustomFeatureEnum.TASK_ADDITIONAL_DATA)
+        TaskAdditionalData taskAdditionalData = new TaskAdditionalData();
+        // 记录原始期望触发时间
+        taskAdditionalData.setOriginTriggerTime(expectTriggerTime);
+        newInstanceInfo.setAdditionalData(JsonUtils.toJSONString(taskAdditionalData));
+
         instanceInfoRepository.save(newInstanceInfo);
         return instanceId;
     }
@@ -109,9 +119,9 @@ public class InstanceService {
      * @param instanceId 任务实例ID
      */
     @DesignateServer
-    public void stopInstance(Long appId,Long instanceId) {
+    public void stopInstance(Long appId, Long instanceId) {
 
-        log.info("[Instance-{}] try to stop the instance instance in appId: {}", instanceId,appId);
+        log.info("[Instance-{}] try to stop the instance instance in appId: {}", instanceId, appId);
         try {
 
             InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
@@ -287,7 +297,7 @@ public class InstanceService {
                     instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());
                     instanceDetail.setInstanceParams(instanceInfoDO.getInstanceParams());
                     return instanceDetail;
-                }else {
+                } else {
                     log.warn("[Instance-{}] ask InstanceStatus from TaskTracker failed, the message is {}.", instanceId, askResponse.getMessage());
                 }
             } catch (Exception e) {

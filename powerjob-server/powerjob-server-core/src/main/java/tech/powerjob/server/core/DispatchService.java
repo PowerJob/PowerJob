@@ -2,6 +2,7 @@ package tech.powerjob.server.core;
 
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
 import tech.powerjob.common.enums.*;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.server.core.instance.InstanceManager;
@@ -169,6 +170,12 @@ public class DispatchService {
         // 构造请求
         ServerScheduleJobReq req = new ServerScheduleJobReq();
         BeanUtils.copyProperties(jobInfo, req);
+
+        @NetEaseCustomFeature(CustomFeatureEnum.TASK_ADDITIONAL_DATA)
+        String additionalData = instanceInfo.getAdditionalData();
+        // 传递附加信息
+        req.setAdditionalData(additionalData);
+
         // 传入 JobId
         req.setJobId(jobInfo.getId());
         // 传入 InstanceParams

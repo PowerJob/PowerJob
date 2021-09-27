@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author Echo009
  */
 @Configuration
-@Import(CustomExceptionHandler.class)
+@Import({CustomExceptionHandler.class})
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 

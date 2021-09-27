@@ -1,7 +1,11 @@
 package tech.powerjob.worker.core.executor;
 
 import akka.actor.ActorSelection;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.common.enums.ExecuteType;
+import tech.powerjob.common.po.TaskAdditionalData;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.ThreadLocalStore;
 import tech.powerjob.worker.common.constants.TaskConstant;
@@ -114,6 +118,10 @@ public class ProcessorRunnable implements Runnable {
         taskContext.setJobParams(instanceInfo.getJobParams());
         taskContext.setInstanceParams(instanceInfo.getInstanceParams());
         taskContext.setOmsLogger(omsLogger);
+        @NetEaseCustomFeature(CustomFeatureEnum.TASK_ADDITIONAL_DATA)
+        TaskAdditionalData taskAdditionalData = JsonUtils.parseObjectIgnoreException(instanceInfo.getAdditionalData(), TaskAdditionalData.class);
+        taskContext.setAdditionalData(taskAdditionalData);
+
         if (task.getTaskContent() != null && task.getTaskContent().length > 0) {
             taskContext.setSubTask(SerializerUtils.deSerialized(task.getTaskContent()));
         }

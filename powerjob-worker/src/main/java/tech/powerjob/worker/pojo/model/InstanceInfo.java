@@ -1,6 +1,8 @@
 package tech.powerjob.worker.pojo.model;
 
 import lombok.Data;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 
 import java.io.Serializable;
 
@@ -22,33 +24,48 @@ public class InstanceInfo implements Serializable {
 
     /**
      * 任务执行处理器信息
+     * 任务执行类型，单机、广播、MR
      */
-    // 任务执行类型，单机、广播、MR
     private String executeType;
-    // 处理器类型（JavaBean、Jar、脚本等）
+    /**
+     * 处理器类型（JavaBean、Jar、脚本等）
+     */
     private String processorType;
-    // 处理器信息
+    /**
+     * 处理器信息
+     */
     private String processorInfo;
-    // 定时类型
+    /**
+     *  定时类型
+     */
     private int timeExpressionType;
 
     /**
      * 超时时间
+     * 整个任务的总体超时时间
      */
-    // 整个任务的总体超时时间
     private long instanceTimeoutMS;
-
     /**
      * 任务运行参数
+     * 任务级别的参数，相当于类的static变量
      */
-    // 任务级别的参数，相当于类的static变量
     private String jobParams;
-    // 实例级别的参数，相当于类的普通变量
+    /**
+     * 实例级别的参数，相当于类的普通变量
+     */
     private String instanceParams;
-
-
-    // 每台机器的处理线程数上限
+    /**
+     * 每台机器的处理线程数上限
+     */
     private int threadConcurrency;
-    // 子任务重试次数（任务本身的重试机制由server控制）
+    /**
+     * 子任务重试次数（任务本身的重试机制由server控制）
+     */
     private int taskRetryNum;
+
+    /**
+     * 附加信息
+     */
+    @NetEaseCustomFeature(CustomFeatureEnum.TASK_ADDITIONAL_DATA)
+    private String additionalData;
 }

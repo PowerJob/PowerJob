@@ -1,5 +1,7 @@
 package tech.powerjob.server.persistence.remote.model;
 
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.common.enums.InstanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -93,6 +95,11 @@ public class InstanceInfoDO {
      * 总共执行的次数（用于重试判断）
      */
     private Long runningTimes;
+    /**
+     * 附加信息
+     */
+    @NetEaseCustomFeature(CustomFeatureEnum.TASK_ADDITIONAL_DATA)
+    private String additionalData;
 
 
     private Date gmtCreate;
