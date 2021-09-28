@@ -30,16 +30,26 @@ public class OmsLogHandler {
     private final ActorSystem actorSystem;
     private final ServerDiscoveryService serverDiscoveryService;
 
-    // 处理线程，需要通过线程池启动
+    /**
+     * 处理线程，需要通过线程池启动
+     */
     public final Runnable logSubmitter = new LogSubmitter();
-    // 上报锁，只需要一个线程上报即可
+    /**
+     * 上报锁，只需要一个线程上报即可
+     */
     private final Lock reportLock = new ReentrantLock();
-    // 生产者消费者模式，异步上传日志
+    /**
+     * 生产者消费者模式，异步上传日志
+     */
     private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue();
 
-    // 每次上报携带的数据条数
+    /**
+     * 每次上报携带的数据条数
+     */
     private static final int BATCH_SIZE = 20;
-    // 本地囤积阈值
+    /**
+     * 本地囤积阈值
+     */
     private static final int REPORT_SIZE = 1024;
 
     public OmsLogHandler(String workerAddress, ActorSystem actorSystem, ServerDiscoveryService serverDiscoveryService) {
@@ -53,15 +63,19 @@ public class OmsLogHandler {
      * @param instanceId 任务实例ID
      * @param logContent 日志内容
      */
+
+    @SuppressWarnings("AlibabaAvoidManuallyCreateThread")
     public void submitLog(long instanceId, LogLevel logLevel, String logContent) {
 
         if (logQueue.size() > REPORT_SIZE) {
             // 线程的生命周期是个不可循环的过程，一个线程对象结束了不能再次start，只能一直创建和销毁
             new Thread(logSubmitter).start();
         }
-
         InstanceLogContent tuple = new InstanceLogContent(instanceId, System.currentTimeMillis(), logLevel.getV(), logContent);
-        logQueue.offer(tuple);
+        boolean offer = logQueue.offer(tuple);
+        if (!offer){
+            log.error("[OmsLogHandler]fail to submit log , instanceId:{}",instanceId);
+        }
     }
 
 
