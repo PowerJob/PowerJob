@@ -1,4 +1,4 @@
-package com.netease.mail.protal.client.param;
+package com.netease.mail.chronos.portal.client.param;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

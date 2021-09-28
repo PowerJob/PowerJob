@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @since 2021/08/25
  */
 @SpringBootApplication
-//@EnableFeignClients(basePackages = {"com.netease.mail.mp.api.*"})
+//@EnableFeignClients(basePackages = {"com.netease.mail.chronos.portal.client.*"})
 public class MailChronosExecutorApplication {
 
     public static void main(String[] args) {

@@ -1,4 +1,4 @@
-package com.netease.mail.protal.client.config;
+package com.netease.mail.chronos.portal.client.config;
 
 import com.netease.mail.chronos.base.constant.AuthConstant;
 import com.netease.mail.chronos.base.po.AuthInfo;

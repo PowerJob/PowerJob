@@ -1,9 +1,9 @@
-package com.netease.mail.protal.client.api;
+package com.netease.mail.chronos.portal.client.api;
 
 import com.netease.mail.chronos.base.response.BaseResponse;
-import com.netease.mail.protal.client.config.PortalAuthConfig;
-import com.netease.mail.protal.client.param.RemindTask;
-import com.netease.mail.protal.client.vo.RemindTaskVo;
+import com.netease.mail.chronos.portal.client.config.PortalAuthConfig;
+import com.netease.mail.chronos.portal.client.param.RemindTask;
+import com.netease.mail.chronos.portal.client.vo.RemindTaskVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
