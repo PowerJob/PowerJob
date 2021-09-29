@@ -28,9 +28,9 @@ public class RemindTaskVo {
     private String uid;
 
     /**
-     * cron 表达式
+     * iCalendar 重复规则
      */
-    private String cron;
+    private String recurrenceRule;
 
     /**
      * 任务参数

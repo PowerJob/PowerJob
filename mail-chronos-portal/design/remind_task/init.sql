@@ -4,7 +4,7 @@ create table sx_sp_remind_task_info
     id                bigint primary key,
     origin_id         varchar(128) not null comment '原始 ID',
     uid               varchar(128) not null comment '用户ID',
-    cron              varchar(256) default null comment 'cron 表达式',
+    recurrence_rule   varchar(2048) default null comment 'iCalendar 重复规则',
     time_zone_id      varchar(64)  not null comment '时区',
     param             longtext comment '任务参数',
     extra             longtext comment '附加信息',

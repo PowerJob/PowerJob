@@ -1,7 +1,7 @@
 package com.netease.mail.chronos.executor.support.processor;
 
 import cn.hutool.core.collection.CollUtil;
-import com.netease.mail.chronos.base.utils.CronUtil;
+import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
 import lombok.AllArgsConstructor;
@@ -98,19 +98,19 @@ public class RemindTaskProcessor implements MapProcessor {
             // 更新状态
             spRemindTaskInfo.setTriggerTimes(spRemindTaskInfo.getTriggerTimes() + 1);
             // 计算下次调度时间 , 理论上不应该会存在每分钟调度一次的提醒任务（业务场景决定）
-            String cron = spRemindTaskInfo.getCron();
+            String recurrenceRule = spRemindTaskInfo.getRecurrenceRule();
             // 为空直接 disable (触发一次的任务)
-            if (StringUtils.isBlank(cron)) {
+            if (StringUtils.isBlank(recurrenceRule)) {
                 disableTask(spRemindTaskInfo);
             } else {
                 try {
                     // 更新 nextTriggerTime , 不处理 miss fire 的情形 ？
-                    long nextTriggerTime = CronUtil.calculateNextTriggerTime(spRemindTaskInfo.getCron(), spRemindTaskInfo.getTimeZoneId(), System.currentTimeMillis());
+                    long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(spRemindTaskInfo.getRecurrenceRule(), spRemindTaskInfo.getStartTime(), System.currentTimeMillis());
                     // 检查生命周期
                     handleLifeCycle(spRemindTaskInfo, nextTriggerTime);
                 } catch (Exception e) {
                     // 记录异常信息
-                    omsLogger.error("处理任务(id:{},originId:{})失败，计算下次触发时间失败，已将其自动禁用，请检查 cron 表达式是否合法！cron:{}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(), spRemindTaskInfo.getCron(), e);
+                    omsLogger.error("处理任务(id:{},originId:{})失败，计算下次触发时间失败，已将其自动禁用，请检查重复规则表达式是否合法！recurrenceRule:{}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(), spRemindTaskInfo.getRecurrenceRule(), e);
                     disableTask(spRemindTaskInfo);
                 }
             }
@@ -120,7 +120,10 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
     private void handleLifeCycle(SpRemindTaskInfo spRemindTaskInfo, long nextTriggerTime) {
-        if (spRemindTaskInfo.getEndTime() != null && spRemindTaskInfo.getEndTime() <= nextTriggerTime) {
+        // 当不存在下一次调度时间时，nextTriggerTime = 0
+        if (nextTriggerTime == 0L) {
+            disableTask(spRemindTaskInfo);
+        } else if (spRemindTaskInfo.getEndTime() != null && spRemindTaskInfo.getEndTime() < nextTriggerTime) {
             disableTask(spRemindTaskInfo);
         } else if (spRemindTaskInfo.getTimesLimit() > 0 && spRemindTaskInfo.getTriggerTimes() >= spRemindTaskInfo.getTimesLimit()) {
             disableTask(spRemindTaskInfo);

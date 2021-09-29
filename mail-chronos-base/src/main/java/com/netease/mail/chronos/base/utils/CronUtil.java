@@ -37,8 +37,8 @@ public class CronUtil {
             throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "无效的 cron 表达式" + cron);
         }
         cronExpression.setTimeZone(tz);
-        return cronExpression.getNextValidTimeAfter(new Date(startTime)).getTime();
-
+        Date nextValidTimeAfter = cronExpression.getNextValidTimeAfter(new Date(startTime));
+        return nextValidTimeAfter == null ? 0L : nextValidTimeAfter.getTime();
     }
 
 

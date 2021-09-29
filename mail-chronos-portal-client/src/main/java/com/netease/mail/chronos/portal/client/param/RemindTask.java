@@ -17,9 +17,9 @@ public class RemindTask {
 
     private String cron;
     /**
-     * 时区 ID
+     * iCalendar 重复规则
      */
-    private String timeZoneId;
+    private String recurrenceRule;
     /**
      * 下次触发时间
      * 考虑到创建任务的时延，这个时间必须大于当前时间 60 s 以上

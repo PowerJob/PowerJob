@@ -14,8 +14,10 @@ public class RemindTask {
     private String originId;
 
     private String uid;
-
-    private String cron;
+    /**
+     * iCalendar 重复规则
+     */
+    private String recurrenceRule;
     /**
      * 时区 ID
      */

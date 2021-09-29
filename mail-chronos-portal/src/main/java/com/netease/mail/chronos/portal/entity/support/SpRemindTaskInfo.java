@@ -34,9 +34,9 @@ public class SpRemindTaskInfo implements Serializable {
     private String uid;
 
     /**
-     * cron 表达式
+     * iCalendar 重复规则
      */
-    private String cron;
+    private String recurrenceRule;
 
 
     private String timeZoneId;

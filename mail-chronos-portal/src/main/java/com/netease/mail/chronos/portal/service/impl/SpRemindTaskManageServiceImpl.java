@@ -1,9 +1,9 @@
 package com.netease.mail.chronos.portal.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
-import com.netease.mail.chronos.base.cron.CronExpression;
 import com.netease.mail.chronos.base.enums.BaseStatusEnum;
 import com.netease.mail.chronos.base.exception.BaseException;
+import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
 import com.netease.mail.chronos.base.utils.SimpleBeanConvertUtil;
 import com.netease.mail.chronos.base.utils.TimeUtil;
 import com.netease.mail.chronos.portal.entity.support.SpRemindTaskInfo;
@@ -16,7 +16,6 @@ import com.netease.mail.chronos.portal.vo.RemindTaskVo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -64,7 +63,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         }
 
 
-        val nextTriggerTime = checkCronAndGetNextTriggerTime(task);
+        val nextTriggerTime = checkRecurrenceRuleAndGetNextTriggerTime(task);
 
         val spRemindTaskInfo = new SpRemindTaskInfo();
         BeanUtils.copyProperties(task, spRemindTaskInfo);
@@ -108,7 +107,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
     public RemindTaskVo update(RemindTask task) {
         log.info("[opt:update,message:start,originId:{},detail:{}]", task.getOriginId(), task);
         checkBaseProperties(task);
-        val nextTriggerTime = checkCronAndGetNextTriggerTime(task);
+        val nextTriggerTime = checkRecurrenceRuleAndGetNextTriggerTime(task);
         val spRemindTaskInfo = spRemindTaskInfoMapper.selectOne(QueryWrapperUtil.construct(ORIGIN_ID_COL, task.getOriginId()));
         if (spRemindTaskInfo == null) {
             throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "更新失败，该任务不存在");
@@ -150,7 +149,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         }
         // 设置默认的起始时间
         if (task.getStartTime() == null) {
-            task.setStartTime(System.currentTimeMillis());
+            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "任务的起始时间（start_time）不能为空");
         }
 
         if (task.getEndTime() != null) {
@@ -170,13 +169,13 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
 
 
     @SneakyThrows
-    public long checkCronAndGetNextTriggerTime(RemindTask task) {
+    public long checkRecurrenceRuleAndGetNextTriggerTime(RemindTask task) {
 
-        if (task.getNextTriggerTime() == null && StringUtils.isBlank(task.getCron())) {
-            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "下次触发时间和 Cron 表达式不能都为空！");
+        if (task.getNextTriggerTime() == null && StringUtils.isBlank(task.getRecurrenceRule())) {
+            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "下次触发时间和日历重复规则表达式不能都为空！");
         }
         // 校验时区是否合法
-        val timeZone = TimeUtil.getTimeZoneByZoneId(task.getTimeZoneId());
+        TimeUtil.getTimeZoneByZoneId(task.getTimeZoneId());
         val now = System.currentTimeMillis();
         // 优先取 nextTriggerTime
         if (task.getNextTriggerTime() != null) {
@@ -184,33 +183,23 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
             if (now < task.getNextTriggerTime() + MIN_INTERVAL) {
                 throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "下次触发时间距离当前时间小于 60 s！");
             }
+            // 当 nextTriggerTime 有效则清空重复规则
+            task.setRecurrenceRule(null);
             // 不需要转换时区
             return task.getNextTriggerTime();
         }
+        long nextValidTimeAfter = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(task.getRecurrenceRule(), task.getStartTime(), now);
 
-        // 首先校验 cron 是否合法
-        val validExpression = CronExpression.isValidExpression(task.getCron());
-        if (!validExpression) {
-            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "无效的 cron 表达式");
-        }
-        // 这里一定不会出异常
-        val cronExpression = new CronExpression(task.getCron());
-        cronExpression.setTimeZone(timeZone);
-        // 处理开始时间
-        var startTime = task.getStartTime() != null && task.getStartTime() > now ? task.getStartTime() : now;
-
-        val nextValidTimeAfter = cronExpression.getNextValidTimeAfter(new Date(startTime));
-        if (nextValidTimeAfter == null) {
+        // 等于 0 表示不存在下一次触发时间
+        if (nextValidTimeAfter == 0L) {
             // 不存在下一次调度时间
-            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "cron 表达式已过期");
+            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "当前重复规则下不存在有效的下次调度时间");
         }
 
-        val nextTriggerTime = nextValidTimeAfter.getTime();
-
-        if (task.getEndTime() != null && nextTriggerTime > task.getEndTime()) {
-            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "cron 表达式已过期，下次调度时间大于调度周期的结束时间");
+        if (task.getEndTime() != null && nextValidTimeAfter > task.getEndTime()) {
+            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "重复规则已过期，下次调度时间大于调度周期的结束时间");
         }
-        return nextTriggerTime;
+        return nextValidTimeAfter;
     }
 
 }
