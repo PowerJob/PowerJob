@@ -26,11 +26,11 @@ class CronUtilTest {
     @SneakyThrows
     void iCalendarTest() {
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Date date2 = simpleDateFormat.parse("2021-09-20 12:00:00");
-        Date date1 = simpleDateFormat.parse("2021-09-30 12:00:00");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date2 = simpleDateFormat.parse("2021-09-29 20:00:00");
+        Date date1 = simpleDateFormat.parse("2021-09-29 20:00:01");
 
-        long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime("FREQ=WEEKLY;COUNT=1;WKST=SU;BYDAY=TH", date2.getTime(), date1.getTime());
+        long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime("FREQ=MINUTELY;INTERVAL=1;COUNT=1", date2.getTime(), date1.getTime());
         System.out.println(nextTriggerTime);
         System.out.println(simpleDateFormat.format(nextTriggerTime));
     }

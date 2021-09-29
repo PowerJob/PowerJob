@@ -10,9 +10,6 @@ datasource:
       password: ironman
 
 
-chronos:
-  table:
-    prefix: sx_
 
 
 logging:

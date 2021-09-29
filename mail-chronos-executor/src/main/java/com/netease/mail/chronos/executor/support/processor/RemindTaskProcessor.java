@@ -60,7 +60,7 @@ public class RemindTaskProcessor implements MapProcessor {
             }
             // 小于阈值直接执行
             if (idList.size() <= BATCH_SIZE) {
-                omsLogger.info("本次无需进行任务分片! 一共 {} 条", minTriggerTime, maxTriggerTime);
+                omsLogger.info("本次无需进行任务分片! 一共 {} 条", idList.size());
                 processCore(idList, minTriggerTime, maxTriggerTime, omsLogger);
                 return new ProcessResult(true, "任务不需要分片,处理成功!");
             }

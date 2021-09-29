@@ -34,3 +34,8 @@ eureka:
   client:
     fetch-registry: true
     register-with-eureka: true
+
+
+chronos:
+  table:
+    prefix: sx_

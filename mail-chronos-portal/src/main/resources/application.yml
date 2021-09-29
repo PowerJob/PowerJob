@@ -32,4 +32,9 @@ eureka:
     register-with-eureka: true
 
 
+chronos:
+  table:
+    prefix: sx_
+
+
 

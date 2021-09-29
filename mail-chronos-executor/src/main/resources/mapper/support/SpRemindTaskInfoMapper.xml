@@ -8,7 +8,7 @@
     <select id="selectIdListByNextTriggerTimeAndEnable" resultType="com.netease.mail.chronos.executor.support.po.SpRemindTaskSimpleInfo">
         select id,
                next_trigger_time as "nextTriggerTime"
-        from sx_sp_remind_task_info
+        from sp_remind_task_info
         where next_trigger_time <![CDATA[ < ]]> #{maxTriggerTime}
           and enable = 1;
     </select>
