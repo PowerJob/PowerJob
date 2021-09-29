@@ -1,0 +1,50 @@
+ 
+pipeline {
+ 
+  agent {
+    node {
+      label 'master'
+    }
+  }
+    // 拉取代码
+  stages {
+    stage('GetCode') {
+      steps {
+        sleep 5
+      }
+    }
+ 
+    // 代码打包
+    stage('Maven Build') {
+        steps {
+          sh '''
+          export JAVA_HOME==/usr/local/jdk
+          cd /var/lib/jenkins/workspace/PowerJob
+          /opt/app/maven/bin/mvn clean install -Ptest
+          '''
+        }
+    }
+ 
+    // 推送到镜像仓库
+    // stage('Push Image') {
+    //   steps {
+    //   sh '''
+    //     REPOSITORY=registry.yunson.com/hahamall/portal:${Tag}
+    //     docker build -t $REPOSITORY /root/.jenkins/workspace/now-pipeline-test/mall-portal/docker/pre-prod/
+    //     docker login registry.yunson.com -u admin -p Harbor12345
+    //     docker push $REPOSITORY
+    //     '''
+    //   }
+    // }
+ 
+    // 部署到Docker主机
+    // stage('Deploy to Docker') {
+    //   steps {
+    //    //远程执行脚本
+    //   sh '''
+    //    ssh -i /root/.ssh/harbor root@registry.yunson.com "sh /root/portal/portal.sh"
+    //     '''
+    //   }
+    // }
+  }
+}
