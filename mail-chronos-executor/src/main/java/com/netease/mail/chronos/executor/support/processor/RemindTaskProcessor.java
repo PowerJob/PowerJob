@@ -26,6 +26,9 @@ import tech.powerjob.worker.log.OmsLogger;
 
 import java.util.*;
 
+import static com.netease.mail.chronos.executor.support.common.CommonLogic.disableTask;
+import static com.netease.mail.chronos.executor.support.common.CommonLogic.updateTriggerTime;
+
 /**
  * @author Echo009
  * @since 2021/9/24
@@ -136,18 +139,7 @@ public class RemindTaskProcessor implements MapProcessor {
         }
     }
 
-    private void updateTriggerTime(OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {
-        try {
-            // 更新 nextTriggerTime , 不处理 miss fire 的情形 ？
-            long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(spRemindTaskInfo.getRecurrenceRule(), spRemindTaskInfo.getStartTime(), System.currentTimeMillis());
-            // 检查生命周期
-            handleLifeCycle(spRemindTaskInfo, nextTriggerTime);
-        } catch (Exception e) {
-            // 记录异常信息
-            omsLogger.error("处理任务(id:{},originId:{})失败，计算下次触发时间失败，已将其自动禁用，请检查重复规则表达式是否合法！recurrenceRule:{}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(), spRemindTaskInfo.getRecurrenceRule(), e);
-            disableTask(spRemindTaskInfo);
-        }
-    }
+
 
 
     @SuppressWarnings("all")
@@ -178,25 +170,6 @@ public class RemindTaskProcessor implements MapProcessor {
         private String uid;
     }
 
-
-    private void handleLifeCycle(SpRemindTaskInfo spRemindTaskInfo, long nextTriggerTime) {
-        // 当不存在下一次调度时间时，nextTriggerTime = 0
-        if (nextTriggerTime == 0L) {
-            disableTask(spRemindTaskInfo);
-        } else if (spRemindTaskInfo.getEndTime() != null && spRemindTaskInfo.getEndTime() < nextTriggerTime) {
-            disableTask(spRemindTaskInfo);
-        } else if (spRemindTaskInfo.getTimesLimit() > 0 && spRemindTaskInfo.getTriggerTimes() >= spRemindTaskInfo.getTimesLimit()) {
-            disableTask(spRemindTaskInfo);
-        } else {
-            spRemindTaskInfo.setNextTriggerTime(nextTriggerTime);
-        }
-    }
-
-
-    private void disableTask(SpRemindTaskInfo spRemindTaskInfo) {
-        spRemindTaskInfo.setEnable(false);
-        spRemindTaskInfo.setDisableTime(new Date());
-    }
 
 
     private boolean shouldSkip(long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {

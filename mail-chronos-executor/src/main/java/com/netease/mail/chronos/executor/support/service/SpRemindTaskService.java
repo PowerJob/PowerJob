@@ -33,4 +33,18 @@ public interface SpRemindTaskService {
      */
     int updateById(SpRemindTaskInfo spRemindTaskInfo);
 
+    /**
+     * 获取需要被清理的任务
+     */
+    List<SpRemindTaskInfo> obtainOutOfDateDisableTask();
+
+    /**
+     * 获取停滞的任务
+     * trigger time 已过期，且没有被 disable
+     */
+    List<SpRemindTaskInfo> obtainStagnantTask();
+
+
+    void deleteById(Long id);
+
 }

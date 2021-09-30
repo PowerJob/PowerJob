@@ -1,5 +1,7 @@
 package com.netease.mail.chronos.executor.support.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.netease.mail.chronos.base.utils.TimeUtil;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.mapper.SpRemindTaskInfoMapper;
 import com.netease.mail.chronos.executor.support.po.SpRemindTaskSimpleInfo;
@@ -9,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,10 +42,6 @@ public class SpRemindTaskServiceImpl implements SpRemindTaskService {
     }
 
 
-
-
-
-
     @Override
     public SpRemindTaskInfo selectById(long id) {
         return spRemindTaskInfoMapper.selectById(id);
@@ -50,6 +49,28 @@ public class SpRemindTaskServiceImpl implements SpRemindTaskService {
 
     @Override
     public int updateById(SpRemindTaskInfo spRemindTaskInfo) {
-       return spRemindTaskInfoMapper.updateById(spRemindTaskInfo);
+        return spRemindTaskInfoMapper.updateById(spRemindTaskInfo);
+    }
+
+    @Override
+    public List<SpRemindTaskInfo> obtainOutOfDateDisableTask() {
+        Date b15 = TimeUtil.obtainNextNDay(new Date(), -15);
+        QueryWrapper<SpRemindTaskInfo> wrapper = new QueryWrapper<>();
+        wrapper.eq("enable", false).le("disable_time", b15);
+        return spRemindTaskInfoMapper.selectList(wrapper);
+    }
+
+    @Override
+    public List<SpRemindTaskInfo> obtainStagnantTask() {
+        // 超过 5 分钟没有触发的，且未被 disable
+        long threshold = System.currentTimeMillis() - 300_000L;
+        QueryWrapper<SpRemindTaskInfo> wrapper = new QueryWrapper<>();
+        wrapper.eq("enable", true).le("next_trigger_time", threshold);
+        return spRemindTaskInfoMapper.selectList(wrapper);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        spRemindTaskInfoMapper.deleteById(id);
     }
 }
