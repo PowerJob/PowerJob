@@ -11,7 +11,7 @@ pipeline {
   // }
   
   parameters {
-    string(name: 'HARBOR_HOST', defaultValue: '172.20.1.89', description: 'harbor仓库地址')
+    string(name: 'HARBOR_HOST', defaultValue: '172.20.1.89', description: 'harbor仓库地址dev')
     // branchFilter: 'origin/(.*)', defaultValue: 'dev', name: 'BRANCH', type: 'PT_BRANCH'
     string(name: 'BRANCH', defaultValue: 'dev', description: 'git分支')
   }
