@@ -1,9 +1,13 @@
 package com.netease.mail.chronos.executor.support.processor;
 
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson.JSON;
+import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
+import com.netease.mail.mp.api.notify.client.NotifyClient;
+import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.MapProcessor;
 import tech.powerjob.worker.log.OmsLogger;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +35,8 @@ import java.util.List;
 @Slf4j
 public class RemindTaskProcessor implements MapProcessor {
 
+    private static final int MESSAGE_TYPE = 19999999;
+
     private static final Integer BATCH_SIZE = 50;
     /**
      * 间隙
@@ -37,6 +44,8 @@ public class RemindTaskProcessor implements MapProcessor {
     private static final Long INTERVAL = 60_000L;
 
     private final SpRemindTaskService spRemindTaskService;
+
+    private final NotifyClient notifyClient;
 
 
     /**
@@ -61,63 +70,96 @@ public class RemindTaskProcessor implements MapProcessor {
             // 小于阈值直接执行
             if (idList.size() <= BATCH_SIZE) {
                 omsLogger.info("本次无需进行任务分片! 一共 {} 条", idList.size());
-                processCore(idList, minTriggerTime, maxTriggerTime, omsLogger);
+                processCore(0,idList, minTriggerTime, maxTriggerTime, omsLogger);
                 return new ProcessResult(true, "任务不需要分片,处理成功!");
             }
+            omsLogger.info("开始切分任务! batchSize:{}", BATCH_SIZE);
             List<SubTask> subTaskList = new LinkedList<>();
             // 切割任务
             List<List<Long>> idListList = CollUtil.split(idList, BATCH_SIZE);
             int count = 0;
             for (List<Long> list : idListList) {
+                // start from 1
                 SubTask subTask = new SubTask(++count, list);
                 subTaskList.add(subTask);
             }
             map(subTaskList, "ProcessRemindTask");
-            return new ProcessResult(true, "切分任务成功");
+            return new ProcessResult(true, "切分任务成功,total:"+subTaskList.size());
 
         } else {
             SubTask subTask = (SubTask) context.getSubTask();
             omsLogger.info("开始处理任务分片 {},size:{}", subTask.getSeq(), subTask.getIdList().size());
             List<Long> idList = subTask.getIdList();
-            processCore(idList, minTriggerTime, maxTriggerTime, omsLogger);
+            processCore(subTask.getSeq(),idList, minTriggerTime, maxTriggerTime, omsLogger);
             omsLogger.info("处理任务分片({})成功,size:{}", subTask.getSeq(), subTask.getIdList().size());
             return new ProcessResult(true, "处理任务分片(" + subTask.getSeq() + ")成功!");
         }
     }
 
-    private void processCore(List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
+    private void processCore(int sliceSeq,List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
+        int errorCount = 0;
         for (Long id : idList) {
-            SpRemindTaskInfo spRemindTaskInfo = spRemindTaskService.selectById(id);
-            // 判断是否需要跳过
-            if (shouldSkip(minTriggerTime, maxTriggerTime, omsLogger, spRemindTaskInfo)) {
-                continue;
-            }
-            // 处理
-
-
-            // 更新状态
-            spRemindTaskInfo.setTriggerTimes(spRemindTaskInfo.getTriggerTimes() + 1);
-            // 计算下次调度时间 , 理论上不应该会存在每分钟调度一次的提醒任务（业务场景决定）
-            String recurrenceRule = spRemindTaskInfo.getRecurrenceRule();
-            // 为空直接 disable (触发一次的任务)
-            if (StringUtils.isBlank(recurrenceRule)) {
-                disableTask(spRemindTaskInfo);
-            } else {
-                try {
-                    // 更新 nextTriggerTime , 不处理 miss fire 的情形 ？
-                    long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(spRemindTaskInfo.getRecurrenceRule(), spRemindTaskInfo.getStartTime(), System.currentTimeMillis());
-                    // 检查生命周期
-                    handleLifeCycle(spRemindTaskInfo, nextTriggerTime);
-                } catch (Exception e) {
-                    // 记录异常信息
-                    omsLogger.error("处理任务(id:{},originId:{})失败，计算下次触发时间失败，已将其自动禁用，请检查重复规则表达式是否合法！recurrenceRule:{}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(), spRemindTaskInfo.getRecurrenceRule(), e);
-                    disableTask(spRemindTaskInfo);
+            try{
+                SpRemindTaskInfo spRemindTaskInfo = spRemindTaskService.selectById(id);
+                // 判断是否需要跳过
+                if (shouldSkip(minTriggerTime, maxTriggerTime, omsLogger, spRemindTaskInfo)) {
+                    continue;
                 }
+                // 处理
+                sendNotify(spRemindTaskInfo);
+                // 更新状态
+                spRemindTaskInfo.setTriggerTimes(spRemindTaskInfo.getTriggerTimes() + 1);
+                // 计算下次调度时间 , 理论上不应该会存在每分钟调度一次的提醒任务（业务场景决定）
+                String recurrenceRule = spRemindTaskInfo.getRecurrenceRule();
+                // 为空直接 disable (触发一次的任务)
+                if (StringUtils.isBlank(recurrenceRule)) {
+                    disableTask(spRemindTaskInfo);
+                } else {
+                    updateTriggerTime(omsLogger, spRemindTaskInfo);
+                }
+                spRemindTaskInfo.setUpdateTime(new Date());
+                spRemindTaskService.updateById(spRemindTaskInfo);
+            }catch (Exception e){
+                omsLogger.error("处理任务(id:{})失败 ！", e);
+                errorCount ++;
             }
-            spRemindTaskInfo.setUpdateTime(new Date());
-            spRemindTaskService.updateById(spRemindTaskInfo);
+        }
+        if (errorCount != 0){
+            omsLogger.info("处理任务分片({})失败,total:{},failure:{}", sliceSeq, idList.size(),errorCount);
+            throw new BaseException("任务分片处理失败,seq:"+sliceSeq);
         }
     }
+
+    private void updateTriggerTime(OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {
+        try {
+            // 更新 nextTriggerTime , 不处理 miss fire 的情形 ？
+            long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(spRemindTaskInfo.getRecurrenceRule(), spRemindTaskInfo.getStartTime(), System.currentTimeMillis());
+            // 检查生命周期
+            handleLifeCycle(spRemindTaskInfo, nextTriggerTime);
+        } catch (Exception e) {
+            // 记录异常信息
+            omsLogger.error("处理任务(id:{},originId:{})失败，计算下次触发时间失败，已将其自动禁用，请检查重复规则表达式是否合法！recurrenceRule:{}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(), spRemindTaskInfo.getRecurrenceRule(), e);
+            disableTask(spRemindTaskInfo);
+        }
+    }
+
+
+    private void sendNotify(SpRemindTaskInfo spRemindTaskInfo) {
+        List<NotifyParamDTO> params = new ArrayList<>();
+        ArrayList<UserInfo> user = new ArrayList<>(1);
+        user.add(new UserInfo(spRemindTaskInfo.getUid()));
+        NotifyParamDTO notifyParam = new NotifyParamDTO("json",spRemindTaskInfo.getParam());
+        notifyParam.setJson(true);
+        params.add(notifyParam);
+        notifyClient.notifyByDomain(MESSAGE_TYPE,spRemindTaskInfo.getId().toString(),params, JSON.toJSONString(user));
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class UserInfo {
+        private String uid;
+    }
+
 
     private void handleLifeCycle(SpRemindTaskInfo spRemindTaskInfo, long nextTriggerTime) {
         // 当不存在下一次调度时间时，nextTriggerTime = 0
