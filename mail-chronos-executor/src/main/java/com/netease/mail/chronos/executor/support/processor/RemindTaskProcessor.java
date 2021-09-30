@@ -2,12 +2,14 @@ package com.netease.mail.chronos.executor.support.processor;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Maps;
 import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
 import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
+import com.netease.mail.uaInfo.UaInfoContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +23,7 @@ import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.MapProcessor;
 import tech.powerjob.worker.log.OmsLogger;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Echo009
@@ -97,6 +96,12 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
     private void processCore(int sliceSeq,List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
+
+        // debug 发现使用 HeaderTemplate 设置 header 的时候，如果值传的是一个空对象 {}，就会抛异常，它会自动去掉 {}
+        // 至于为什么，等下再查一查
+        HashMap<String, Object> fakeUa = Maps.newHashMap();
+        fakeUa.put("fakeUa","ignore");
+        UaInfoContext.setUaInfo(fakeUa);
         int errorCount = 0;
         for (Long id : idList) {
             try{
