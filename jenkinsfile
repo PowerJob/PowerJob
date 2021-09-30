@@ -12,11 +12,14 @@ pipeline {
   
   parameters {
     string(name: 'HARBOR_HOST', defaultValue: '172.20.1.89', description: 'harbor仓库地址')
+    gitParameter branchFilter: 'origin/(.*)', defaultValue: 'dev', name: 'BRANCH', type: 'PT_BRANCH'
   }
     // 拉取代码
   stages {
     stage('GetCode') {
       steps {
+        echo '开始拉取代码.....'
+        git branch: "${params.BRANCH}", credentialsId: 'git_lab_line', url: 'git@github.com:tmac2006/PowerJob.git'
         sleep 5
       }
     }
