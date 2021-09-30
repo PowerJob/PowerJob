@@ -11,10 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/health")
 public class HealthController {
-    /**
-     * 什么鬼？明明都排除了
-     */
-    @RequestMapping("/check/ff")
+
+    @RequestMapping("/check")
     public BaseResponse<String> check(){
         return BaseResponse.success("SUCCESS");
     }
