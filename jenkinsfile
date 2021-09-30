@@ -18,7 +18,7 @@ pipeline {
     stage('Maven Build') {
         steps {
           sh '''
-          export JAVA_HOME==/usr/local/jdk
+          #export JAVA_HOME==/usr/local/jdk
           cd /var/lib/jenkins/workspace/testplat
           /opt/app/maven/bin/mvn clean install -Ptest
           '''
