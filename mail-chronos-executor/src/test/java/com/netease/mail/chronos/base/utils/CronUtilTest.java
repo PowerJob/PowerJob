@@ -28,7 +28,9 @@ class CronUtilTest {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date2 = simpleDateFormat.parse("2021-09-29 20:00:00");
-        Date date1 = simpleDateFormat.parse("2021-09-29 20:00:01");
+        Date date1 = simpleDateFormat.parse("2021-09-30 11:14:00");
+
+        System.out.println(date1.getTime());
 
         long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime("FREQ=MINUTELY;INTERVAL=1;COUNT=1", date2.getTime(), date1.getTime());
         System.out.println(nextTriggerTime);

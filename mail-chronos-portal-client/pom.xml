@@ -34,7 +34,7 @@
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>
             <version>10.12</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

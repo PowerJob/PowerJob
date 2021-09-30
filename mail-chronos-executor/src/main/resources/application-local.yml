@@ -26,3 +26,8 @@ eureka:
 
 logging:
   config: classpath:logback/logback-local.xml
+
+
+notify:
+  api:
+    url: 10.224.192.108:18093

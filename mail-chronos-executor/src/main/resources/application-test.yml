@@ -32,3 +32,7 @@ eureka:
 
 logging:
   config: classpath:logback/logback-test.xml
+
+notify:
+  api:
+    url: 10.110.46.16:18088
