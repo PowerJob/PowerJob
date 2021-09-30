@@ -34,7 +34,7 @@ public class SpRemindTaskServiceImpl implements SpRemindTaskService {
         }
         return spRemindTaskInfos.stream()
                 .filter(e -> e.getNextTriggerTime() != null && e.getNextTriggerTime() >= minTriggerTime)
-                .map(SpRemindTaskSimpleInfo::getNextTriggerTime)
+                .map(SpRemindTaskSimpleInfo::getId)
                 .collect(Collectors.toList());
     }
 

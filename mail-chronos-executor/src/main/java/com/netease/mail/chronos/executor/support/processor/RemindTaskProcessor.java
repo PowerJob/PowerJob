@@ -120,7 +120,7 @@ public class RemindTaskProcessor implements MapProcessor {
                 spRemindTaskInfo.setUpdateTime(new Date());
                 spRemindTaskService.updateById(spRemindTaskInfo);
             }catch (Exception e){
-                omsLogger.error("处理任务(id:{})失败 ！", e);
+                omsLogger.error("处理任务(id:{})失败 ！",id, e);
                 errorCount ++;
             }
         }
