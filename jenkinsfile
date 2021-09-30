@@ -7,7 +7,7 @@ pipeline {
     }
   }
   environment {
-   HARBOR_CREDS = credentials('jenkins-harbor-creds')
+  //  HARBOR_CREDS = credentials('jenkins-harbor-creds')
   }
   
   parameters {
@@ -50,7 +50,7 @@ pipeline {
     stage('Docker Build') {
         agent any
         steps {
-            sh "docker login -u ${HARBOR_CREDS_USR} -p ${HARBOR_CREDS_PSW} ${params.HARBOR_HOST}"
+            // sh "docker login -u ${HARBOR_CREDS_USR} -p ${HARBOR_CREDS_PSW} ${params.HARBOR_HOST}"
             sh "docker build -t mid/$APPNAME:$TAGS ."
             sh "docker tag mid/$APPNAME:$TAGS 172.20.1.89/mid/$APPNAME:$TAGS"
             sh "docker push 172.20.1.89/mid/$APPNAME:$TAGS"
