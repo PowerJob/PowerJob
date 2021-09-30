@@ -18,7 +18,7 @@ pipeline {
   stages {
     stage('GetCode') {
       steps {
-        echo '开始拉取代码.....'
+        echo '开始拉取代码..... ${params.BRANCH}'
         git branch: "${params.BRANCH}", credentialsId: 'git_lab_line', url: 'git@github.com:tmac2006/PowerJob.git'
         sleep 5
       }
