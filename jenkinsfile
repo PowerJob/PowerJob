@@ -6,6 +6,13 @@ pipeline {
       label 'master'
     }
   }
+  environment {
+   HARBOR_CREDS = credentials('jenkins-harbor-creds')
+  }
+  
+  parameters {
+    string(name: 'HARBOR_HOST', defaultValue: '172.20.1.89', description: 'harbor仓库地址')
+  }
     // 拉取代码
   stages {
     stage('GetCode') {
@@ -22,8 +29,35 @@ pipeline {
           cd /var/lib/jenkins/workspace/testplat
           /opt/app/maven/bin/mvn clean package -U -Pdev -DskipTests
           '''
+          sh '''
+          cat >Dockerfile<<EOF
+          FROM mayan31370/openjdk-alpine-with-chinese-timezone:8-jdk
+          RUN  mkdir -p /opt/app/power-job
+          RUN echo $APPNAME > /tmp/1.txt
+          ADD /opt/app/power-job/application-zz.properties /opt/app/power-job/ 
+          ADD /opt/app/power-job/powerjob-server-3.4.4.jar /opt/app/power-job/
+          ADD /opt/app/power-job/start.sh  /opt/app/power-job/
+          EXPOSE 7700 10086
+          WORKDIR /opt/app/power-job
+          CMD ["java","-jar","-Xms256m","-Xmx256m","powerjob-server-3.4.4.jar","--spring.config.location=application-zz.properties"]
+          '''
           println('部署完成！')
         }
     }
+    
+    
+    // harbor 
+    stage('Docker Build') {
+        agent any
+        steps {
+            sh "docker login -u ${HARBOR_CREDS_USR} -p ${HARBOR_CREDS_PSW} ${params.HARBOR_HOST}"
+            sh "docker build -t mid/$APPNAME:$TAGS ."
+            sh "docker tag mid/$APPNAME:$TAGS 172.20.1.89/mid/$APPNAME:$TAGS"
+            sh "docker push 172.20.1.89/mid/$APPNAME:$TAGS"
+            sh "docker rmi mid/$APPNAME:$TAGS"
+        }
+
+    }
+    
   }
 }
