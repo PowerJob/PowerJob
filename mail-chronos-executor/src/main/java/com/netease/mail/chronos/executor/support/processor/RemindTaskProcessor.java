@@ -69,7 +69,7 @@ public class RemindTaskProcessor implements MapProcessor {
             // 小于阈值直接执行
             if (idList.size() <= BATCH_SIZE) {
                 omsLogger.info("本次无需进行任务分片! 一共 {} 条", idList.size());
-                processCore(0,idList, minTriggerTime, maxTriggerTime, omsLogger);
+                processCore(0, idList, minTriggerTime, maxTriggerTime, omsLogger);
                 return new ProcessResult(true, "任务不需要分片,处理成功!");
             }
             omsLogger.info("开始切分任务! batchSize:{}", BATCH_SIZE);
@@ -83,28 +83,28 @@ public class RemindTaskProcessor implements MapProcessor {
                 subTaskList.add(subTask);
             }
             map(subTaskList, "ProcessRemindTask");
-            return new ProcessResult(true, "切分任务成功,total:"+subTaskList.size());
+            return new ProcessResult(true, "切分任务成功,total:" + subTaskList.size());
 
         } else {
             SubTask subTask = (SubTask) context.getSubTask();
             omsLogger.info("开始处理任务分片 {},size:{}", subTask.getSeq(), subTask.getIdList().size());
             List<Long> idList = subTask.getIdList();
-            processCore(subTask.getSeq(),idList, minTriggerTime, maxTriggerTime, omsLogger);
+            processCore(subTask.getSeq(), idList, minTriggerTime, maxTriggerTime, omsLogger);
             omsLogger.info("处理任务分片({})成功,size:{}", subTask.getSeq(), subTask.getIdList().size());
             return new ProcessResult(true, "处理任务分片(" + subTask.getSeq() + ")成功!");
         }
     }
 
-    private void processCore(int sliceSeq,List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
+    private void processCore(int sliceSeq, List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
 
         // debug 发现使用 HeaderTemplate 设置 header 的时候，如果值传的是一个空对象 {}，就会抛异常，它会自动去掉 {}
         // 至于为什么，等下再查一查
         HashMap<String, Object> fakeUa = Maps.newHashMap();
-        fakeUa.put("fakeUa","ignore");
+        fakeUa.put("fakeUa", "ignore");
         UaInfoContext.setUaInfo(fakeUa);
         int errorCount = 0;
         for (Long id : idList) {
-            try{
+            try {
                 SpRemindTaskInfo spRemindTaskInfo = spRemindTaskService.selectById(id);
                 // 判断是否需要跳过
                 if (shouldSkip(minTriggerTime, maxTriggerTime, omsLogger, spRemindTaskInfo)) {
@@ -124,14 +124,14 @@ public class RemindTaskProcessor implements MapProcessor {
                 }
                 spRemindTaskInfo.setUpdateTime(new Date());
                 spRemindTaskService.updateById(spRemindTaskInfo);
-            }catch (Exception e){
-                omsLogger.error("处理任务(id:{})失败 ！",id, e);
-                errorCount ++;
+            } catch (Exception e) {
+                omsLogger.error("处理任务(id:{})失败 ！", id, e);
+                errorCount++;
             }
         }
-        if (errorCount != 0){
-            omsLogger.info("处理任务分片({})失败,total:{},failure:{}", sliceSeq, idList.size(),errorCount);
-            throw new BaseException("任务分片处理失败,seq:"+sliceSeq);
+        if (errorCount != 0) {
+            omsLogger.info("处理任务分片({})失败,total:{},failure:{}", sliceSeq, idList.size(), errorCount);
+            throw new BaseException("任务分片处理失败,seq:" + sliceSeq);
         }
     }
 
@@ -153,10 +153,17 @@ public class RemindTaskProcessor implements MapProcessor {
         List<NotifyParamDTO> params = new ArrayList<>();
         ArrayList<UserInfo> user = new ArrayList<>(1);
         user.add(new UserInfo(spRemindTaskInfo.getUid()));
-        NotifyParamDTO notifyParam = new NotifyParamDTO("json",spRemindTaskInfo.getParam());
+        NotifyParamDTO notifyParam = new NotifyParamDTO("json", spRemindTaskInfo.getParam());
         notifyParam.setJson(true);
         params.add(notifyParam);
-        notifyClient.notifyByDomain(MESSAGE_TYPE,spRemindTaskInfo.getId().toString(),params, JSON.toJSONString(user));
+        notifyClient.notifyByDomain(MESSAGE_TYPE,generateToken(spRemindTaskInfo), params, JSON.toJSONString(user));
+    }
+
+    private String generateToken(SpRemindTaskInfo spRemindTaskInfo) {
+        // 根据 id 和 triggerTime 生成唯一 id
+        Long id = spRemindTaskInfo.getId();
+        Long nextTriggerTime = spRemindTaskInfo.getNextTriggerTime();
+        return id + "#" + nextTriggerTime;
     }
 
     @Data
