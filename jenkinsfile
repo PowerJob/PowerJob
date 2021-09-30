@@ -20,7 +20,7 @@ pipeline {
           sh '''
           #export JAVA_HOME==/usr/local/jdk
           cd /var/lib/jenkins/workspace/testplat
-          /opt/app/maven/bin/mvn clean install -Ptest
+          /opt/app/maven/bin/mvn clean package -U -Pdev -DskipTests
           '''
           println('部署完成！')
         }
