@@ -9,6 +9,7 @@ import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
 import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
+import com.netease.mail.quark.status.StatusResult;
 import com.netease.mail.uaInfo.UaInfoContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -97,7 +98,7 @@ public class RemindTaskProcessor implements MapProcessor {
 
     private void processCore(int sliceSeq, List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
 
-        // debug 发现使用 HeaderTemplate 设置 header 的时候，如果值传的是一个空对象 {}，就会抛异常，它会自动去掉 {}
+        // 使用 HeaderTemplate 设置 header 的时候，如果值传的是一个空对象 {}，就会抛异常，它会自动去掉 {}
         // 至于为什么，等下再查一查
         HashMap<String, Object> fakeUa = Maps.newHashMap();
         fakeUa.put("fakeUa", "ignore");
@@ -111,7 +112,7 @@ public class RemindTaskProcessor implements MapProcessor {
                     continue;
                 }
                 // 处理
-                sendNotify(spRemindTaskInfo);
+                sendNotify(spRemindTaskInfo,omsLogger);
                 // 更新状态
                 spRemindTaskInfo.setTriggerTimes(spRemindTaskInfo.getTriggerTimes() + 1);
                 // 计算下次调度时间 , 理论上不应该会存在每分钟调度一次的提醒任务（业务场景决定）
@@ -149,14 +150,19 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
 
-    private void sendNotify(SpRemindTaskInfo spRemindTaskInfo) {
+    @SuppressWarnings("all")
+    private void sendNotify(SpRemindTaskInfo spRemindTaskInfo,OmsLogger omsLogger) {
         List<NotifyParamDTO> params = new ArrayList<>();
         ArrayList<UserInfo> user = new ArrayList<>(1);
         user.add(new UserInfo(spRemindTaskInfo.getUid()));
         NotifyParamDTO notifyParam = new NotifyParamDTO("json", spRemindTaskInfo.getParam());
         notifyParam.setJson(true);
         params.add(notifyParam);
-        notifyClient.notifyByDomain(MESSAGE_TYPE,generateToken(spRemindTaskInfo), params, JSON.toJSONString(user));
+        StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, JSON.toJSONString(user));
+        if (statusResult.getCode() != 200){
+            omsLogger.error("处理任务(id:{},originId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(),statusResult);
+            throw new BaseException(statusResult.getDesc());
+        }
     }
 
     private String generateToken(SpRemindTaskInfo spRemindTaskInfo) {
