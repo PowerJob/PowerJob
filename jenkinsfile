@@ -6,9 +6,9 @@ pipeline {
       label 'master'
     }
   }
-  environment {
+  // environment {
   //  HARBOR_CREDS = credentials('jenkins-harbor-creds')
-  }
+  // }
   
   parameters {
     string(name: 'HARBOR_HOST', defaultValue: '172.20.1.89', description: 'harbor仓库地址')
