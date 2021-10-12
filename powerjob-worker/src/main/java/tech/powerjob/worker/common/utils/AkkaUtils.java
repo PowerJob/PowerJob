@@ -22,6 +22,16 @@ import java.util.concurrent.TimeUnit;
 public class AkkaUtils {
 
     /**
+     * akka 超时时间
+     */
+    public static final String AKKA_TIMEOUT = "powerjob.worker.akka.timeout";
+    /**
+     * akka 最小超时时间
+     */
+    public static final Long AKKA_MIN_TIMEOUT = 10000L;
+
+
+    /**
      * akka://<actor system>@<hostname>:<port>/<actor path>
      */
     private static final String AKKA_NODE_PATH = "akka://%s@%s/user/%s";
@@ -55,10 +65,22 @@ public class AkkaUtils {
     public static AskResponse easyAsk(ActorSelection remote, Object msg) {
         try {
             CompletionStage<Object> ask = Patterns.ask(remote, msg, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-            return (AskResponse) ask.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            return (AskResponse) ask.toCompletableFuture().get(getAkkaTimeoutConfig(), TimeUnit.MILLISECONDS);
         }catch (Exception e) {
             throw new PowerJobException(e);
         }
+    }
+
+
+    public static long getAkkaTimeoutConfig(){
+        String property = System.getProperty(AKKA_TIMEOUT);
+        long timeout;
+        try {
+            timeout = Long.parseLong(property);
+        }catch (Exception e){
+            timeout = AKKA_MIN_TIMEOUT;
+        }
+        return Math.max(timeout,AKKA_MIN_TIMEOUT);
     }
 
 }
