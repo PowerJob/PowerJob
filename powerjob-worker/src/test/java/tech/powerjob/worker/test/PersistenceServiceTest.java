@@ -11,6 +11,8 @@ import org.junit.jupiter.api.*;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static tech.powerjob.worker.core.tracker.task.CommonTaskTracker.ROOT_TASK_ID;
+
 /**
  * H2 数据库持久化测试
  *
@@ -62,6 +64,31 @@ public class PersistenceServiceTest {
         result.forEach(System.out::println);
     }
 
+
+    @Test
+    public void testBatchSave(){
+        List<TaskDO> taskList = Lists.newLinkedList();
+        long instanceId = 10086L + ThreadLocalRandom.current().nextInt(2);
+        for (int i = 0; i < 100; i++) {
+            TaskDO task = new TaskDO();
+            taskList.add(task);
+            task.setSubInstanceId(instanceId);
+            task.setInstanceId(instanceId);
+            task.setTaskId(ROOT_TASK_ID + "." + i);
+            task.setFailedCnt(0);
+            task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
+            task.setTaskName("ROOT_TASK");
+            task.setAddress(NetUtils.getLocalHost());
+            task.setLastModifiedTime(System.currentTimeMillis());
+            task.setCreatedTime(System.currentTimeMillis());
+            task.setLastReportTime(System.currentTimeMillis());
+            task.setResult("");
+        }
+        TaskDO firstTask = taskList.get(0);
+        taskList.add(firstTask);
+        taskPersistenceService.batchSave(taskList);
+
+    }
 
     @Test
     public void testDeleteAllTasks() {
