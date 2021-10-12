@@ -64,7 +64,7 @@ public class AkkaUtils {
 
     public static AskResponse easyAsk(ActorSelection remote, Object msg) {
         try {
-            CompletionStage<Object> ask = Patterns.ask(remote, msg, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
+            CompletionStage<Object> ask = Patterns.ask(remote, msg, Duration.ofMillis(getAkkaTimeoutConfig()));
             return (AskResponse) ask.toCompletableFuture().get(getAkkaTimeoutConfig(), TimeUnit.MILLISECONDS);
         }catch (Exception e) {
             throw new PowerJobException(e);
