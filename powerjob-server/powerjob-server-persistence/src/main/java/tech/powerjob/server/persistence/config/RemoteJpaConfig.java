@@ -59,7 +59,7 @@ public class RemoteJpaConfig {
         jpaProperties.setShowSql(false);
 
         HibernateProperties hibernateProperties = new HibernateProperties();
-        hibernateProperties.setDdlAuto("update");
+        hibernateProperties.setDdlAuto("validate");
 
         // 配置JPA自定义表名称策略
         hibernateProperties.getNaming().setPhysicalStrategy(PowerJobPhysicalNamingStrategy.class.getName());
