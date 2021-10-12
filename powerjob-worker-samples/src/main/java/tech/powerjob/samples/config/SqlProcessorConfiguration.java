@@ -21,7 +21,6 @@ public class SqlProcessorConfiguration {
 
 
     @Bean
-    @DependsOn({"initPowerJob"})
     public DataSource sqlProcessorDataSource() {
         String path = System.getProperty("user.home") + "/test/h2/" + CommonUtils.genUUID() + "/";
         String jdbcUrl = String.format("jdbc:h2:file:%spowerjob_sql_processor_db;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false", path);

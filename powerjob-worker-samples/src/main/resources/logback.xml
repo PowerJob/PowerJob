@@ -16,7 +16,7 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <logger name="tech.powerjob" level="DEBUG" additivity="false">
+    <logger name="tech.powerjob" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 

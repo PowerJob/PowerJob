@@ -16,11 +16,11 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/17
  */
-@Configuration
+//@Configuration
 public class PowerJobWorkerConfiguration {
 
 
-    @Bean(name = "worker")
+//    @Bean(name = "worker")
     public PowerJobWorker initWorker() {
 
         // 服务器HTTP地址（端口号为 server.port，而不是 ActorSystem port）
