@@ -18,7 +18,7 @@ import java.util.Date;
 @Accessors(chain = true)
 public class SpRemindTaskInfo implements Serializable {
     /**
-     * 
+     *
      */
     @TableId
     private Long id;
@@ -26,7 +26,14 @@ public class SpRemindTaskInfo implements Serializable {
     /**
      * 原始 ID
      */
-    private String originId;
+    private String colId;
+
+    /**
+     * 组件 ID
+     *
+     * 注意: compId 需保证唯一
+     */
+    private String compId;
 
     /**
      * 用户ID
@@ -37,6 +44,10 @@ public class SpRemindTaskInfo implements Serializable {
      * iCalendar 重复规则
      */
     private String recurrenceRule;
+    /**
+     * 触发偏移
+     */
+    private Long triggerOffset;
 
 
     private String timeZoneId;
@@ -52,7 +63,7 @@ public class SpRemindTaskInfo implements Serializable {
     private String extra;
 
     /**
-     * 触发时间
+     * 触发次数
      */
     private Integer triggerTimes;
 

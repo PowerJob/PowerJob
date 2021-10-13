@@ -101,8 +101,7 @@ public class RemindTaskProcessor implements MapProcessor {
 
     private void processCore(int sliceSeq, List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
 
-        // 使用 HeaderTemplate 设置 header 的时候，如果值传的是一个空对象 {}，就会抛异常，它会自动去掉 {}
-        // 至于为什么，等下再查一查
+        // 新版本的 feign 会去掉 {} 故不能传空对象
         HashMap<String, Object> fakeUa = Maps.newHashMap();
         fakeUa.put("fakeUa", "ignore");
         UaInfoContext.setUaInfo(fakeUa);
@@ -152,7 +151,7 @@ public class RemindTaskProcessor implements MapProcessor {
         params.add(notifyParam);
         StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, JSON.toJSONString(user));
         if (statusResult.getCode() != 200){
-            omsLogger.error("处理任务(id:{},originId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(),statusResult);
+            omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(),spRemindTaskInfo.getCompId(),statusResult);
             throw new BaseException(statusResult.getDesc());
         }
     }
@@ -174,14 +173,14 @@ public class RemindTaskProcessor implements MapProcessor {
 
     private boolean shouldSkip(long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {
         if (spRemindTaskInfo.getEnable() != null && !spRemindTaskInfo.getEnable()) {
-            omsLogger.warn("提醒任务 (id:{},originId:{}) 已经被禁用，跳过处理", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId());
+            omsLogger.warn("提醒任务(id:{},colId:{},compId:{}) 已经被禁用，跳过处理", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(),spRemindTaskInfo.getCompId());
             return true;
         }
         // 检查 nextTriggerTime 是否已经变更（重试需要保证幂等）
         if (spRemindTaskInfo.getNextTriggerTime() == null
                 || spRemindTaskInfo.getNextTriggerTime() < minTriggerTime
                 || spRemindTaskInfo.getNextTriggerTime() >= maxTriggerTime) {
-            omsLogger.warn("提醒任务 (id:{},originId:{}) 本次调度已被成功处理过，跳过", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId());
+            omsLogger.warn("提醒任务(id:{},colId:{},compId:{})本次调度已被成功处理过，跳过",spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(),spRemindTaskInfo.getCompId());
             return true;
         }
         return false;

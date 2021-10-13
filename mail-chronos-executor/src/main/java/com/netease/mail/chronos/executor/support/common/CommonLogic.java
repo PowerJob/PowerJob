@@ -16,12 +16,12 @@ public class CommonLogic {
     public static void updateTriggerTime(OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {
         try {
             // 更新 nextTriggerTime , 不处理 miss fire 的情形 ？
-            long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(spRemindTaskInfo.getRecurrenceRule(), spRemindTaskInfo.getStartTime(), System.currentTimeMillis());
+            long nextTriggerTime = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(spRemindTaskInfo.getRecurrenceRule(), spRemindTaskInfo.getStartTime() + spRemindTaskInfo.getTriggerOffset(), System.currentTimeMillis());
             // 检查生命周期
             handleLifeCycle(spRemindTaskInfo, nextTriggerTime);
         } catch (Exception e) {
             // 记录异常信息
-            omsLogger.error("处理任务(id:{},originId:{})失败，计算下次触发时间失败，已将其自动禁用，请检查重复规则表达式是否合法！recurrenceRule:{}", spRemindTaskInfo.getId(), spRemindTaskInfo.getOriginId(), spRemindTaskInfo.getRecurrenceRule(), e);
+            omsLogger.error("处理任务(id:{},colId:{},compId:{})失败，计算下次触发时间失败，已将其自动禁用，请检查重复规则表达式是否合法！recurrenceRule:{}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(),spRemindTaskInfo.getCompId(), spRemindTaskInfo.getRecurrenceRule(), e);
             disableTask(spRemindTaskInfo);
         }
     }
