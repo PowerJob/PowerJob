@@ -124,6 +124,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         val now = new Date();
         for (Long triggerOffset : triggerOffsets) {
             SpRemindTaskInfo spRemindTaskInfo = constructSpRemindTaskInfo(task, now, triggerOffset);
+            spRemindTaskInfoMapper.insert(spRemindTaskInfo);
             res.add(SimpleBeanConvertUtil.convert(spRemindTaskInfo, RemindTaskVo.class));
             log.info("[opt:update,message:create task ,colId:{},compId:{},id:{},detail:{}]", task.getColId(), task.getCompId(), spRemindTaskInfo.getId(), task);
         }
@@ -150,7 +151,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
                 .setEnable(true)
                 .setId(snowflake.nextId())
                 .setNextTriggerTime(nextTriggerTime);
-        spRemindTaskInfoMapper.insert(spRemindTaskInfo);
+        handleIllegalTask(spRemindTaskInfo);
         return spRemindTaskInfo;
     }
 
@@ -177,8 +178,25 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         return res;
     }
 
+    private void handleIllegalTask(SpRemindTaskInfo task) {
 
-    public void checkBaseProperties(RemindTask task) {
+        if (task.getNextTriggerTime() == 0) {
+            task.setEnable(false)
+                    .setDisableTime(new Date());
+            return;
+        }
+
+        if (task.getEndTime() != null) {
+            if (task.getEndTime() >= task.getStartTime() && task.getNextTriggerTime() <= task.getEndTime()) {
+                return;
+            }
+            // 结束时间小于 开始时间 ，或者小于 下次触发时间
+            task.setEnable(false)
+                    .setDisableTime(new Date());
+        }
+    }
+
+    private void checkBaseProperties(RemindTask task) {
 
         if (StringUtils.isBlank(task.getColId())) {
             throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "colId 不能为空");
@@ -201,21 +219,10 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         TimeUtil.getTimeZoneByZoneId(task.getTimeZoneId());
         // 解析 重复规则
         parseRecurrenceRule(task);
-
-
-        if (task.getEndTime() != null) {
-            if (task.getStartTime() >= task.getEndTime()) {
-                throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "任务的起始时间（start_time）必须小于结束时间（end_time）");
-            }
-            if (task.getEndTime() < System.currentTimeMillis()) {
-                throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "任务的结束时间（end_time）必须大于当前时间");
-            }
-        }
         // 设置次数限制
         if (task.getTimesLimit() == null || task.getTimesLimit() < 0) {
             task.setTimesLimit(0);
         }
-
         // 检查 triggerOffsets
         if (task.getTriggerOffsets() == null || task.getTriggerOffsets().isEmpty()) {
             task.setTriggerOffsets(Collections.singletonList(0L));
@@ -224,7 +231,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
     }
 
 
-    public void parseRecurrenceRule(RemindTask task) {
+    private void parseRecurrenceRule(RemindTask task) {
 
         if (StringUtils.isBlank(task.getRecurrenceRule())) {
             return;
@@ -244,28 +251,23 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
     }
 
 
-    public long calNextTriggerTime(RemindTask task, long triggerOffset) {
-
+    private long calNextTriggerTime(RemindTask task, long triggerOffset) {
         val now = System.currentTimeMillis();
-        if (task.getRecurrenceRule() == null) {
+        if (StringUtils.isBlank(task.getRecurrenceRule())) {
             long next = task.getSeedTime() + triggerOffset;
             if (now + MIN_INTERVAL >= next) {
-                // 60 秒内触发的 直接失败
-                throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "下次触发时间距离当前时间小于 60 s！");
+                log.warn("[opt:calNextTriggerTime,message:current task(colId:{},compId:{})'s nextTriggerTime < currentTime + 60s,maybe misfire]", task.getColId(), task.getCompId());
             }
             return next;
         }
-
         long nextValidTimeAfter = ICalendarRecurrenceRuleUtil.calculateNextTriggerTime(task.getRecurrenceRule(), task.getStartTime() + triggerOffset, now);
-
         // 等于 0 表示不存在下一次触发时间
         if (nextValidTimeAfter == 0L) {
             // 不存在下一次调度时间
-            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "当前重复规则下不存在有效的下次调度时间");
+            log.warn("[opt:calNextTriggerTime,message:current task(colId:{},compId:{})'s nextTriggerTime = 0, this task will be disable]", task.getColId(), task.getCompId());
         }
-
         if (task.getEndTime() != null && nextValidTimeAfter > task.getEndTime()) {
-            throw new BaseException(BaseStatusEnum.ILLEGAL_ARGUMENT.getCode(), "重复规则已过期，下次调度时间大于调度周期的结束时间");
+            log.warn("[opt:calNextTriggerTime,message:current task(colId:{},compId:{})'s nextTriggerTime > endTime, this task will be disable]", task.getColId(), task.getCompId());
         }
         return nextValidTimeAfter;
     }
