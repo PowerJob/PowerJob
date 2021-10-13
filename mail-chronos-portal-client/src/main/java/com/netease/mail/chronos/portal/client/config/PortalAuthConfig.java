@@ -1,5 +1,6 @@
 package com.netease.mail.chronos.portal.client.config;
 
+import cn.hutool.core.net.URLEncodeUtil;
 import com.netease.mail.chronos.base.constant.AuthConstant;
 import com.netease.mail.chronos.base.po.AuthInfo;
 import com.netease.mail.quark.commons.serialization.JacksonUtils;
@@ -28,7 +29,7 @@ public class PortalAuthConfig {
             AuthInfo authInfo = new AuthInfo();
             authInfo.setAppName(appName);
             authInfo.setAppSecrets(appSecrets);
-            template.header(AuthConstant.AUTH_HEADER_NAME,JacksonUtils.toString(authInfo));
+            template.header(AuthConstant.AUTH_HEADER_NAME, URLEncodeUtil.encode(JacksonUtils.toString(authInfo)));
         };
     }
 

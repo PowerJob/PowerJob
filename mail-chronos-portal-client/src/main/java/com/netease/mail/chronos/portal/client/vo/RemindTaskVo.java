@@ -16,11 +16,14 @@ public class RemindTaskVo {
      *
      */
     private Long id;
-
     /**
-     * 原始 ID
+     * 集合 ID
      */
-    private String originId;
+    private String colId;
+    /**
+     * 组件 ID
+     */
+    private String compId;
 
     /**
      * 用户ID
@@ -33,6 +36,11 @@ public class RemindTaskVo {
     private String recurrenceRule;
 
     /**
+     * 原始触发偏移
+     */
+    private Long triggerOffset;
+
+    /**
      * 任务参数
      */
     private String param;
@@ -43,7 +51,7 @@ public class RemindTaskVo {
     private String extra;
 
     /**
-     * 触发时间
+     * 已触发次数
      */
     private Integer triggerTimes;
 
