@@ -186,7 +186,12 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
                     .setDisableTime(new Date());
             return;
         }
-
+        if (StringUtils.isBlank(task.getRecurrenceRule()) && task.getNextTriggerTime() < System.currentTimeMillis() + MIN_INTERVAL) {
+            task.setEnable(false)
+                    .setDisableTime(new Date());
+            return;
+        }
+        // 判断结束时间
         if (task.getEndTime() != null) {
             if (task.getEndTime() >= task.getStartTime() && task.getNextTriggerTime() <= task.getEndTime()) {
                 return;
