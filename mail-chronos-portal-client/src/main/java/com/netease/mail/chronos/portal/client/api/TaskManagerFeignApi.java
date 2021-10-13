@@ -13,7 +13,7 @@ import java.util.List;
  * @author Echo009
  * @since 2021/9/18
  */
-@FeignClient(value = "mail-chronos-portal", configuration = {
+@FeignClient(value = "chronos-portal", configuration = {
         PortalAuthConfig.class
 })
 public interface TaskManagerFeignApi {
