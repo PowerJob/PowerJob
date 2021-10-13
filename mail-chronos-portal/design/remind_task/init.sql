@@ -6,7 +6,7 @@ create table sx_sp_remind_task_info
     comp_id           varchar(128) not null comment '组件 ID',
     uid               varchar(128) not null comment '用户ID',
     recurrence_rule   varchar(2048)         default null comment 'iCalendar 重复规则',
-    triggerOffset     bigint       not null default 0 comment 'trigger offset',
+    trigger_offset    bigint       not null default 0 comment 'trigger offset',
     time_zone_id      varchar(64)  not null comment '时区',
     param             longtext comment '任务参数',
     extra             longtext comment '附加信息',

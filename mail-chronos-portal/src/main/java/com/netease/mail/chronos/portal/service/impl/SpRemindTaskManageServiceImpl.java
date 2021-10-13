@@ -136,6 +136,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         val spRemindTaskInfo = new SpRemindTaskInfo();
         spRemindTaskInfo.setColId(task.getColId())
                 .setCompId(task.getCompId())
+                .setUid(task.getUid())
                 .setRecurrenceRule(task.getRecurrenceRule())
                 .setStartTime(task.getSeedTime())
                 .setTriggerOffset(triggerOffset)
