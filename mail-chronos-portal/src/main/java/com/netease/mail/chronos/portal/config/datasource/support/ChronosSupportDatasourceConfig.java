@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
@@ -18,6 +21,7 @@ import javax.sql.DataSource;
  */
 @MapperScan(basePackages = ChronosSupportDatasourceConfig.PACKAGE, sqlSessionFactoryRef = "chronosSupportSqlSessionFactory")
 @Getter
+@EnableTransactionManagement
 public class ChronosSupportDatasourceConfig extends AbstractMyBatisDataSourceConfigSupport {
 
     @Value("${chronos.table.prefix:}")
@@ -38,6 +42,11 @@ public class ChronosSupportDatasourceConfig extends AbstractMyBatisDataSourceCon
     @Bean(name = "chronosSupportSqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory(@Qualifier("chronosSupportDatasource") DataSource dataSource) throws Exception {
         return constructSqlSessionFactory(dataSource);
+    }
+
+    @Bean(name = "chronosSupportTransactionManager")
+    public PlatformTransactionManager transactionManager(@Qualifier("chronosSupportDatasource") DataSource dataSource){
+        return new DataSourceTransactionManager(dataSource);
     }
 
 

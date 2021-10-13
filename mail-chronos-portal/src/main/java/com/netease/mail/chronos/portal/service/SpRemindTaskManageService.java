@@ -3,6 +3,8 @@ package com.netease.mail.chronos.portal.service;
 import com.netease.mail.chronos.portal.param.RemindTask;
 import com.netease.mail.chronos.portal.vo.RemindTaskVo;
 
+import java.util.List;
+
 /**
  * @author Echo009
  * @since 2021/9/21
@@ -11,32 +13,38 @@ public interface SpRemindTaskManageService {
 
     /**
      * 创建任务
+     *
      * @param task 任务信息
      * @return 创建的任务信息
      */
-    RemindTaskVo create(RemindTask task);
+    List<RemindTaskVo> create(RemindTask task);
 
     /**
      * 删除任务（物理删除）
-     * @param originId 任务 id
+     *
+     * @param colId  colId
+     * @param compId compId
      * @return 被删除的任务信息
      */
-    RemindTaskVo delete(String originId);
+    List<RemindTaskVo> delete(String colId, String compId);
 
     /**
      * 更新任务信息
+     *
      * @param task 任务信息
      * @return 更新后的任务信息
      */
-    RemindTaskVo update(RemindTask task);
+    List<RemindTaskVo> update(RemindTask task);
 
 
     /**
      * 查询任务信息
-     * @param originId 原始 id
+     *
+     * @param colId  colId
+     * @param compId compId
      * @return 任务信息
      */
-    RemindTaskVo query(String originId);
+    List<RemindTaskVo> query(String colId, String compId);
 
 
 }

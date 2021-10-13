@@ -2,9 +2,11 @@ drop table if exists sx_sp_remind_task_info;
 create table sx_sp_remind_task_info
 (
     id                bigint primary key,
-    origin_id         varchar(128) not null comment '原始 ID',
+    col_id            varchar(128) not null comment '集合 ID',
+    comp_id           varchar(128) not null comment '组件 ID',
     uid               varchar(128) not null comment '用户ID',
-    recurrence_rule   varchar(2048) default null comment 'iCalendar 重复规则',
+    recurrence_rule   varchar(2048)         default null comment 'iCalendar 重复规则',
+    triggerOffset     bigint       not null default 0 comment 'trigger offset',
     time_zone_id      varchar(64)  not null comment '时区',
     param             longtext comment '任务参数',
     extra             longtext comment '附加信息',
@@ -17,9 +19,10 @@ create table sx_sp_remind_task_info
     disable_time      datetime              default null comment '被禁用的时间',
     update_time       datetime     not null comment '更新时间',
     create_time       datetime     not null comment '创建时间',
-    key idx1_sx_sp_remind_task_info (next_trigger_time,enable),
+    key idx1_sx_sp_remind_task_info (next_trigger_time, enable),
     key idx2_sx_sp_remind_task_info (uid),
-    unique key udx1_sx_sp_remind_task_info (origin_id)
+    key idx3_sx_sp_remind_task_info (col_id),
+    key idx4_sx_sp_remind_task_info (comp_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='提醒任务原始信息';

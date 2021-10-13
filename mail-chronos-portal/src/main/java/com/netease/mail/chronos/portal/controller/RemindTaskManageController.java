@@ -7,10 +7,12 @@ import com.netease.mail.chronos.portal.vo.RemindTaskVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * @author Echo009
  * @since 2021/9/18
- *
+ * <p>
  * only for 提醒任务
  */
 @RestController
@@ -20,11 +22,12 @@ public class RemindTaskManageController {
 
 
     private final SpRemindTaskManageService spRemindTaskManageService;
+
     /**
      * 创建任务
      */
     @PostMapping
-    public BaseResponse<RemindTaskVo> create(@RequestBody RemindTask task) {
+    public BaseResponse<List<RemindTaskVo>> create(@RequestBody RemindTask task) {
         return BaseResponse.success(spRemindTaskManageService.create(task));
     }
 
@@ -32,15 +35,15 @@ public class RemindTaskManageController {
      * 删除 任务
      */
     @DeleteMapping
-    public BaseResponse<RemindTaskVo> delete(@RequestParam String originId) {
-        return BaseResponse.success(spRemindTaskManageService.delete(originId));
+    public BaseResponse<List<RemindTaskVo>> delete(@RequestParam String colId, @RequestParam(required = false) String compId) {
+        return BaseResponse.success(spRemindTaskManageService.delete(colId, compId));
     }
 
     /**
      * 更新任务
      */
     @PatchMapping
-    public BaseResponse<RemindTaskVo> update(@RequestBody RemindTask task) {
+    public BaseResponse<List<RemindTaskVo>> update(@RequestBody RemindTask task) {
         return BaseResponse.success(spRemindTaskManageService.update(task));
     }
 
@@ -48,10 +51,9 @@ public class RemindTaskManageController {
      * 查询任务信息
      */
     @GetMapping
-    public BaseResponse<RemindTaskVo> query(@RequestParam String originId) {
-        return BaseResponse.success(spRemindTaskManageService.query(originId));
+    public BaseResponse<List<RemindTaskVo>> query(@RequestParam String colId, @RequestParam(required = false) String compId) {
+        return BaseResponse.success(spRemindTaskManageService.query(colId, compId));
     }
-
 
 
 }
