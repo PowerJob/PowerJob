@@ -2,6 +2,7 @@ package com.netease.mail.chronos.executor.support.processor;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Maps;
 import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.po.TaskAdditionalData;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.MapProcessor;
@@ -114,7 +116,7 @@ public class RemindTaskProcessor implements MapProcessor {
                     continue;
                 }
                 // 处理
-                sendNotify(spRemindTaskInfo,omsLogger);
+                sendNotify(spRemindTaskInfo, omsLogger);
                 // 更新状态
                 spRemindTaskInfo.setTriggerTimes(spRemindTaskInfo.getTriggerTimes() + 1);
                 // 计算下次调度时间 , 理论上不应该会存在每分钟调度一次的提醒任务（业务场景决定）
@@ -139,19 +141,21 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
 
-
-
     @SuppressWarnings("all")
-    private void sendNotify(SpRemindTaskInfo spRemindTaskInfo,OmsLogger omsLogger) {
+    private void sendNotify(SpRemindTaskInfo spRemindTaskInfo, OmsLogger omsLogger) {
         List<NotifyParamDTO> params = new ArrayList<>();
-        ArrayList<UserInfo> user = new ArrayList<>(1);
-        user.add(new UserInfo(spRemindTaskInfo.getUid()));
-        NotifyParamDTO notifyParam = new NotifyParamDTO("json", spRemindTaskInfo.getParam());
-        notifyParam.setJson(true);
-        params.add(notifyParam);
-        StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, JSON.toJSONString(user));
-        if (statusResult.getCode() != 200){
-            omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(),spRemindTaskInfo.getCompId(),statusResult);
+
+        HashMap<String, Object> originParams = JSON.parseObject(spRemindTaskInfo.getParam(), new TypeReference<HashMap<String, Object>>() {
+        });
+        originParams.entrySet().forEach(e -> {
+            NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JsonUtils.toJSONString(e.getValue()));
+            param.setJson(true);
+            params.add(param);
+        });
+
+        StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, spRemindTaskInfo.getUid());
+        if (statusResult.getCode() != 200) {
+            omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId(), statusResult);
             throw new BaseException(statusResult.getDesc());
         }
     }
@@ -170,17 +174,16 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
 
-
     private boolean shouldSkip(long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {
         if (spRemindTaskInfo.getEnable() != null && !spRemindTaskInfo.getEnable()) {
-            omsLogger.warn("提醒任务(id:{},colId:{},compId:{}) 已经被禁用，跳过处理", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(),spRemindTaskInfo.getCompId());
+            omsLogger.warn("提醒任务(id:{},colId:{},compId:{}) 已经被禁用，跳过处理", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId());
             return true;
         }
         // 检查 nextTriggerTime 是否已经变更（重试需要保证幂等）
         if (spRemindTaskInfo.getNextTriggerTime() == null
                 || spRemindTaskInfo.getNextTriggerTime() < minTriggerTime
                 || spRemindTaskInfo.getNextTriggerTime() >= maxTriggerTime) {
-            omsLogger.warn("提醒任务(id:{},colId:{},compId:{})本次调度已被成功处理过，跳过",spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(),spRemindTaskInfo.getCompId());
+            omsLogger.warn("提醒任务(id:{},colId:{},compId:{})本次调度已被成功处理过，跳过", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId());
             return true;
         }
         return false;
