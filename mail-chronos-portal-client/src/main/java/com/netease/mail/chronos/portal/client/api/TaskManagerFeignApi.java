@@ -32,7 +32,7 @@ public interface TaskManagerFeignApi {
 
     /**
      * 删除任务（幂等）
-     * colId 必传，compId 可以为空
+     * compId & colId 不能都为空
      * 当仅传递 colId 时，会删除所有 colId 一致的任务
      *
      * @param colId  colId
@@ -40,7 +40,7 @@ public interface TaskManagerFeignApi {
      * @return 被删除的任务信息
      */
     @DeleteMapping("/manage/remind_task")
-    BaseResponse<List<RemindTaskVo>> delete(@RequestParam(value = "colId") String colId, @RequestParam(value = "compId", required = false) String compId);
+    BaseResponse<List<RemindTaskVo>> delete(@RequestParam(value = "colId",required = false) String colId, @RequestParam(value = "compId", required = false) String compId);
 
     /**
      * 更新任务 （会先删除再创建）
@@ -59,7 +59,7 @@ public interface TaskManagerFeignApi {
      * @return 任务信息
      */
     @GetMapping("/manage/remind_task")
-    BaseResponse<List<RemindTaskVo>> get(@RequestParam(value = "colId") String colId, @RequestParam(value = "compId", required = false) String compId);
+    BaseResponse<List<RemindTaskVo>> get(@RequestParam(value = "colId",required = false) String colId, @RequestParam(value = "compId", required = false) String compId);
 
 
 }
