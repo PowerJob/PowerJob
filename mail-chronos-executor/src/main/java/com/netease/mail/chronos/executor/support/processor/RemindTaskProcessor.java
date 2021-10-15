@@ -148,12 +148,12 @@ public class RemindTaskProcessor implements MapProcessor {
         });
         originParams.entrySet().forEach(e -> {
             if (e.getValue() instanceof String) {
-                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JsonUtils.toJSONString(e.getValue()));
-                param.setJson(true);
-                params.add(param);
-            } else {
                 NotifyParamDTO param = new NotifyParamDTO(e.getKey(), (String) e.getValue());
                 param.setJson(false);
+                params.add(param);
+            } else {
+                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JsonUtils.toJSONString(e.getValue()));
+                param.setJson(true);
                 params.add(param);
             }
         });
