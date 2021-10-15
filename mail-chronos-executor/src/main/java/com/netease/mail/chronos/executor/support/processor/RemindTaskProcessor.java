@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.po.TaskAdditionalData;
-import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.MapProcessor;
@@ -39,7 +38,7 @@ import static com.netease.mail.chronos.executor.support.common.CommonLogic.updat
 @Slf4j
 public class RemindTaskProcessor implements MapProcessor {
 
-    private static final int MESSAGE_TYPE = 19999999;
+    private static final int MESSAGE_TYPE = 213;
 
     private static final Integer BATCH_SIZE = 50;
     /**
@@ -152,8 +151,9 @@ public class RemindTaskProcessor implements MapProcessor {
                 param.setJson(false);
                 params.add(param);
             } else {
-                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JsonUtils.toJSONString(e.getValue()));
-                param.setJson(true);
+                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JSON.toJSONString(e.getValue()));
+                // 这里不得不这么判断一下，对方用的是 parseObject 方法
+                param.setJson(isValidateJsonObjectString(param.getValue()));
                 params.add(param);
             }
         });
@@ -162,6 +162,15 @@ public class RemindTaskProcessor implements MapProcessor {
         if (statusResult.getCode() != 200) {
             omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId(), statusResult);
             throw new BaseException(statusResult.getDesc());
+        }
+    }
+
+    private boolean isValidateJsonObjectString(String value) {
+        try {
+            JSON.parseObject(value);
+            return true;
+        } catch (Exception ignore) {
+            return false;
         }
     }
 
