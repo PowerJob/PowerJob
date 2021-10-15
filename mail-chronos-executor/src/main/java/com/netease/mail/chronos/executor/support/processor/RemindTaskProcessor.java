@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Maps;
 import com.netease.mail.chronos.base.exception.BaseException;
-import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
@@ -148,9 +147,15 @@ public class RemindTaskProcessor implements MapProcessor {
         HashMap<String, Object> originParams = JSON.parseObject(spRemindTaskInfo.getParam(), new TypeReference<HashMap<String, Object>>() {
         });
         originParams.entrySet().forEach(e -> {
-            NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JsonUtils.toJSONString(e.getValue()));
-            param.setJson(true);
-            params.add(param);
+            if (e.getValue() instanceof String) {
+                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JsonUtils.toJSONString(e.getValue()));
+                param.setJson(true);
+                params.add(param);
+            } else {
+                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), (String) e.getValue());
+                param.setJson(false);
+                params.add(param);
+            }
         });
 
         StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, spRemindTaskInfo.getUid());
