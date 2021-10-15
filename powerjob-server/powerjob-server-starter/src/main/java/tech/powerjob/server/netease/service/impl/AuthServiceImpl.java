@@ -12,6 +12,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.HttpUtils;
 import tech.powerjob.server.netease.config.AuthConfig;
 import tech.powerjob.server.netease.constants.OpenIdConstants;
+import tech.powerjob.server.netease.po.NeteaseUserInfo;
 import tech.powerjob.server.netease.service.AuthService;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 
@@ -27,7 +28,7 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private static final  String EXPIRE_TIME = "expireTime";
+    private static final String EXPIRE_TIME = "expireTime";
 
     private static final String USER_INFO = "userInfo";
 
@@ -57,14 +58,13 @@ public class AuthServiceImpl implements AuthService {
      * https://login.netease.com/download/oidc_docs/flow/userinfo_request.html
      */
     @Override
-    public String obtainUserName(String accessToken) {
+    public NeteaseUserInfo obtainUserInfo(String accessToken) {
         HashMap<String, String> params = new HashMap<>(16);
         params.put("access_token", accessToken);
         String rtn = HttpUtils.get(OpenIdConstants.USER_INFO_ENDPOINT, params);
 
         log.info("[auth]obtain user name,access token = {},rtn = {}", accessToken, rtn);
-        JSONObject jsonObject = JSON.parseObject(rtn);
-        return (String) jsonObject.get("sub");
+        return JSON.parseObject(rtn,NeteaseUserInfo.class);
     }
 
     @Override
@@ -105,10 +105,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String getLoginUrl() {
         HashMap<String, String> params = new HashMap<>(16);
-        params.put(OpenIdConstants.RESPONSE_TYPE,"code");
-        params.put(OpenIdConstants.SCOPE,"openid fullname nickname");
-        params.put(OpenIdConstants.CLIENT_ID,authConfig.getClientId());
-        params.put(OpenIdConstants.REDIRECT_URI,authConfig.getCallbackUrl());
+        params.put(OpenIdConstants.RESPONSE_TYPE, "code");
+        params.put(OpenIdConstants.SCOPE, "openid fullname nickname");
+        params.put(OpenIdConstants.CLIENT_ID, authConfig.getClientId());
+        params.put(OpenIdConstants.REDIRECT_URI, authConfig.getCallbackUrl());
         String paramString = HttpUtils.constructParamString(params);
         return OpenIdConstants.LOGIN_BASE_URL + "?" + paramString;
     }

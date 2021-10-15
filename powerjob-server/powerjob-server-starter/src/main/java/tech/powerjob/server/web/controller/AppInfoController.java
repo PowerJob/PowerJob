@@ -2,6 +2,7 @@ package tech.powerjob.server.web.controller;
 
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.netease.service.UserPermissionService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.core.service.AppInfoService;
@@ -20,6 +21,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +39,8 @@ public class AppInfoController {
     private AppInfoService appInfoService;
     @Resource
     private AppInfoRepository appInfoRepository;
+    @Resource
+    private UserPermissionService userPermissionService;
 
     private static final int MAX_APP_NUM = 200;
 
@@ -85,6 +89,9 @@ public class AppInfoController {
         }else {
             result = appInfoRepository.findByAppNameLike("%" + condition + "%", limit).getContent();
         }
+        // filter
+        Set<Long> appIdSet = userPermissionService.listAppId();
+        result = result.stream().filter( e-> appIdSet.contains(e.getId())).collect(Collectors.toList());
         return ResultDTO.success(convert(result));
     }
 

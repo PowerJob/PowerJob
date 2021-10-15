@@ -1,12 +1,14 @@
 package tech.powerjob.server.persistence.remote.repository;
 
-import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * AppInfo 数据访问层
@@ -20,6 +22,8 @@ public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long> {
 
     Page<AppInfoDO> findByAppNameLike(String condition, Pageable pageable);
 
+    @Query(value = "select id from AppInfoDO")
+    Set<Long> listAllAppId();
     /**
      * 根据 currentServer 查询 appId
      * 其实只需要 id，处于性能考虑可以直接写SQL只返回ID

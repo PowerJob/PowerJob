@@ -1,5 +1,6 @@
 package tech.powerjob.server.netease.service;
 
+import tech.powerjob.server.netease.po.NeteaseUserInfo;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 
 /**
@@ -22,7 +23,7 @@ public interface AuthService {
      * @param accessToken access token
      * @return 用户名，英文
      */
-    String obtainUserName(String accessToken);
+    NeteaseUserInfo obtainUserInfo(String accessToken);
 
 
     /**

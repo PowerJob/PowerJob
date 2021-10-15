@@ -1,5 +1,7 @@
 package tech.powerjob.server.netease.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -7,12 +9,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import tech.powerjob.server.netease.config.AuthConfig;
+import tech.powerjob.server.netease.po.NeteaseUserInfo;
 import tech.powerjob.server.netease.service.AuthService;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.HashMap;
 
 /**
  * @author Echo009
@@ -48,18 +53,25 @@ public class AuthController {
         String accessToken = authService.obtainAccessToken(code);
         // 这里偷个懒
         // 2、access_token 获取用户信息
-        String userName = authService.obtainUserName(accessToken);
+        NeteaseUserInfo neteaseUserInfo = authService.obtainUserInfo(accessToken);
 
         // 检查账号是否存在
-        UserInfoDO user = userInfoRepository.findByUsername(userName);
+        UserInfoDO user = userInfoRepository.findByUsername(neteaseUserInfo.getUserName());
 
-        // 不存在则提示需要管理员创建账号
+        // 不存在则自动创建账号，但不会分配权限
         if (user == null){
-
-            log.warn("[auth.callback] current user {} has not privilege!",userName);
+            log.warn("[auth.callback] current user ({}) not exist! will auto create account",neteaseUserInfo);
             //
-            httpServletResponse.setStatus(401);
-            return;
+            UserInfoDO userInfo = new UserInfoDO();
+            HashMap<String, Object> extra = Maps.newHashMap();
+            extra.put("fullName",neteaseUserInfo.getFullName());
+            userInfo.setUsername(neteaseUserInfo.getUserName());
+            userInfo.setEmail(neteaseUserInfo.getEmail());
+            userInfo.setExtra(JSON.toJSONString(extra));
+            userInfo.setPassword("*");
+            userInfo.setGmtCreate(new Date());
+            userInfo.setGmtModified(new Date());
+            userInfoRepository.saveAndFlush(userInfo);
         }
 
         // 存在则生成 JWT，并设置 cookies
