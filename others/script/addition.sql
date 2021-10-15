@@ -5,7 +5,8 @@ create table sx_user_role
     gmt_create   datetime     null,
     gmt_modified datetime     null,
     role         varchar(255) null,
-    user_id      bigint       not null
+    user_id      bigint       not null,
+    index idx01_sx_user_role(user_id)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
