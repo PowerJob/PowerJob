@@ -157,12 +157,24 @@ public class RemindTaskProcessor implements MapProcessor {
                 params.add(param);
             }
         });
+        StatusResult statusResult ;
+        // 处理 uid ，这次的原始 uid 有可能是 muid 或者 uid
+        if (isRealUid(spRemindTaskInfo.getUid())){
+            statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, spRemindTaskInfo.getUid());
+        }else {
+            NotifyParamDTO param = new NotifyParamDTO("muid",spRemindTaskInfo.getUid());
+            params.add(param);
+            statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, null);
+        }
 
-        StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, spRemindTaskInfo.getUid());
         if (statusResult.getCode() != 200) {
             omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId(), statusResult);
             throw new BaseException(statusResult.getDesc());
         }
+    }
+
+    private boolean isRealUid(String uid){
+        return StringUtils.isNotBlank(uid) && uid.contains("@");
     }
 
     private boolean isValidateJsonObjectString(String value) {
