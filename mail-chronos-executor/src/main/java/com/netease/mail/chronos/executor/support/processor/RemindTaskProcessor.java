@@ -8,6 +8,7 @@ import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
+import com.netease.mail.mp.api.notify.dto.NotifyRequest;
 import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
 import com.netease.mail.quark.status.StatusResult;
 import com.netease.mail.uaInfo.UaInfoContext;
@@ -141,6 +142,8 @@ public class RemindTaskProcessor implements MapProcessor {
 
     @SuppressWarnings("all")
     private void sendNotify(SpRemindTaskInfo spRemindTaskInfo, OmsLogger omsLogger) {
+
+
         List<NotifyParamDTO> params = new ArrayList<>();
 
         HashMap<String, Object> originParams = JSON.parseObject(spRemindTaskInfo.getParam(), new TypeReference<HashMap<String, Object>>() {
@@ -157,15 +160,17 @@ public class RemindTaskProcessor implements MapProcessor {
                 params.add(param);
             }
         });
-        StatusResult statusResult ;
+        NotifyRequest.Builder builder = NotifyRequest.newBuilder();
+        builder.token(generateToken(spRemindTaskInfo))
+                .params(params)
+                .type(MESSAGE_TYPE);
         // 处理 uid ，这次的原始 uid 有可能是 muid 或者 uid
         if (isRealUid(spRemindTaskInfo.getUid())){
-            statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, spRemindTaskInfo.getUid());
+            builder.uid(spRemindTaskInfo.getUid());
         }else {
-            NotifyParamDTO param = new NotifyParamDTO("muid",spRemindTaskInfo.getUid());
-            params.add(param);
-            statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, generateToken(spRemindTaskInfo), params, null);
+            builder.muid(spRemindTaskInfo.getUid());
         }
+        StatusResult statusResult = notifyClient.notifyByDomain(builder.build());
 
         if (statusResult.getCode() != 200) {
             omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId(), statusResult);
