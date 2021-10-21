@@ -26,8 +26,6 @@ public class FailureTaskProcessor  implements BasicProcessor {
 
     private final SpRemindTaskService spRemindTaskService;
 
-    private static final Long MAX_DELAY = 10 * 60 * 1000L;
-
     private final NotifyService notifyService;
 
     @Override
@@ -52,12 +50,7 @@ public class FailureTaskProcessor  implements BasicProcessor {
     }
 
     private void tryTriggerTask(SpRemindTaskInfo spRemindTaskInfo, OmsLogger omsLogger){
-        long threshold = System.currentTimeMillis() - MAX_DELAY;
-        if (spRemindTaskInfo.getNextTriggerTime() < threshold ){
-            omsLogger.info("任务({})延迟时间超过阈值，将跳过本次调度",spRemindTaskInfo);
-            return;
-        }
-        // trigger
+        // always trigger
         try {
             notifyService.sendNotify(spRemindTaskInfo,omsLogger);
         }catch (Exception e){
