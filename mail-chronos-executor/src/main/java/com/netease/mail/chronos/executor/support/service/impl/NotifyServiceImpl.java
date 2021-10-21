@@ -52,6 +52,10 @@ public class NotifyServiceImpl implements NotifyService {
             }
             params.add(param);
         });
+        // 传递 expectedTriggerTime
+        NotifyParamDTO triggerTime = new NotifyParamDTO("expectedTriggerTime", String.valueOf(spRemindTaskInfo.getNextTriggerTime()));
+        params.add(triggerTime);
+
         NotifyRequest.Builder builder = NotifyRequest.newBuilder();
         builder.token(generateToken(spRemindTaskInfo))
                 .params(params)
