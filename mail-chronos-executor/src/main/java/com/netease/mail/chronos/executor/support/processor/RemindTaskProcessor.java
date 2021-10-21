@@ -1,16 +1,11 @@
 package com.netease.mail.chronos.executor.support.processor;
 
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Maps;
 import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
+import com.netease.mail.chronos.executor.support.service.NotifyService;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
-import com.netease.mail.mp.api.notify.client.NotifyClient;
-import com.netease.mail.mp.api.notify.dto.NotifyRequest;
-import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
-import com.netease.mail.quark.status.StatusResult;
 import com.netease.mail.uaInfo.UaInfoContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,7 +20,10 @@ import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.MapProcessor;
 import tech.powerjob.worker.log.OmsLogger;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import static com.netease.mail.chronos.executor.support.common.CommonLogic.disableTask;
 import static com.netease.mail.chronos.executor.support.common.CommonLogic.updateTriggerTime;
@@ -39,8 +37,6 @@ import static com.netease.mail.chronos.executor.support.common.CommonLogic.updat
 @Slf4j
 public class RemindTaskProcessor implements MapProcessor {
 
-    private static final int MESSAGE_TYPE = 213;
-
     private static final Integer BATCH_SIZE = 50;
     /**
      * 间隙
@@ -49,8 +45,7 @@ public class RemindTaskProcessor implements MapProcessor {
 
     private final SpRemindTaskService spRemindTaskService;
 
-    private final NotifyClient notifyClient;
-
+    private final NotifyService notifyService;
 
     /**
      * 上层传递触发时间
@@ -115,7 +110,7 @@ public class RemindTaskProcessor implements MapProcessor {
                     continue;
                 }
                 // 处理
-                sendNotify(spRemindTaskInfo, omsLogger);
+                notifyService.sendNotify(spRemindTaskInfo, omsLogger);
                 // 更新状态
                 spRemindTaskInfo.setTriggerTimes(spRemindTaskInfo.getTriggerTimes() + 1);
                 // 计算下次调度时间 , 理论上不应该会存在每分钟调度一次的提醒任务（业务场景决定）
@@ -140,63 +135,6 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
 
-    @SuppressWarnings("all")
-    private void sendNotify(SpRemindTaskInfo spRemindTaskInfo, OmsLogger omsLogger) {
-
-
-        List<NotifyParamDTO> params = new ArrayList<>();
-
-        HashMap<String, Object> originParams = JSON.parseObject(spRemindTaskInfo.getParam(), new TypeReference<HashMap<String, Object>>() {
-        });
-        originParams.entrySet().forEach(e -> {
-            if (e.getValue() instanceof String) {
-                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), (String) e.getValue());
-                param.setJson(false);
-                params.add(param);
-            } else {
-                NotifyParamDTO param = new NotifyParamDTO(e.getKey(), JSON.toJSONString(e.getValue()));
-                // 这里不得不这么判断一下，对方用的是 parseObject 方法
-                param.setJson(isValidateJsonObjectString(param.getValue()));
-                params.add(param);
-            }
-        });
-        NotifyRequest.Builder builder = NotifyRequest.newBuilder();
-        builder.token(generateToken(spRemindTaskInfo))
-                .params(params)
-                .type(MESSAGE_TYPE);
-        // 处理 uid ，这次的原始 uid 有可能是 muid 或者 uid
-        if (isRealUid(spRemindTaskInfo.getUid())){
-            builder.uid(spRemindTaskInfo.getUid());
-        }else {
-            builder.muid(spRemindTaskInfo.getUid());
-        }
-        StatusResult statusResult = notifyClient.notifyByDomain(builder.build());
-
-        if (statusResult.getCode() != 200) {
-            omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId(), statusResult);
-            throw new BaseException(statusResult.getDesc());
-        }
-    }
-
-    private boolean isRealUid(String uid){
-        return StringUtils.isNotBlank(uid) && uid.contains("@");
-    }
-
-    private boolean isValidateJsonObjectString(String value) {
-        try {
-            JSON.parseObject(value);
-            return true;
-        } catch (Exception ignore) {
-            return false;
-        }
-    }
-
-    private String generateToken(SpRemindTaskInfo spRemindTaskInfo) {
-        // 根据 id 和 triggerTime 生成唯一 id
-        Long id = spRemindTaskInfo.getId();
-        Long nextTriggerTime = spRemindTaskInfo.getNextTriggerTime();
-        return id + "#" + nextTriggerTime;
-    }
 
     @Data
     @AllArgsConstructor
