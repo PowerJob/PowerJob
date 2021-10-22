@@ -1,10 +1,12 @@
 package com.github.kfcfans.powerjob.server.persistence.config;
 
-import com.github.kfcfans.powerjob.server.common.PowerJobServerConfigKey;
-import com.github.kfcfans.powerjob.server.common.utils.PropertyUtils;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
@@ -22,8 +24,15 @@ import java.io.Serializable;
  * @author songyinyin
  * @since 2020/7/18
  */
-public class PowerJobPhysicalNamingStrategy extends SpringPhysicalNamingStrategy implements Serializable {
+@Component
+public class PowerJobPhysicalNamingStrategy extends SpringPhysicalNamingStrategy implements Serializable, ApplicationContextAware {
 
+    private static ApplicationContext context;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        context = applicationContext;
+    }
 
     /**
      * 映射物理表名称，如：把实体表 AppInfoDO 的 DO 去掉，再加上表前缀
@@ -34,14 +43,10 @@ public class PowerJobPhysicalNamingStrategy extends SpringPhysicalNamingStrategy
      */
     @Override
     public Identifier toPhysicalTableName(Identifier name, JdbcEnvironment jdbcEnvironment) {
-
-        String tablePrefix = PropertyUtils.getProperties().getProperty(PowerJobServerConfigKey.TABLE_PREFIX);
-
+        String tablePrefix = context.getEnvironment().getProperty("oms.table-prefix");
         String text = name.getText();
         String noDOText = StringUtils.endsWithIgnoreCase(text, "do") ? text.substring(0, text.length() - 2) : text;
         String newText = StringUtils.hasLength(tablePrefix) ? tablePrefix + noDOText : noDOText;
         return super.toPhysicalTableName(new Identifier(newText, name.isQuoted()), jdbcEnvironment);
     }
-
-
 }
