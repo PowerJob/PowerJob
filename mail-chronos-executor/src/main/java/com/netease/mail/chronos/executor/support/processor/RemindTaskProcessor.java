@@ -9,6 +9,7 @@ import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
 import com.netease.mail.uaInfo.UaInfoContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -138,6 +139,7 @@ public class RemindTaskProcessor implements MapProcessor {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class UserInfo {
         private String uid;
     }
@@ -162,6 +164,7 @@ public class RemindTaskProcessor implements MapProcessor {
     @Data
     @Accessors(chain = true)
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class SubTask {
 
         private int seq;
