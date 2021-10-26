@@ -18,8 +18,8 @@ datasource:
       username: scheduler_x
       password: 4hI0MZm51P
       poolName: chronos-support-datasource
-      maxPoolSize: 10
-      minIdle: 1
+      maxPoolSize: 300
+      minIdle: 10
 #[eureka]
 eureka:
   instance:
