@@ -4,10 +4,12 @@ datasource:
       jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
       username: Echo009
       password: ironman
+      pool-name: chronos-base-datasource
     support:
       jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
       username: Echo009
       password: ironman
+      pool-name: chronos-support-datasource
 
 
 

@@ -5,4 +5,20 @@
 <mapper namespace="com.netease.mail.chronos.portal.mapper.support.SpRemindTaskInfoMapper">
 
 
+    <delete id="deleteTaskByCompId">
+        delete
+        from sp_remind_task_info
+        where id in (
+            select id
+            from sp_remind_task_info
+            where comp_id = #{compId}
+            order by id
+        )
+    </delete>
+    
+    <select id="selectIdListByCompId" resultType="java.lang.Long">
+        select id
+        from sp_remind_task_info
+        where comp_id = #{compId}
+    </select>
 </mapper>
