@@ -35,6 +35,6 @@ logging:
 
 notify:
   api:
-    url: 10.110.46.16:18088
+    url: mpserv-notify.qzgw-beta.163.internal
 
 
