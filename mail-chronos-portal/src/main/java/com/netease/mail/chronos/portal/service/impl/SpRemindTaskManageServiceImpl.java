@@ -112,12 +112,9 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
         log.info("[opt:update,message:start,colId:{},compId:{},detail:{}]", task.getColId(), task.getCompId(), task);
         // 校验 UID , 任务参数
         checkBaseProperties(task);
-        // 删除
-        List<SpRemindTaskInfo> originList = spRemindTaskInfoMapper.selectList(QueryWrapperUtil.construct(S_COL_NAME, task.getCompId()));
-        if (!CollectionUtils.isEmpty(originList)) {
-            log.info("[opt:update,message:delete origin task info ,colId:{},compId:{},detail:{}]", task.getColId(), task.getCompId(), originList);
-            spRemindTaskInfoMapper.deleteBatchIds(originList.stream().map(SpRemindTaskInfo::getId).collect(Collectors.toList()));
-        }
+        // 根据 CompId 直接删除
+        int deleted = spRemindTaskInfoMapper.delete(QueryWrapperUtil.construct(S_COL_NAME, task.getCompId()));
+        log.info("[opt:update,message:delete origin task info success,colId:{},compId:{},count:{}]", task.getColId(), task.getCompId(), deleted);
         // 创建
         List<Long> triggerOffsets = task.getTriggerOffsets();
         List<RemindTaskVo> res = new ArrayList<>(triggerOffsets.size());
