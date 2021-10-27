@@ -36,6 +36,10 @@ done
 
 #LOCAL_IP=`/sbin/ip addr | fgrep inet | awk '$2~/^192.168.|^172.16.|^10./{print $2}' | cut -d\/ -f1 | head -n1`
 LOCAL_IP="0.0.0.0"
+## -Dpowerjob.worker.akka.timeout=60000
+if [  ! "${CHRONOS_AKKA_TIMEOUT}" = "" ]; then
+  JVM_OPTS="${JVM_OPTS} -Dpowerjob.worker.akka.timeout=${CHRONOS_AKKA_TIMEOUT}"
+fi
 
 if [  ! "${ACTIVE_PROFILES}" = "" ]; then
   JVM_OPTS="${JVM_OPTS} -Dspring.profiles.active=${ACTIVE_PROFILES}"
