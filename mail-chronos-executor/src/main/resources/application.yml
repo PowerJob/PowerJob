@@ -1,4 +1,9 @@
 server:
+  tomcat:
+    accesslog:
+      enabled: true
+      pattern: '%h %l %u %t "%r" %s %b %{X-Forwarded-For}i %D %{chronos_t}c'
+      directory: /home/tomcat/logs
   servlet:
     application-display-name: chronos-executor
   port: 18087

@@ -10,6 +10,11 @@ server:
   servlet:
     application-display-name: chronos-portal
   port: 18087
+  tomcat:
+    accesslog:
+      enabled: true
+      pattern: '%h %l %u %t "%r" %s %b %{X-Forwarded-For}i %D %{chronos_t}c'
+      directory: /home/tomcat/logs
 
 management:
   server:

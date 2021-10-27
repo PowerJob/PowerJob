@@ -10,6 +10,7 @@ powerjob:
     server-address: localhost:80
     # Store strategy of H2 database. disk or memory. Default value is disk.
     store-strategy: disk
+    enable-test-mode: true
 
 datasource:
   chronos:
