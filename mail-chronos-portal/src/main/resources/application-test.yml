@@ -5,15 +5,15 @@ datasource:
       username: scheduler_x
       password: 4hI0MZm51P
       poolName: chronos-base-datasource
-      maxPoolSize: 300
-      minIdle: 50
+      maximum-pool-size: 300
+      minimum-idle: 50
     support:
       jdbcUrl: jdbc:mysql://10.110.9.218:6306/alpine
       username: scheduler_x
       password: 4hI0MZm51P
       poolName: chronos-support-datasource
-      maxPoolSize: 300
-      minIdle: 50
+      maximum-pool-size: 300
+      minimum-idle: 50
 #[eureka]
 eureka:
   instance:
