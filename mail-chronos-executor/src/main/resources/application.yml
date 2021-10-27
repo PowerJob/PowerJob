@@ -2,7 +2,7 @@ server:
   tomcat:
     accesslog:
       enabled: true
-      pattern: '%h %l %u %t "%r" %s %b %{X-Forwarded-For}i %D %{chronos_t}c'
+      pattern: '%h %l %u %t "%r" %s %b %{X-Forwarded-For}i %D'
       directory: /home/tomcat/logs
   servlet:
     application-display-name: chronos-executor
@@ -26,6 +26,14 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  endpoint:
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      base-path: /admin
+      exposure:
+        include: '*'
 
 logging:
   logger:
