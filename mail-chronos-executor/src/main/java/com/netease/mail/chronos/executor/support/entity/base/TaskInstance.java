@@ -2,7 +2,6 @@ package com.netease.mail.chronos.executor.support.entity.base;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -15,10 +14,14 @@ import java.util.Date;
 @Data
 public class TaskInstance implements Serializable {
     /**
-     * 
+     * 注意这个类不用能 baseMapper 提供的一系列方法
+     * 实际上的主键是 id + partitionKey 
      */
     @TableId
     private Long id;
+
+
+    private Integer partitionKey;
 
     /**
      * 任务 ID

@@ -21,6 +21,8 @@ public class TimeUtil {
     private static final ThreadLocal<SimpleDateFormat> COMMON_DATE_FORMAT =
             ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
 
+    private static final ThreadLocal<SimpleDateFormat> NUMBER_DATE_FORMAT =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyyMMdd"));
 
     private TimeUtil() {
 
@@ -87,6 +89,15 @@ public class TimeUtil {
         return COMMON_DATE_FORMAT.get().format(date);
     }
 
+    public static Integer getDateNumber(Date date){
+        if (date == null) {
+            return 0;
+        }
+        return Integer.parseInt(NUMBER_DATE_FORMAT.get().format(date));
+
+
+    }
+
     /**
      * parse，如果输入无效则返回 null
      * @param dateString yyyy-MM-dd
@@ -102,5 +113,10 @@ public class TimeUtil {
         return null;
     }
 
+
+    public void clear(){
+        COMMON_DATE_FORMAT.remove();
+        NUMBER_DATE_FORMAT.remove();
+    }
 
 }

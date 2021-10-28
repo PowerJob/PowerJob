@@ -18,6 +18,8 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
@@ -50,6 +52,11 @@ public class ChronosSupportDatasourceConfig  {
     @Bean(name = "chronosSupportSqlSessionFactory")
     public SqlSessionFactory sqlSessionFactory(@Qualifier("chronosSupportDatasource") DataSource dataSource) throws Exception {
         return constructSqlSessionFactory(dataSource);
+    }
+
+    @Bean(name = "chronosSupportTransactionManager")
+    public PlatformTransactionManager transactionManager(@Qualifier("chronosSupportDatasource") DataSource dataSource){
+        return new DataSourceTransactionManager(dataSource);
     }
 
 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.netease.mail.chronos.executor.support.mapper.SpRtTaskInstanceMapper">
+
+    <update id="updateByPrimaryKey">
+        update sp_rt_task_instance
+        set actual_trigger_time = #{taskInstance.actualTriggerTime},
+            finished_time       = #{taskInstance.finishedTime},
+            running_times= #{taskInstance.runningTimes},
+            result= #{taskInstance.result},
+            status= #{taskInstance.status},
+            enable= #{taskInstance.enable},
+            update_time= #{taskInstance.updateTime}
+        where id = #{taskInstance.id}
+          and partition_key = #{taskInstance.partitionKey}
+    </update>
+
+    <select id="selectIdListOfNeedTriggerInstance"
+            resultType="com.netease.mail.chronos.executor.support.base.po.TaskInstancePrimaryKey">
+        select id,partition_key from sp_rt_task_instance where enable = 1 and status != 3 and expected_trigger_time
+        <![CDATA[ < ]]> #{threshold}
+        and partition_key in
+        <foreach collection="partitionKeyList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="selectByPrimaryKey"
+            resultType="com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance">
+        select id,
+               task_id,
+               custom_id,
+               param,
+               extra,
+               expected_trigger_time,
+               actual_trigger_time,
+               finished_time,
+               running_times,
+               max_retry_times,
+               result,
+               status,
+               enable,
+               partition_key,
+               update_time,
+               create_time
+        from sp_rt_task_instance
+        where id = #{id}
+          and partition_key = #{partitionKey}
+    </select>
+
+
+    <insert id="insert">
+
+        insert into sp_rt_task_instance (id, task_id, custom_id, param, extra, expected_trigger_time,
+                                         actual_trigger_time, finished_time, result, partition_key, update_time,
+                                         create_time) value
+            (
+             #{taskInstance.id},
+             #{taskInstance.taskId},
+             #{taskInstance.customId},
+             #{taskInstance.param},
+             #{taskInstance.extra},
+             #{taskInstance.expectedTriggerTime},
+             #{taskInstance.actualTriggerTime},
+             #{taskInstance.finishedTime},
+             #{taskInstance.result},
+             #{taskInstance.partitionKey},
+             #{taskInstance.updateTime},
+             #{taskInstance.createTime}
+                )
+    </insert>
+</mapper>

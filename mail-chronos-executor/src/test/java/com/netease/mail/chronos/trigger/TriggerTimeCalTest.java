@@ -36,5 +36,12 @@ class TriggerTimeCalTest {
         System.out.println(nextTriggerTime);
     }
 
+    @Test
+    void maxTime(){
+
+        System.out.println(new Date(Long.MAX_VALUE));
+
+    }
+
 
 }
