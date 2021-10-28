@@ -1,4 +1,4 @@
-package com.netease.mail.chronos.base;
+package com.netease.mail.chronos.base.context;
 
 import com.netease.mail.chronos.executor.config.datasource.DataSourceConfig;
 import org.springframework.context.annotation.ComponentScan;

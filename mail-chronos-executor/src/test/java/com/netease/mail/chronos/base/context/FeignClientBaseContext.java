@@ -1,4 +1,4 @@
-package com.netease.mail.chronos.base;
+package com.netease.mail.chronos.base.context;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;

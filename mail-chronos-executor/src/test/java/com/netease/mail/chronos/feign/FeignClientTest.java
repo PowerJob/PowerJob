@@ -1,9 +1,10 @@
 package com.netease.mail.chronos.feign;
 
 import com.google.common.collect.Maps;
-import com.netease.mail.chronos.base.FeignClientBaseContext;
+import com.netease.mail.chronos.base.context.FeignClientBaseContext;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
 import com.netease.mail.uaInfo.UaInfoContext;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,11 @@ public class FeignClientTest {
     @Autowired
     private NotifyClient notifyClient;
 
-
+    /**
+     * 这个只用来 debug 验证 ua
+     */
     @Test
+    @Ignore
     public void load(){
 
         HashMap<String, Object> fakeUa = Maps.newHashMap();

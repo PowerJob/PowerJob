@@ -1,6 +1,6 @@
 package com.netease.mail.chronos.mapper;
 
-import com.netease.mail.chronos.base.DaoBaseContext;
+import com.netease.mail.chronos.base.context.DaoBaseContext;
 import com.netease.mail.chronos.executor.support.base.po.TaskInstancePrimaryKey;
 import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
 import com.netease.mail.chronos.executor.support.mapper.SpRtTaskInstanceMapper;
@@ -42,7 +42,7 @@ public class MapperTest {
         origin.setTaskId(1L);
         origin.setStatus(0);
         origin.setEnable(true);
-        origin.setExpectedTriggerTime(1L);
+        origin.setExpectedTriggerTime(0L);
         origin.setMaxRetryTimes(1);
         origin.setCreateTime(new Date());
         origin.setUpdateTime(new Date());
