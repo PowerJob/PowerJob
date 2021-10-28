@@ -1,0 +1,33 @@
+powerjob:
+  worker:
+    # Akka port, default is 27777
+    akka-port: 27777
+    # Max length of appended workflow context . Appended workflow context value that is longer than the value will be ignore.
+    max-appended-wf-context-length: 4096
+    # Max length of result. Results that are longer than the value will be truncated.
+    max-result-length: 16384
+    # Address of PowerJob-server node(s). Ip:port or domain. Multiple addresses should be separated with comma.
+    server-address: chronos-server.qzgw.163.internal
+    # Store strategy of H2 database. disk or memory. Default value is disk.
+    store-strategy: memory
+
+datasource:
+  chronos:
+    support:
+      jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
+      username: Echo009
+      password: ironman
+
+#[eureka]
+eureka:
+  instance:
+    metadata-map:
+      env: release
+
+logging:
+  config: classpath:logback/logback-release.xml
+
+
+notify:
+  api:
+    url: mpserv-notify.qzgw.163.internal
