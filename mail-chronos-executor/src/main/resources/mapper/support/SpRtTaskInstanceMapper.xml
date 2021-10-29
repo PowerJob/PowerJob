@@ -44,6 +44,7 @@
         select id,
                task_id,
                custom_id,
+               custom_key,
                param,
                extra,
                expected_trigger_time,
