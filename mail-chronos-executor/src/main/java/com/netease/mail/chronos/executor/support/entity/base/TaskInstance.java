@@ -29,9 +29,13 @@ public class TaskInstance implements Serializable {
     private Long taskId;
 
     /**
-     * 业务方定义的 ID
+     * 业务方定义的 ID，带非唯一索引
      */
-    private Long customId;
+    private String customId;
+    /**
+     * 业务方定义的 key ，带非唯一索引
+     */
+    private String customKey;
 
     /**
      * 任务参数

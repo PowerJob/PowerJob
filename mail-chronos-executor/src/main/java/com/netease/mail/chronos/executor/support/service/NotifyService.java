@@ -1,6 +1,7 @@
 package com.netease.mail.chronos.executor.support.service;
 
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
+import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
 import tech.powerjob.worker.log.OmsLogger;
 
 /**
@@ -12,10 +13,10 @@ public interface NotifyService {
 
     /**
      * 发送通知
-     * @param spRemindTaskInfo 提醒任务
+     * @param spRtTaskInstance 提醒任务
      * @param omsLogger logger
      */
-    void sendNotify(SpRemindTaskInfo spRemindTaskInfo, OmsLogger omsLogger);
+    boolean sendNotify(SpRtTaskInstance spRtTaskInstance, OmsLogger omsLogger);
 
 
 }

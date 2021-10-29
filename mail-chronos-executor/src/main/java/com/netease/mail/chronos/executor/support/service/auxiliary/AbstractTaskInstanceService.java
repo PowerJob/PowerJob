@@ -1,6 +1,7 @@
 package com.netease.mail.chronos.executor.support.service.auxiliary;
 
 import com.netease.mail.chronos.base.exception.BaseException;
+import com.netease.mail.chronos.base.utils.ExecuteUtil;
 import com.netease.mail.chronos.base.utils.TimeUtil;
 import com.netease.mail.chronos.executor.support.base.mapper.TaskInstanceBaseMapper;
 import com.netease.mail.chronos.executor.support.base.po.TaskInstancePrimaryKey;
@@ -18,6 +19,8 @@ import java.util.List;
  */
 @Slf4j
 public abstract class AbstractTaskInstanceService<T extends TaskInstance> {
+
+    private static final String PARTITION_PREFIX = "p";
 
     /**
      * 获取触发阈值差值
@@ -46,18 +49,43 @@ public abstract class AbstractTaskInstanceService<T extends TaskInstance> {
      *
      * @return id 列表
      */
-    public List<TaskInstancePrimaryKey> loadHandleInstanceIdList() {
+    public List<TaskInstancePrimaryKey> loadHandleInstanceIdList(int limit) {
         TaskInstanceBaseMapper<T> mapper = getMapper();
         // cal
         long triggerThreshold = System.currentTimeMillis() + getThresholdDelta();
         int scope = getScope();
-        return mapper.selectIdListOfNeedTriggerInstance(triggerThreshold, obtainPartitionKeyListByScope(scope));
+        log.info("load task instance,triggerThreshold:{},limit:{},scope:{}", triggerThreshold, limit, scope);
+        return mapper.selectIdListOfNeedTriggerInstance(triggerThreshold, obtainPartitionKeyListByScope(scope), limit);
+    }
+
+    public T selectByPrimaryKey(TaskInstancePrimaryKey primaryKey) {
+        return getMapper().selectByPrimaryKey(primaryKey.getId(), primaryKey.getPartitionKey());
     }
 
 
-    public int updateByPrimaryKey(T taskInstance) {
+    public void updatePartition() {
+
+        TaskInstanceBaseMapper<T> mapper = getMapper();
+        // 删除 7 天之前的分区
+        Date dropDate = TimeUtil.obtainNextNDay(new Date(), -7);
+        Integer dateNumber = TimeUtil.getDateNumber(dropDate);
+        String dropP = PARTITION_PREFIX + dateNumber;
+        log.info("drop partition:{}",dropP);
+        ExecuteUtil.executeIgnoreExceptionWithoutReturn(() -> mapper.dropPartition(dropP));
+        // 创建第二天的分区
+        Date createDate = TimeUtil.obtainNextNDay(new Date(), 2);
+        dateNumber = TimeUtil.getDateNumber(createDate);
+        Integer valueLimit = dateNumber + 1;
+        String createP = PARTITION_PREFIX + dateNumber;
+        log.info("create partition:{},valueLimit:{}",createP,valueLimit);
+        ExecuteUtil.executeIgnoreExceptionWithoutReturn(() -> mapper.createPartition(createP,valueLimit));
+
+    }
+
+
+    public void updateByPrimaryKey(T taskInstance) {
         checkPrimaryKey(taskInstance);
-        return getMapper().updateByPrimaryKey(taskInstance);
+        getMapper().updateByPrimaryKey(taskInstance);
     }
 
 

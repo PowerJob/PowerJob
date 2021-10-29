@@ -41,6 +41,19 @@ public class SpRemindTaskServiceImpl implements SpRemindTaskService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Long> obtainValidTaskIdListByTriggerTimeThreshold(long maxTriggerTime, int limit) {
+        // 拉取小于 maxTriggerTime 的任务
+        List<SpRemindTaskSimpleInfo> spRemindTaskInfos = spRemindTaskInfoMapper.selectIdListByNextTriggerTimeAndEnableLimit(maxTriggerTime,limit);
+        // 过滤小于 minTriggerTime
+        if (spRemindTaskInfos == null || spRemindTaskInfos.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return spRemindTaskInfos.stream()
+                .map(SpRemindTaskSimpleInfo::getId)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public SpRemindTaskInfo selectById(long id) {

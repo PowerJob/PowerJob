@@ -17,14 +17,26 @@
           and partition_key = #{taskInstance.partitionKey}
     </update>
 
+    <update id="dropPartition">
+        alter table sp_rt_task_instance
+            drop partition ${partitionName};
+    </update>
+
+    <update id="createPartition">
+        alter table sp_rt_task_instance
+            add partition (partition ${partitionName} VALUES LESS THAN ( ${valueLimit} ));
+    </update>
+
     <select id="selectIdListOfNeedTriggerInstance"
             resultType="com.netease.mail.chronos.executor.support.base.po.TaskInstancePrimaryKey">
-        select id,partition_key from sp_rt_task_instance where enable = 1 and status != 3 and expected_trigger_time
+        select id,partition_key from sp_rt_task_instance where expected_trigger_time
         <![CDATA[ < ]]> #{threshold}
         and partition_key in
         <foreach collection="partitionKeyList" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
+        and enable = 1 and status in (0,1,2)
+        order by expected_trigger_time limit #{limit}
     </select>
 
     <select id="selectByPrimaryKey"
@@ -53,13 +65,14 @@
 
     <insert id="insert">
 
-        insert into sp_rt_task_instance (id, task_id, custom_id, param, extra, expected_trigger_time,
+        insert into sp_rt_task_instance (id, task_id, custom_id, custom_key, param, extra, expected_trigger_time,
                                          actual_trigger_time, finished_time, result, partition_key, update_time,
                                          create_time) value
             (
              #{taskInstance.id},
              #{taskInstance.taskId},
              #{taskInstance.customId},
+             #{taskInstance.customKey},
              #{taskInstance.param},
              #{taskInstance.extra},
              #{taskInstance.expectedTriggerTime},
@@ -70,5 +83,6 @@
              #{taskInstance.updateTime},
              #{taskInstance.createTime}
                 )
+
     </insert>
 </mapper>

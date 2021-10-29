@@ -38,7 +38,7 @@ public class MapperTest {
         SpRtTaskInstance origin = new SpRtTaskInstance();
         origin.setId(1L);
         origin.setPartitionKey(20211027);
-        origin.setCustomId(1L);
+        origin.setCustomId("1L");
         origin.setTaskId(1L);
         origin.setStatus(0);
         origin.setEnable(true);
@@ -58,7 +58,7 @@ public class MapperTest {
         List<Integer> partitionList = new ArrayList<>();
         partitionList.add(20211028);
         partitionList.add(20211027);
-        List<TaskInstancePrimaryKey> taskInstancePrimaryKeys = spRtTaskInstanceMapper.selectIdListOfNeedTriggerInstance(1L, partitionList);
+        List<TaskInstancePrimaryKey> taskInstancePrimaryKeys = spRtTaskInstanceMapper.selectIdListOfNeedTriggerInstance(1L, partitionList,10);
 
         for (TaskInstancePrimaryKey taskInstancePrimaryKey : taskInstancePrimaryKeys) {
             log.info("needTriggerInstanceKey:{}",taskInstancePrimaryKey);

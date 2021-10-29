@@ -20,6 +20,14 @@ public interface SpRemindTaskService {
     List<Long> obtainValidTaskIdListByTriggerTimeScope(long minTriggerTime, long maxTriggerTime);
 
     /**
+     * 加载触发时间小于指定时间的任务 id 列表
+     * @param maxTriggerTime 最大触发时间
+     * @param limit 最大数量
+     * @return id list
+     */
+    List<Long> obtainValidTaskIdListByTriggerTimeThreshold(long maxTriggerTime,int limit);
+
+    /**
      * 根据 ID 查找记录
      * @param id 任务 id
      * @return 提醒任务详情

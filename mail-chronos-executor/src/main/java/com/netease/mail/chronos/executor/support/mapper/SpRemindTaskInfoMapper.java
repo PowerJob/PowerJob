@@ -19,7 +19,7 @@ public interface SpRemindTaskInfoMapper extends BaseMapper<SpRemindTaskInfo> {
      */
     List<SpRemindTaskSimpleInfo>  selectIdListByNextTriggerTimeAndEnable(@Param("maxTriggerTime")long maxTriggerTime);
 
-
+    List<SpRemindTaskSimpleInfo>  selectIdListByNextTriggerTimeAndEnableLimit(@Param("maxTriggerTime")long maxTriggerTime, @Param("limit") int limit);
 
 }
 

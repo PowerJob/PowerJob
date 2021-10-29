@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
+import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
 import com.netease.mail.chronos.executor.support.service.NotifyService;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
 import com.netease.mail.mp.api.notify.dto.NotifyRequest;
@@ -34,11 +35,9 @@ public class NotifyServiceImpl implements NotifyService {
 
 
     @Override
-    public void sendNotify(SpRemindTaskInfo spRemindTaskInfo, OmsLogger omsLogger) {
-
+    public boolean sendNotify(SpRtTaskInstance spRtTaskInstance, OmsLogger omsLogger) {
         List<NotifyParamDTO> params = new ArrayList<>();
-
-        HashMap<String, Object> originParams = JSON.parseObject(spRemindTaskInfo.getParam(), new TypeReference<HashMap<String, Object>>() {
+        HashMap<String, Object> originParams = JSON.parseObject(spRtTaskInstance.getParam(), new TypeReference<HashMap<String, Object>>() {
         });
         originParams.forEach((key, value) -> {
             NotifyParamDTO param;
@@ -53,25 +52,28 @@ public class NotifyServiceImpl implements NotifyService {
             params.add(param);
         });
         // 传递 expectedTriggerTime
-        NotifyParamDTO triggerTime = new NotifyParamDTO("expectedTriggerTime", String.valueOf(spRemindTaskInfo.getNextTriggerTime()));
+        NotifyParamDTO triggerTime = new NotifyParamDTO("expectedTriggerTime", String.valueOf(spRtTaskInstance.getExpectedTriggerTime()));
         params.add(triggerTime);
 
         NotifyRequest.Builder builder = NotifyRequest.newBuilder();
-        builder.token(generateToken(spRemindTaskInfo))
+        builder.token(generateToken(spRtTaskInstance))
                 .params(params)
                 .type(MESSAGE_TYPE);
         // 处理 uid ，这次的原始 uid 有可能是 muid 或者 uid
-        if (isRealUid(spRemindTaskInfo.getUid())){
-            builder.uid(spRemindTaskInfo.getUid());
+        if (isRealUid(spRtTaskInstance.getCustomKey())){
+            builder.uid(spRtTaskInstance.getCustomKey());
         }else {
-            builder.muid(spRemindTaskInfo.getUid());
+            builder.muid(spRtTaskInstance.getCustomKey());
         }
         StatusResult statusResult = notifyClient.notifyByDomain(builder.build());
-
+        // 记录结果
+        spRtTaskInstance.setResult(JSON.toJSONString(statusResult));
         if (statusResult.getCode() != 200) {
-            omsLogger.error("处理任务(id:{},colId:{},compId:{})失败,rtn = {}", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId(), statusResult);
-            throw new BaseException(statusResult.getDesc());
+            log.error("处理提醒任务实例(id:{},compId:{},uid:{})失败,rtn = {}", spRtTaskInstance.getId(), spRtTaskInstance.getCustomId(), spRtTaskInstance.getCustomKey(), statusResult);
+            return false;
         }
+        log.info("处理提醒任务实例(id:{},compId:{},uid:{})成功,rtn = {}", spRtTaskInstance.getId(), spRtTaskInstance.getCustomId(), spRtTaskInstance.getCustomKey(), statusResult);
+        return true;
     }
 
     private boolean isRealUid(String uid){
@@ -87,10 +89,10 @@ public class NotifyServiceImpl implements NotifyService {
         }
     }
 
-    private String generateToken(SpRemindTaskInfo spRemindTaskInfo) {
+    private String generateToken(SpRtTaskInstance spRtTaskInstance) {
         // 根据 id 和 triggerTime 生成唯一 id
-        Long id = spRemindTaskInfo.getId();
-        Long nextTriggerTime = spRemindTaskInfo.getNextTriggerTime();
+        Long id = spRtTaskInstance.getId();
+        Long nextTriggerTime = spRtTaskInstance.getExpectedTriggerTime();
         return id + "#" + nextTriggerTime;
     }
 }

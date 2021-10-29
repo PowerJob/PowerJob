@@ -94,8 +94,6 @@ public class TimeUtil {
             return 0;
         }
         return Integer.parseInt(NUMBER_DATE_FORMAT.get().format(date));
-
-
     }
 
     /**

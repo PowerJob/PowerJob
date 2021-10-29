@@ -2,6 +2,7 @@ package com.netease.mail.chronos.executor.support.common;
 
 import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
+import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
 import tech.powerjob.worker.log.OmsLogger;
 
 import java.util.Date;
@@ -44,6 +45,13 @@ public class CommonLogic {
         spRemindTaskInfo.setEnable(false);
         spRemindTaskInfo.setDisableTime(new Date());
     }
+
+
+    public static void disableInstance(SpRtTaskInstance spRtTaskInstance){
+        spRtTaskInstance.setEnable(false);
+        spRtTaskInstance.setUpdateTime(new Date());
+    }
+
 
 
 }

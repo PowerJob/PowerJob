@@ -19,7 +19,7 @@ public interface TaskInstanceBaseMapper<T extends TaskInstance> extends Mapper<T
      * @param threshold 触发阈值（在此时间点之前的）
      * @return 需要触发的任务实例
      */
-    List<TaskInstancePrimaryKey> selectIdListOfNeedTriggerInstance(Long threshold, List<Integer> partitionKeyList);
+    List<TaskInstancePrimaryKey> selectIdListOfNeedTriggerInstance(Long threshold, List<Integer> partitionKeyList,int limit);
 
     /**
      * 插入任务实例
@@ -45,6 +45,20 @@ public interface TaskInstanceBaseMapper<T extends TaskInstance> extends Mapper<T
      * @return 更新数量
      */
     int updateByPrimaryKey(T taskInstance);
+
+
+    /**
+     * 创建分区
+     * @param partitionName 分区名称
+     * @param valueLimit 值限制
+     */
+    void createPartition(String partitionName,Integer valueLimit);
+
+    /**
+     * 删除分区
+     * @param partitionName 分区名称
+     */
+    void dropPartition(String partitionName);
 
 
 }

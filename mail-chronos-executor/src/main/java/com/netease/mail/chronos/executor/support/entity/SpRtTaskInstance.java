@@ -8,6 +8,9 @@ import lombok.experimental.Accessors;
 /**
  * 提醒任务实例,rt means remind task
  * @author  sp_rt_task_instance
+ *
+ * custom_id => comp_id
+ * custom_key => uid
  */
 @TableName(value ="sp_rt_task_instance")
 @Accessors(chain = true)

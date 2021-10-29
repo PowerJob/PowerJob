@@ -1,12 +1,17 @@
 package com.netease.mail.chronos.executor.support.processor;
 
 import cn.hutool.core.collection.CollUtil;
-import com.google.common.collect.Maps;
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.IdUtil;
 import com.netease.mail.chronos.base.exception.BaseException;
+import com.netease.mail.chronos.base.utils.ExecuteUtil;
+import com.netease.mail.chronos.base.utils.TimeUtil;
+import com.netease.mail.chronos.executor.support.common.TaskSplitParam;
 import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
-import com.netease.mail.chronos.executor.support.service.NotifyService;
+import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
+import com.netease.mail.chronos.executor.support.enums.RtTaskInstanceStatus;
 import com.netease.mail.chronos.executor.support.service.SpRemindTaskService;
-import com.netease.mail.uaInfo.UaInfoContext;
+import com.netease.mail.chronos.executor.support.service.auxiliary.impl.SpTaskInstanceHandleServiceImpl;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,15 +19,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
-import tech.powerjob.common.po.TaskAdditionalData;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.MapProcessor;
 import tech.powerjob.worker.log.OmsLogger;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,39 +42,47 @@ import static com.netease.mail.chronos.executor.support.common.CommonLogic.updat
 @Slf4j
 public class RemindTaskProcessor implements MapProcessor {
 
-    private static final Integer BATCH_SIZE = 50;
+    /**
+     * 每一批处理的数量
+     */
+    private static final Integer BATCH_SIZE = 100;
+    /**
+     * 最大处理数量
+     */
+    private static final Integer MAX_SIZE = 50_0000;
     /**
      * 间隙
      */
-    private static final Long INTERVAL = 60_000L;
+    private static final Long INTERVAL = 90_000L;
+
+    private final Snowflake snowflake = IdUtil.getSnowflake();
 
     private final SpRemindTaskService spRemindTaskService;
 
-    private final NotifyService notifyService;
+    private final SpTaskInstanceHandleServiceImpl spTaskInstanceHandleService;
+
 
     /**
      * 上层传递触发时间
-     * 根据触发时间获取 状态为有效，且下次触发时间小于当前时间 或 未来 30 s 内即将触发的任务
-     * 派发后计算下次触发时间，更新状态
+     * 根据触发时间获取 状态为有效，且下次触发时间小于当前时间 或 未来 90 s 内即将触发的任务
+     * 处理后后计算下次触发时间，更新状态
      */
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
-
         OmsLogger omsLogger = context.getOmsLogger();
-        TaskAdditionalData additionalData = context.getAdditionalData();
-        long minTriggerTime = additionalData.getOriginTriggerTime();
-        long maxTriggerTime = minTriggerTime + INTERVAL;
+        TaskSplitParam taskSplitParam = TaskSplitParam.parseOrDefault(context.getJobParams(), BATCH_SIZE, MAX_SIZE);
+        long maxTriggerTime = System.currentTimeMillis() + INTERVAL;
         if (isRootTask()) {
-            // 未来 60 s 以内 [minTriggerTime,maxTriggerTime)
-            List<Long> idList = spRemindTaskService.obtainValidTaskIdListByTriggerTimeScope(minTriggerTime, maxTriggerTime);
+            // （-,maxTriggerTime),limit
+            List<Long> idList = spRemindTaskService.obtainValidTaskIdListByTriggerTimeThreshold(maxTriggerTime, taskSplitParam.getMaxSize());
             if (idList == null || idList.isEmpty()) {
-                omsLogger.info("本次没有需要触发的提醒任务! minTriggerTime:{},maxTriggerTime:{}", minTriggerTime, maxTriggerTime);
+                omsLogger.info("本次没有需要触发的提醒任务! maxTriggerTime:{} , limit:{}", maxTriggerTime, taskSplitParam.getMaxSize());
                 return new ProcessResult(true, "本次没有需要触发的提醒任务");
             }
             // 小于阈值直接执行
-            if (idList.size() <= BATCH_SIZE) {
+            if (idList.size() <= taskSplitParam.getBatchSize()) {
                 omsLogger.info("本次无需进行任务分片! 一共 {} 条", idList.size());
-                processCore(0, idList, minTriggerTime, maxTriggerTime, omsLogger);
+                processCore(0, idList, maxTriggerTime, omsLogger);
                 return new ProcessResult(true, "任务不需要分片,处理成功!");
             }
             omsLogger.info("开始切分任务! batchSize:{}", BATCH_SIZE);
@@ -90,28 +102,31 @@ public class RemindTaskProcessor implements MapProcessor {
             SubTask subTask = (SubTask) context.getSubTask();
             omsLogger.info("开始处理任务分片 {},size:{}", subTask.getSeq(), subTask.getIdList().size());
             List<Long> idList = subTask.getIdList();
-            processCore(subTask.getSeq(), idList, minTriggerTime, maxTriggerTime, omsLogger);
+            processCore(subTask.getSeq(), idList, maxTriggerTime, omsLogger);
             omsLogger.info("处理任务分片({})成功,size:{}", subTask.getSeq(), subTask.getIdList().size());
             return new ProcessResult(true, "处理任务分片(" + subTask.getSeq() + ")成功!");
         }
     }
 
-    private void processCore(int sliceSeq, List<Long> idList, long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger) {
+    private void processCore(int sliceSeq, List<Long> idList, long maxTriggerTime, OmsLogger omsLogger) {
 
-        // 新版本的 feign 会去掉 {} 故不能传空对象
-        HashMap<String, Object> fakeUa = Maps.newHashMap();
-        fakeUa.put("fakeUa", "ignore");
-        UaInfoContext.setUaInfo(fakeUa);
         int errorCount = 0;
+        long warnThreshold = System.currentTimeMillis() - INTERVAL;
         for (Long id : idList) {
             try {
                 SpRemindTaskInfo spRemindTaskInfo = spRemindTaskService.selectById(id);
                 // 判断是否需要跳过
-                if (shouldSkip(minTriggerTime, maxTriggerTime, omsLogger, spRemindTaskInfo)) {
+                if (shouldSkip(maxTriggerTime, omsLogger, spRemindTaskInfo)) {
                     continue;
                 }
-                // 处理
-                notifyService.sendNotify(spRemindTaskInfo, omsLogger);
+                // INTERVAL 之前的任务 现在才触发，打印日志，表示这个任务延迟太严重，正常情况下不应该出现
+                if (spRemindTaskInfo.getNextTriggerTime() < warnThreshold) {
+                    log.warn("当前任务处理延迟过高(> {} ms),task detail:({})", INTERVAL, spRemindTaskInfo);
+                }
+                // 生成实例入库
+                SpRtTaskInstance construct = construct(spRemindTaskInfo);
+                // 这里会保证幂等性
+                ExecuteUtil.executeIgnoreSpecifiedExceptionWithoutReturn(() -> spTaskInstanceHandleService.insert(construct), DuplicateKeyException.class);
                 // 更新状态
                 spRemindTaskInfo.setTriggerTimes(spRemindTaskInfo.getTriggerTimes() + 1);
                 // 计算下次调度时间 , 理论上不应该会存在每分钟调度一次的提醒任务（业务场景决定）
@@ -136,6 +151,30 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
 
+    private SpRtTaskInstance construct(SpRemindTaskInfo spRemindTaskInfo) {
+
+        SpRtTaskInstance spRtTaskInstance = new SpRtTaskInstance();
+        // 基础信息
+        spRtTaskInstance.setTaskId(spRemindTaskInfo.getId());
+        spRtTaskInstance.setCustomId(spRemindTaskInfo.getCompId());
+        spRtTaskInstance.setCustomKey(spRemindTaskInfo.getUid());
+        spRtTaskInstance.setParam(spRemindTaskInfo.getParam());
+        spRtTaskInstance.setExtra(spRemindTaskInfo.getExtra());
+        // 运行信息
+        spRtTaskInstance.setRunningTimes(0);
+        spRtTaskInstance.setExpectedTriggerTime(spRemindTaskInfo.getNextTriggerTime());
+        spRtTaskInstance.setEnable(true);
+        spRtTaskInstance.setStatus(RtTaskInstanceStatus.INIT.getCode());
+        // 其他
+        spRtTaskInstance.setCreateTime(new Date());
+        spRtTaskInstance.setUpdateTime(new Date());
+        spRtTaskInstance.setPartitionKey(TimeUtil.getDateNumber(new Date()));
+        spRtTaskInstance.setId(snowflake.nextId());
+
+        return spRtTaskInstance;
+
+    }
+
 
     @Data
     @AllArgsConstructor
@@ -145,14 +184,18 @@ public class RemindTaskProcessor implements MapProcessor {
     }
 
 
-    private boolean shouldSkip(long minTriggerTime, long maxTriggerTime, OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {
+    private boolean shouldSkip(long maxTriggerTime, OmsLogger omsLogger, SpRemindTaskInfo spRemindTaskInfo) {
+
+        if (spRemindTaskInfo == null) {
+            return true;
+        }
+
         if (spRemindTaskInfo.getEnable() != null && !spRemindTaskInfo.getEnable()) {
             omsLogger.warn("提醒任务(id:{},colId:{},compId:{}) 已经被禁用，跳过处理", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId());
             return true;
         }
         // 检查 nextTriggerTime 是否已经变更（重试需要保证幂等）
         if (spRemindTaskInfo.getNextTriggerTime() == null
-                || spRemindTaskInfo.getNextTriggerTime() < minTriggerTime
                 || spRemindTaskInfo.getNextTriggerTime() >= maxTriggerTime) {
             omsLogger.warn("提醒任务(id:{},colId:{},compId:{})本次调度已被成功处理过，跳过", spRemindTaskInfo.getId(), spRemindTaskInfo.getColId(), spRemindTaskInfo.getCompId());
             return true;
