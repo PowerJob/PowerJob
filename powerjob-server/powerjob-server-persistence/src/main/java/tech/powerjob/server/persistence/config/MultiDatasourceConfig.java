@@ -24,8 +24,8 @@ public class MultiDatasourceConfig {
 
     private static final String H2_DRIVER_CLASS_NAME = "org.h2.Driver";
     private static final String H2_JDBC_URL_PATTERN = "jdbc:h2:file:%spowerjob_server_db";
-    private static final int H2_MIN_SIZE = 4;
-    private static final int H2_MAX_ACTIVE_SIZE = 10;
+    private static final int H2_MIN_SIZE = 5;
+    private static final int H2_MAX_ACTIVE_SIZE = 50;
 
     @Primary
     @Bean("omsRemoteDatasource")
@@ -45,7 +45,7 @@ public class MultiDatasourceConfig {
         config.setMinimumIdle(H2_MIN_SIZE);
         // 池中最大连接数量
         config.setMaximumPoolSize(H2_MAX_ACTIVE_SIZE);
-
+        config.setPoolName("chronos-local-datasource-h2");
         // JVM 关闭时删除文件
         try {
             FileUtils.forceDeleteOnExit(new File(h2Path));

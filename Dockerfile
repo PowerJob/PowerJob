@@ -21,7 +21,7 @@ ENV TZ=Asia/Shanghai
 ENV APP_NAME=powerjob-server
 
 ARG ARG_PARAMS=""
-ARG ARG_JVM_OPTIONS="-Xms1g -Xmx1g"
+ARG ARG_JVM_OPTIONS="-Xms4g -Xmx4g"
 ARG ARG_DEPLOY_ENV="test"
 
 # 传递 SpringBoot 启动参数 和 JVM参数
@@ -33,7 +33,7 @@ LOG_PATH="/home/logs"
 # 将应用 jar 包拷入 docker
 COPY ./powerjob-server/powerjob-server-starter/target/powerjob-server.jar /powerjob-server.jar
 # 暴露端口（HTTP + AKKA + VertX）
-EXPOSE 7700 10086 10010
+EXPOSE 7700 10086 10010 1101
 # 创建 docker 文件目录（盲猜这是用户目录）
 RUN mkdir -p /home/logs
 # 启动应用

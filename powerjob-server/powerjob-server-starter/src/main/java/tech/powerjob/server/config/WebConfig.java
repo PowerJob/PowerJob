@@ -1,6 +1,9 @@
 package tech.powerjob.server.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -26,6 +29,12 @@ public class WebConfig implements WebMvcConfigurer {
     private final AuthConfig authConfig;
 
     private final AuthService authService;
+
+    @Bean
+    public MeterRegistryCustomizer<MeterRegistry> configurer(
+            @Value("${spring.application.name}") String applicationName) {
+        return registry -> registry.config().commonTags("application", applicationName);
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
