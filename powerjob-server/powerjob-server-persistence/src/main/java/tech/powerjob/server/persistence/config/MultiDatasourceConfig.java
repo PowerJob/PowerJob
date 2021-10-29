@@ -31,7 +31,7 @@ public class MultiDatasourceConfig {
     @Bean("omsRemoteDatasource")
     @ConfigurationProperties(prefix = "spring.datasource.core")
     public DataSource initOmsCoreDatasource() {
-        return DataSourceBuilder.create().build();
+        return new HikariDataSource();
     }
 
     @Bean("omsLocalDatasource")
