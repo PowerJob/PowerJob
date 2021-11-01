@@ -1,4 +1,20 @@
-
+datasource:
+  chronos:
+    base:
+      jdbcUrl: jdbc:mysql://10.105.221.180:6306/chronos?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      username: chronos
+      password: gHsqd73yTM
+      poolName: chronos-base-datasource
+      maximum-pool-size: 100
+      minimum-idle: 20
+    support:
+      ## Tidb
+      jdbcUrl: jdbc:mysql:loadbalance://192.168.198.10:4000,192.168.198.11:4000,192.168.198.12:4000/chronos_support?loadBalanceAutoCommitStatementThreshold=5&loadBalancePingTimeout=1000&loadBalanceBlocklistTimeout=60000&loadBalanceValidateConnectionOnSwapServer=true
+      username: chronos_support
+      password: s91QWuCHQr
+      poolName: chronos-support-datasource
+      maximum-pool-size: 300
+      minimum-idle: 50
 
 #[eureka]
 eureka:

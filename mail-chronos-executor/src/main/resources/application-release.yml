@@ -14,9 +14,12 @@ powerjob:
 datasource:
   chronos:
     support:
-      jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
-      username: Echo009
-      password: ironman
+      jdbcUrl: jdbc:mysql:loadbalance://192.168.198.10:4000,192.168.198.11:4000,192.168.198.12:4000/chronos_support?loadBalanceAutoCommitStatementThreshold=5&loadBalancePingTimeout=1000&loadBalanceBlocklistTimeout=60000&loadBalanceValidateConnectionOnSwapServer=true
+      username: chronos_support
+      password: s91QWuCHQr
+      poolName: chronos-support-datasource
+      maximum-pool-size: 300
+      minimum-idle: 50
 
 #[eureka]
 eureka:
