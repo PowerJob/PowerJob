@@ -47,17 +47,20 @@ CREATE TABLE `sx_sp_rt_task_instance`
     `update_time`           datetime     NOT NULL COMMENT '更新时间',
     `create_time`           datetime     NOT NULL COMMENT '创建时间',
     PRIMARY KEY (`id`, `partition_key`),
-    unique INDEX `udx1_sx_sp_rt_task_instance` (`task_id`,`expected_trigger_time`,`partition_key`),
-    KEY `idx1_sx_sp_rt_task_instance` (`expected_trigger_time`, `enable`,`status`),
+    unique INDEX `udx1_sx_sp_rt_task_instance` (`task_id`, `expected_trigger_time`, `partition_key`),
+    KEY `idx1_sx_sp_rt_task_instance` (`expected_trigger_time`, `enable`, `status`),
     KEY `idx2_sx_sp_rt_task_instance` (`custom_id`),
     KEY `idx3_sx_sp_rt_task_instance` (`custom_key`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci COMMENT ='提醒任务实例,rt means remind task'
-    PARTITION BY RANGE (partition_key)(PARTITION p0 VALUES LESS THAN (20211028) ENGINE = InnoDB,
-        PARTITION p20211028 VALUES LESS THAN (20211029) ENGINE = InnoDB,
-        PARTITION p20211029 VALUES LESS THAN (20211030) ENGINE = InnoDB,
-        PARTITION p20211030 VALUES LESS THAN (20211031) ENGINE = InnoDB)/** shard_row_id_bits = 2 */;
+  COLLATE = utf8mb4_general_ci /** SHARD_ROW_ID_BITS=2 */
+    COMMENT ='提醒任务实例,rt means remind task'
+    PARTITION BY RANGE (partition_key)(PARTITION p0 VALUES LESS THAN (20211101),
+        PARTITION p20211101 VALUES LESS THAN (20211102),
+        PARTITION p20211102 VALUES LESS THAN (20211103),
+        PARTITION p20211103 VALUES LESS THAN (20211104),
+        PARTITION p20211104 VALUES LESS THAN (20211105)
+        );
 
 
 
