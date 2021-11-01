@@ -26,9 +26,9 @@ eureka:
   instance:
     metadata-map:
       env: release
-    client:
-      serviceUrl:
-        defaultZone: http://10.110.47.50:1111/eureka/,http://10.110.47.51:1111/eureka/
+  client:
+    serviceUrl:
+      defaultZone: http://10.110.47.50:1111/eureka/,http://10.110.47.51:1111/eureka/
 
 logging:
   config: classpath:logback/logback-release.xml
