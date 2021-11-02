@@ -72,4 +72,9 @@
         <appender-ref ref="ERROR_APPENDER"/>
     </root>
 
+
+    <logger name="com.netease.mail.chronos.executor.support.mapper" level="DEBUG" additivity="false">
+        <appender-ref ref="DEFAULT_APPENDER"/>
+    </logger>
+
 </configuration>
