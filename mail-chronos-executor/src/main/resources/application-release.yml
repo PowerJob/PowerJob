@@ -30,6 +30,13 @@ eureka:
     serviceUrl:
       defaultZone: http://10.110.47.50:1111/eureka/,http://10.110.47.51:1111/eureka/
 
+feign:
+  httpclient:
+    enabled: true
+    max-connections: 500
+    max-connections-per-route: 200
+    connection-timeout: 3000
+
 logging:
   config: classpath:logback/logback-release.xml
 

@@ -18,12 +18,22 @@ datasource:
       jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
       username: Echo009
       password: ironman
+      poolName: chronos-support-datasource
+      maximum-pool-size: 300
+      minimum-idle: 50
 
 #[eureka]
 eureka:
   instance:
     metadata-map:
       env: local
+
+feign:
+  httpclient:
+    enabled: true
+    max-connections: 500
+    max-connections-per-route: 200
+    connection-timeout: 3000
 
 logging:
   config: classpath:logback/logback-local.xml

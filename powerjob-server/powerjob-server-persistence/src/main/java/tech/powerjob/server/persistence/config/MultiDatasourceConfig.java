@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.io.FileUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -24,8 +23,8 @@ public class MultiDatasourceConfig {
 
     private static final String H2_DRIVER_CLASS_NAME = "org.h2.Driver";
     private static final String H2_JDBC_URL_PATTERN = "jdbc:h2:file:%spowerjob_server_db";
-    private static final int H2_MIN_SIZE = 5;
-    private static final int H2_MAX_ACTIVE_SIZE = 50;
+    private static final int H2_MIN_SIZE = 10;
+    private static final int H2_MAX_ACTIVE_SIZE = 100;
 
     @Primary
     @Bean("omsRemoteDatasource")

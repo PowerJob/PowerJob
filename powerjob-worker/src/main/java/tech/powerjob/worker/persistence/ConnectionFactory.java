@@ -44,6 +44,8 @@ public class ConnectionFactory {
         config.setMinimumIdle(2);
         // 池中最大连接数量
         config.setMaximumPoolSize(32);
+        // 设置连接池名称
+        config.setPoolName("chronos-worker-datasource-h2");
         dataSource = new HikariDataSource(config);
 
         log.info("[PowerDatasource] init h2 datasource successfully, use url: {}", config.getJdbcUrl());
