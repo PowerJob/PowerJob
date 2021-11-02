@@ -162,6 +162,8 @@ public class RemindTaskProcessor implements MapProcessor {
         spRtTaskInstance.setExtra(spRemindTaskInfo.getExtra());
         // 运行信息
         spRtTaskInstance.setRunningTimes(0);
+        // 最多重试 6 次
+        spRtTaskInstance.setMaxRetryTimes(6);
         spRtTaskInstance.setExpectedTriggerTime(spRemindTaskInfo.getNextTriggerTime());
         spRtTaskInstance.setEnable(true);
         spRtTaskInstance.setStatus(RtTaskInstanceStatus.INIT.getCode());

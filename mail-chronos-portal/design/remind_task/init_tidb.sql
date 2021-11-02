@@ -39,7 +39,7 @@ CREATE TABLE `sx_sp_rt_task_instance`
     `actual_trigger_time`   bigint                DEFAULT NULL COMMENT '实际触发时间（记录的是首次执行时间）',
     `finished_time`         bigint                DEFAULT NULL COMMENT '完成时间',
     `running_times`         int          NOT NULL DEFAULT '0' COMMENT '运行次数',
-    `max_retry_times`       int          NOT NULL DEFAULT '0' COMMENT '最大重试次数,< 0 代表不限',
+    `max_retry_times`       int          NOT NULL DEFAULT '5' COMMENT '最大重试次数,< 0 代表不限',
     `result`                longtext COLLATE utf8mb4_general_ci COMMENT '执行结果(取决于业务逻辑)',
     `status`                int          NOT NULL DEFAULT '0' COMMENT '状态(执行状态)',
     `enable`                tinyint      NOT NULL DEFAULT '1' COMMENT '是否启用，失败且不需要重试，或者手动停止的这个状态会为置为 0 ',
