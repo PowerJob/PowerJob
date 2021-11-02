@@ -39,6 +39,7 @@ public class MapperTest {
         origin.setId(1L);
         origin.setPartitionKey(20211027);
         origin.setCustomId("1L");
+        origin.setCustomKey("1L");
         origin.setTaskId(1L);
         origin.setStatus(0);
         origin.setEnable(true);

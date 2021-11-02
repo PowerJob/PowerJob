@@ -64,10 +64,11 @@
             <artifactId>mybatis-plus</artifactId>
             <version>3.4.3.2</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.47</version>
+            <version>8.0.24</version>
         </dependency>
         <!-- prometheus 监控 -->
         <dependency>
