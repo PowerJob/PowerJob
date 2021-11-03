@@ -141,4 +141,9 @@ public class JobInfoDO {
 
     private String lifecycle;
 
+    /**
+     * 重试时间间隔
+     */
+    private Long retryInterval;
+
 }

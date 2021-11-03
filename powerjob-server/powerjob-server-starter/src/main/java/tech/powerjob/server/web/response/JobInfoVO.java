@@ -96,6 +96,8 @@ public class JobInfoVO {
 
     private String lifecycle;
 
+    private Long retryInterval;
+
     public static JobInfoVO from(JobInfoDO jobInfoDO) {
         JobInfoVO jobInfoVO = new JobInfoVO();
         BeanUtils.copyProperties(jobInfoDO, jobInfoVO);

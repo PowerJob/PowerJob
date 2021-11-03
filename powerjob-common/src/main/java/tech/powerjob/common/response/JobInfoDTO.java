@@ -81,4 +81,6 @@ public class JobInfoDTO {
     private Integer dispatchStrategy;
 
     private String lifecycle;
+
+    private Long retryInterval;
 }

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +44,8 @@ public class InstanceManager {
     private InstanceInfoRepository instanceInfoRepository;
     @Resource
     private WorkflowInstanceManager workflowInstanceManager;
+
+    private static final long DEFAULT_RETRY_INTERVAL = 10000;
 
 
     /**
@@ -114,8 +117,9 @@ public class InstanceManager {
 
                 log.info("[InstanceManager-{}] instance execute failed but will take the {}th retry.", instanceId, instanceInfo.getRunningTimes());
 
-                // 延迟10S重试（由于重试不改变 instanceId，如果派发到同一台机器，上一个 TaskTracker 还处于资源释放阶段，无法创建新的TaskTracker，任务失败）
-                instanceInfo.setExpectedTriggerTime(System.currentTimeMillis() + 10000);
+                // 默认延迟10S重试（由于重试不改变 instanceId，如果派发到同一台机器，上一个 TaskTracker 还处于资源释放阶段，无法创建新的TaskTracker，任务失败）
+                Long retryInterval = Optional.ofNullable(jobInfo.getRetryInterval()).orElse(DEFAULT_RETRY_INTERVAL);
+                instanceInfo.setExpectedTriggerTime(System.currentTimeMillis() + retryInterval);
 
                 // 修改状态为 等待派发，正式开始重试
                 // 问题：会丢失以往的调度记录（actualTriggerTime什么的都会被覆盖）

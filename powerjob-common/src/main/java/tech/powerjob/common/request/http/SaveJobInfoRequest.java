@@ -133,6 +133,8 @@ public class SaveJobInfoRequest {
 
     private String lifecycle;
 
+    private Long retryInterval;
+
 
     /**
      * Check non-null properties.
