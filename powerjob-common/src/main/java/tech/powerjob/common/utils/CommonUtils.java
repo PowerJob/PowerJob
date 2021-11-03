@@ -173,4 +173,11 @@ public class CommonUtils {
         } catch (InterruptedException ignore) {
         }
     }
+
+    /**
+     * ignore compile warning of 'Result of 'Long.valueOf()' is ignored '
+     * @param obj anything
+     */
+    public static void ignoreIgnoredResultWarning(Object obj) {
+    }
 }

@@ -6,6 +6,7 @@ import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.JobInfoDTO;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.CronExpression;
@@ -61,7 +62,7 @@ public class JobService {
      */
     public Long saveJob(SaveJobInfoRequest request) throws ParseException {
 
-        request.valid();
+        checkValid(request);
 
         JobInfoDO jobInfoDO;
         if (request.getId() != null) {
@@ -276,6 +277,15 @@ public class JobService {
         JobInfoDTO jobInfoDTO = new JobInfoDTO();
         BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
         return jobInfoDTO;
+    }
+
+    private static void checkValid(SaveJobInfoRequest request) {
+
+        request.valid();
+
+        if (TimeExpressionType.frequentTypes.contains(request.getTimeExpressionType().getV())) {
+            CommonUtils.ignoreIgnoredResultWarning(Long.valueOf(request.getTimeExpression()));
+        }
     }
 
 }
