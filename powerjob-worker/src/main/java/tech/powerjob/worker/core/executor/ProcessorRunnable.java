@@ -103,6 +103,7 @@ public class ProcessorRunnable implements Runnable {
             }
         } catch (Throwable e) {
             log.warn("[ProcessorRunnable-{}] task(id={},name={}) process failed.", instanceId, taskContext.getTaskId(), taskContext.getTaskName(), e);
+            omsLogger.error("[ProcessorRunnable-{}] task(id={},name={}) process failed.", instanceId, taskContext.getTaskId(), taskContext.getTaskName(), e);
             processResult = new ProcessResult(false, e.toString());
         }
         reportStatus(processResult.isSuccess() ? TaskStatus.WORKER_PROCESS_SUCCESS : TaskStatus.WORKER_PROCESS_FAILED, suit(processResult.getMsg()), null, workflowContext.getAppendedContextData());
@@ -130,7 +131,7 @@ public class ProcessorRunnable implements Runnable {
     }
 
     private WorkflowContext constructWorkflowContext() {
-        return new WorkflowContext(instanceInfo.getWfInstanceId(),instanceInfo.getInstanceParams());
+        return new WorkflowContext(instanceInfo.getWfInstanceId(), instanceInfo.getInstanceParams());
     }
 
     /**
@@ -221,8 +222,8 @@ public class ProcessorRunnable implements Runnable {
         req.setReportTime(System.currentTimeMillis());
         req.setCmd(cmd);
         // 检查追加的上下文大小是否超出限制
-        if (instanceInfo.getWfInstanceId() !=null && WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength())) {
-            log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!",instanceInfo.getInstanceId(), workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength());
+        if (instanceInfo.getWfInstanceId() != null && WorkflowContextUtils.isExceededLengthLimit(appendedWfContext, workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength())) {
+            log.warn("[ProcessorRunnable-{}]current length of appended workflow context data is greater than {}, this appended workflow context data will be ignore!", instanceInfo.getInstanceId(), workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength());
             // ignore appended workflow context data
             appendedWfContext = Collections.emptyMap();
         }
