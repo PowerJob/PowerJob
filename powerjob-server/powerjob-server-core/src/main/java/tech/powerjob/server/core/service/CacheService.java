@@ -39,19 +39,23 @@ public class CacheService {
 
     public CacheService() {
         jobId2JobNameCache = CacheBuilder.newBuilder()
+                .softValues()
                 .expireAfterWrite(Duration.ofMinutes(1))
                 .maximumSize(512)
                 .build();
 
         workflowId2WorkflowNameCache = CacheBuilder.newBuilder()
+                .softValues()
                 .expireAfterWrite(Duration.ofMinutes(1))
                 .maximumSize(512)
                 .build();
 
         instanceId2AppId = CacheBuilder.newBuilder()
+                .softValues()
                 .maximumSize(1024)
                 .build();
         jobId2AppId = CacheBuilder.newBuilder()
+                .softValues()
                 .maximumSize(1024)
                 .build();
     }

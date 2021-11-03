@@ -105,7 +105,7 @@ public class DingTalkAlarmService implements Alarmable {
         }
         this.agentId = Long.valueOf(agentId);
         dingTalkUtils = new DingTalkUtils(appKey, appSecret);
-        mobile2UserIdCache = CacheBuilder.newBuilder().maximumSize(CACHE_SIZE).build();
+        mobile2UserIdCache = CacheBuilder.newBuilder().softValues().maximumSize(CACHE_SIZE).build();
         log.info("[DingTalkAlarmService] init DingTalkAlarmService successfully!");
     }
 

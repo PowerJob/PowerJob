@@ -38,6 +38,7 @@ public class InstanceMetadataService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         instanceId2JobInfoCache = CacheBuilder.newBuilder()
+                .softValues()
                 .concurrencyLevel(CACHE_CONCURRENCY_LEVEL)
                 .maximumSize(instanceMetadataCacheSize)
                 .build();
