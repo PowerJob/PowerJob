@@ -1,6 +1,5 @@
 package com.netease.mail.chronos.executor.support.service;
 
-import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
 import tech.powerjob.worker.log.OmsLogger;
 

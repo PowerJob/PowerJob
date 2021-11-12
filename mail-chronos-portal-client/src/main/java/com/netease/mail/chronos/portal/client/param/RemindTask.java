@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -19,6 +20,10 @@ public class RemindTask {
      * 集合 ID
      */
     private String colId;
+    /**
+     * 语言
+     */
+    private Locale locale;
     /**
      * 组件 ID
      *
