@@ -2,8 +2,6 @@ package com.netease.mail.chronos.executor.support.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
-import com.netease.mail.chronos.base.exception.BaseException;
-import com.netease.mail.chronos.executor.support.entity.SpRemindTaskInfo;
 import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
 import com.netease.mail.chronos.executor.support.service.NotifyService;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
@@ -13,12 +11,11 @@ import com.netease.mail.quark.status.StatusResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.LocaleUtils;
 import org.springframework.stereotype.Service;
 import tech.powerjob.worker.log.OmsLogger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Echo009
@@ -31,7 +28,9 @@ public class NotifyServiceImpl implements NotifyService {
 
     private final NotifyClient notifyClient;
 
-    private static final int MESSAGE_TYPE = 213;
+    private static final int MESSAGE_TYPE_CN = 213;
+
+    private static final int MESSAGE_TYPE_EN = 235;
 
 
     @Override
@@ -58,7 +57,22 @@ public class NotifyServiceImpl implements NotifyService {
         NotifyRequest.Builder builder = NotifyRequest.newBuilder();
         builder.token(generateToken(spRtTaskInstance))
                 .params(params)
-                .type(MESSAGE_TYPE);
+                .type(MESSAGE_TYPE_CN);
+        // 判断是否使用英文模板
+        String extra = spRtTaskInstance.getExtra();
+        if (extra != null){
+            try{
+                Map<String, String> map = JSON.parseObject(extra, new TypeReference<Map<String, String>>() {
+                });
+                String locale = map.get("locale");
+                Locale toLocale = LocaleUtils.toLocale(locale);
+                if (toLocale!=null && toLocale == Locale.ENGLISH){
+                    builder.type(MESSAGE_TYPE_EN);
+                }
+            }catch (Exception e){
+                log.error("解析任务语言失败，使用默认语言：中文",e);
+            }
+        }
         // 处理 uid ，这次的原始 uid 有可能是 muid 或者 uid
         if (isRealUid(spRtTaskInstance.getCustomKey())){
             builder.uid(spRtTaskInstance.getCustomKey());

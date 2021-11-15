@@ -1,6 +1,7 @@
 package com.netease.mail.chronos.portal.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
+import com.google.common.collect.Maps;
 import com.netease.mail.chronos.base.enums.BaseStatusEnum;
 import com.netease.mail.chronos.base.exception.BaseException;
 import com.netease.mail.chronos.base.utils.ICalendarRecurrenceRuleUtil;
@@ -13,6 +14,7 @@ import com.netease.mail.chronos.portal.param.RemindTask;
 import com.netease.mail.chronos.portal.service.SpRemindTaskManageService;
 import com.netease.mail.chronos.portal.util.QueryWrapperUtil;
 import com.netease.mail.chronos.portal.vo.RemindTaskVo;
+import com.netease.mail.quark.commons.serialization.JacksonUtils;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.fortuna.ical4j.model.Recur;
@@ -134,6 +136,7 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
     private SpRemindTaskInfo constructSpRemindTaskInfo(RemindTask task, Date now, Long triggerOffset) {
         val nextTriggerTime = calNextTriggerTime(task, triggerOffset);
         val spRemindTaskInfo = new SpRemindTaskInfo();
+        HashMap<String, String> extra = Maps.newHashMap();
         spRemindTaskInfo.setColId(task.getColId())
                 .setCompId(task.getCompId())
                 .setUid(task.getUid())
@@ -153,6 +156,12 @@ public class SpRemindTaskManageServiceImpl implements SpRemindTaskManageService 
                 .setId(snowflake.nextId())
                 .setNextTriggerTime(nextTriggerTime);
         handleIllegalTask(spRemindTaskInfo);
+        // locale
+        if(task.getLocale() == null){
+            task.setLocale(Locale.CHINA);
+        }
+        extra.put("locale",task.getLocale().toString());
+        spRemindTaskInfo.setExtra(JacksonUtils.toString(extra));
         return spRemindTaskInfo;
     }
 
