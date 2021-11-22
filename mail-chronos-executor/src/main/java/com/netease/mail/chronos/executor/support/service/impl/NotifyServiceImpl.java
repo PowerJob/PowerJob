@@ -60,23 +60,23 @@ public class NotifyServiceImpl implements NotifyService {
                 .type(MESSAGE_TYPE_CN);
         // 判断是否使用英文模板
         String extra = spRtTaskInstance.getExtra();
-        if (extra != null){
-            try{
+        if (extra != null) {
+            try {
                 Map<String, String> map = JSON.parseObject(extra, new TypeReference<Map<String, String>>() {
                 });
                 String locale = map.get("locale");
                 Locale toLocale = LocaleUtils.toLocale(locale);
-                if (toLocale!=null && toLocale == Locale.ENGLISH){
+                if (toLocale != null && Locale.ENGLISH.getLanguage().equals(toLocale.getLanguage())) {
                     builder.type(MESSAGE_TYPE_EN);
                 }
-            }catch (Exception e){
-                log.error("解析任务语言失败，使用默认语言：中文",e);
+            } catch (Exception e) {
+                log.error("解析任务语言失败，使用默认语言：中文", e);
             }
         }
         // 处理 uid ，这次的原始 uid 有可能是 muid 或者 uid
-        if (isRealUid(spRtTaskInstance.getCustomKey())){
+        if (isRealUid(spRtTaskInstance.getCustomKey())) {
             builder.uid(spRtTaskInstance.getCustomKey());
-        }else {
+        } else {
             builder.muid(spRtTaskInstance.getCustomKey());
         }
         StatusResult statusResult = notifyClient.notifyByDomain(builder.build());
@@ -90,7 +90,7 @@ public class NotifyServiceImpl implements NotifyService {
         return true;
     }
 
-    private boolean isRealUid(String uid){
+    private boolean isRealUid(String uid) {
         return StringUtils.isNotBlank(uid) && uid.contains("@");
     }
 
