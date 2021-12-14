@@ -5,7 +5,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.netease.mail.chronos.executor.support.entity.SpRtTaskInstance;
 import com.netease.mail.chronos.executor.support.service.NotifyService;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
-import com.netease.mail.mp.api.notify.dto.NotifyRequest;
+import com.netease.mail.mp.api.notify.dto.GenericNotifyRequest;
 import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
 import com.netease.mail.quark.status.StatusResult;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +54,7 @@ public class NotifyServiceImpl implements NotifyService {
         NotifyParamDTO triggerTime = new NotifyParamDTO("expectedTriggerTime", String.valueOf(spRtTaskInstance.getExpectedTriggerTime()));
         params.add(triggerTime);
 
-        NotifyRequest.Builder builder = NotifyRequest.newBuilder();
+        GenericNotifyRequest.Builder builder = GenericNotifyRequest.newBuilder();
         builder.token(generateToken(spRtTaskInstance))
                 .params(params)
                 .type(MESSAGE_TYPE_CN);
