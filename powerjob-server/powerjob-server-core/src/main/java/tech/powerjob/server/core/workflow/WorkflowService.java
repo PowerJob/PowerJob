@@ -55,7 +55,7 @@ public class WorkflowService {
 
     /**
      * 保存/修改工作流信息
-     *
+     * <p>
      * 注意这里不会保存 DAG 信息
      *
      * @param req 请求
@@ -271,7 +271,7 @@ public class WorkflowService {
         WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
 
         log.info("[WorkflowService-{}] try to run workflow, initParams={},delay={} ms.", wfInfo.getId(), initParams, delay);
-        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay);
+        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay, null);
         if (delay <= 0) {
             workflowInstanceManager.start(wfInfo, wfInstanceId);
         } else {

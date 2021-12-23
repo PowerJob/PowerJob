@@ -3,7 +3,6 @@ package tech.powerjob.common.model;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -59,6 +58,11 @@ public class PEWorkflowDAG implements Serializable {
          * job id
          */
         private Long jobId;
+        /**
+         * workflow id,support for nested workflow
+         * @see WorkflowNodeType#NESTED_WORKFLOW
+         */
+        private Long wfId;
         /**
          * node name
          */
