@@ -40,6 +40,7 @@ public class WorkflowNodeInfoDO {
     private Integer type;
     /**
      * 任务 ID
+     * 对于嵌套工作流类型的节点而言，这里存储是工作流 ID
      */
     private Long jobId;
     /**

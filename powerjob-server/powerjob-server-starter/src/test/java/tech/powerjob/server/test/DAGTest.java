@@ -1,10 +1,8 @@
 package tech.powerjob.server.test;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.PEWorkflowDAG;
-import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import com.google.common.collect.Lists;
@@ -56,19 +54,11 @@ public class DAGTest {
         Assert.assertTrue(WorkflowDAGUtils.valid(validPEDAG));
 
         WorkflowDAG wfDAG = WorkflowDAGUtils.convert(validPEDAG);
-        System.out.println("jackson");
-        System.out.println(JsonUtils.toJSONString(wfDAG));
 
-        // Jackson 不知道怎么序列化引用，只能放弃，使用 FastJSON 序列化引用，即 $ref
-        WorkflowDAG wfDAGByJackSon = JsonUtils.parseObject(JsonUtils.toJSONString(wfDAG), WorkflowDAG.class);
-
-        System.out.println("fastJson");
-        System.out.println(JSONObject.toJSONString(wfDAG));
-        WorkflowDAG wfDAGByFastJSON = JSONObject.parseObject(JSONObject.toJSONString(wfDAG), WorkflowDAG.class);
-
-        // 打断点看 reference 关系
-        System.out.println(wfDAGByJackSon);
-        System.out.println(wfDAGByFastJSON);
+        Assert.assertEquals(1, wfDAG.getRoots().size());
+        WorkflowDAG.Node node = wfDAG.getNode(3L);
+        Assert.assertEquals(1, (long) node.getDependencies().get(0).getNodeId());
+        Assert.assertEquals(4, (long) node.getSuccessors().get(0).getNodeId());
     }
 
     @Test
@@ -149,7 +139,6 @@ public class DAGTest {
         Assert.assertTrue(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
 
     }
-
 
 
     /**

@@ -22,6 +22,7 @@ import tech.powerjob.server.core.DispatchService;
 import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.lock.UseSegmentLock;
 import tech.powerjob.server.core.service.UserService;
+import tech.powerjob.server.core.service.WorkflowNodeHandleService;
 import tech.powerjob.server.core.uid.IdGenerateService;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.extension.defaultimpl.alram.AlarmCenter;
@@ -34,6 +35,7 @@ import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoReposi
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils.isNotAllowSkipWhenFailed;
 
@@ -67,6 +69,8 @@ public class WorkflowInstanceManager {
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
     @Resource
     private WorkflowNodeInfoRepository workflowNodeInfoRepository;
+    @Resource
+    private WorkflowNodeHandleService workflowNodeHandleService;
 
     /**
      * 创建工作流任务实例
@@ -127,14 +131,14 @@ public class WorkflowInstanceManager {
      */
     private void initNodeInfo(PEWorkflowDAG dag) {
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
-            WorkflowNodeInfoDO workflowNodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(()->new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_NODE));
+            WorkflowNodeInfoDO workflowNodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(() -> new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_NODE));
             // 任务节点，需初始化 是否启用、是否允许失败跳过、节点参数 等信息
             if (workflowNodeInfo.getType() == null || workflowNodeInfo.getType() == WorkflowNodeType.JOB.getCode()) {
                 // 任务节点缺失任务信息
                 if (workflowNodeInfo.getJobId() == null) {
                     throw new PowerJobException(SystemInstanceResult.ILLEGAL_NODE);
                 }
-                JobInfoDO jobInfo = jobInfoRepository.findById(workflowNodeInfo.getJobId()).orElseThrow(()->new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB));
+                JobInfoDO jobInfo = jobInfoRepository.findById(workflowNodeInfo.getJobId()).orElseThrow(() -> new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB));
 
                 node.setNodeType(WorkflowNodeType.JOB.getCode());
                 // 初始化任务相关信息
@@ -216,45 +220,39 @@ public class WorkflowInstanceManager {
                 return;
             }
         }
-
         try {
             // 从实例中读取工作流信息
             PEWorkflowDAG dag = JSON.parseObject(wfInstanceInfo.getDag(), PEWorkflowDAG.class);
             // 根节点有可能被 disable
             List<PEWorkflowDAG.Node> readyNodes = WorkflowDAGUtils.listReadyNodes(dag);
-            // 创建所有的根任务
-            readyNodes.forEach(readyNode -> {
-                // 注意：这里必须保证任务实例全部创建成功，如果在这里创建实例部分失败，会导致 DAG 信息不会更新，已经生成的实例节点在工作流日志中没法展示
-                // instanceParam 传递的是工作流实例的 wfContext
-                Long instanceId = instanceService.create(readyNode.getJobId(), wfInfo.getAppId(), readyNode.getNodeParams(), wfInstanceInfo.getWfContext(), wfInstanceId, System.currentTimeMillis());
-                readyNode.setInstanceId(instanceId);
-                readyNode.setStatus(InstanceStatus.RUNNING.getV());
-
-                log.info("[Workflow-{}|{}] create readyNode instance(nodeId={},jobId={},instanceId={}) successfully~", wfInfo.getId(), wfInstanceId, readyNode.getNodeId(), readyNode.getJobId(), instanceId);
-            });
-
-            // 持久化
-            wfInstanceInfo.setStatus(WorkflowInstanceStatus.RUNNING.getV());
-            wfInstanceInfo.setDag(JSON.toJSONString(dag));
+            // 先处理其中的控制节点
+            List<PEWorkflowDAG.Node> controlNodes = findControlNodes(readyNodes);
+            while (!controlNodes.isEmpty()) {
+                workflowNodeHandleService.handleControlNodes(controlNodes, dag, wfInstanceInfo);
+                readyNodes = WorkflowDAGUtils.listReadyNodes(dag);
+                controlNodes = findControlNodes(readyNodes);
+            }
             if (readyNodes.isEmpty()) {
                 // 没有就绪的节点（所有节点都被禁用）
                 wfInstanceInfo.setStatus(WorkflowInstanceStatus.SUCCEED.getV());
                 wfInstanceInfo.setResult(SystemInstanceResult.NO_ENABLED_NODES);
                 wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
+                wfInstanceInfo.setDag(JSON.toJSONString(dag));
                 log.warn("[Workflow-{}|{}] workflowInstance({}) needn't running ", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
                 workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
                 return;
             }
-            workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
+            // 需要更新工作流实例状态
+            wfInstanceInfo.setStatus(WorkflowInstanceStatus.RUNNING.getV());
+            // 处理任务节点
+            workflowNodeHandleService.handleTaskNodes(readyNodes, dag, wfInstanceInfo);
             log.info("[Workflow-{}|{}] start workflow successfully", wfInfo.getId(), wfInstanceId);
-
-            // 真正开始执行根任务
-            readyNodes.forEach(this::runInstance);
         } catch (Exception e) {
             log.error("[Workflow-{}|{}] submit workflow: {} failed.", wfInfo.getId(), wfInstanceId, wfInfo, e);
             onWorkflowInstanceFailed(e.getMessage(), wfInstanceInfo);
         }
     }
+
 
     /**
      * 下一步（当工作流的某个任务完成时调用该方法）
@@ -313,14 +311,14 @@ public class WorkflowInstanceManager {
 
             wfInstance.setGmtModified(new Date());
             wfInstance.setDag(JSON.toJSONString(dag));
-            // 工作流已经结束（某个节点失败导致工作流整体已经失败），仅更新最新的DAG图
+            // 工作流已经结束（某个节点失败导致工作流整体已经失败），仅更新最新的 DAG 图
             if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
                 workflowInstanceInfoRepository.saveAndFlush(wfInstance);
                 log.info("[Workflow-{}|{}] workflow already finished(status={}), just update the dag info.", wfId, wfInstanceId, wfInstance.getStatus());
                 return;
             }
 
-            // 任务失败 && 不允许失败跳过，DAG流程被打断，整体失败
+            // 任务失败 && 不允许失败跳过，DAG 流程被打断，整体失败
             if (status == InstanceStatus.FAILED && isNotAllowSkipWhenFailed(instanceNode)) {
                 log.warn("[Workflow-{}|{}] workflow instance process failed because middle task(instanceId={}) failed", wfId, wfInstanceId, instanceId);
                 onWorkflowInstanceFailed(SystemInstanceResult.MIDDLE_JOB_FAILED, wfInstance);
@@ -329,55 +327,53 @@ public class WorkflowInstanceManager {
 
             // 子任务被手动停止
             if (status == InstanceStatus.STOPPED) {
-                wfInstance.setStatus(WorkflowInstanceStatus.STOPPED.getV());
-                wfInstance.setResult(SystemInstanceResult.MIDDLE_JOB_STOPPED);
-                wfInstance.setFinishedTime(System.currentTimeMillis());
-                workflowInstanceInfoRepository.saveAndFlush(wfInstance);
-
+                updateWorkflowInstanceFinalStatus(wfInstance, SystemInstanceResult.MIDDLE_JOB_STOPPED, WorkflowInstanceStatus.STOPPED);
                 log.warn("[Workflow-{}|{}] workflow instance stopped because middle task(instanceId={}) stopped by user", wfId, wfInstanceId, instanceId);
                 return;
             }
             // 注意：这里会直接跳过 disable 的节点
             List<PEWorkflowDAG.Node> readyNodes = WorkflowDAGUtils.listReadyNodes(dag);
-            // 这里得重新更新一下，因为 WorkflowDAGUtils#listReadyNodes 可能会更新节点状态
-            wfInstance.setDag(JSON.toJSONString(dag));
             // 如果没有就绪的节点，需要再次判断是否已经全部完成
             if (readyNodes.isEmpty() && isFinish(dag)) {
                 allFinished = true;
             }
             // 工作流执行完毕（能执行到这里代表该工作流内所有子任务都执行成功了）
             if (allFinished) {
-                wfInstance.setStatus(WorkflowInstanceStatus.SUCCEED.getV());
+                // 这里得重新更新一下，因为 WorkflowDAGUtils#listReadyNodes 可能会更新节点状态
+                wfInstance.setDag(JSON.toJSONString(dag));
                 // 最终任务的结果作为整个 workflow 的结果
-                wfInstance.setResult(result);
-                wfInstance.setFinishedTime(System.currentTimeMillis());
-                workflowInstanceInfoRepository.saveAndFlush(wfInstance);
-
+                updateWorkflowInstanceFinalStatus(wfInstance, result, WorkflowInstanceStatus.SUCCEED);
                 log.info("[Workflow-{}|{}] process successfully.", wfId, wfInstanceId);
                 return;
             }
-
-            for (PEWorkflowDAG.Node readyNode : readyNodes) {
-                // 同理：这里必须保证任务实例全部创建成功，避免部分失败导致已经生成的实例节点在工作流日志中没法展示
-                // instanceParam 传递的是工作流实例的 wfContext
-                Long newInstanceId = instanceService.create(readyNode.getJobId(), wfInstance.getAppId(), readyNode.getNodeParams(), wfInstance.getWfContext(), wfInstanceId, System.currentTimeMillis());
-                readyNode.setInstanceId(newInstanceId);
-                readyNode.setStatus(InstanceStatus.RUNNING.getV());
-                log.debug("[Workflow-{}|{}] workflowInstance start to process new node(nodeId={},jobId={},instanceId={})", wfId, wfInstanceId, readyNode.getNodeId(), readyNode.getJobId(), newInstanceId);
+            // 先处理其中的控制节点
+            List<PEWorkflowDAG.Node> controlNodes = findControlNodes(readyNodes);
+            while (!controlNodes.isEmpty()) {
+                workflowNodeHandleService.handleControlNodes(controlNodes, dag, wfInstance);
+                readyNodes = WorkflowDAGUtils.listReadyNodes(dag);
+                controlNodes = findControlNodes(readyNodes);
             }
-            // 这里也得更新 DAG 信息
-            wfInstance.setDag(JSON.toJSONString(dag));
-            workflowInstanceInfoRepository.saveAndFlush(wfInstance);
-            // 持久化结束后，开始调度执行所有的任务
-            readyNodes.forEach(this::runInstance);
-
+            // 再次判断是否已完成 （允许控制节点出现在末尾）
+            if (readyNodes.isEmpty()) {
+                if (isFinish(dag)) {
+                    wfInstance.setDag(JSON.toJSONString(dag));
+                    updateWorkflowInstanceFinalStatus(wfInstance, result, WorkflowInstanceStatus.SUCCEED);
+                    log.info("[Workflow-{}|{}] process successfully.", wfId, wfInstanceId);
+                    return;
+                }
+                // 没有就绪的节点 但 还没执行完成，仅更新 DAG
+                wfInstance.setDag(JSON.toJSONString(dag));
+                workflowInstanceInfoRepository.saveAndFlush(wfInstance);
+                return;
+            }
+            // 处理任务节点
+            workflowNodeHandleService.handleTaskNodes(readyNodes, dag, wfInstance);
         } catch (Exception e) {
             onWorkflowInstanceFailed("MOVE NEXT STEP FAILED: " + e.getMessage(), wfInstance);
             log.error("[Workflow-{}|{}] update failed.", wfId, wfInstanceId, e);
         }
 
     }
-
     /**
      * 更新工作流上下文
      * fix : 得和其他操作工作流实例的方法用同一把锁才行，不然有并发问题，会导致节点状态被覆盖
@@ -412,20 +408,20 @@ public class WorkflowInstanceManager {
 
     }
 
-    /**
-     * 运行任务实例
-     * 需要将创建和运行任务实例分离，否则在秒失败情况下，会发生DAG覆盖更新的问题
-     *
-     * @param node 节点信息
-     */
-    private void runInstance(PEWorkflowDAG.Node node) {
-
-        JobInfoDO jobInfo = jobInfoRepository.findById(node.getJobId()).orElseGet(JobInfoDO::new);
-        // 洗去时间表达式类型
-        jobInfo.setTimeExpressionType(TimeExpressionType.WORKFLOW.getV());
-        dispatchService.dispatch(jobInfo, node.getInstanceId());
+    private void updateWorkflowInstanceFinalStatus(WorkflowInstanceInfoDO wfInstance, String result, WorkflowInstanceStatus workflowInstanceStatus) {
+        wfInstance.setStatus(workflowInstanceStatus.getV());
+        wfInstance.setResult(result);
+        wfInstance.setFinishedTime(System.currentTimeMillis());
+        workflowInstanceInfoRepository.saveAndFlush(wfInstance);
     }
 
+
+    private List<PEWorkflowDAG.Node> findControlNodes(List<PEWorkflowDAG.Node> readyNodes) {
+        return readyNodes.stream().filter(node -> {
+            WorkflowNodeType nodeType = WorkflowNodeType.of(node.getNodeType());
+            return nodeType.isControlNode();
+        }).collect(Collectors.toList());
+    }
 
     private boolean isFinish(PEWorkflowDAG dag) {
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
