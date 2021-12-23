@@ -197,7 +197,7 @@ public class PowerScheduleService {
             wfInfos.forEach(wfInfo -> {
 
                 // 1. 先生成调度记录，防止不调度的情况发生
-                Long wfInstanceId = workflowInstanceManager.create(wfInfo, null, wfInfo.getNextTriggerTime());
+                Long wfInstanceId = workflowInstanceManager.create(wfInfo, null, wfInfo.getNextTriggerTime(), null);
 
                 // 2. 推入时间轮，准备调度执行
                 long delay = wfInfo.getNextTriggerTime() - System.currentTimeMillis();

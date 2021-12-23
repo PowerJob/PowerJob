@@ -2,6 +2,7 @@ package tech.powerjob.server.core.workflow;
 
 import com.alibaba.fastjson.JSON;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
@@ -61,6 +62,10 @@ public class WorkflowInstanceService {
         if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
             throw new PowerJobException("workflow instance already stopped");
         }
+        // 先终止父工作流
+        if (wfInstance.getParentWfInstanceId() != null) {
+            stopWorkflowInstance(wfInstance.getParentWfInstanceId(),appId);
+        }
         // 停止所有已启动且未完成的服务
         PEWorkflowDAG dag = JSON.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
         // 遍历所有节点，终止正在运行的
@@ -70,8 +75,14 @@ public class WorkflowInstanceService {
                     log.debug("[WfInstance-{}] instance({}) is running, try to stop it now.", wfInstanceId, node.getInstanceId());
                     node.setStatus(InstanceStatus.STOPPED.getV());
                     node.setResult(SystemInstanceResult.STOPPED_BY_USER);
-                    // 注意，这里并不保证一定能终止正在运行的实例
-                    instanceService.stopInstance(appId,node.getInstanceId());
+                    // 特殊处理嵌套工作流节点
+                    if (Objects.equals(node.getNodeType(), WorkflowNodeType.NESTED_WORKFLOW.getCode())) {
+                        stopWorkflowInstance(node.getInstanceId(), appId);
+                        //
+                    } else {
+                        // 注意，这里并不保证一定能终止正在运行的实例
+                        instanceService.stopInstance(appId, node.getInstanceId());
+                    }
                 }
             } catch (Exception e) {
                 log.warn("[WfInstance-{}] stop instance({}) failed.", wfInstanceId, JSON.toJSONString(node), e);
@@ -163,7 +174,7 @@ public class WorkflowInstanceService {
      * 即处于 [失败且不允许跳过] 的节点
      * 而且仅会操作工作流实例 DAG 中的节点信息（状态、result）
      * 并不会改变对应任务实例中的任何信息
-     *
+     * <p>
      * 还是加把锁保平安 ~
      *
      * @param wfInstanceId 工作流实例 ID

@@ -8,18 +8,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.WorkflowContextConstant;
 import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.enums.WorkflowNodeType;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.core.DispatchService;
-import tech.powerjob.server.core.instance.InstanceService;
+import tech.powerjob.server.core.helper.StatusMappingHelper;
 import tech.powerjob.server.core.lock.UseSegmentLock;
 import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.core.service.WorkflowNodeHandleService;
@@ -54,10 +52,6 @@ public class WorkflowInstanceManager {
     @Resource
     private AlarmCenter alarmCenter;
     @Resource
-    private InstanceService instanceService;
-    @Resource
-    private DispatchService dispatchService;
-    @Resource
     private IdGenerateService idGenerateService;
     @Resource
     private JobInfoRepository jobInfoRepository;
@@ -84,12 +78,18 @@ public class WorkflowInstanceManager {
      * @param expectTriggerTime 预计执行时间
      * @return wfInstanceId
      */
-    public Long create(WorkflowInfoDO wfInfo, String initParams, Long expectTriggerTime) {
+    public Long create(WorkflowInfoDO wfInfo, String initParams, Long expectTriggerTime, Long parentWfInstanceId) {
 
         Long wfId = wfInfo.getId();
         Long wfInstanceId = idGenerateService.allocate();
         // 构造实例信息
         WorkflowInstanceInfoDO newWfInstance = constructWfInstance(wfInfo, initParams, expectTriggerTime, wfId, wfInstanceId);
+        if (parentWfInstanceId != null) {
+            // 处理子工作流
+            newWfInstance.setParentWfInstanceId(parentWfInstanceId);
+            // 直接透传上下文
+            newWfInstance.setWfContext(initParams);
+        }
 
         PEWorkflowDAG dag = null;
         try {
@@ -121,7 +121,7 @@ public class WorkflowInstanceManager {
             if (dag != null) {
                 newWfInstance.setDag(JSON.toJSONString(dag));
             }
-            onWorkflowInstanceFailed(e.getMessage(), newWfInstance);
+            handleWfInstanceFinalStatus(newWfInstance, e.getMessage(), WorkflowInstanceStatus.FAILED);
         }
         return wfInstanceId;
     }
@@ -216,7 +216,7 @@ public class WorkflowInstanceManager {
             // 并发度控制
             int instanceConcurrency = workflowInstanceInfoRepository.countByWorkflowIdAndStatusIn(wfInfo.getId(), WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS);
             if (instanceConcurrency > wfInfo.getMaxWfInstanceNum()) {
-                onWorkflowInstanceFailed(String.format(SystemInstanceResult.TOO_MANY_INSTANCES, instanceConcurrency, wfInfo.getMaxWfInstanceNum()), wfInstanceInfo);
+                handleWfInstanceFinalStatus(wfInstanceInfo, String.format(SystemInstanceResult.TOO_MANY_INSTANCES, instanceConcurrency, wfInfo.getMaxWfInstanceNum()), WorkflowInstanceStatus.FAILED);
                 return;
             }
         }
@@ -248,8 +248,8 @@ public class WorkflowInstanceManager {
             workflowNodeHandleService.handleTaskNodes(readyNodes, dag, wfInstanceInfo);
             log.info("[Workflow-{}|{}] start workflow successfully", wfInfo.getId(), wfInstanceId);
         } catch (Exception e) {
-            log.error("[Workflow-{}|{}] submit workflow: {} failed.", wfInfo.getId(), wfInstanceId, wfInfo, e);
-            onWorkflowInstanceFailed(e.getMessage(), wfInstanceInfo);
+            log.error("[Workflow-{}|{}] start workflow: {} failed.", wfInfo.getId(), wfInstanceId, wfInfo, e);
+            handleWfInstanceFinalStatus(wfInstanceInfo, e.getMessage(), WorkflowInstanceStatus.FAILED);
         }
     }
 
@@ -321,13 +321,13 @@ public class WorkflowInstanceManager {
             // 任务失败 && 不允许失败跳过，DAG 流程被打断，整体失败
             if (status == InstanceStatus.FAILED && isNotAllowSkipWhenFailed(instanceNode)) {
                 log.warn("[Workflow-{}|{}] workflow instance process failed because middle task(instanceId={}) failed", wfId, wfInstanceId, instanceId);
-                onWorkflowInstanceFailed(SystemInstanceResult.MIDDLE_JOB_FAILED, wfInstance);
+                handleWfInstanceFinalStatus(wfInstance, SystemInstanceResult.MIDDLE_JOB_FAILED, WorkflowInstanceStatus.FAILED);
                 return;
             }
 
             // 子任务被手动停止
             if (status == InstanceStatus.STOPPED) {
-                updateWorkflowInstanceFinalStatus(wfInstance, SystemInstanceResult.MIDDLE_JOB_STOPPED, WorkflowInstanceStatus.STOPPED);
+                handleWfInstanceFinalStatus(wfInstance, SystemInstanceResult.MIDDLE_JOB_STOPPED, WorkflowInstanceStatus.STOPPED);
                 log.warn("[Workflow-{}|{}] workflow instance stopped because middle task(instanceId={}) stopped by user", wfId, wfInstanceId, instanceId);
                 return;
             }
@@ -342,7 +342,7 @@ public class WorkflowInstanceManager {
                 // 这里得重新更新一下，因为 WorkflowDAGUtils#listReadyNodes 可能会更新节点状态
                 wfInstance.setDag(JSON.toJSONString(dag));
                 // 最终任务的结果作为整个 workflow 的结果
-                updateWorkflowInstanceFinalStatus(wfInstance, result, WorkflowInstanceStatus.SUCCEED);
+                handleWfInstanceFinalStatus(wfInstance, result, WorkflowInstanceStatus.SUCCEED);
                 log.info("[Workflow-{}|{}] process successfully.", wfId, wfInstanceId);
                 return;
             }
@@ -357,7 +357,7 @@ public class WorkflowInstanceManager {
             if (readyNodes.isEmpty()) {
                 if (isFinish(dag)) {
                     wfInstance.setDag(JSON.toJSONString(dag));
-                    updateWorkflowInstanceFinalStatus(wfInstance, result, WorkflowInstanceStatus.SUCCEED);
+                    handleWfInstanceFinalStatus(wfInstance, result, WorkflowInstanceStatus.SUCCEED);
                     log.info("[Workflow-{}|{}] process successfully.", wfId, wfInstanceId);
                     return;
                 }
@@ -369,11 +369,12 @@ public class WorkflowInstanceManager {
             // 处理任务节点
             workflowNodeHandleService.handleTaskNodes(readyNodes, dag, wfInstance);
         } catch (Exception e) {
-            onWorkflowInstanceFailed("MOVE NEXT STEP FAILED: " + e.getMessage(), wfInstance);
+            handleWfInstanceFinalStatus(wfInstance, "MOVE NEXT STEP FAILED: " + e.getMessage(), WorkflowInstanceStatus.FAILED);
             log.error("[Workflow-{}|{}] update failed.", wfId, wfInstanceId, e);
         }
 
     }
+
     /**
      * 更新工作流上下文
      * fix : 得和其他操作工作流实例的方法用同一把锁才行，不然有并发问题，会导致节点状态被覆盖
@@ -408,12 +409,44 @@ public class WorkflowInstanceManager {
 
     }
 
-    private void updateWorkflowInstanceFinalStatus(WorkflowInstanceInfoDO wfInstance, String result, WorkflowInstanceStatus workflowInstanceStatus) {
+    private void handleWfInstanceFinalStatus(WorkflowInstanceInfoDO wfInstance, String result, WorkflowInstanceStatus workflowInstanceStatus) {
         wfInstance.setStatus(workflowInstanceStatus.getV());
         wfInstance.setResult(result);
         wfInstance.setFinishedTime(System.currentTimeMillis());
+        wfInstance.setGmtModified(new Date());
         workflowInstanceInfoRepository.saveAndFlush(wfInstance);
+
+        // 处理子工作流
+        if (wfInstance.getParentWfInstanceId() != null) {
+            // 先处理上下文
+            if (workflowInstanceStatus == WorkflowInstanceStatus.SUCCEED){
+                HashMap<String, String> wfContext = JSON.parseObject(wfInstance.getWfContext(), new TypeReference<HashMap<String, String>>() {
+                });
+                updateWorkflowContext(wfInstance.getParentWfInstanceId(),wfContext);
+            }
+            // 处理父工作流
+            move(wfInstance.getWfInstanceId(),wfInstance.getParentWfInstanceId(), StatusMappingHelper.toInstanceStatus(workflowInstanceStatus),result);
+        }
+
+        // 报警
+        if (workflowInstanceStatus == WorkflowInstanceStatus.FAILED) {
+            try {
+                workflowInfoRepository.findById(wfInstance.getWorkflowId()).ifPresent(wfInfo -> {
+                    WorkflowInstanceAlarm content = new WorkflowInstanceAlarm();
+
+                    BeanUtils.copyProperties(wfInfo, content);
+                    BeanUtils.copyProperties(wfInstance, content);
+                    content.setResult(result);
+
+                    List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
+                    alarmCenter.alarmFailed(content, userList);
+                });
+            } catch (Exception ignore) {
+                // ignore
+            }
+        }
     }
+
 
 
     private List<PEWorkflowDAG.Node> findControlNodes(List<PEWorkflowDAG.Node> readyNodes) {
@@ -430,32 +463,6 @@ public class WorkflowInstanceManager {
             }
         }
         return true;
-    }
-
-    private void onWorkflowInstanceFailed(String result, WorkflowInstanceInfoDO wfInstance) {
-
-        wfInstance.setStatus(WorkflowInstanceStatus.FAILED.getV());
-        wfInstance.setResult(result);
-        wfInstance.setFinishedTime(System.currentTimeMillis());
-        wfInstance.setGmtModified(new Date());
-
-        workflowInstanceInfoRepository.saveAndFlush(wfInstance);
-
-        // 报警
-        try {
-            workflowInfoRepository.findById(wfInstance.getWorkflowId()).ifPresent(wfInfo -> {
-                WorkflowInstanceAlarm content = new WorkflowInstanceAlarm();
-
-                BeanUtils.copyProperties(wfInfo, content);
-                BeanUtils.copyProperties(wfInstance, content);
-                content.setResult(result);
-
-                List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
-                alarmCenter.alarmFailed(content, userList);
-            });
-        } catch (Exception ignore) {
-            // ignore
-        }
     }
 
 }

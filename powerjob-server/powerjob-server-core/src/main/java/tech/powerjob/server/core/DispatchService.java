@@ -44,7 +44,6 @@ public class DispatchService {
     private TransportService transportService;
     @Resource
     private WorkerClusterQueryService workerClusterQueryService;
-
     @Resource
     private InstanceManager instanceManager;
     @Resource
