@@ -18,6 +18,8 @@ import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
 import tech.powerjob.server.common.utils.CronExpression;
+import tech.powerjob.server.core.service.NodeValidateService;
+import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
@@ -52,6 +54,8 @@ public class WorkflowService {
     private WorkflowNodeInfoRepository workflowNodeInfoRepository;
     @Resource
     private JobInfoRepository jobInfoRepository;
+    @Resource
+    private NodeValidateService nodeValidateService;
 
     /**
      * 保存/修改工作流信息
@@ -118,6 +122,7 @@ public class WorkflowService {
         // 其中 jobId，jobName 均以节点中的信息为准
         List<Long> nodeIdList = Lists.newArrayList();
         List<PEWorkflowDAG.Node> newNodes = Lists.newArrayList();
+        WorkflowDAG complexDag = WorkflowDAGUtils.convert(dag);
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
             WorkflowNodeInfoDO nodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(() -> new PowerJobException("can't find node info by id :" + node.getNodeId()));
             // 更新工作流 ID
@@ -129,6 +134,7 @@ public class WorkflowService {
             if (!wfId.equals(nodeInfo.getWorkflowId())) {
                 throw new PowerJobException("can't use another workflow's node");
             }
+            nodeValidateService.validate(node,complexDag);
             // 只保存节点的 ID 信息，清空其他信息
             newNodes.add(new PEWorkflowDAG.Node(node.getNodeId()));
             nodeIdList.add(node.getNodeId());
@@ -353,6 +359,7 @@ public class WorkflowService {
                 if (nodeInfo != null) {
                     node.setNodeType(nodeInfo.getType())
                             .setJobId(nodeInfo.getJobId())
+                            .setWfId(nodeInfo.getId())
                             .setEnable(nodeInfo.getEnable())
                             .setSkipWhenFailed(nodeInfo.getSkipWhenFailed())
                             .setNodeName(nodeInfo.getNodeName())

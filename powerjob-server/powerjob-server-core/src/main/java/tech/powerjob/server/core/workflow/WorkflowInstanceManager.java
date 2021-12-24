@@ -16,6 +16,7 @@ import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.core.helper.StatusMappingHelper;
 import tech.powerjob.server.core.lock.UseSegmentLock;
@@ -296,6 +297,7 @@ public class WorkflowInstanceManager {
                 if (instanceId.equals(node.getInstanceId())) {
                     node.setStatus(status.getV());
                     node.setResult(result);
+                    node.setFinishedTime(CommonUtils.formatTime(System.currentTimeMillis()));
                     instanceNode = node;
                     log.info("[Workflow-{}|{}] node(nodeId={},jobId={},instanceId={}) finished in workflowInstance, status={},result={}", wfId, wfInstanceId, node.getNodeId(), node.getJobId(), instanceId, status.name(), result);
                 }
