@@ -42,3 +42,6 @@ logging:
 notify:
   api:
     url: 10.224.192.108:18093
+
+srvupgrade:
+  baseUrl: http://10.110.46.15:18087

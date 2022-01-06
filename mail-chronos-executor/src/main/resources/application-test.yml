@@ -43,4 +43,6 @@ notify:
   api:
     url: mpserv-notify.qzgw-beta.163.internal
 
+srvupgrade:
+  baseUrl: http://10.110.46.15:18087
 
