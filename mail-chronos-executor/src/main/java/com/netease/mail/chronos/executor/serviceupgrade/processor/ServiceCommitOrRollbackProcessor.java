@@ -116,9 +116,13 @@ public class ServiceCommitOrRollbackProcessor implements BasicProcessor {
         params.put("product", product);
 
         if ("commit".equals(operateType)) {
-            params.put("extInfo", servUpgradeParam.getParam().getExtInfo());
+            if (servUpgradeParam.getParam().getExtInfo() != null) {
+                params.put("extInfo", servUpgradeParam.getParam().getExtInfo());
+            }
         } else {
-            params.put("commitToken", servUpgradeParam.getParam().getCommitToken());
+            if (servUpgradeParam.getParam().getCommitToken() != null) {
+                params.put("commitToken", servUpgradeParam.getParam().getCommitToken());
+            }
         }
 
         String sign = SignUtils.md5Sign(params, salt);

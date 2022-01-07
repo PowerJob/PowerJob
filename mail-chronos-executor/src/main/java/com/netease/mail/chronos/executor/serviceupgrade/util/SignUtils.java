@@ -33,7 +33,7 @@ public class SignUtils {
     public static String md5(String salt, String paramSource) {
         String source = paramSource + salt;
         String sign = MD5Utils.md5(source);
-        log.debug("[cmd:md5,paramSource:{},sign:{}]", paramSource, sign);
+        log.info("[cmd:md5,paramSource:{},sign:{}]", paramSource, sign);
         return sign;
     }
 
