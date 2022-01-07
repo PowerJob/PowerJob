@@ -103,7 +103,7 @@ public class ServiceCommitOrRollbackProcessor implements BasicProcessor {
         }
         stringBuilder.append("?");
         for (Map.Entry<String, String> entry : params.entrySet()) {
-            stringBuilder.append(entry.getKey()).append("=").append(entry.getValue());
+            stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
         }
         return stringBuilder.toString();
     }
