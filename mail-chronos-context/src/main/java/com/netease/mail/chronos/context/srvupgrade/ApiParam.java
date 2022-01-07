@@ -1,4 +1,4 @@
-package com.netease.mail.chronos.executor.serviceupgrade.param;
+package com.netease.mail.chronos.context.srvupgrade;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

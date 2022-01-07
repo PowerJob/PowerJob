@@ -87,6 +87,12 @@
 
             <dependency>
                 <groupId>com.netease.mail</groupId>
+                <artifactId>mail-chronos-context</artifactId>
+                <version>${chronos.verison}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.netease.mail</groupId>
                 <artifactId>mail-chronos-worker</artifactId>
                 <version>${chronos.verison}</version>
             </dependency>

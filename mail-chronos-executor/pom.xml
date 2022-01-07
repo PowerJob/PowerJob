@@ -63,6 +63,11 @@
         </dependency>
         <dependency>
             <groupId>com.netease.mail</groupId>
+            <artifactId>mail-chronos-context</artifactId>
+            <version>${chronos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netease.mail</groupId>
             <artifactId>mail-chronos-base</artifactId>
             <version>${chronos.version}</version>
         </dependency>

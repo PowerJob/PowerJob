@@ -3,8 +3,8 @@ package com.netease.mail.chronos.executor.serviceupgrade.processor;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.netease.mail.chronos.base.exception.BaseException;
-import com.netease.mail.chronos.executor.serviceupgrade.constants.ServUpgradeConstant;
-import com.netease.mail.chronos.executor.serviceupgrade.param.ServUpgradeParam;
+import com.netease.mail.chronos.context.common.constants.BizParamKeyConstant;
+import com.netease.mail.chronos.context.srvupgrade.ServUpgradeParam;
 import com.netease.mail.chronos.executor.serviceupgrade.util.SignUtils;
 import com.netease.mail.quark.status.StatusResult;
 import lombok.SneakyThrows;
@@ -87,7 +87,7 @@ public class ServiceCommitOrRollbackProcessor implements BasicProcessor {
             omsLogger.error("response body is null ");
             return new ProcessResult(false);
         }
-        omsLogger.info("response body : {}",response.body().string());
+        omsLogger.info("response body : {}", response.body().string());
         StatusResult statusResult = JSON.parseObject(response.body().string(), StatusResult.class);
         return statusResult != null && statusResult.getCode() == HTTP_SUCCESS_CODE ? new ProcessResult(true) : new ProcessResult(false);
 
@@ -137,7 +137,7 @@ public class ServiceCommitOrRollbackProcessor implements BasicProcessor {
         ServUpgradeParam param = null;
         if (taskContext.getWorkflowContext().getWfInstanceId() != null) {
             Map<String, String> data = taskContext.getWorkflowContext().getData();
-            String paramStr = data.get(ServUpgradeConstant.WF_CONTEXT_PARAM_KEY);
+            String paramStr = data.get(BizParamKeyConstant.SRV_UPGRADE);
             try {
                 HashMap<String, ServUpgradeParam> realParam = JSON.parseObject(paramStr, new TypeReference<HashMap<String, ServUpgradeParam>>() {
                 });
@@ -158,7 +158,19 @@ public class ServiceCommitOrRollbackProcessor implements BasicProcessor {
                 throw new BaseException("从任务实例参数中解析服务升降级参数失败");
             }
         }
-        param.validate();
+        validate(param);
         return param;
+    }
+
+    private void validate(ServUpgradeParam servUpgradeParam) {
+        if (StringUtils.isBlank(servUpgradeParam.getOperateType())) {
+            throw new BaseException("缺失 operateType 参数");
+        }
+        if (!"commit".equals(servUpgradeParam.getOperateType()) && !"rollback".equals(servUpgradeParam.getOperateType())) {
+            throw new BaseException("非法的 operateType 参数：" + servUpgradeParam.getOperateType());
+        }
+        if (StringUtils.isBlank(servUpgradeParam.getParam().getAccount()) || StringUtils.isBlank(servUpgradeParam.getParam().getToken()) || StringUtils.isBlank(servUpgradeParam.getParam().getResource()) || servUpgradeParam.getParam().getStrategy() == null) {
+            throw new BaseException("API Param 无效，" + JSON.toJSONString(servUpgradeParam.getParam()));
+        }
     }
 }
