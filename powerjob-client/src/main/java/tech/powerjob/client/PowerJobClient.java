@@ -80,8 +80,9 @@ public class PowerJobClient {
                         throw new PowerJobException(resultDTO.getMessage());
                     }
                 }
-            } catch (IOException ignore) {
+            } catch (Exception e) {
                 //
+                log.error("[PowerJobClient] address '{}' is not available! ",allAddress,e);
             }
         }
 
