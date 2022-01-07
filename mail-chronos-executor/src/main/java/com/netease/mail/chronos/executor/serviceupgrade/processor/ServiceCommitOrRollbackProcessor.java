@@ -89,6 +89,7 @@ public class ServiceCommitOrRollbackProcessor implements BasicProcessor {
         }
         omsLogger.info("response body : {}", response.body().string());
         StatusResult statusResult = JSON.parseObject(response.body().string(), StatusResult.class);
+        omsLogger.info("status result : {}", JSON.toJSONString(statusResult));
         return statusResult != null && statusResult.getCode() == HTTP_SUCCESS_CODE ? new ProcessResult(true) : new ProcessResult(false);
 
     }
