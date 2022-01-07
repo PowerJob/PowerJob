@@ -127,14 +127,14 @@ public class WorkflowInstanceManager {
      */
     private void initNodeInfo(PEWorkflowDAG dag) {
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
-            WorkflowNodeInfoDO workflowNodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(()->new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_NODE));
+            WorkflowNodeInfoDO workflowNodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(() -> new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_NODE));
             // 任务节点，需初始化 是否启用、是否允许失败跳过、节点参数 等信息
             if (workflowNodeInfo.getType() == null || workflowNodeInfo.getType() == WorkflowNodeType.JOB.getCode()) {
                 // 任务节点缺失任务信息
                 if (workflowNodeInfo.getJobId() == null) {
                     throw new PowerJobException(SystemInstanceResult.ILLEGAL_NODE);
                 }
-                JobInfoDO jobInfo = jobInfoRepository.findById(workflowNodeInfo.getJobId()).orElseThrow(()->new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB));
+                JobInfoDO jobInfo = jobInfoRepository.findById(workflowNodeInfo.getJobId()).orElseThrow(() -> new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB));
 
                 node.setNodeType(WorkflowNodeType.JOB.getCode());
                 // 初始化任务相关信息
@@ -169,11 +169,26 @@ public class WorkflowInstanceManager {
         newWfInstance.setExpectedTriggerTime(expectTriggerTime);
         newWfInstance.setActualTriggerTime(System.currentTimeMillis());
         newWfInstance.setWfInitParams(initParams);
-        // 初始化上下文
-        Map<String, String> wfContextMap = Maps.newHashMap();
-        wfContextMap.put(WorkflowContextConstant.CONTEXT_INIT_PARAMS_KEY, initParams);
-        newWfInstance.setWfContext(JsonUtils.toJSONString(wfContextMap));
 
+        // 如果 initParams 是个合法的 Map<String,String> JSON 串则直接将其注入 wfContext
+        boolean injectDirect = false;
+        try {
+            Map<String, String> parseRes = JSON.parseObject(initParams, new TypeReference<Map<String, String>>() {
+            });
+            if (parseRes != null && !parseRes.isEmpty()) {
+                injectDirect = true;
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        if (injectDirect) {
+            newWfInstance.setWfContext(initParams);
+        } else {
+            // 初始化上下文
+            Map<String, String> wfContextMap = Maps.newHashMap();
+            wfContextMap.put(WorkflowContextConstant.CONTEXT_INIT_PARAMS_KEY, initParams);
+            newWfInstance.setWfContext(JsonUtils.toJSONString(wfContextMap));
+        }
         newWfInstance.setGmtCreate(now);
         newWfInstance.setGmtModified(now);
         return newWfInstance;
