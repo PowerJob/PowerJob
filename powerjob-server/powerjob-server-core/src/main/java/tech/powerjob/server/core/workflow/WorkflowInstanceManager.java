@@ -180,6 +180,7 @@ public class WorkflowInstanceManager {
             }
         } catch (Exception e) {
             // ignore
+            log.warn("[Workflow-{}|{}] fail to parse as a String map,will inject init params!",wfId,wfInstanceId,e);
         }
         if (injectDirect) {
             newWfInstance.setWfContext(initParams);
