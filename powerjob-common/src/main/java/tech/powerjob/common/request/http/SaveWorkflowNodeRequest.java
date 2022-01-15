@@ -1,8 +1,8 @@
 package tech.powerjob.common.request.http;
 
+import lombok.Data;
 import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.utils.CommonUtils;
-import lombok.Data;
 
 
 
@@ -22,7 +22,7 @@ public class SaveWorkflowNodeRequest {
     /**
      * 节点类型(默认为任务节点)
      */
-    private WorkflowNodeType type = WorkflowNodeType.JOB;
+    private Integer type;
     /**
      * 任务 ID
      */
@@ -44,10 +44,11 @@ public class SaveWorkflowNodeRequest {
      */
     private Boolean skipWhenFailed = false;
 
-    public void valid(){
+    public void valid() {
         CommonUtils.requireNonNull(this.appId, "appId can't be empty");
         CommonUtils.requireNonNull(this.type, "type can't be empty");
-        if (type == WorkflowNodeType.JOB) {
+        final WorkflowNodeType workflowNodeType = WorkflowNodeType.of(type);
+        if (workflowNodeType == WorkflowNodeType.JOB || workflowNodeType == WorkflowNodeType.NESTED_WORKFLOW) {
             CommonUtils.requireNonNull(this.jobId, "jobId can't be empty");
         }
     }

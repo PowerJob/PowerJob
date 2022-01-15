@@ -55,14 +55,11 @@ public class PEWorkflowDAG implements Serializable {
          */
         private Integer nodeType;
         /**
-         * job id
-         */
-        private Long jobId;
-        /**
-         * workflow id,support for nested workflow
+         * job id or workflow id (if this Node type is a nested workflow)
+         *
          * @see WorkflowNodeType#NESTED_WORKFLOW
          */
-        private Long wfId;
+        private Long jobId;
         /**
          * node name
          */

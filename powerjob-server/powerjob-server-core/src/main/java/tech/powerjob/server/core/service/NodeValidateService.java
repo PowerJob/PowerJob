@@ -3,9 +3,9 @@ package tech.powerjob.server.core.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.enums.WorkflowNodeType;
-import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.core.validator.NodeValidator;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -27,19 +27,30 @@ public class NodeValidateService {
     }
 
 
-    public void validate(PEWorkflowDAG.Node node, WorkflowDAG dag) {
-        Integer nodeTypeCode = node.getNodeType();
-        if (nodeTypeCode == null) {
-            // 前向兼容，默认为 任务节点
-            nodeTypeCode = WorkflowNodeType.JOB.getCode();
-        }
-        WorkflowNodeType nodeType = WorkflowNodeType.of(nodeTypeCode);
-        NodeValidator nodeValidator = nodeValidatorMap.get(nodeType);
+    public void complexValidate(WorkflowNodeInfoDO node, WorkflowDAG dag) {
+        NodeValidator nodeValidator = getNodeValidator(node);
         if (nodeValidator == null) {
             // 默认不需要校验
             return;
         }
-        nodeValidator.validate(node, dag);
+        nodeValidator.complexValidate(node, dag);
     }
 
+    public void simpleValidate(WorkflowNodeInfoDO node) {
+        NodeValidator nodeValidator = getNodeValidator(node);
+        if (nodeValidator == null) {
+            // 默认不需要校验
+            return;
+        }
+        nodeValidator.simpleValidate(node);
+    }
+
+    private NodeValidator getNodeValidator(WorkflowNodeInfoDO node) {
+        Integer nodeTypeCode = node.getType();
+        if (nodeTypeCode == null) {
+            // 前向兼容，默认为 任务节点
+            return nodeValidatorMap.get(WorkflowNodeType.JOB);
+        }
+        return nodeValidatorMap.get(WorkflowNodeType.of(nodeTypeCode));
+    }
 }

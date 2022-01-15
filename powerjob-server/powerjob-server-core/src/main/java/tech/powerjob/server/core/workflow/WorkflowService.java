@@ -8,9 +8,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.common.enums.WorkflowNodeType;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -21,10 +20,8 @@ import tech.powerjob.server.common.utils.CronExpression;
 import tech.powerjob.server.core.service.NodeValidateService;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
-import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
@@ -52,8 +49,6 @@ public class WorkflowService {
     private WorkflowInfoRepository workflowInfoRepository;
     @Resource
     private WorkflowNodeInfoRepository workflowNodeInfoRepository;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
     @Resource
     private NodeValidateService nodeValidateService;
 
@@ -134,7 +129,7 @@ public class WorkflowService {
             if (!wfId.equals(nodeInfo.getWorkflowId())) {
                 throw new PowerJobException("can't use another workflow's node");
             }
-            nodeValidateService.validate(node,complexDag);
+            nodeValidateService.complexValidate(nodeInfo, complexDag);
             // 只保存节点的 ID 信息，清空其他信息
             newNodes.add(new PEWorkflowDAG.Node(node.getNodeId()));
             nodeIdList.add(node.getNodeId());
@@ -313,20 +308,9 @@ public class WorkflowService {
                 workflowNodeInfo = new WorkflowNodeInfoDO();
                 workflowNodeInfo.setGmtCreate(new Date());
             }
-
-            // valid job info
-            if (req.getType() == WorkflowNodeType.JOB) {
-                JobInfoDO jobInfoDO = jobInfoRepository.findById(req.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + req.getJobId()));
-                if (!jobInfoDO.getAppId().equals(appId)) {
-                    throw new PowerJobException("Permission Denied! can't use other app's job!");
-                }
-                if (StringUtils.isEmpty(workflowNodeInfo.getNodeName())) {
-                    workflowNodeInfo.setNodeName(jobInfoDO.getJobName());
-                }
-            }
-
             BeanUtils.copyProperties(req, workflowNodeInfo);
-            workflowNodeInfo.setType(req.getType().getCode());
+            workflowNodeInfo.setType(req.getType());
+            nodeValidateService.simpleValidate(workflowNodeInfo);
             workflowNodeInfo.setGmtModified(new Date());
             workflowNodeInfo = workflowNodeInfoRepository.saveAndFlush(workflowNodeInfo);
             res.add(workflowNodeInfo);
@@ -359,7 +343,6 @@ public class WorkflowService {
                 if (nodeInfo != null) {
                     node.setNodeType(nodeInfo.getType())
                             .setJobId(nodeInfo.getJobId())
-                            .setWfId(nodeInfo.getId())
                             .setEnable(nodeInfo.getEnable())
                             .setSkipWhenFailed(nodeInfo.getSkipWhenFailed())
                             .setNodeName(nodeInfo.getNodeName())

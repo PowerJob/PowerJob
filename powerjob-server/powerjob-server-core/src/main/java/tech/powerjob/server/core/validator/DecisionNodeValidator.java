@@ -7,6 +7,7 @@ import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 
 import java.util.Collection;
 
@@ -20,14 +21,9 @@ public class DecisionNodeValidator implements NodeValidator {
 
 
     @Override
-    public void validate(PEWorkflowDAG.Node node, WorkflowDAG dag) {
-        // 简单校验
-        String nodeParams = node.getNodeParams();
-        if (StringUtils.isBlank(nodeParams)) {
-            throw new PowerJobException("DecisionNode‘s param must be not null,node name : " + node.getNodeName());
-        }
+    public void complexValidate(WorkflowNodeInfoDO node, WorkflowDAG dag) {
         // 出度固定为 2
-        WorkflowDAG.Node nodeWrapper = dag.getNode(node.getNodeId());
+        WorkflowDAG.Node nodeWrapper = dag.getNode(node.getId());
         Collection<PEWorkflowDAG.Edge> edges = nodeWrapper.getSuccessorEdgeMap().values();
         if (edges.size() != 2) {
             throw new PowerJobException("DecisionNode‘s out-degree must be 2,node name : " + node.getNodeName());
@@ -50,6 +46,15 @@ public class DecisionNodeValidator implements NodeValidator {
             throw new PowerJobException("Illegal property of DecisionNode‘s out-degree edge,node name : " + node.getNodeName());
         }
 
+    }
+
+    @Override
+    public void simpleValidate(WorkflowNodeInfoDO node) {
+        // 简单校验
+        String nodeParams = node.getNodeParams();
+        if (StringUtils.isBlank(nodeParams)) {
+            throw new PowerJobException("DecisionNode‘s param must be not null,node name : " + node.getNodeName());
+        }
     }
 
 

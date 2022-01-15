@@ -133,29 +133,29 @@ public class WorkflowInstanceManager {
     private void initNodeInfo(PEWorkflowDAG dag) {
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
             WorkflowNodeInfoDO workflowNodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(() -> new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_NODE));
-            // 任务节点，需初始化 是否启用、是否允许失败跳过、节点参数 等信息
-            if (workflowNodeInfo.getType() == null || workflowNodeInfo.getType() == WorkflowNodeType.JOB.getCode()) {
+            if (workflowNodeInfo.getType() == null) {
+                // 前向兼容
+                workflowNodeInfo.setType(WorkflowNodeType.JOB.getCode());
+            }
+            // 填充基础信息
+            node.setNodeType(workflowNodeInfo.getType())
+                    .setJobId(workflowNodeInfo.getJobId())
+                    .setNodeName(workflowNodeInfo.getNodeName())
+                    .setEnable(workflowNodeInfo.getEnable())
+                    .setSkipWhenFailed(workflowNodeInfo.getSkipWhenFailed());
+
+            // 任务节点，初始化节点参数时需要特殊处理
+            if (node.getNodeType() == WorkflowNodeType.JOB.getCode()) {
                 // 任务节点缺失任务信息
                 if (workflowNodeInfo.getJobId() == null) {
                     throw new PowerJobException(SystemInstanceResult.ILLEGAL_NODE);
                 }
                 JobInfoDO jobInfo = jobInfoRepository.findById(workflowNodeInfo.getJobId()).orElseThrow(() -> new PowerJobException(SystemInstanceResult.CAN_NOT_FIND_JOB));
-
-                node.setNodeType(WorkflowNodeType.JOB.getCode());
-                // 初始化任务相关信息
-                node.setJobId(workflowNodeInfo.getJobId())
-                        .setNodeName(workflowNodeInfo.getNodeName())
-                        .setEnable(workflowNodeInfo.getEnable())
-                        .setSkipWhenFailed(workflowNodeInfo.getSkipWhenFailed());
-
                 if (!StringUtils.isBlank(workflowNodeInfo.getNodeParams())) {
                     node.setNodeParams(workflowNodeInfo.getNodeParams());
                 } else {
                     node.setNodeParams(jobInfo.getJobParams());
                 }
-            } else {
-                // 非任务节点
-                node.setNodeType(workflowNodeInfo.getType());
             }
         }
     }
@@ -427,7 +427,7 @@ public class WorkflowInstanceManager {
                 updateWorkflowContext(wfInstance.getParentWfInstanceId(),wfContext);
             }
             // 处理父工作流
-            move(wfInstance.getWfInstanceId(),wfInstance.getParentWfInstanceId(), StatusMappingHelper.toInstanceStatus(workflowInstanceStatus),result);
+            move(wfInstance.getParentWfInstanceId(), wfInstance.getWfInstanceId(), StatusMappingHelper.toInstanceStatus(workflowInstanceStatus), result);
         }
 
         // 报警
