@@ -71,18 +71,18 @@ class TestWorkflow extends ClientInitializer {
         SaveWorkflowNodeRequest saveWorkflowNodeRequest1 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest1.setJobId(1L);
         saveWorkflowNodeRequest1.setNodeName("DAG-Node-1");
-        saveWorkflowNodeRequest1.setType(WorkflowNodeType.JOB);
+        saveWorkflowNodeRequest1.setType(WorkflowNodeType.JOB.getCode());
 
         SaveWorkflowNodeRequest saveWorkflowNodeRequest2 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest2.setJobId(1L);
         saveWorkflowNodeRequest2.setNodeName("DAG-Node-2");
-        saveWorkflowNodeRequest2.setType(WorkflowNodeType.JOB);
+        saveWorkflowNodeRequest2.setType(WorkflowNodeType.JOB.getCode());
 
 
         SaveWorkflowNodeRequest saveWorkflowNodeRequest3 = new SaveWorkflowNodeRequest();
         saveWorkflowNodeRequest3.setJobId(1L);
         saveWorkflowNodeRequest3.setNodeName("DAG-Node-3");
-        saveWorkflowNodeRequest3.setType(WorkflowNodeType.JOB);
+        saveWorkflowNodeRequest3.setType(WorkflowNodeType.JOB.getCode());
 
 
         List<WorkflowNodeInfoDTO> nodeList = powerJobClient.saveWorkflowNode(Lists.newArrayList(saveWorkflowNodeRequest1,saveWorkflowNodeRequest2,saveWorkflowNodeRequest3)).getData();

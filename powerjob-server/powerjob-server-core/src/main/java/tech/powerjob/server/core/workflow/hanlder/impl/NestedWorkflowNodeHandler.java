@@ -39,13 +39,13 @@ public class NestedWorkflowNodeHandler implements TaskNodeHandler {
     @Override
     public void createTaskInstance(PEWorkflowDAG.Node node, PEWorkflowDAG dag, WorkflowInstanceInfoDO wfInstanceInfo) {
         // check
-        Long wfId = node.getWfId();
+        Long wfId = node.getJobId();
         WorkflowInfoDO targetWf = workflowInfoRepository.findById(wfId).orElse(null);
         if (targetWf == null || targetWf.getStatus() == SwitchableStatus.DELETED.getV()) {
             if (targetWf == null) {
-                log.error("[Workflow-{}|{}] invalid nested workflow node({}),target workflow({}) is not exist!", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), node.getWfId());
+                log.error("[Workflow-{}|{}] invalid nested workflow node({}),target workflow({}) is not exist!", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), node.getJobId());
             } else {
-                log.error("[Workflow-{}|{}] invalid nested workflow node({}),target workflow({}) has been deleted!", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), node.getWfId());
+                log.error("[Workflow-{}|{}] invalid nested workflow node({}),target workflow({}) has been deleted!", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), node.getJobId());
             }
             throw new PowerJobException("invalid nested workflow node," + node.getNodeId());
         }
@@ -71,7 +71,7 @@ public class NestedWorkflowNodeHandler implements TaskNodeHandler {
 
     @Override
     public void startTaskInstance(PEWorkflowDAG.Node node) {
-        Long wfId = node.getWfId();
+        Long wfId = node.getJobId();
         WorkflowInfoDO targetWf = workflowInfoRepository.findById(wfId).orElse(null);
         workflowInstanceManager.start(targetWf, node.getInstanceId());
     }

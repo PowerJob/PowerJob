@@ -2,11 +2,13 @@ package tech.powerjob.server.core.validator;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeanUtils;
 import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 
 import static tech.powerjob.server.core.data.DataConstructUtil.*;
 
@@ -35,7 +37,11 @@ class NodeValidatorTest {
         PEWorkflowDAG.Edge edge2_4 = new PEWorkflowDAG.Edge(2L, 4L);
         addEdges(peWorkflowDAG, edge1_2, edge1_3, edge2_4);
         WorkflowDAG dag = WorkflowDAGUtils.convert(peWorkflowDAG);
-        Assert.assertThrows(PowerJobException.class, () -> decisionNodeValidator.validate(node1, dag));
+
+        final WorkflowNodeInfoDO workflowNodeInfo1 = new WorkflowNodeInfoDO();
+        BeanUtils.copyProperties(node1, workflowNodeInfo1);
+        workflowNodeInfo1.setId(node1.getNodeId());
+        Assert.assertThrows(PowerJobException.class, () -> decisionNodeValidator.complexValidate(workflowNodeInfo1, dag));
 
     }
 

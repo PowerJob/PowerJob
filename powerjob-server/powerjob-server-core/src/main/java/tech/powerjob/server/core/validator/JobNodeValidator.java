@@ -4,10 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 
 import javax.annotation.Resource;
@@ -24,7 +24,12 @@ public class JobNodeValidator implements NodeValidator {
     private JobInfoRepository jobInfoRepository;
 
     @Override
-    public void validate(PEWorkflowDAG.Node node, WorkflowDAG dag) {
+    public void complexValidate(WorkflowNodeInfoDO node, WorkflowDAG dag) {
+        // do nothing
+    }
+
+    @Override
+    public void simpleValidate(WorkflowNodeInfoDO node) {
         // 判断对应的任务是否存在
         JobInfoDO job = jobInfoRepository.findById(node.getJobId())
                 .orElseThrow(() -> new PowerJobException("Illegal job node,specified job is not exist,node name : " + node.getNodeName()));
