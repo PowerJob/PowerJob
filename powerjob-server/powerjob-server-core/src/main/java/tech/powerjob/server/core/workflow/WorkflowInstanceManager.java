@@ -105,7 +105,9 @@ public class WorkflowInstanceManager {
             //  最后检查工作流中的任务是否均处于可用状态（没有被删除）
             Set<Long> allJobIds = Sets.newHashSet();
             dag.getNodes().forEach(node -> {
-                allJobIds.add(node.getJobId());
+                if (node.getNodeType() == WorkflowNodeType.JOB.getCode()) {
+                    allJobIds.add(node.getJobId());
+                }
                 // 将节点的初始状态置为等待派发
                 node.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
             });
@@ -141,6 +143,7 @@ public class WorkflowInstanceManager {
             node.setNodeType(workflowNodeInfo.getType())
                     .setJobId(workflowNodeInfo.getJobId())
                     .setNodeName(workflowNodeInfo.getNodeName())
+                    .setNodeParams(workflowNodeInfo.getNodeParams())
                     .setEnable(workflowNodeInfo.getEnable())
                     .setSkipWhenFailed(workflowNodeInfo.getSkipWhenFailed());
 
