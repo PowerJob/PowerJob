@@ -23,6 +23,41 @@
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-persistence</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.netease.mail.mp</groupId>
+            <artifactId>mp-api-notify</artifactId>
+            <version>1.2.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.netease.mail.springboot</groupId>
+                    <artifactId>springboot-webapp-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-data-redis</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.netease.mail.quark</groupId>
+                    <artifactId>quark-springcloud</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>redis.clients</groupId>
+                    <artifactId>jedis</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-core</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-jdbc</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
 </project>

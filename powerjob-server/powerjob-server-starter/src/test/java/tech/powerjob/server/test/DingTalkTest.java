@@ -1,6 +1,6 @@
 package tech.powerjob.server.test;
 
-import tech.powerjob.server.extension.defaultimpl.alram.impl.DingTalkUtils;
+import tech.powerjob.server.extension.defaultimpl.alarm.impl.DingTalkUtils;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +31,7 @@ public class DingTalkTest {
         mds.add(new DingTalkUtils.MarkdownEntity("t2222","hahahahahahahha2"));
         mds.add(new DingTalkUtils.MarkdownEntity("t3333","hahahahahahahha3"));
 
-        dingTalkUtils.sendMarkdownAsync("PowerJob AlarmService", mds, userId, AGENT_ID);
+        dingTalkUtils.sendMarkdownAsync("PowerJob AlarmComponent", mds, userId, AGENT_ID);
     }
 
 }

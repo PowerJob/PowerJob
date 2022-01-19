@@ -1,8 +1,8 @@
-package tech.powerjob.server.extension.defaultimpl.alram.impl;
+package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
-import tech.powerjob.server.extension.Alarmable;
+import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
+import tech.powerjob.server.extension.AlarmComponent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -24,7 +24,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
-public class MailAlarmService implements Alarmable {
+public class MailAlarmService implements AlarmComponent {
 
     @Resource
     private Environment environment;
@@ -59,7 +59,9 @@ public class MailAlarmService implements Alarmable {
         this.javaMailSender = javaMailSender;
     }
 
-    // 不能直接使用 @Value 注入，不存在的时候会报错
+    /**
+     * 不能直接使用 @Value 注入，不存在的时候会报错
+     */
     private void initFrom() {
         if (StringUtils.isEmpty(from)) {
             from = environment.getProperty(FROM_KEY);

@@ -1,5 +1,6 @@
 package tech.powerjob.server;
 
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import tech.powerjob.server.common.utils.PropertyUtils;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.remote.transport.starter.VertXStarter;
@@ -17,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Slf4j
 @EnableScheduling
 @SpringBootApplication
+@EnableFeignClients(basePackages = {"com.netease.mail.mp.api.*"})
 public class PowerJobServerApplication {
 
     private static final String TIPS = "\n\n" +

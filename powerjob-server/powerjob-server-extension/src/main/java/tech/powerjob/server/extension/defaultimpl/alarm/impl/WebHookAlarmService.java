@@ -1,11 +1,11 @@
-package tech.powerjob.server.extension.defaultimpl.alram.impl;
+package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSON;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.utils.HttpUtils;
+import tech.powerjob.server.extension.AlarmComponent;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
-import tech.powerjob.server.extension.Alarmable;
+import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class WebHookAlarmService implements Alarmable {
+public class WebHookAlarmService implements AlarmComponent {
 
     private static final String HTTP_PROTOCOL_PREFIX = "http://";
     private static final String HTTPS_PROTOCOL_PREFIX = "https://";
@@ -45,7 +45,7 @@ public class WebHookAlarmService implements Alarmable {
             }
 
             MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
-            RequestBody requestBody = RequestBody.create(jsonType, JSONObject.toJSONString(alarm));
+            RequestBody requestBody = RequestBody.create(jsonType, JSON.toJSONString(alarm));
 
             try {
                 String response = HttpUtils.post(webHook, requestBody);
