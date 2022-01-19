@@ -1,9 +1,13 @@
 package tech.powerjob.server.extension.defaultimpl.alarm.module;
 
+import com.google.common.collect.Maps;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 任务执行失败告警对象
@@ -25,6 +29,9 @@ public class JobInstanceAlarm implements Alarm {
      * 任务实例ID
      */
     private long instanceId;
+
+
+    private Long wfInstanceId;
     /**
      * 任务名称
      */
@@ -90,18 +97,42 @@ public class JobInstanceAlarm implements Alarm {
         StringBuilder sb = new StringBuilder(4096);
         sb.append(fetchTitle()).append(OmsConstant.LINE_SEPARATOR);
         // JobInfo: $jobName($jobId)
-        sb.append("JobInfo: ").append(jobName).append("(").append(jobId).append(")").append(OmsConstant.LINE_SEPARATOR);
+        sb.append("JobInfo:  ").append(jobName).append("(").append(jobId).append(")").append(OmsConstant.LINE_SEPARATOR);
         // InstanceId: $instanceId
-        sb.append("InstanceId: ").append(instanceId).append(OmsConstant.LINE_SEPARATOR);
-        if (StringUtils.isNotBlank(taskTrackerAddress)){
+        sb.append("InstanceId:  ").append(instanceId).append(OmsConstant.LINE_SEPARATOR);
+        // WfInstanceId: $wfInstanceId
+        if (wfInstanceId != null) {
+            sb.append("WfInstanceId:  ").append(wfInstanceId).append(OmsConstant.LINE_SEPARATOR);
+        }
+        if (StringUtils.isNotBlank(taskTrackerAddress)) {
             // TaskTrackerAddress: $taskTrackerAddress
-            sb.append("TaskTrackerAddress: ").append(taskTrackerAddress).append(OmsConstant.LINE_SEPARATOR);
+            sb.append("TaskTrackerAddress:  ").append(taskTrackerAddress).append(OmsConstant.LINE_SEPARATOR);
         }
         // Result: $result
-        sb.append("Result: ").append(result).append(OmsConstant.LINE_SEPARATOR);
+        sb.append("Result:  ").append(result).append(OmsConstant.LINE_SEPARATOR);
         // FinishTime: $finishedTime
-        sb.append("FinishTime: ").append(CommonUtils.formatTime((finishedTime))).append(OmsConstant.LINE_SEPARATOR);
+        sb.append("FinishTime:  ").append(CommonUtils.formatTime((finishedTime))).append(OmsConstant.LINE_SEPARATOR);
 
         return sb.toString();
+    }
+
+    @Override
+    public Map<String, String> fetchContentMap() {
+
+        HashMap<String, String> map = Maps.newLinkedHashMap();
+        map.put("JobName",jobName);
+        map.put("JobId", String.valueOf(jobId));
+        map.put("InstanceId",String.valueOf(instanceId));
+        if(wfInstanceId!=null){
+            map.put("WfInstanceId",String.valueOf(wfInstanceId));
+        }
+        map.put("JobParam",jobParams);
+        map.put("InstanceParam",instanceParams);
+        map.put("TaskTrackerAddress",taskTrackerAddress);
+        map.put("Result",result);
+        map.put("ActualTriggerTime",CommonUtils.formatTime(actualTriggerTime));
+        map.put("FinishTime",CommonUtils.formatTime(finishedTime));
+
+        return map;
     }
 }

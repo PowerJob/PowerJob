@@ -50,22 +50,5 @@ public interface Alarm extends PowerSerializable {
         return sb.toString();
     }
 
-    default Map<String, String> fetchContentMap() {
-        JSONObject content = JSON.parseObject(JSON.toJSONString(this));
-        HashMap<String, String> res = Maps.newHashMap();
-        content.forEach((key, originWord) -> {
-            String word = String.valueOf(originWord);
-            if (StringUtils.endsWithIgnoreCase(key, "time") || StringUtils.endsWithIgnoreCase(key, "date")) {
-                try {
-                    if (originWord instanceof Long) {
-                        word = CommonUtils.formatTime((Long) originWord);
-                    }
-                } catch (Exception ignore) {
-                    //
-                }
-            }
-            res.put(key, word);
-        });
-        return res;
-    }
+    Map<String, String> fetchContentMap();
 }

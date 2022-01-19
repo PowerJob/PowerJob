@@ -464,7 +464,6 @@ public class WorkflowInstanceManager {
         try {
             workflowInfoRepository.findById(wfInstance.getWorkflowId()).ifPresent(wfInfo -> {
                 WorkflowInstanceAlarm content = new WorkflowInstanceAlarm();
-
                 BeanUtils.copyProperties(wfInfo, content);
                 BeanUtils.copyProperties(wfInstance, content);
                 content.setResult(result);

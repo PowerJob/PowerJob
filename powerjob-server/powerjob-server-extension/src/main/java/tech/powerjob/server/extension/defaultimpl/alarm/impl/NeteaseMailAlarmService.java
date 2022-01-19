@@ -4,6 +4,7 @@ import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
+import com.netease.mail.mp.api.notify.dto.GenericNotifyRequest;
 import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
 import com.netease.mail.quark.status.StatusResult;
 import com.netease.mail.uaInfo.UaInfoContext;
@@ -56,7 +57,7 @@ public class NeteaseMailAlarmService implements AlarmComponent {
         for (Map.Entry<String, String> entry : contentMap.entrySet()) {
             itemList.add(new Item(entry.getKey(),entry.getValue()));
         }
-        params.add(new NotifyParamDTO("content", JSON.toJSONString(itemList)));
+        params.add(new NotifyParamDTO("content", JSON.toJSONString(new Info(itemList)),true));
         params.add(new NotifyParamDTO("env", alarmConfig.getEnv()));
         params.add(new NotifyParamDTO("chronosAddr", alarmConfig.getAddress()));
         for (UserInfoDO userInfoDO : targetUserList) {
@@ -67,14 +68,24 @@ public class NeteaseMailAlarmService implements AlarmComponent {
             String token = UUID.fastUUID().toString();
             // 注意，这里不能去掉，新版本的 feign 会去掉 {}，所以不能传空对象
             UaInfoContext.setUaInfo(FAKE_UA);
-            StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, token, params, email);
+            GenericNotifyRequest request = GenericNotifyRequest.newBuilder().params(params)
+                    .token(token)
+                    .uid(email)
+                    .type(MESSAGE_TYPE).build();
+            StatusResult statusResult = notifyClient.notifyByDomain(request);
             if (statusResult.getCode() != 200){
                 log.warn("[NeteaseMailAlarm] fail to send alarm to {},rtn:{}",email,JSON.toJSONString(statusResult));
             }
         }
     }
 
+    @AllArgsConstructor
+    @Data
+    public static class Info{
 
+        private List<Item> list;
+
+    }
 
     @AllArgsConstructor
     @Data
