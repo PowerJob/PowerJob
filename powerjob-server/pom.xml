@@ -37,7 +37,7 @@
         <h2.db.version>1.4.200</h2.db.version>
 
         <zip4j.version>2.5.2</zip4j.version>
-        <jgit.version>5.7.0.202003110725-r</jgit.version>
+<!--        <jgit.version>5.7.0.202003110725-r</jgit.version>-->
         <mvn.invoker.version>3.0.1</mvn.invoker.version>
         <commons.net.version>3.6</commons.net.version>
         <fastjson.version>1.2.68</fastjson.version>
@@ -227,11 +227,11 @@
         </dependency>
 
         <!-- jGit(Git support) -->
-        <dependency>
-            <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit</artifactId>
-            <version>${jgit.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.jgit</groupId>-->
+<!--            <artifactId>org.eclipse.jgit</artifactId>-->
+<!--            <version>${jgit.version}</version>-->
+<!--        </dependency>-->
 
         <!-- Time tools(NTP support) -->
         <dependency>
