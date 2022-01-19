@@ -2,9 +2,11 @@ package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Maps;
 import com.netease.mail.mp.api.notify.client.NotifyClient;
 import com.netease.mail.mp.notify.common.dto.NotifyParamDTO;
 import com.netease.mail.quark.status.StatusResult;
+import com.netease.mail.uaInfo.UaInfoContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +31,8 @@ import java.util.Map;
 @Service
 public class NeteaseMailAlarmService implements AlarmComponent {
 
+    private static final HashMap<String, Object> FAKE_UA = Maps.newHashMap();
+
     @Resource
     private  NotifyClient notifyClient;
 
@@ -35,6 +40,10 @@ public class NeteaseMailAlarmService implements AlarmComponent {
     private NeteaseAlarmConfig alarmConfig;
 
     private static final int MESSAGE_TYPE = 267;
+
+    static {
+        FAKE_UA.put("fakeUa", "ignore");
+    }
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -56,6 +65,8 @@ public class NeteaseMailAlarmService implements AlarmComponent {
                 continue;
             }
             String token = UUID.fastUUID().toString();
+            // 注意，这里不能去掉，新版本的 feign 会去掉 {}，所以不能传空对象
+            UaInfoContext.setUaInfo(FAKE_UA);
             StatusResult statusResult = notifyClient.notifyByDomain(MESSAGE_TYPE, token, params, email);
             if (statusResult.getCode() != 200){
                 log.warn("[NeteaseMailAlarm] fail to send alarm to {},rtn:{}",email,JSON.toJSONString(statusResult));
