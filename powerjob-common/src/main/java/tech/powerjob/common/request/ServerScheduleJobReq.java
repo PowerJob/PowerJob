@@ -93,6 +93,10 @@ public class ServerScheduleJobReq implements PowerSerializable {
      */
     @NetEaseCustomFeature(CustomFeatureEnum.TASK_ADDITIONAL_DATA)
     private String additionalData;
+    /**
+     * 告警配置
+     */
+    private String alarmConfig;
 
     @Override
     public String path() {

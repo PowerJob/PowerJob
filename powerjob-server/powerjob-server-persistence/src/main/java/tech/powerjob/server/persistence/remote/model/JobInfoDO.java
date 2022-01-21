@@ -140,5 +140,9 @@ public class JobInfoDO {
     private Integer dispatchStrategy;
 
     private String lifecycle;
+    /**
+     * 告警配置
+     */
+    private String alarmConfig;
 
 }
