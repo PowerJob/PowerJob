@@ -1,8 +1,8 @@
-package tech.powerjob.server.extension.defaultimpl.alram;
+package tech.powerjob.server.extension.defaultimpl.alarm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
+import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import com.google.common.collect.Lists;

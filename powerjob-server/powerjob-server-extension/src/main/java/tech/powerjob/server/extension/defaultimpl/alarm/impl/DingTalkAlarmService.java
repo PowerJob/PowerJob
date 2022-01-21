@@ -1,4 +1,4 @@
-package tech.powerjob.server.extension.defaultimpl.alram.impl;
+package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.exception.PowerJobException;
@@ -6,7 +6,7 @@ import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
+import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

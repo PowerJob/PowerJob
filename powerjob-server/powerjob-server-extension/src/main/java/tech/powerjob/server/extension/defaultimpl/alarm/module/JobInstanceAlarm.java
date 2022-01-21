@@ -1,4 +1,4 @@
-package tech.powerjob.server.extension.defaultimpl.alram.module;
+package tech.powerjob.server.extension.defaultimpl.alarm.module;
 
 import lombok.Data;
 

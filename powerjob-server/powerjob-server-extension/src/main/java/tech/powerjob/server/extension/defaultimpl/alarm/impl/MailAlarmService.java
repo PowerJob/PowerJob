@@ -1,7 +1,7 @@
-package tech.powerjob.server.extension.defaultimpl.alram.impl;
+package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.extension.defaultimpl.alram.module.Alarm;
+import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

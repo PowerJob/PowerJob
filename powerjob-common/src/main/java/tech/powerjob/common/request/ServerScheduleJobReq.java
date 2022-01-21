@@ -15,7 +15,9 @@ import java.util.List;
 @Data
 public class ServerScheduleJobReq implements PowerSerializable {
 
-    // 可用处理器地址，可能多值，逗号分隔
+    /**
+     * 可用处理器地址，可能多值，逗号分隔
+     */
     private List<String> allWorkerAddress;
 
     /* *********************** 任务相关属性 *********************** */
@@ -32,45 +34,61 @@ public class ServerScheduleJobReq implements PowerSerializable {
     private Long instanceId;
 
     /**
-     * 任务执行处理器信息
+     * 任务执行类型，单机、广播、MR
      */
-    // 任务执行类型，单机、广播、MR
     private String executeType;
-    // 处理器类型（JavaBean、Jar、脚本等）
+    /**
+     * 处理器类型（内建，外部）
+     */
     private String processorType;
-    // 处理器信息
+    /**
+     * 处理器信息
+     */
     private String processorInfo;
 
 
     /**
-     * 超时时间
+     * 整个任务的总体超时时间
      */
-    // 整个任务的总体超时时间
     private long instanceTimeoutMS;
 
     /**
-     * 任务运行参数
+     * 任务级别的参数，相当于类的static变量
      */
-    // 任务级别的参数，相当于类的static变量
     private String jobParams;
-    // 实例级别的参数，相当于类的普通变量（API触发专用，从API触发处带入）
+    /**
+     * 实例级别的参数，相当于类的普通变量（API触发专用，从API触发处带入）
+     */
     private String instanceParams;
 
-    // 每台机器的处理线程数上限
+    /**
+     * 每台机器的处理线程数上限
+     */
     private int threadConcurrency;
-    // 子任务重试次数（任务本身的重试机制由server控制）
+    /**
+     * 子任务重试次数（任务本身的重试机制由server控制）
+     */
     private int taskRetryNum;
 
     /**
-     * 定时执行信息
+     * 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
      */
-    // 时间表达式类型（CRON/API/FIX_RATE/FIX_DELAY）
     private String timeExpressionType;
-    // 时间表达式，CRON/NULL/LONG/LONG（单位MS）
+    /**
+     * 时间表达式，CRON/NULL/LONG/LONG（单位MS）
+     */
     private String timeExpression;
 
-    // 最大同时运行任务数，默认 1
+    /**
+     * 最大同时运行任务数，默认 1
+     */
     private Integer maxInstanceNum;
+
+    /**
+     * 告警配置
+     */
+    private String alarmConfig;
+
 
     @Override
     public String path() {
