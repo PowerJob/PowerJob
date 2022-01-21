@@ -4,6 +4,7 @@ import tech.powerjob.common.enums.DispatchStrategy;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.utils.CommonUtils;
 import lombok.Data;
 import tech.powerjob.common.response.JobInfoDTO;
@@ -132,6 +133,10 @@ public class SaveJobInfoRequest {
     private DispatchStrategy dispatchStrategy;
 
     private String lifecycle;
+    /**
+     * alarm config
+     */
+    private AlarmConfig alarmConfig;
 
 
     /**

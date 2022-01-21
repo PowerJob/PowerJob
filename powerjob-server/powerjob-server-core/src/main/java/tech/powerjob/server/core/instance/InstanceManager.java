@@ -1,21 +1,22 @@
 package tech.powerjob.server.core.instance;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
+import tech.powerjob.server.common.timewheel.holder.HashedWheelTimerHolder;
 import tech.powerjob.server.common.utils.SpringUtils;
+import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.extension.defaultimpl.alarm.AlarmCenter;
+import tech.powerjob.server.extension.defaultimpl.alarm.module.JobInstanceAlarm;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.core.service.UserService;
-import tech.powerjob.server.extension.defaultimpl.alram.AlarmCenter;
-import tech.powerjob.server.extension.defaultimpl.alram.module.JobInstanceAlarm;
-import tech.powerjob.server.common.timewheel.holder.HashedWheelTimerHolder;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -91,6 +92,11 @@ public class InstanceManager {
             instanceInfo.setResult(req.getResult());
             instanceInfo.setRunningTimes(req.getTotalTaskNum());
             instanceInfoRepository.saveAndFlush(instanceInfo);
+            // 任务需要告警
+            if (req.isNeedAlert()) {
+                log.info("[InstanceManager-{}] receive frequent task alert req,time:{},content:{}",instanceId,req.getReportTime(),req.getAlertContent());
+                alert(instanceId, req.getAlertContent());
+            }
             return;
         }
         // 更新运行次数
@@ -134,7 +140,9 @@ public class InstanceManager {
         if (finished) {
             // 这里的 InstanceStatus 只有 成功/失败 两种，手动停止不会由 TaskTracker 上报
             processFinishedInstance(instanceId, req.getWfInstanceId(), receivedInstanceStatus, req.getResult());
+
         }
+
     }
 
     /**
@@ -160,28 +168,29 @@ public class InstanceManager {
 
         // 告警
         if (status == InstanceStatus.FAILED) {
-            JobInfoDO jobInfo;
-            try {
-                jobInfo = instanceMetadataService.fetchJobInfoByInstanceId(instanceId);
-            } catch (Exception e) {
-                log.warn("[InstanceManager-{}] can't find jobInfo, alarm failed.", instanceId);
-                return;
-            }
-
-            InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
-            JobInstanceAlarm content = new JobInstanceAlarm();
-            BeanUtils.copyProperties(jobInfo, content);
-            // 清理数据库后可能导致 instanceInfo 为空，进而导致 NPE
-            if (instanceInfo != null) {
-                BeanUtils.copyProperties(instanceInfo, content);
-            }
-
-            List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
-            alarmCenter.alarmFailed(content, userList);
+            alert(instanceId, result);
         }
-
         // 主动移除缓存，减小内存占用
         instanceMetadataService.invalidateJobInfo(instanceId);
+    }
+
+    private void alert(Long instanceId, String alertContent) {
+        InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+        JobInfoDO jobInfo;
+        try {
+            jobInfo = instanceMetadataService.fetchJobInfoByInstanceId(instanceId);
+        } catch (Exception e) {
+            log.warn("[InstanceManager-{}] can't find jobInfo, alarm failed.", instanceId);
+            return;
+        }
+        JobInstanceAlarm content = new JobInstanceAlarm();
+        BeanUtils.copyProperties(jobInfo, content);
+        BeanUtils.copyProperties(instanceInfo, content);
+        List<UserInfoDO> userList = SpringUtils.getBean(UserService.class).fetchNotifyUserList(jobInfo.getNotifyUserIds());
+        if (!StringUtils.isEmpty(alertContent)) {
+            content.setResult(alertContent);
+        }
+        alarmCenter.alarmFailed(content, userList);
     }
 
 }

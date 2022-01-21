@@ -1,9 +1,11 @@
 package tech.powerjob.server.core.service;
 
+import com.alibaba.fastjson.JSON;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.server.common.SJ;
@@ -57,7 +59,7 @@ public class JobService {
      *
      * @param request 任务请求
      * @return 创建的任务ID（jobId）
-     * @exception ParseException 异常
+     * @throws ParseException 异常
      */
     public Long saveJob(SaveJobInfoRequest request) throws ParseException {
 
@@ -91,6 +93,15 @@ public class JobService {
         calculateNextTriggerTime(jobInfoDO);
         if (request.getId() == null) {
             jobInfoDO.setGmtCreate(new Date());
+
+        }
+        // 检查告警配置
+        if (request.getAlarmConfig() != null) {
+            AlarmConfig config = request.getAlarmConfig();
+            if (config.getStatisticWindowLen() == null || config.getAlertThreshold() == null || config.getSilenceWindowLen() == null) {
+                throw new PowerJobException("illegal alarm config!");
+            }
+            jobInfoDO.setAlarmConfig(JSON.toJSONString(request.getAlarmConfig()));
         }
         JobInfoDO res = jobInfoRepository.saveAndFlush(jobInfoDO);
         return res.getId();
@@ -98,6 +109,7 @@ public class JobService {
 
     /**
      * 复制任务
+     *
      * @param jobId 目标任务ID
      * @return 复制后的任务 ID
      */
@@ -114,7 +126,7 @@ public class JobService {
         fillDefaultValue(copyJob);
         // 修正创建时间以及更新时间
         copyJob.setId(null);
-        copyJob.setJobName(copyJob.getJobName()+"_COPY");
+        copyJob.setJobName(copyJob.getJobName() + "_COPY");
         copyJob.setGmtCreate(new Date());
         copyJob.setGmtModified(new Date());
 
@@ -184,7 +196,7 @@ public class JobService {
      * 启用某个任务
      *
      * @param jobId 任务ID
-     * @exception ParseException 异常（CRON表达式错误）
+     * @throws ParseException 异常（CRON表达式错误）
      */
     public void enableJob(Long jobId) throws ParseException {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
@@ -275,6 +287,9 @@ public class JobService {
     private static JobInfoDTO convert(JobInfoDO jobInfoDO) {
         JobInfoDTO jobInfoDTO = new JobInfoDTO();
         BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
+        if (jobInfoDO.getAlarmConfig() != null) {
+            jobInfoDTO.setAlarmConfig(JSON.parseObject(jobInfoDO.getAlarmConfig(), AlarmConfig.class));
+        }
         return jobInfoDTO;
     }
 
