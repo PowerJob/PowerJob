@@ -121,5 +121,45 @@
             </plugin>
         </plugins>
     </build>
-
+    <profiles>
+      <profile>
+        <id>macos-repo</id>
+            <repositories>
+                <repository>
+                    <id>local-nexus</id>
+                    <name>local-nexus</name>
+                    <url>http://192.168.31.25:8081/repository/maven-public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>local-nexus</id>
+                    <name>local-nexus</name>
+                    <url>http://192.168.31.25:8081/repository/maven-public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>maven-snapshots</id>
+                    <url>http://192.168.31.25:8081/repository/maven-snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>maven-releases</id>
+                    <url>http://192.168.31.25:8081/repository/maven-releases/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>

@@ -87,6 +87,17 @@
                 <artifactId>powerjob-server-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+              <groupId>javax.xml.bind</groupId>
+              <artifactId>jaxb-api</artifactId>
+              <version>2.3.1</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.glassfish.jaxb</groupId>
+              <artifactId>jaxb-runtime</artifactId>
+              <version>2.3.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -263,6 +274,15 @@
             <version>${swagger.version}</version>
         </dependency>
 
+        <dependency>
+          <groupId>javax.xml.bind</groupId>
+          <artifactId>jaxb-api</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.glassfish.jaxb</groupId>
+          <artifactId>jaxb-runtime</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -275,4 +295,45 @@
            </plugins>
         </pluginManagement>
     </build>
+    <profiles>
+      <profile>
+        <id>macos-repo</id>
+            <repositories>
+                <repository>
+                    <id>local-nexus</id>
+                    <name>local-nexus</name>
+                    <url>http://192.168.31.25:8081/repository/maven-public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>local-nexus</id>
+                    <name>local-nexus</name>
+                    <url>http://192.168.31.25:8081/repository/maven-public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>maven-snapshots</id>
+                    <url>http://192.168.31.25:8081/repository/maven-snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>maven-releases</id>
+                    <url>http://192.168.31.25:8081/repository/maven-releases/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>

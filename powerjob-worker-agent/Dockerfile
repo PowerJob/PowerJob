@@ -1,23 +1,31 @@
-# 为了便于使用 arthas，agent 也使用 jdk 而不是 jre
-FROM adoptopenjdk:8-jdk-hotspot
-MAINTAINER tengjiqi@gmail.com
+FROM maven:3.6.1-jdk-8-alpine as build
+WORKDIR /app
 
+COPY pom.xml .
+COPY src src
+
+RUN mkdir -p /root/.m2
+ADD .m2/settings.xml /root/.m2/settings.xml
+
+RUN --mount=type=cache,target=/root/.m2 mvn -e -P macos-repo -B package -DskipTests=true
+RUN mkdir -p target/exploded && \
+    cd target/exploded && \
+    jar -xf ../*.jar
+
+FROM schnell18/zulu-java:alpine-jre17-0.1.1
+LABEL MAINTAINER schnell18@gmail.com
+
+ENV HOME=/powerjob
+
+ARG EXPLODED=/app/target/exploded
+COPY --from=build ${EXPLODED}/BOOT-INF/lib /powerjob/lib
+COPY --from=build ${EXPLODED}/META-INF /powerjob/classes/META-INF
+COPY --from=build ${EXPLODED}/BOOT-INF/classes /powerjob/classes
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+# 设置其他环境变量
 ENV APP_NAME=powerjob-worker-agent
-# 传递 SpringBoot 启动参数 和 JVM参数
-ENV PARAMS=""
-ENV JVMOPTIONS=""
-
-# 默认安装 python2.7
-RUN apt-get update && \
-    apt-get install -y python \
-    && apt-get clean \
-    && apt-get autoclean \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY powerjob-agent.jar /powerjob-agent.jar
 # 暴露端口（AKKA-Client）
 EXPOSE 27777
-# 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
-VOLUME /root
-# 启动应用
-ENTRYPOINT ["sh","-c","java $JVMOPTIONS -jar /powerjob-agent.jar $PARAMS"]
+ENTRYPOINT ["/entrypoint.sh"]
+

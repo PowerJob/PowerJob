@@ -1,12 +1,14 @@
 #!/bin/sh
 
-MAIN_CLASS="tech.powerjob.server.PowerJobServerApplication"
+MAIN_CLASS="tech.powerjob.agent.MainApplication"
 TIMESTAMP=`date +%Y%m%d%H%M%S`
 
 MAX_HEAP_SIZE=256m
 XMS=${JVM_XMS:-256m}
 XMX=${JVM_XMX:-256m}
 XMN=${JVM_XMN:-128m}
+
+PARAMS=${PARAMS:---app=haydn --server=powerjob:7700}
 
 JAVA_OPTS=""
 JAVA_OPTS="$JAVA_OPTS -server -Xms$XMS -Xmx$XMX -Xmn$XMN"
@@ -23,11 +25,8 @@ JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:+AlwaysPreTouch"
 JAVA_OPT="${JAVA_OPT} -XX:MaxDirectMemorySize=${MAX_HEAP_SIZE}"
 JAVA_OPT="${JAVA_OPT} -XX:-UseLargePages -XX:-UseBiasedLocking"
-JAVA_OPT="${JAVA_OPT} --add-opens java.base/jdk.internal.misc=ALL-UNNAMED"
-JAVA_OPT="${JAVA_OPT} --illegal-access=warn"
-JAVA_OPT="${JAVA_OPT} -Dio.netty.tryReflectionSetAccessible=true"
 
 exec java ${JAVA_OPTS} \
      -cp "/powerjob/classes:/powerjob/lib/*" \
      -Dspring.jmx.enabled=false \
-     ${MAIN_CLASS}
+     ${MAIN_CLASS} $PARAMS

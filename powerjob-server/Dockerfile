@@ -22,13 +22,16 @@ COPY powerjob-server-starter powerjob-server-starter
 COPY powerjob-server-core powerjob-server-core
 COPY powerjob-server-extension powerjob-server-extension
 
-RUN --mount=type=cache,target=/root/.m2 mvn -e -B package -DskipTests=true
+RUN mkdir -p /root/.m2
+ADD .m2/settings.xml /root/.m2/settings.xml
+
+RUN --mount=type=cache,target=/root/.m2 mvn -e -P macos-repo -B package -DskipTests=true
 RUN mkdir -p powerjob-server-starter/target/exploded && \
     cd powerjob-server-starter/target/exploded && \
     jar -xf ../*.jar
 
-FROM schnell18/zulu-java:alpine-jre8-0.2.0
-MAINTAINER schnell18@gmail.com
+FROM schnell18/zulu-java:alpine-jre17-0.1.1
+LABEL MAINTAINER schnell18@gmail.com
 
 ENV HOME=/powerjob
 ENV M2_HOME=/powerjob/maven
