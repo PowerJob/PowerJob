@@ -4,10 +4,14 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.extension.WorkerFilter;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.remote.netease.worker.WorkerProcessorInfoManagerService;
+import tech.powerjob.server.remote.netease.worker.po.WorkerProcessorInfoHolder;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 
 import java.util.Collections;
@@ -25,7 +29,7 @@ import java.util.Optional;
 @Service
 public class WorkerClusterQueryService {
 
-    private List<WorkerFilter> workerFilters;
+    private final List<WorkerFilter> workerFilters;
 
     @Autowired
     public WorkerClusterQueryService(List<WorkerFilter> workerFilters) {
@@ -41,6 +45,16 @@ public class WorkerClusterQueryService {
     public List<WorkerInfo> getSuitableWorkers(JobInfoDO jobInfo) {
 
         List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(jobInfo.getAppId()).values());
+
+        // 根据上报的 processor 信息过滤 ，如果存在任意一台 worker 上报了 processor 信息，那么就过滤掉其他的 worker
+        @NetEaseCustomFeature(CustomFeatureEnum.PROCESSOR_AUTO_REGISTRY)
+        WorkerProcessorInfoHolder processorInfoHolder = WorkerProcessorInfoManagerService.getProcessorInfoHolder(jobInfo.getAppId());
+        if (processorInfoHolder != null) {
+            List<String> availableWorkers = processorInfoHolder.getAvailableWorkers(jobInfo.getProcessorInfo());
+            if (!availableWorkers.isEmpty()){
+                workers.removeIf(workerInfo -> !availableWorkers.contains(workerInfo.getAddress()));
+            }
+        }
 
         workers.removeIf(workerInfo -> filterWorker(workerInfo, jobInfo));
 

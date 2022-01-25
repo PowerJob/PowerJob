@@ -2,6 +2,8 @@ package tech.powerjob.server.core.handler;
 
 import akka.actor.Props;
 import akka.routing.RoundRobinPool;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.request.*;
@@ -10,6 +12,7 @@ import tech.powerjob.server.core.handler.impl.WorkerRequestHttpHandler;
 import tech.powerjob.server.core.instance.InstanceLogService;
 import tech.powerjob.server.core.instance.InstanceManager;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.remote.netease.worker.WorkerProcessorInfoManagerService;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.remote.transport.starter.VertXStarter;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
@@ -164,6 +167,16 @@ public class WorkerRequestHandler {
             askResponse = AskResponse.failed("can't find jobInfo by jobId: " + jobId);
         }
         return askResponse;
+    }
+
+    /**
+     * 处理 worker 上报可用 Processor 的请求
+     */
+    @NetEaseCustomFeature(CustomFeatureEnum.PROCESSOR_AUTO_REGISTRY)
+    public AskResponse onReceiveWorkerProcessorInfoReportReq(WorkerProcessorInfoReportReq req){
+        log.info("[WorkerRequestHandler] receive WorkerProcessorInfoReportReq from {}",req.getWorkerAddress());
+        WorkerProcessorInfoManagerService.updateStatus(req);
+        return AskResponse.succeed(null);
     }
 
     public static WorkerRequestHandler getWorkerRequestHandler() {

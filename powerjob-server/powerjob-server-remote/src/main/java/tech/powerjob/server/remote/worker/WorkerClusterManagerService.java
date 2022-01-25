@@ -28,7 +28,7 @@ public class WorkerClusterManagerService {
     public static void updateStatus(WorkerHeartbeat heartbeat) {
         Long appId = heartbeat.getAppId();
         String appName = heartbeat.getAppName();
-        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.computeIfAbsent(appId, ignore -> new ClusterStatusHolder(appName));
+        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.computeIfAbsent(appId, ignore -> new ClusterStatusHolder(appId,appName));
         clusterStatusHolder.updateStatus(heartbeat);
     }
 

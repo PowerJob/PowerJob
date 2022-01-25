@@ -1,6 +1,8 @@
 package tech.powerjob.server.core.handler.impl;
 
 import akka.actor.AbstractActor;
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
                 .match(WorkerLogReportReq.class, req -> getWorkerRequestHandler().onReceiveWorkerLogReportReq(req))
                 .match(WorkerNeedDeployContainerRequest.class, this::onReceiveWorkerNeedDeployContainerRequest)
                 .match(WorkerQueryExecutorClusterReq.class, this::onReceiveWorkerQueryExecutorClusterReq)
+                .match(WorkerProcessorInfoReportReq.class, this::onReceiveWorkerProcessorInfoReportReq)
                 .matchAny(obj -> log.warn("[WorkerRequestAkkaHandler] receive unknown request: {}.", obj))
                 .build();
     }
@@ -65,4 +68,8 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
         getSender().tell(getWorkerRequestHandler().onReceiveWorkerQueryExecutorClusterReq(req), getSelf());
     }
 
+    @NetEaseCustomFeature(CustomFeatureEnum.PROCESSOR_AUTO_REGISTRY)
+    private void onReceiveWorkerProcessorInfoReportReq(WorkerProcessorInfoReportReq req) {
+        getSender().tell(getWorkerRequestHandler().onReceiveWorkerProcessorInfoReportReq(req), getSelf());
+    }
 }

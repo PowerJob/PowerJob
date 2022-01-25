@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import tech.powerjob.server.common.module.WorkerInfo;
+import tech.powerjob.server.remote.netease.worker.WorkerProcessorInfoManagerService;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,20 +24,24 @@ public class ClusterStatusHolder {
 
     // 集群所属的应用名称
     private final String appName;
+
+    private final Long appId;
     // 集群中所有机器的信息
     private final Map<String, WorkerInfo> address2WorkerInfo;
     // 集群中所有机器的容器部署状态 containerId -> (workerAddress -> containerInfo)
     private Map<Long, Map<String, DeployedContainerInfo>> containerId2Infos;
 
 
-    public ClusterStatusHolder(String appName) {
+    public ClusterStatusHolder(Long appId, String appName) {
         this.appName = appName;
+        this.appId = appId;
         address2WorkerInfo = Maps.newConcurrentMap();
         containerId2Infos = Maps.newConcurrentMap();
     }
 
     /**
      * 更新 worker 机器的状态
+     *
      * @param heartbeat 心跳请求
      */
     public void updateStatus(WorkerHeartbeat heartbeat) {
@@ -68,6 +73,7 @@ public class ClusterStatusHolder {
 
     /**
      * 获取该集群所有的机器信息
+     *
      * @return 地址: 机器信息
      */
     public Map<String, WorkerInfo> getAllWorkers() {
@@ -76,6 +82,7 @@ public class ClusterStatusHolder {
 
     /**
      * 获取当前该Worker集群容器的部署情况
+     *
      * @param containerId 容器ID
      * @return 该容器的部署情况
      */
@@ -106,6 +113,8 @@ public class ClusterStatusHolder {
 
         if (!timeoutAddress.isEmpty()) {
             log.info("[ClusterStatusHolder-{}] detective timeout workers({}), try to release their infos.", appName, timeoutAddress);
+            // 同步清理记录的 processor 信息
+            timeoutAddress.forEach(address -> WorkerProcessorInfoManagerService.clean(appId, address));
             timeoutAddress.forEach(address2WorkerInfo::remove);
         }
     }

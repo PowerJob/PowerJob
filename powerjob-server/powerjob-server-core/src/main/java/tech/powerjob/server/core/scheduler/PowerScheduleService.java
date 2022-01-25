@@ -2,6 +2,7 @@ package tech.powerjob.server.core.scheduler;
 
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.server.remote.netease.worker.WorkerProcessorInfoManagerService;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.CronExpression;
@@ -88,7 +89,7 @@ public class PowerScheduleService {
         List<Long> allAppIds = allAppInfos.stream().map(AppInfoDO::getId).collect(Collectors.toList());
         // 清理不需要维护的数据
         WorkerClusterManagerService.clean(allAppIds);
-
+        WorkerProcessorInfoManagerService.clean(allAppIds);
         // 调度 CRON 表达式 JOB
         try {
             scheduleCronJob(allAppIds);

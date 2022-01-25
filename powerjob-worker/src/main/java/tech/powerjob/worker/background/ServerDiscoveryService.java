@@ -1,5 +1,7 @@
 package tech.powerjob.worker.background;
 
+import tech.powerjob.common.annotation.NetEaseCustomFeature;
+import tech.powerjob.common.enums.CustomFeatureEnum;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
@@ -12,6 +14,7 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.worker.netease.reporter.ProcessorInfoReporter;
 
 import java.util.List;
 import java.util.Map;
@@ -41,9 +44,13 @@ public class ServerDiscoveryService {
     // 最大失败次数
     private static final int MAX_FAILED_COUNT = 3;
 
-    public ServerDiscoveryService(Long appId, PowerJobWorkerConfig config) {
+    private final ProcessorInfoReporter processorInfoReporter;
+
+    @NetEaseCustomFeature(CustomFeatureEnum.PROCESSOR_AUTO_REGISTRY)
+    public ServerDiscoveryService(Long appId, PowerJobWorkerConfig config,ProcessorInfoReporter processorInfoReporter) {
         this.appId = appId;
         this.config = config;
+        this.processorInfoReporter = processorInfoReporter;
     }
 
     public void start(ScheduledExecutorService timingPool) {
@@ -109,6 +116,11 @@ public class ServerDiscoveryService {
             // 重置失败次数
             FAILED_COUNT = 0;
             log.debug("[PowerDiscovery] current server is {}.", result);
+            if (!result.equals(this.currentServerAddress)){
+                // 切换 server，需主动上报当前可用 processor 的信息
+                log.info("[PowerDiscovery] server change,try to report processor info,{} => {}",currentServerAddress,result);
+                processorInfoReporter.reportProcessorInfo(result);
+            }
             return result;
         }
     }

@@ -10,6 +10,8 @@ powerjob:
     server-address: chronos-server-qzbeta.test.mail.163.com
     # Store strategy of H2 database. disk or memory. Default value is disk.
     store-strategy: disk
+    # processor 扫描的路径
+    processor-scan-packages: com.netease.mail.chronos.executor.support,com.netease.mail.chronos.executor.serviceupgrade
 
 datasource:
   chronos:

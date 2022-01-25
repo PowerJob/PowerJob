@@ -11,7 +11,11 @@ public enum CustomFeatureEnum {
      *
      * @since 2021/9/27
      */
-    TASK_ADDITIONAL_DATA;
-
-
+    TASK_ADDITIONAL_DATA,
+    /**
+     * 执行器自动注册机制
+     *
+     * @since 2022/1/25
+     */
+    PROCESSOR_AUTO_REGISTRY;
 }

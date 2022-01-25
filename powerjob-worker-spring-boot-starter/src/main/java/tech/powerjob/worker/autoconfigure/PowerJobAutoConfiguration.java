@@ -74,6 +74,10 @@ public class PowerJobAutoConfiguration {
          */
         config.setMaxAppendedWfContextLength(worker.getMaxAppendedWfContextLength());
         /*
+         * set processor scan packages
+         */
+        config.setProcessorScanPackages(worker.getProcessorScanPackages());
+        /*
          * Create OhMyWorker object and set properties.
          */
         PowerJobWorker ohMyWorker = new PowerJobWorker();
