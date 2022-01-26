@@ -7,26 +7,34 @@ powerjob:
     # Max length of result. Results that are longer than the value will be truncated.
     max-result-length: 4096
     # Address of PowerJob-server node(s). Ip:port or domain. Multiple addresses should be separated with comma.
-    server-address: localhost:80
+    server-address: localhost:7700
     # Store strategy of H2 database. disk or memory. Default value is disk.
     store-strategy: disk
-    enable-test-mode: true
+    # processor 扫描的路径
+    processor-scan-packages: com.netease.mail.chronos.executor.support,com.netease.mail.chronos.executor.serviceupgrade
 
 datasource:
   chronos:
     support:
-      jdbcUrl: jdbc:mysql://localhost:3306/alpine?useSSL=false&allowPublicKeyRetrieval=true
+      jdbcUrl: jdbc:mysql://10.224.192.138:3306/chronos_support?useSSL=false&allowPublicKeyRetrieval=true
       username: Echo009
       password: ironman
       poolName: chronos-support-datasource
       maximum-pool-size: 300
       minimum-idle: 50
 
+management:
+  server:
+    port: 1111
+
 #[eureka]
 eureka:
   instance:
     metadata-map:
       env: local
+  client:
+    serviceUrl:
+      defaultZone: http://10.224.192.92:1111/eureka/
 
 feign:
   httpclient:
