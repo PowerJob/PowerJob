@@ -238,12 +238,10 @@ public class WorkflowInstanceManager {
             }
             if (readyNodes.isEmpty()) {
                 // 没有就绪的节点（所有节点都被禁用）
-                wfInstanceInfo.setStatus(WorkflowInstanceStatus.SUCCEED.getV());
-                wfInstanceInfo.setResult(SystemInstanceResult.NO_ENABLED_NODES);
                 wfInstanceInfo.setFinishedTime(System.currentTimeMillis());
                 wfInstanceInfo.setDag(JSON.toJSONString(dag));
                 log.warn("[Workflow-{}|{}] workflowInstance({}) needn't running ", wfInfo.getId(), wfInstanceId, wfInstanceInfo);
-                workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
+                handleWfInstanceFinalStatus(wfInstanceInfo, SystemInstanceResult.NO_ENABLED_NODES, WorkflowInstanceStatus.SUCCEED);
                 return;
             }
             // 需要更新工作流实例状态
