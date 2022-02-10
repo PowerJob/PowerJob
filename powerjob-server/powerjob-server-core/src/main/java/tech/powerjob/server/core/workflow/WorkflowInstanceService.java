@@ -26,8 +26,6 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
-import static tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils.isNotAllowSkipWhenFailed;
-
 /**
  * 工作流实例服务
  *
@@ -135,13 +133,7 @@ public class WorkflowInstanceService {
         if (!workflowInfo.isPresent() || workflowInfo.get().getStatus() == SwitchableStatus.DISABLE.getV()) {
             throw new PowerJobException("you can't retry the workflow instance whose metadata is unavailable!");
         }
-        // 将需要重试的节点状态重置（失败且不允许跳过的 或者 手动终止的）
-        for (PEWorkflowDAG.Node node : dag.getNodes()) {
-            boolean realFailed = node.getStatus() == InstanceStatus.FAILED.getV() && isNotAllowSkipWhenFailed(node);
-            if (realFailed || node.getStatus() == InstanceStatus.STOPPED.getV()) {
-                node.setStatus(InstanceStatus.WAITING_DISPATCH.getV()).setInstanceId(null);
-            }
-        }
+        WorkflowDAGUtils.resetRetryableNode(dag);
         wfInstance.setDag(JSON.toJSONString(dag));
         // 更新工作流实例状态，不覆盖实际触发时间
         wfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());

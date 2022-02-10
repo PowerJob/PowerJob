@@ -3,6 +3,7 @@ package tech.powerjob.server.core.workflow.algorithm;
 import com.google.common.collect.*;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -20,6 +21,24 @@ public class WorkflowDAGUtils {
 
     private WorkflowDAGUtils() {
 
+    }
+
+    /**
+     * 重置可重试节点的状态信息
+     * @param dag 合法的有向无环图
+     */
+    public static void resetRetryableNode(PEWorkflowDAG dag){
+        // 将需要重试的节点状态重置（失败且不允许跳过的 或者 手动终止的）
+        for (PEWorkflowDAG.Node node : dag.getNodes()) {
+            boolean realFailed = node.getStatus() == InstanceStatus.FAILED.getV() && isNotAllowSkipWhenFailed(node);
+            if (realFailed || node.getStatus() == InstanceStatus.STOPPED.getV()) {
+                node.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+                // 仅重置任务节点的实例 id 信息
+                if (node.getNodeType() == null || node.getNodeType() == WorkflowNodeType.JOB.getCode()){
+                    node.setInstanceId(null);
+                }
+            }
+        }
     }
 
     /**
@@ -173,9 +192,9 @@ public class WorkflowDAGUtils {
     private static boolean isReadyNode(long nodeId, Map<Long, PEWorkflowDAG.Node> nodeId2Node, Multimap<Long, Long> relyMap) {
         PEWorkflowDAG.Node currentNode = nodeId2Node.get(nodeId);
         int currentNodeStatus = currentNode.getStatus() == null ? InstanceStatus.WAITING_DISPATCH.getV() : currentNode.getStatus();
-        // 跳过已完成节点（处理成功 或者 处理失败）和已派发节点（存在 InstanceId）
+        // 跳过已完成节点（处理成功 或者 处理失败）和已派发节点（ 状态为运行中 ）
         if (InstanceStatus.FINISHED_STATUS.contains(currentNodeStatus)
-                || currentNode.getInstanceId() != null) {
+                || currentNodeStatus == InstanceStatus.RUNNING.getV()) {
             return false;
         }
         Collection<Long> relyNodeIds = relyMap.get(nodeId);

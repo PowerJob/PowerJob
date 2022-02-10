@@ -1,7 +1,9 @@
 package tech.powerjob.server.core.workflow.hanlder.impl;
 
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.enums.WorkflowNodeType;
@@ -10,6 +12,7 @@ import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.core.workflow.hanlder.TaskNodeHandler;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
@@ -50,15 +53,28 @@ public class NestedWorkflowNodeHandler implements TaskNodeHandler {
             throw new PowerJobException("invalid nested workflow node," + node.getNodeId());
         }
         if (node.getInstanceId() != null) {
-            // 处理重试的情形，不需要创建实例，仅需要更改对应实例的状态
+            // 处理重试的情形，不需要创建实例，仅需要更改对应实例的状态，以及相应的节点状态
             WorkflowInstanceInfoDO wfInstance = workflowInstanceInfoRepository.findByWfInstanceId(node.getInstanceId()).orElse(null);
             if (wfInstance == null) {
                 log.error("[Workflow-{}|{}] invalid nested workflow node({}),target workflow instance({}) is not exist!", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), node.getInstanceId());
-                throw new PowerJobException("invalid workflow instance id" + node.getNodeId());
+                throw new PowerJobException("invalid nested workflow instance id " + node.getInstanceId());
             }
-            wfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());
-            wfInstance.setGmtModified(new Date());
-            workflowInstanceInfoRepository.saveAndFlush(wfInstance);
+            // 不用考虑状态，只有失败的工作流嵌套节点状态会被重置
+            // 需要将子工作流中失败的节点状态重置为 等待 派发
+            try {
+                PEWorkflowDAG nodeDag = JSON.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
+                if (!WorkflowDAGUtils.valid(nodeDag)) {
+                    throw new PowerJobException(SystemInstanceResult.INVALID_DAG);
+                }
+                WorkflowDAGUtils.resetRetryableNode(nodeDag);
+                wfInstance.setDag(JSON.toJSONString(nodeDag));
+                wfInstance.setStatus(WorkflowInstanceStatus.WAITING.getV());
+                wfInstance.setGmtModified(new Date());
+                workflowInstanceInfoRepository.saveAndFlush(wfInstance);
+            } catch (Exception e) {
+                log.error("[Workflow-{}|{}] invalid nested workflow node({}),target workflow instance({})'s DAG is illegal!", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), node.getInstanceId(),e);
+                throw new PowerJobException("illegal nested workflow instance, id : "+ node.getInstanceId());
+            }
         } else {
             // 透传当前的上下文创建新的工作流实例
             String wfContext = wfInstanceInfo.getWfContext();
