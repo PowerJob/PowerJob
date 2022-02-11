@@ -66,6 +66,10 @@ public class WorkflowDAGUtils {
 
         // 校验节点 ID 是否重复
         Set<Long> nodeIds = Sets.newHashSet();
+        // 不允许为空
+        if (peWorkflowDAG.getNodes() == null || peWorkflowDAG.getNodes().isEmpty()){
+            return false;
+        }
         for (PEWorkflowDAG.Node n : peWorkflowDAG.getNodes()) {
             if (nodeIds.contains(n.getNodeId())) {
                 return false;
