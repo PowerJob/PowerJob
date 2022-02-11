@@ -107,10 +107,7 @@ public class WorkflowService {
      * 这里会物理删除游离的节点信息
      */
     private String validateAndConvert2String(Long wfId, PEWorkflowDAG dag) {
-        if (dag == null || CollectionUtils.isEmpty(dag.getNodes())) {
-            return "{}";
-        }
-        if (!WorkflowDAGUtils.valid(dag)) {
+        if (dag == null || !WorkflowDAGUtils.valid(dag)) {
             throw new PowerJobException("illegal DAG");
         }
         // 注意：这里只会保存图相关的基础信息，nodeId,jobId,jobName(nodeAlias)
