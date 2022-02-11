@@ -278,7 +278,7 @@ public class PowerScheduleService {
 
         if (nextTriggerTime == null) {
             log.warn("[Workflow-{}] this workflow won't be scheduled anymore, system will set the status to DISABLE!", wfInfo.getId());
-            wfInfo.setStatus(SwitchableStatus.DISABLE.getV());
+            updateEntity.setStatus(SwitchableStatus.DISABLE.getV());
         } else {
             updateEntity.setNextTriggerTime(nextTriggerTime.getTime());
         }
