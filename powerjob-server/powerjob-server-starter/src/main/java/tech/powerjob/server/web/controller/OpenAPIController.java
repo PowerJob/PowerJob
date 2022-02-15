@@ -204,7 +204,7 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.STOP_WORKFLOW_INSTANCE)
     public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId, Long appId) {
-        workflowInstanceService.stopWorkflowInstance(wfInstanceId, appId);
+        workflowInstanceService.stopWorkflowInstanceEntrance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
 
