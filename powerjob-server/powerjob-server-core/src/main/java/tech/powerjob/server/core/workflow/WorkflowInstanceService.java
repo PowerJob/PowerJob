@@ -45,7 +45,27 @@ public class WorkflowInstanceService {
     private WorkflowInstanceManager workflowInstanceManager;
     @Resource
     private WorkflowInfoRepository workflowInfoRepository;
+    @Resource
+    private WorkflowInstanceService self;
 
+    /**
+     * 停止工作流实例（入口）
+     *
+     * @param wfInstanceId 工作流实例ID
+     * @param appId        所属应用ID
+     */
+    public void stopWorkflowInstanceEntrance(Long wfInstanceId, Long appId) {
+        WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
+        if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
+            throw new PowerJobException("workflow instance already stopped");
+        }
+        // 如果这是一个被嵌套的工作流，则终止父工作流
+        if (wfInstance.getParentWfInstanceId() != null) {
+            self.stopWorkflowInstance(wfInstance.getParentWfInstanceId(), appId);
+            return;
+        }
+        self.stopWorkflowInstance(wfInstanceId, appId);
+    }
 
     /**
      * 停止工作流实例
@@ -59,10 +79,6 @@ public class WorkflowInstanceService {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
             throw new PowerJobException("workflow instance already stopped");
-        }
-        // 先终止父工作流
-        if (wfInstance.getParentWfInstanceId() != null) {
-            stopWorkflowInstance(wfInstance.getParentWfInstanceId(),appId);
         }
         // 停止所有已启动且未完成的服务
         PEWorkflowDAG dag = JSON.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);

@@ -39,7 +39,7 @@ public class WorkflowInstanceController {
 
     @GetMapping("/stop")
     public ResultDTO<Void> stopWfInstance(Long wfInstanceId, Long appId) {
-        workflowInstanceService.stopWorkflowInstance(wfInstanceId, appId);
+        workflowInstanceService.stopWorkflowInstanceEntrance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
 
