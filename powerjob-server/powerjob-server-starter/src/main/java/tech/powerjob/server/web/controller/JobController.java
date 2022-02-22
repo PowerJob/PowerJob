@@ -63,8 +63,8 @@ public class JobController {
     }
 
     @GetMapping("/run")
-    public ResultDTO<Long> runImmediately(String appId, String jobId) {
-        return ResultDTO.success(jobService.runJob(Long.valueOf(appId), Long.valueOf(jobId), null, 0L));
+    public ResultDTO<Long> runImmediately(String appId, String jobId, @RequestParam(required = false) String instanceParams) {
+        return ResultDTO.success(jobService.runJob(Long.valueOf(appId), Long.valueOf(jobId), instanceParams, 0L));
     }
 
     @PostMapping("/list")
