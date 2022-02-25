@@ -148,7 +148,7 @@ public class InstanceStatusCheckService {
                 SwitchableStatus switchableStatus = SwitchableStatus.of(jobInfoDO.getStatus());
 
                 // 如果任务已关闭，则不进行重试，将任务置为失败即可；秒级任务也直接置为失败，由派发器重新调度
-                if (switchableStatus != SwitchableStatus.ENABLE || TimeExpressionType.frequentTypes.contains(timeExpressionType.getV())) {
+                if (switchableStatus != SwitchableStatus.ENABLE || TimeExpressionType.FREQUENT_TYPES.contains(timeExpressionType.getV())) {
                     updateFailedInstance(instance, SystemInstanceResult.REPORT_TIMEOUT);
                     return;
                 }

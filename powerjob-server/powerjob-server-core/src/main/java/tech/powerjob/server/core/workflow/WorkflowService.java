@@ -10,13 +10,14 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
-import tech.powerjob.server.common.utils.CronExpression;
+import tech.powerjob.server.core.scheduler.TimingStrategyService;
 import tech.powerjob.server.core.service.NodeValidateService;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
@@ -28,7 +29,6 @@ import tech.powerjob.server.remote.server.redirector.DesignateServer;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -51,6 +51,8 @@ public class WorkflowService {
     private WorkflowNodeInfoRepository workflowNodeInfoRepository;
     @Resource
     private NodeValidateService nodeValidateService;
+    @Resource
+    private TimingStrategyService timingStrategyService;
 
     /**
      * 保存/修改工作流信息
@@ -61,7 +63,7 @@ public class WorkflowService {
      * @return 工作流ID
      */
     @Transactional(rollbackOn = Exception.class)
-    public Long saveWorkflow(SaveWorkflowRequest req) throws ParseException {
+    public Long saveWorkflow(SaveWorkflowRequest req) {
 
         req.valid();
 
@@ -83,14 +85,16 @@ public class WorkflowService {
         if (req.getNotifyUserIds() != null) {
             wf.setNotifyUserIds(SJ.COMMA_JOINER.join(req.getNotifyUserIds()));
         }
-
-        // 计算 NextTriggerTime
-        if (req.getTimeExpressionType() == TimeExpressionType.CRON) {
-            CronExpression cronExpression = new CronExpression(req.getTimeExpression());
-            Date nextValidTime = cronExpression.getNextValidTimeAfter(new Date());
-            wf.setNextTriggerTime(nextValidTime.getTime());
-        } else {
+        if (req.getLifeCycle() != null) {
+            wf.setLifecycle(JSON.toJSONString(req.getLifeCycle()));
+        }
+        if (TimeExpressionType.FREQUENT_TYPES.contains(req.getTimeExpressionType().getV())){
+            // 固定频率类型的任务不计算
             wf.setTimeExpression(null);
+        }else {
+            LifeCycle lifeCycle = Optional.of(req.getLifeCycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
+            Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(wf.getNextTriggerTime(), TimeExpressionType.CRON, wf.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
+            wf.setNextTriggerTime(nextValidTime);
         }
         // 新增工作流，需要先 save 一下获取 ID
         if (wfId == null) {

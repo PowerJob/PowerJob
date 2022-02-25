@@ -111,7 +111,7 @@ public class DispatchService {
         long current = System.currentTimeMillis();
         Integer maxInstanceNum = jobInfo.getMaxInstanceNum();
         // 秒级任务只派发到一台机器，具体的 maxInstanceNum 由 TaskTracker 控制
-        if (TimeExpressionType.frequentTypes.contains(jobInfo.getTimeExpressionType())) {
+        if (TimeExpressionType.FREQUENT_TYPES.contains(jobInfo.getTimeExpressionType())) {
             maxInstanceNum = 1;
         }
 

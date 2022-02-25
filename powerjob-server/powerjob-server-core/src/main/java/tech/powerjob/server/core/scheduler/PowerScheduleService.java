@@ -2,9 +2,9 @@ package tech.powerjob.server.core.scheduler;
 
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.common.utils.CronExpression;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,6 +68,8 @@ public class PowerScheduleService {
 
     @Resource
     private JobService jobService;
+    @Resource
+    private TimingStrategyService timingStrategyService;
 
     private static final long SCHEDULE_RATE = 15000;
 
@@ -223,7 +224,7 @@ public class PowerScheduleService {
         Lists.partition(appIds, MAX_APP_NUM).forEach(partAppIds -> {
             try {
                 // 查询所有的秒级任务（只包含ID）
-                List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.frequentTypes);
+                List<Long> jobIds = jobInfoRepository.findByAppIdInAndStatusAndTimeExpressionTypeIn(partAppIds, SwitchableStatus.ENABLE.getV(), TimeExpressionType.FREQUENT_TYPES);
                 if (CollectionUtils.isEmpty(jobIds)) {
                     return;
                 }
@@ -242,10 +243,21 @@ public class PowerScheduleService {
                     return;
                 }
 
-                log.info("[FrequentScheduler] These frequent jobs will be scheduled： {}.", notRunningJobIds);
                 notRunningJobIds.forEach(jobId -> {
                     Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(jobId);
-                    jobInfoOpt.ifPresent(jobInfoDO -> jobService.runJob(jobInfoDO.getAppId(), jobId, null, 0L));
+                    jobInfoOpt.ifPresent(jobInfoDO -> {
+                        LifeCycle lifeCycle = LifeCycle.parse(jobInfoDO.getLifecycle());
+                        // 生命周期已经结束
+                        if (lifeCycle.getEnd() != null && lifeCycle.getEnd() < System.currentTimeMillis()) {
+                            jobInfoDO.setStatus(SwitchableStatus.DISABLE.getV());
+                            jobInfoDO.setGmtModified(new Date());
+                            jobInfoRepository.saveAndFlush(jobInfoDO);
+                            log.info("[FrequentScheduler] disable frequent job,id:{}.", jobInfoDO.getId());
+                        } else if (lifeCycle.getStart() == null || lifeCycle.getStart() < System.currentTimeMillis() + SCHEDULE_RATE * 2) {
+                            log.info("[FrequentScheduler] schedule frequent job,id:{}.", jobInfoDO.getId());
+                            jobService.runJob(jobInfoDO.getAppId(), jobId, null, Optional.of(lifeCycle.getStart()).orElse(0L) - System.currentTimeMillis());
+                        }
+                    });
                 });
             } catch (Exception e) {
                 log.error("[FrequentScheduler] schedule frequent job failed.", e);
@@ -253,8 +265,9 @@ public class PowerScheduleService {
         });
     }
 
-    private void refreshJob(JobInfoDO jobInfo) throws ParseException {
-        Date nextTriggerTime = calculateNextTriggerTime(jobInfo.getNextTriggerTime(), jobInfo.getTimeExpression());
+    private void refreshJob(JobInfoDO jobInfo) {
+        LifeCycle lifeCycle = LifeCycle.parse(jobInfo.getLifecycle());
+        Long nextTriggerTime = timingStrategyService.calculateNextTriggerTime(jobInfo.getNextTriggerTime(), TimeExpressionType.CRON, jobInfo.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
 
         JobInfoDO updatedJobInfo = new JobInfoDO();
         BeanUtils.copyProperties(jobInfo, updatedJobInfo);
@@ -263,15 +276,16 @@ public class PowerScheduleService {
             log.warn("[Job-{}] this job won't be scheduled anymore, system will set the status to DISABLE!", jobInfo.getId());
             updatedJobInfo.setStatus(SwitchableStatus.DISABLE.getV());
         } else {
-            updatedJobInfo.setNextTriggerTime(nextTriggerTime.getTime());
+            updatedJobInfo.setNextTriggerTime(nextTriggerTime);
         }
         updatedJobInfo.setGmtModified(new Date());
 
         jobInfoRepository.save(updatedJobInfo);
     }
 
-    private void refreshWorkflow(WorkflowInfoDO wfInfo) throws ParseException {
-        Date nextTriggerTime = calculateNextTriggerTime(wfInfo.getNextTriggerTime(), wfInfo.getTimeExpression());
+    private void refreshWorkflow(WorkflowInfoDO wfInfo) {
+        LifeCycle lifeCycle = LifeCycle.parse(wfInfo.getLifecycle());
+        Long nextTriggerTime = timingStrategyService.calculateNextTriggerTime(wfInfo.getNextTriggerTime(), TimeExpressionType.CRON, wfInfo.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
 
         WorkflowInfoDO updateEntity = new WorkflowInfoDO();
         BeanUtils.copyProperties(wfInfo, updateEntity);
@@ -280,26 +294,11 @@ public class PowerScheduleService {
             log.warn("[Workflow-{}] this workflow won't be scheduled anymore, system will set the status to DISABLE!", wfInfo.getId());
             updateEntity.setStatus(SwitchableStatus.DISABLE.getV());
         } else {
-            updateEntity.setNextTriggerTime(nextTriggerTime.getTime());
+            updateEntity.setNextTriggerTime(nextTriggerTime);
         }
 
         updateEntity.setGmtModified(new Date());
         workflowInfoRepository.save(updateEntity);
     }
 
-    /**
-     * 计算下次触发时间
-     *
-     * @param preTriggerTime 前一次触发时间
-     * @param cronExpression CRON 表达式
-     * @return 下一次调度时间
-     * @throws ParseException 异常
-     */
-    private static Date calculateNextTriggerTime(Long preTriggerTime, String cronExpression) throws ParseException {
-
-        CronExpression ce = new CronExpression(cronExpression);
-        // 取最大值，防止长时间未调度任务被连续调度（原来DISABLE的任务突然被打开，不取最大值会补上过去所有的调度）
-        long benchmarkTime = Math.max(System.currentTimeMillis(), preTriggerTime);
-        return ce.getNextValidTimeAfter(new Date(benchmarkTime));
-    }
 }

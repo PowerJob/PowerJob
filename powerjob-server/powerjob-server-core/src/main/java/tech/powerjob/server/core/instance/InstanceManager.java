@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.request.ServerStopInstanceReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.server.common.module.WorkerInfo;
@@ -96,26 +97,28 @@ public class InstanceManager {
         // FREQUENT 任务没有失败重试机制，TaskTracker一直运行即可，只需要将存活信息同步到DB即可
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
-        if (TimeExpressionType.frequentTypes.contains(timeExpressionType)) {
+        if (TimeExpressionType.FREQUENT_TYPES.contains(timeExpressionType)) {
             // 如果实例处于失败状态，则说明该 worker 失联了一段时间，被 server 判定为宕机，而此时该秒级任务有可能已经重新派发了，故需要 Kill 掉该实例
             // fix issue 375
             if (instanceInfo.getStatus() == InstanceStatus.FAILED.getV()) {
                 log.warn("[InstanceManager-{}] receive TaskTracker's report: {}, but current instance is already failed, this instance should be killed.", instanceId, req);
-                Optional<WorkerInfo> workerInfoOpt = workerClusterQueryService.getWorkerInfoByAddress(instanceInfo.getAppId(), instanceInfo.getTaskTrackerAddress());
-                if (workerInfoOpt.isPresent()){
-                    ServerStopInstanceReq stopInstanceReq = new ServerStopInstanceReq(instanceId);
-                    WorkerInfo workerInfo = workerInfoOpt.get();
-                    transportService.tell(Protocol.of(workerInfo.getProtocol()), workerInfo.getAddress(), stopInstanceReq);
-                }
+                stopInstance(instanceId, instanceInfo);
                 return;
             }
-            instanceInfo.setStatus(receivedInstanceStatus.getV());
+            LifeCycle lifeCycle = LifeCycle.parse(jobInfo.getLifecycle());
+            // 检查生命周期是否已结束
+            if (lifeCycle.getEnd() != null && lifeCycle.getEnd() <= System.currentTimeMillis()) {
+                stopInstance(instanceId, instanceInfo);
+                instanceInfo.setStatus(InstanceStatus.SUCCEED.getV());
+            } else {
+                instanceInfo.setStatus(receivedInstanceStatus.getV());
+            }
             instanceInfo.setResult(req.getResult());
             instanceInfo.setRunningTimes(req.getTotalTaskNum());
             instanceInfoRepository.saveAndFlush(instanceInfo);
             // 任务需要告警
             if (req.isNeedAlert()) {
-                log.info("[InstanceManager-{}] receive frequent task alert req,time:{},content:{}",instanceId,req.getReportTime(),req.getAlertContent());
+                log.info("[InstanceManager-{}] receive frequent task alert req,time:{},content:{}", instanceId, req.getReportTime(), req.getAlertContent());
                 alert(instanceId, req.getAlertContent());
             }
             return;
@@ -164,6 +167,15 @@ public class InstanceManager {
 
         }
 
+    }
+
+    private void stopInstance(Long instanceId, InstanceInfoDO instanceInfo) {
+        Optional<WorkerInfo> workerInfoOpt = workerClusterQueryService.getWorkerInfoByAddress(instanceInfo.getAppId(), instanceInfo.getTaskTrackerAddress());
+        if (workerInfoOpt.isPresent()) {
+            ServerStopInstanceReq stopInstanceReq = new ServerStopInstanceReq(instanceId);
+            WorkerInfo workerInfo = workerInfoOpt.get();
+            transportService.tell(Protocol.of(workerInfo.getProtocol()), workerInfo.getAddress(), stopInstanceReq);
+        }
     }
 
     /**
