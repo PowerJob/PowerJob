@@ -354,7 +354,7 @@ public class InstanceLogService {
         instanceId2LastReportTime.keySet().forEach(instanceId -> {
             try {
                 JobInfoDO jobInfo = instanceMetadataService.fetchJobInfoByInstanceId(instanceId);
-                if (TimeExpressionType.frequentTypes.contains(jobInfo.getTimeExpressionType())) {
+                if (TimeExpressionType.FREQUENT_TYPES.contains(jobInfo.getTimeExpressionType())) {
                     frequentInstanceIds.add(instanceId);
                 }
             }catch (Exception ignore) {

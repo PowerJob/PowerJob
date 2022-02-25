@@ -1,11 +1,9 @@
 package tech.powerjob.server.test;
 
-import tech.powerjob.server.common.utils.CronExpression;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -18,14 +16,6 @@ import java.util.stream.Collectors;
  * @since 2020/4/3
  */
 public class UtilsTest {
-
-    @Test
-    public void testCronExpression() throws Exception {
-        String cron = "0 * * * * ? *";
-        CronExpression cronExpression = new CronExpression(cron);
-        final Date nextValidTimeAfter = cronExpression.getNextValidTimeAfter(new Date());
-        System.out.println(nextValidTimeAfter);
-    }
 
     @Test
     public void normalTest() {

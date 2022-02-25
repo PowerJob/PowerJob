@@ -3,6 +3,7 @@ package tech.powerjob.common.enums;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 @Getter
 @AllArgsConstructor
+@ToString
 public enum TimeExpressionType {
 
     API(1),
@@ -24,7 +26,11 @@ public enum TimeExpressionType {
 
     int v;
 
-    public static final List<Integer> frequentTypes = Lists.newArrayList(FIXED_RATE.v, FIXED_DELAY.v);
+    public static final List<Integer> FREQUENT_TYPES = Lists.newArrayList(FIXED_RATE.v, FIXED_DELAY.v);
+    /**
+     * 首次计算触发时间时必须计算出一个有效值
+     */
+    public static final List<Integer> INSPECT_TYPES =  Lists.newArrayList(CRON.v);
 
     public static TimeExpressionType of(int v) {
         for (TimeExpressionType type : values()) {

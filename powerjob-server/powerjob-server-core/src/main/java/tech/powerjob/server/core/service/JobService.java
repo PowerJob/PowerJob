@@ -1,30 +1,31 @@
 package tech.powerjob.server.core.service;
 
 import com.alibaba.fastjson.JSON;
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.PowerQuery;
-import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.common.model.AlarmConfig;
-import tech.powerjob.common.request.http.SaveJobInfoRequest;
-import tech.powerjob.common.response.JobInfoDTO;
-import tech.powerjob.server.common.SJ;
-import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.common.utils.CronExpression;
-import tech.powerjob.server.persistence.QueryConvertUtils;
-import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
-import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
-import tech.powerjob.server.core.DispatchService;
-import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.core.instance.InstanceService;
-import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.model.AlarmConfig;
+import tech.powerjob.common.model.LifeCycle;
+import tech.powerjob.common.request.http.SaveJobInfoRequest;
+import tech.powerjob.common.response.JobInfoDTO;
+import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
+import tech.powerjob.server.core.DispatchService;
+import tech.powerjob.server.core.instance.InstanceService;
+import tech.powerjob.server.core.scheduler.TimingStrategyService;
+import tech.powerjob.server.persistence.QueryConvertUtils;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
+import tech.powerjob.server.remote.server.redirector.DesignateServer;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -52,6 +53,8 @@ public class JobService {
     private JobInfoRepository jobInfoRepository;
     @Resource
     private InstanceInfoRepository instanceInfoRepository;
+    @Resource
+    private TimingStrategyService timingStrategyService;
 
 
     /**
@@ -59,9 +62,8 @@ public class JobService {
      *
      * @param request 任务请求
      * @return 创建的任务ID（jobId）
-     * @throws ParseException 异常
      */
-    public Long saveJob(SaveJobInfoRequest request) throws ParseException {
+    public Long saveJob(SaveJobInfoRequest request) {
 
         request.valid();
 
@@ -89,11 +91,13 @@ public class JobService {
         if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
             jobInfoDO.setNotifyUserIds(SJ.COMMA_JOINER.join(request.getNotifyUserIds()));
         }
-
+        LifeCycle lifecycle = Optional.of(request.getLifecycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
+        jobInfoDO.setLifecycle(JSON.toJSONString(lifecycle));
+        // 检查定时策略
+        timingStrategyService.validate(request.getTimeExpressionType(), request.getTimeExpression(), lifecycle.getStart(), lifecycle.getEnd());
         calculateNextTriggerTime(jobInfoDO);
         if (request.getId() == null) {
             jobInfoDO.setGmtCreate(new Date());
-
         }
         // 检查告警配置
         if (request.getAlarmConfig() != null) {
@@ -224,7 +228,7 @@ public class JobService {
         jobInfoRepository.saveAndFlush(jobInfoDO);
 
         // 2. 关闭秒级任务
-        if (!TimeExpressionType.frequentTypes.contains(jobInfoDO.getTimeExpressionType())) {
+        if (!TimeExpressionType.FREQUENT_TYPES.contains(jobInfoDO.getTimeExpressionType())) {
             return;
         }
         List<InstanceInfoDO> executeLogs = instanceInfoRepository.findByJobIdAndStatusIn(jobId, InstanceStatus.GENERALIZED_RUNNING_STATUS);
@@ -244,23 +248,18 @@ public class JobService {
         });
     }
 
-    private void calculateNextTriggerTime(JobInfoDO jobInfoDO) throws ParseException {
+    private void calculateNextTriggerTime(JobInfoDO jobInfo) {
         // 计算下次调度时间
-        Date now = new Date();
-        TimeExpressionType timeExpressionType = TimeExpressionType.of(jobInfoDO.getTimeExpressionType());
-
-        if (timeExpressionType == TimeExpressionType.CRON) {
-            CronExpression cronExpression = new CronExpression(jobInfoDO.getTimeExpression());
-            Date nextValidTime = cronExpression.getNextValidTimeAfter(now);
-            if (nextValidTime == null) {
-                throw new PowerJobException("cron expression is out of date: " + jobInfoDO.getTimeExpression());
-            }
-            jobInfoDO.setNextTriggerTime(nextValidTime.getTime());
-        } else if (timeExpressionType == TimeExpressionType.API || timeExpressionType == TimeExpressionType.WORKFLOW) {
-            jobInfoDO.setTimeExpression(null);
+        if (TimeExpressionType.FREQUENT_TYPES.contains(jobInfo.getTimeExpressionType())) {
+            // 固定频率类型的任务不计算
+            jobInfo.setTimeExpression(null);
+        } else {
+            LifeCycle lifeCycle = LifeCycle.parse(jobInfo.getLifecycle());
+            Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(jobInfo.getNextTriggerTime(), TimeExpressionType.CRON, jobInfo.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
+            jobInfo.setNextTriggerTime(nextValidTime);
         }
         // 重写最后修改时间
-        jobInfoDO.setGmtModified(now);
+        jobInfo.setGmtModified(new Date());
     }
 
     private void fillDefaultValue(JobInfoDO jobInfoDO) {
