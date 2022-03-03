@@ -1,28 +1,35 @@
-# 基础镜像（支持 amd64 & arm64），based on Ubuntu 18.04.4 LTS
-FROM adoptopenjdk:8-jdk-hotspot
-MAINTAINER oubaodian@corp.netease.com
+FROM harbor-qz.mail.netease.com/library/java/spring-napm-base:1.0.14
 
-ARG ARG_PARAMS=""
-ARG ARG_JVM_OPTIONS="-Xms1g -Xmx1g"
-ARG ARG_DEPLOY_ENV="test"
+RUN mkdir /home/temp \
+ && cd /home/temp \
+ && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \
+ && python get-pip.py \
+ && pip install requests \
+ && rm -rf /home/temp
 
-# 设置时区
-ENV TZ=Asia/Shanghai
+ENV APP_PORT=18087 \
+  DEPLOY_ENV=release \
+  LOG_DIR=/home/logs \
+  DEVOPS_DIR=/home/devops
 
-# 设置其他环境变量
-ENV APP_NAME=chronos-executor
+COPY ./*/target/*.zip ./target/*.zip ${APP_DIR}/
 
+WORKDIR ${APP_DIR}
 
-# 传递 SpringBoot 启动参数 和 JVM参数
-ENV PARAMS=$ARG_PARAMS \
-JVM_OPTIONS=$ARG_JVM_OPTIONS \
-DEPLOY_ENV=$ARG_DEPLOY_ENV \
-LOG_PATH="/home/logs"
+RUN mkdir -p ${LOG_DIR} ${DEVOPS_DIR} \
+  && unzip -d .tmp *.zip; rm *.zip \
+  && find .tmp -mindepth 2 -maxdepth 2 ! -path ".tmp/assets*" -print0 | xargs -0 -r mv -t .tmp/ \
+  && SRV_NAME=`head -n 1 .tmp/service-${DEPLOY_ENV}.conf | awk -F '"' '{print $2}'` \
+  && PROD_NAME=`echo ${SRV_NAME} | awk '{split($0,a,"-"); print a[1]}'` \
+  && mkdir ${SRV_NAME} \
+  && mv .tmp/*.jar ${SRV_NAME}/ \
+  && ([ ! -d .tmp/assets ] || mv .tmp/assets ${SRV_NAME}/assets) \
+  && mv .tmp/jmxremote-${DEPLOY_ENV}.access ${SRV_NAME}/jmxremote.access \
+  && mv .tmp/jmxremote-${DEPLOY_ENV}.password ${SRV_NAME}/jmxremote.password \
+  && mv .tmp/service-${DEPLOY_ENV}.conf ${SRV_NAME}/service.conf \
+  && sed "s/P_NAME/36-${PROD_NAME}/g" lib/napm-agent/conf/napm-agent.properties.tmpl | sed "s/S_NAME/${SRV_NAME}/g" > ${SRV_NAME}/napm-agent.properties \
+  && rm -r .tmp; echo "${APP_DIR}/${SRV_NAME}" >> .projects
 
-# 将应用 jar 包拷入 docker
-COPY ./mail-chronos-executor/target/chronos-executor.jar /mail-chronos-executor.jar
-EXPOSE 18087
-# 创建 docker 文件目录（盲猜这是用户目录）
-RUN mkdir -p /home/logs
-# 启动应用
-ENTRYPOINT ["sh","-c","java -Dspring.profiles.active=$DEPLOY_ENV $JVM_OPTIONS -jar /mail-chronos-executor.jar $PARAMS"]
+EXPOSE ${APP_PORT}/tcp
+
+ENTRYPOINT PROJ_DIR=`head -n 1 .projects`; sh service.sh -d "${PROJ_DIR}" start
