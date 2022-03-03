@@ -3,16 +3,6 @@
 #FROM harbor-qzbeta.mail.netease.com/library/java/spring-napm-base:1.1.1
 FROM adoptopenjdk:8-jdk-hotspot
 MAINTAINER oubaodian@corp.netease.com
-#RUN yum install -y tar
-# 下载并安装 maven ，其实这个步骤可有可无，暂时不需要这个功能点，先留着吧
-RUN curl -O https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-
-RUN tar -zxvf apache-maven-3.6.3-bin.tar.gz && mv apache-maven-3.6.3 /opt/powerjob-maven && rm -rf apache-maven-3.6.3-bin.tar.gz
-# 替换 maven 配置文件
-RUN rm -rf /opt/powerjob-maven/conf/settings.xml
-COPY /powerjob-server/docker/settings.xml /opt/powerjob-maven/conf/settings.xml
-# 设置 maven 环境变量（maven invoker 读取该变量调用 maven）
-ENV M2_HOME=/opt/powerjob-maven
 
 # 设置时区
 ENV TZ=Asia/Shanghai
