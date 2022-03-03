@@ -1,17 +1,9 @@
-FROM harbor-qz.mail.netease.com/library/java/spring-napm-base:1.0.14
-
-RUN mkdir /home/temp \
- && cd /home/temp \
- && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py \
- && python get-pip.py \
- && pip install requests \
- && rm -rf /home/temp
+FROM harbor-qz.mail.netease.com/library/java/spring-napm-base:1.0.15
 
 ENV APP_PORT=18087 \
   DEPLOY_ENV=release \
   LOG_DIR=/home/logs \
   DEVOPS_DIR=/home/devops
-
 
 ARG ZIP_FILE=./*/target/*.zip
 
