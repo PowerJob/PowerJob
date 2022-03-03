@@ -8,7 +8,22 @@ where uid = 'e56d2b9c617bb68436aca452bc063e55'
   and enable = 0
   and trigger_times != times_limit
 order by create_time desc
-limit 10 ;
+limit 10;
 
 
+-- 重新触发某个任务，需要更新 expected_trigger_time，内部有幂等控制
+update sx_sp_rt_task_instance
+set status                = 0,
+    enable                = 1,
+    expected_trigger_time = 1646309825083,
+    actual_trigger_time   = null,
+    result=null
+where id = '1499357922779353088'
+limit 1;
 
+-- 查询某个用户创建的任务
+select *
+from sx_sp_remind_task_info
+where uid = '567cae72ae4cdf8cbcf6d9631dca1c85'
+order by create_time desc
+limit 3 \G;
