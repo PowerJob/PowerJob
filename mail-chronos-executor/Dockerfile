@@ -12,7 +12,10 @@ ENV APP_PORT=18087 \
   LOG_DIR=/home/logs \
   DEVOPS_DIR=/home/devops
 
-COPY ./*/target/*.zip ./target/*.zip ${APP_DIR}/
+
+ARG ZIP_FILE=./*/target/*.zip
+
+COPY ${ZIP_FILE} ${APP_DIR}/
 
 WORKDIR ${APP_DIR}
 
