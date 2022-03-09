@@ -46,4 +46,4 @@ notify:
     url: mpserv-notify.qzgw.163.internal
 
 srvupgrade:
-  baseUrl: http://10.110.46.15:18087
+  baseUrl: http://10.110.47.87:18089
