@@ -6,7 +6,8 @@
         日志路径，注意权限问题，否则无法打印日志。
         大坑记录：`~/logs`不会在用户目录下创建文件夹，而是在项目目录下创建名为~的文件夹
      -->
-    <property name="LOG_PATH" value="${user.home}/powerjob/worker/agent_logs"/>
+    <!--<property name="LOG_PATH" value="${user.home}/powerjob/worker/agent_logs"/>-->
+    <property name="LOG_PATH" value="logs/"/>
 
     <property name="CONSOLE_LOG_PATTERN"
               value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) |%highlight(%-5level) |%blue(%thread) |%green(%logger{10}) |%cyan(%msg%n)"/>

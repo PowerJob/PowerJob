@@ -9,8 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>powerjob-worker-samples</artifactId>
-    <version>4.0.1</version>
+    <artifactId>powerjob-worker-shapan</artifactId>
 
     <properties>
         <springboot.version>2.3.4.RELEASE</springboot.version>
@@ -71,6 +70,14 @@
             <version>11.2.0.4</version>
         </dependency>
 
+        <!-- 添加JDBC依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
+
+        <!-- 添加Druid依赖 -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
@@ -93,6 +100,12 @@
             <artifactId>powerjob-official-processors</artifactId>
             <version>${powerjob.official.processors.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>2.3.4.RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>
@@ -105,7 +118,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${springboot.version}</version>
                 <configuration>
-                    <mainClass>tech.powerjob.samples.SampleApplication</mainClass>
+                    <mainClass>tech.powerjob.shapan.ShaPanApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
