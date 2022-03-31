@@ -91,7 +91,7 @@ public class JobService {
         if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
             jobInfoDO.setNotifyUserIds(SJ.COMMA_JOINER.join(request.getNotifyUserIds()));
         }
-        LifeCycle lifecycle = Optional.of(request.getLifecycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
+        LifeCycle lifecycle = Optional.ofNullable(request.getLifecycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
         jobInfoDO.setLifecycle(JSON.toJSONString(lifecycle));
         // 检查定时策略
         timingStrategyService.validate(request.getTimeExpressionType(), request.getTimeExpression(), lifecycle.getStart(), lifecycle.getEnd());
@@ -255,7 +255,7 @@ public class JobService {
             jobInfo.setTimeExpression(null);
         } else {
             LifeCycle lifeCycle = LifeCycle.parse(jobInfo.getLifecycle());
-            Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(jobInfo.getNextTriggerTime(), TimeExpressionType.CRON, jobInfo.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
+            Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(TimeExpressionType.of(jobInfo.getTimeExpressionType()), jobInfo.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
             jobInfo.setNextTriggerTime(nextValidTime);
         }
         // 重写最后修改时间

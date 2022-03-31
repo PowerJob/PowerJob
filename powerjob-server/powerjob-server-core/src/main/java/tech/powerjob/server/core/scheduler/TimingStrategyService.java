@@ -83,15 +83,14 @@ public class TimingStrategyService {
     /**
      * 计算下次的调度时间并检查校验规则
      *
-     * @param preTriggerTime     上次触发时间(nullable)
      * @param timeExpressionType 定时表达式类型
      * @param timeExpression     表达式
      * @param startTime          起始时间(include)
      * @param endTime            结束时间(include)
      * @return 下次的调度时间
      */
-    public Long calculateNextTriggerTimeWithInspection(Long preTriggerTime, TimeExpressionType timeExpressionType, String timeExpression, Long startTime, Long endTime) {
-        Long nextTriggerTime = calculateNextTriggerTime(preTriggerTime, timeExpressionType, timeExpression, startTime, endTime);
+    public Long calculateNextTriggerTimeWithInspection( TimeExpressionType timeExpressionType, String timeExpression, Long startTime, Long endTime) {
+        Long nextTriggerTime = calculateNextTriggerTime(null, timeExpressionType, timeExpression, startTime, endTime);
         if (TimeExpressionType.INSPECT_TYPES.contains(timeExpressionType.getV()) && nextTriggerTime == null) {
             throw new PowerJobException("time expression is out of date: " + timeExpression);
         }

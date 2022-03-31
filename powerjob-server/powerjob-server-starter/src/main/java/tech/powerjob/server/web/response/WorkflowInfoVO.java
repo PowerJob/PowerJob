@@ -2,6 +2,7 @@ package tech.powerjob.server.web.response;
 
 import com.alibaba.fastjson.JSON;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
@@ -46,7 +47,7 @@ public class WorkflowInfoVO {
      */
     private String timeExpressionType;
     /**
-     *  时间表达式，CRON/NULL/LONG/LONG
+     * 时间表达式，CRON/NULL/LONG/LONG
      */
     private String timeExpression;
 
@@ -64,6 +65,8 @@ public class WorkflowInfoVO {
      */
     private List<Long> notifyUserIds;
 
+    private LifeCycle lifeCycle;
+
     private Date gmtCreate;
 
     private Date gmtModified;
@@ -77,6 +80,9 @@ public class WorkflowInfoVO {
         vo.setPEWorkflowDAG(JSON.parseObject(wfDO.getPeDAG(), PEWorkflowDAG.class));
         if (!StringUtils.isEmpty(wfDO.getNotifyUserIds())) {
             vo.setNotifyUserIds(SJ.COMMA_SPLITTER.splitToList(wfDO.getNotifyUserIds()).stream().map(Long::valueOf).collect(Collectors.toList()));
+        }
+        if (!StringUtils.isEmpty(wfDO.getLifecycle())) {
+            vo.lifeCycle = LifeCycle.parse(wfDO.getLifecycle());
         }
         return vo;
     }
