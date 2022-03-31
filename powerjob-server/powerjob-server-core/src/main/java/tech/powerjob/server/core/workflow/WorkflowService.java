@@ -88,12 +88,12 @@ public class WorkflowService {
         if (req.getLifeCycle() != null) {
             wf.setLifecycle(JSON.toJSONString(req.getLifeCycle()));
         }
-        if (TimeExpressionType.FREQUENT_TYPES.contains(req.getTimeExpressionType().getV())){
+        if (TimeExpressionType.FREQUENT_TYPES.contains(req.getTimeExpressionType().getV())) {
             // 固定频率类型的任务不计算
             wf.setTimeExpression(null);
-        }else {
-            LifeCycle lifeCycle = Optional.of(req.getLifeCycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
-            Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(wf.getNextTriggerTime(), TimeExpressionType.CRON, wf.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
+        } else {
+            LifeCycle lifeCycle = Optional.ofNullable(req.getLifeCycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
+            Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(TimeExpressionType.of(wf.getTimeExpressionType()), wf.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
             wf.setNextTriggerTime(nextValidTime);
         }
         // 新增工作流，需要先 save 一下获取 ID

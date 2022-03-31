@@ -39,7 +39,7 @@ public class JobController {
     private JobInfoRepository jobInfoRepository;
 
     @PostMapping("/save")
-    public ResultDTO<Void> saveJobInfo(@RequestBody SaveJobInfoRequest request) throws Exception {
+    public ResultDTO<Void> saveJobInfo(@RequestBody SaveJobInfoRequest request) {
         jobService.saveJob(request);
         return ResultDTO.success(null);
     }
