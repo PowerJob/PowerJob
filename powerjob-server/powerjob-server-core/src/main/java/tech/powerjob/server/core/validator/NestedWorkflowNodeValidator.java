@@ -32,7 +32,10 @@ public class NestedWorkflowNodeValidator implements NodeValidator {
 
     @Override
     public void complexValidate(WorkflowNodeInfoDO node, WorkflowDAG dag) {
-        // do nothing
+        // 这里检查是否循环嵌套(自身引用自身)
+        if (Objects.equals(node.getJobId(), node.getWorkflowId())) {
+            throw new PowerJobException("Illegal nested workflow node,Prohibit circular references!" + node.getNodeName());
+        }
     }
 
 
