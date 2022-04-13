@@ -14,9 +14,9 @@ import javax.script.ScriptEngineManager;
  */
 @Slf4j
 @Component
-public class JavaScriptEvaluator implements Evaluator {
+public class GroovyEvaluator implements Evaluator {
 
-    private static final ScriptEngine ENGINE = new ScriptEngineManager().getEngineByName("nashorn");
+    private static final ScriptEngine ENGINE = new ScriptEngineManager().getEngineByName("groovy");
 
 
     @Override
