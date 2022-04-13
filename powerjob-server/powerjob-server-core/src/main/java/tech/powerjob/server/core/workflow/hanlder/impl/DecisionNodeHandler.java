@@ -10,7 +10,7 @@ import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.serialize.JsonUtils;
-import tech.powerjob.server.core.evaluator.JavaScriptEvaluator;
+import tech.powerjob.server.core.evaluator.GroovyEvaluator;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.core.workflow.hanlder.ControlNodeHandler;
@@ -26,7 +26,7 @@ import java.util.*;
 @Component
 public class DecisionNodeHandler implements ControlNodeHandler {
 
-    private final JavaScriptEvaluator javaScriptEvaluator = new JavaScriptEvaluator();
+    private final GroovyEvaluator groovyEvaluator = new GroovyEvaluator();
 
     /**
      * 处理判断节点
@@ -45,7 +45,7 @@ public class DecisionNodeHandler implements ControlNodeHandler {
         });
         Object result;
         try {
-            result = javaScriptEvaluator.evaluate(script, wfContext);
+            result = groovyEvaluator.evaluate(script, wfContext);
         } catch (Exception e) {
             log.error("[Workflow-{}|{}]failed to evaluate decision node,nodeId:{}", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), e);
             throw new PowerJobException("can't evaluate decision node!");

@@ -267,6 +267,19 @@
             <version>${swagger.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-jsr223 -->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-jsr223</artifactId>
+            <version>3.0.10</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-json -->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-json</artifactId>
+            <version>3.0.10</version>
+        </dependency>
+
     </dependencies>
 
 </project>

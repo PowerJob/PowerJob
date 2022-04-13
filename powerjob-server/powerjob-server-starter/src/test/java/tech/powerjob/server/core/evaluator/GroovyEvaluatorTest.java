@@ -11,11 +11,11 @@ import java.util.HashMap;
 
 /**
  * @author Echo009
- * @since 2021/12/10
+ * @since 2022/04/13
  */
-public class JavaScriptEvaluatorTest {
+public class GroovyEvaluatorTest {
 
-    private final JavaScriptEvaluator javaScriptEvaluator = new JavaScriptEvaluator();
+    private final GroovyEvaluator groovyEvaluator = new GroovyEvaluator();
 
     private final HashMap<String, String> SIMPLE_CONTEXT = new HashMap<>();
 
@@ -44,41 +44,36 @@ public class JavaScriptEvaluatorTest {
 
     @Test
     public void testSimpleEval1() {
-        Object res = javaScriptEvaluator.evaluate("var x = false; x;", null);
+        Object res = groovyEvaluator.evaluate("var x = false; x;", null);
         Assert.assertEquals(false, res);
     }
 
     @Test
     public void testSimpleEval2() {
-        Object res = javaScriptEvaluator.evaluate("var person = {name:'echo',tag:'y'}; person.name;", null);
-        Assert.assertEquals("echo", res);
+        // inject simple context
+        Object res = groovyEvaluator.evaluate("var res = context.k3; res;", SIMPLE_CONTEXT);
+        Boolean s = JsonUtils.parseObjectUnsafe(res.toString(), Boolean.class);
+        Assert.assertEquals(false, s);
     }
 
 
     @Test
     public void testSimpleEval3() {
-        // inject simple context
-        Object res = javaScriptEvaluator.evaluate("var res = context.k3; res;", SIMPLE_CONTEXT);
-        Boolean s = JsonUtils.parseObjectUnsafe(res.toString(), Boolean.class);
-        Assert.assertEquals(false, s);
-    }
-
-    @Test
-    public void testSimpleEval4() {
-        Object res = javaScriptEvaluator.evaluate("var res = JSON.parse(context.k3); res == false;", SIMPLE_CONTEXT);
+        Object res = groovyEvaluator.evaluate("var res = new groovy.json.JsonSlurper().parseText(context.k3); res == false;", SIMPLE_CONTEXT);
         Assert.assertEquals(true, res);
     }
+
 
     @Test
     public void testComplexEval1() {
         // array
-        Object res = javaScriptEvaluator.evaluate("var res = JSON.parse(context.array); res[0] == 1;", COMPLEX_CONTEXT);
+        Object res = groovyEvaluator.evaluate("var res = new groovy.json.JsonSlurper().parseText(context.array) ; res[0] == 1;", COMPLEX_CONTEXT);
         Assert.assertEquals(true, res);
         // map
-        res = javaScriptEvaluator.evaluate("var map = JSON.parse(context.map); var e1 = map.e1; e1.value ",COMPLEX_CONTEXT);
+        res = groovyEvaluator.evaluate("var map = new groovy.json.JsonSlurper().parseText(context.map); var e1 = map.e1; e1.value ",COMPLEX_CONTEXT);
         Assert.assertEquals(1,res);
         // object
-        res = javaScriptEvaluator.evaluate("var e3 = JSON.parse(context.obj); var e1 = e3.sub.sub; e1.value ",COMPLEX_CONTEXT);
+        res = groovyEvaluator.evaluate("var e3 = new groovy.json.JsonSlurper().parseText(context.obj); var e1 = e3.sub.sub; e1.value ",COMPLEX_CONTEXT);
         Assert.assertEquals(1,res);
     }
 
