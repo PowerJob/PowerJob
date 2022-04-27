@@ -9,7 +9,7 @@ import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.core.lock.UseSegmentLock;
+import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
@@ -74,7 +74,7 @@ public class WorkflowInstanceService {
      * @param appId        所属应用ID
      */
     @DesignateServer
-    @UseSegmentLock(type = "processWfInstance", key = "#wfInstanceId.intValue()", concurrencyLevel = 1024)
+    @UseCacheLock(type = "processWfInstance", key = "#wfInstanceId", concurrencyLevel = 1024)
     public void stopWorkflowInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         if (!WorkflowInstanceStatus.GENERALIZED_RUNNING_STATUS.contains(wfInstance.getStatus())) {
@@ -120,7 +120,7 @@ public class WorkflowInstanceService {
      * @param appId        应用ID
      */
     @DesignateServer
-    @UseSegmentLock(type = "processWfInstance", key = "#wfInstanceId.intValue()", concurrencyLevel = 1024)
+    @UseCacheLock(type = "processWfInstance", key = "#wfInstanceId", concurrencyLevel = 1024)
     public void retryWorkflowInstance(Long wfInstanceId, Long appId) {
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);
         // 仅允许重试 失败的工作流
@@ -189,7 +189,7 @@ public class WorkflowInstanceService {
      * @param nodeId       节点 ID
      */
     @DesignateServer
-    @UseSegmentLock(type = "processWfInstance", key = "#wfInstanceId.intValue()", concurrencyLevel = 1024)
+    @UseCacheLock(type = "processWfInstance", key = "#wfInstanceId", concurrencyLevel = 1024)
     public void markNodeAsSuccess(Long appId, Long wfInstanceId, Long nodeId) {
 
         WorkflowInstanceInfoDO wfInstance = fetchWfInstance(wfInstanceId, appId);

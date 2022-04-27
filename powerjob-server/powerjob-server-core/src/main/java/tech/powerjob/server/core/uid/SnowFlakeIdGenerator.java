@@ -6,7 +6,7 @@ package tech.powerjob.server.core.uid;
  * @author tjq
  * @since 2020/4/6
  */
-class SnowFlakeIdGenerator {
+public class SnowFlakeIdGenerator {
 
     /**
      * 起始的时间戳(a special day for me)
