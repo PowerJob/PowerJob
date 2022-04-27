@@ -6,7 +6,7 @@ import tech.powerjob.common.enums.*;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.server.core.instance.InstanceManager;
 import tech.powerjob.server.core.instance.InstanceMetadataService;
-import tech.powerjob.server.core.lock.UseSegmentLock;
+import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
@@ -57,8 +57,8 @@ public class DispatchService {
      * @param jobInfo    任务信息（注意，这里传入的任务信息有可能为“空”）
      * @param instanceId 实例ID
      */
-    @UseSegmentLock(type = "redispatch", key = "#jobInfo.getId() ?: 0", concurrencyLevel = 16)
-    public void redispatch(JobInfoDO jobInfo, long instanceId) {
+    @UseCacheLock(type = "processJobInstance", key = "#jobInfo.getMaxInstanceNum() > 0 || T(tech.powerjob.common.enums.TimeExpressionType).FREQUENT_TYPES.contains(#jobInfo.getTimeExpressionType()) ? #jobInfo.getId() : #instanceId", concurrencyLevel = 1024)
+    public void redispatch(JobInfoDO jobInfo, Long instanceId) {
         InstanceInfoDO instance = instanceInfoRepository.findByInstanceId(instanceId);
         // 将状态重置为等待派发
         instance.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
@@ -81,8 +81,8 @@ public class DispatchService {
      * @param jobInfo    任务的元信息
      * @param instanceId 任务实例ID
      */
-    @UseSegmentLock(type = "dispatch", key = "#jobInfo.getId() ?: 0", concurrencyLevel = 1024)
-    public void dispatch(JobInfoDO jobInfo, long instanceId) {
+    @UseCacheLock(type = "processJobInstance", key = "#jobInfo.getMaxInstanceNum() > 0 || T(tech.powerjob.common.enums.TimeExpressionType).FREQUENT_TYPES.contains(#jobInfo.getTimeExpressionType()) ? #jobInfo.getId() : #instanceId", concurrencyLevel = 1024)
+    public void dispatch(JobInfoDO jobInfo, Long instanceId) {
         // 检查当前任务是否被取消
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
         Long jobId = instanceInfo.getJobId();

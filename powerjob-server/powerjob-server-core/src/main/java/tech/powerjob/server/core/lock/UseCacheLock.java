@@ -6,14 +6,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * use segment lock to make concurrent safe
+ * use cached lock to make concurrent safe
  *
  * @author tjq
+ * @author Echo009
  * @since 1/16/21
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UseSegmentLock {
+public @interface UseCacheLock {
 
     String type();
 

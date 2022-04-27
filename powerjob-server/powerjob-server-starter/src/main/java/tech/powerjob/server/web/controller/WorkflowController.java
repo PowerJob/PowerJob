@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.List;
+import java.util.function.LongToDoubleFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -88,8 +89,11 @@ public class WorkflowController {
     }
 
     @GetMapping("/run")
-    public ResultDTO<Long> runWorkflow(Long workflowId, Long appId) {
-        return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, null, 0L));
+    public ResultDTO<Long> runWorkflow(Long workflowId, Long appId,
+                                       @RequestParam(required = false,defaultValue = "0") Long delay,
+                                       @RequestParam(required = false) String initParams
+                                       ) {
+        return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, initParams, delay));
     }
 
     @GetMapping("/fetch")
