@@ -255,7 +255,7 @@ public class PowerScheduleService {
                             log.info("[FrequentScheduler] disable frequent job,id:{}.", jobInfoDO.getId());
                         } else if (lifeCycle.getStart() == null || lifeCycle.getStart() < System.currentTimeMillis() + SCHEDULE_RATE * 2) {
                             log.info("[FrequentScheduler] schedule frequent job,id:{}.", jobInfoDO.getId());
-                            jobService.runJob(jobInfoDO.getAppId(), jobId, null, Optional.of(lifeCycle.getStart()).orElse(0L) - System.currentTimeMillis());
+                            jobService.runJob(jobInfoDO.getAppId(), jobId, null, Optional.ofNullable(lifeCycle.getStart()).orElse(0L) - System.currentTimeMillis());
                         }
                     });
                 });
