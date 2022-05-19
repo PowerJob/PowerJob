@@ -252,7 +252,7 @@ public class JobService {
         // 计算下次调度时间
         if (TimeExpressionType.FREQUENT_TYPES.contains(jobInfo.getTimeExpressionType())) {
             // 固定频率类型的任务不计算
-            jobInfo.setTimeExpression(null);
+            jobInfo.setNextTriggerTime(null);
         } else {
             LifeCycle lifeCycle = LifeCycle.parse(jobInfo.getLifecycle());
             Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(TimeExpressionType.of(jobInfo.getTimeExpressionType()), jobInfo.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
