@@ -15,7 +15,7 @@
     <properties>
         <springboot.version>2.3.4.RELEASE</springboot.version>
         <powerjob.worker.starter.version>4.0.1</powerjob.worker.starter.version>
-        <fastjson.version>1.2.68</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <powerjob.official.processors.version>1.1.0</powerjob.official.processors.version>
 
         <!-- 部署时跳过该module -->
