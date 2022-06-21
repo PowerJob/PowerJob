@@ -24,7 +24,7 @@
         <powerjob.official.processors.version>1.1.0</powerjob.official.processors.version>
 
         <!-- dependency for dynamic sql processor -->
-        <mysql.version>8.0.19</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
         <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
