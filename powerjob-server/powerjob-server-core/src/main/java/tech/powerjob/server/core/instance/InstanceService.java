@@ -192,7 +192,7 @@ public class InstanceService {
      */
     @DesignateServer
     public void cancelInstance(Long appId, Long instanceId) {
-        log.info("[Instance-{}] try to cancel the instance of appId {}.", instanceId, appId);
+        log.info("[Instance-{}] try to cancel the instance with appId {}.", instanceId, appId);
 
         try {
             InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
