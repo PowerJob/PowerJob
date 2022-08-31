@@ -26,7 +26,7 @@
         <mysql.version>8.0.19</mysql.version>
 
         <!-- 全部 shade 化，避免依赖冲突 -->
-        <fastjson.version>1.2.68</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <okhttp.version>3.14.9</okhttp.version>
         <guava.version>30.1.1-jre</guava.version>
         <commons.io.version>2.6</commons.io.version>
