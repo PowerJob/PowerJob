@@ -56,6 +56,12 @@
       "type": "java.lang.Integer",
       "description": "Max length of appended workflow context. Appended workflow context that is longer than the value will be ignore.",
       "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
+    },
+    {
+      "name": "powerjob.worker.tag",
+      "type": "java.lang.String",
+      "description": "Worker Tag",
+      "sourceType": "tech.powerjob.worker.autoconfigure.PowerJobProperties$Worker"
     }
   ],
   "hints": []
