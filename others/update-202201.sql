@@ -1,1 +1,0 @@
-alter table sx_job_info add alarm_config varchar(512) comment '告警配置' default null;
