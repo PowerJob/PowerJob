@@ -23,7 +23,7 @@
         <powerjob.worker.version>4.1.0</powerjob.worker.version>
         <spring.jdbc.version>5.2.9.RELEASE</spring.jdbc.version>
         <h2.db.version>1.4.200</h2.db.version>
-        <mysql.version>8.0.19</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
 
         <!-- 全部 shade 化，避免依赖冲突 -->
         <fastjson.version>1.2.83</fastjson.version>
