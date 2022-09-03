@@ -47,18 +47,24 @@ public class TaskDAOImpl implements TaskDAO {
 
     @Override
     public boolean batchSave(Collection<TaskDO> tasks) throws SQLException {
-        String insertSQL = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time, last_report_time) values (?,?,?,?,?,?,?,?,?,?,?,?)";
-        try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(insertSQL)) {
-
-            for (TaskDO task : tasks) {
-
-                fillInsertPreparedStatement(task, ps);
-                ps.addBatch();
+        String insertSql = "insert into task_info(task_id, instance_id, sub_instance_id, task_name, task_content, address, status, result, failed_cnt, created_time, last_modified_time, last_report_time) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+        boolean originAutoCommitFlag ;
+        try (Connection conn = connectionFactory.getConnection()) {
+            originAutoCommitFlag = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            try ( PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                for (TaskDO task : tasks) {
+                    fillInsertPreparedStatement(task, ps);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                return true;
+            } catch (Throwable e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(originAutoCommitFlag);
             }
-
-            ps.executeBatch();
-            return true;
-
         }
     }
 

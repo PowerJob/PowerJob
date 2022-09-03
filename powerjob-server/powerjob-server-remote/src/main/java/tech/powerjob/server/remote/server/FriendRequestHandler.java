@@ -1,14 +1,17 @@
 package tech.powerjob.server.remote.server;
 
 import akka.actor.AbstractActor;
+import akka.actor.Props;
+import akka.routing.DefaultResizer;
+import akka.routing.RoundRobinPool;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.remote.server.election.Ping;
 import tech.powerjob.server.remote.server.redirector.RemoteProcessReq;
 import tech.powerjob.server.remote.server.redirector.RemoteRequestProcessor;
 import tech.powerjob.server.remote.transport.TransportService;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * 处理朋友们的信息（处理服务器与服务器之间的通讯）
@@ -18,6 +21,25 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 @Slf4j
 public class FriendRequestHandler extends AbstractActor {
+
+
+    public static Props defaultProps() {
+        return Props.create(FriendRequestHandler.class)
+                .withDispatcher("akka.friend-request-actor-dispatcher")
+                .withRouter(
+                        new RoundRobinPool(Runtime.getRuntime().availableProcessors() * 4)
+                                .withResizer(new DefaultResizer(
+                                        Runtime.getRuntime().availableProcessors() * 4,
+                                        Runtime.getRuntime().availableProcessors() * 10,
+                                        1,
+                                        0.2d,
+                                        0.3d,
+                                        0.1d,
+                                        10
+                                ))
+                );
+    }
+
     @Override
     public Receive createReceive() {
         return receiveBuilder()
@@ -25,6 +47,20 @@ public class FriendRequestHandler extends AbstractActor {
                 .match(RemoteProcessReq.class, this::onReceiveRemoteProcessReq)
                 .matchAny(obj -> log.warn("[FriendActor] receive unknown request: {}.", obj))
                 .build();
+    }
+
+
+    @Override
+    public void preStart() throws Exception {
+        super.preStart();
+        log.debug("[FriendRequestHandler]init FriendRequestActor");
+    }
+
+
+    @Override
+    public void postStop() throws Exception {
+        super.postStop();
+        log.debug("[FriendRequestHandler]stop FriendRequestActor");
     }
 
     /**

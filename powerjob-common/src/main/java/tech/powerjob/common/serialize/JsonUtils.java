@@ -22,6 +22,9 @@ public class JsonUtils {
     }
 
     public static String toJSONString(Object obj) {
+        if (obj instanceof String) {
+            return (String) obj;
+        }
         try {
             return objectMapper.writeValueAsString(obj);
         }catch (Exception ignore) {
@@ -30,6 +33,9 @@ public class JsonUtils {
     }
 
     public static String toJSONStringUnsafe(Object obj) {
+        if (obj instanceof String) {
+            return (String) obj;
+        }
         try {
             return objectMapper.writeValueAsString(obj);
         }catch (Exception e) {

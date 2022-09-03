@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.0.1</version>
+    <version>4.1.0</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -27,9 +27,9 @@
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.3.4.RELEASE</springboot.version>
-        <powerjob.common.version>4.0.1</powerjob.common.version>
+        <powerjob.common.version>4.1.0</powerjob.common.version>
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
-        <mysql.version>8.0.19</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
         <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
@@ -40,7 +40,7 @@
         <jgit.version>5.7.0.202003110725-r</jgit.version>
         <mvn.invoker.version>3.0.1</mvn.invoker.version>
         <commons.net.version>3.6</commons.net.version>
-        <fastjson.version>1.2.68</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <dingding.version>1.0.1</dingding.version>
         <vertx-web.version>4.0.2</vertx-web.version>
 
@@ -248,6 +248,11 @@
             <version>${vertx-web.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>9.1.6</version>
+        </dependency>
 
         <!-- swagger2 -->
         <dependency>
@@ -260,6 +265,19 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
             <version>${swagger.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-jsr223 -->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-jsr223</artifactId>
+            <version>3.0.10</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-json -->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-json</artifactId>
+            <version>3.0.10</version>
         </dependency>
 
     </dependencies>

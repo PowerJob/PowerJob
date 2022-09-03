@@ -39,7 +39,7 @@ public class JobController {
     private JobInfoRepository jobInfoRepository;
 
     @PostMapping("/save")
-    public ResultDTO<Void> saveJobInfo(@RequestBody SaveJobInfoRequest request) throws Exception {
+    public ResultDTO<Void> saveJobInfo(@RequestBody SaveJobInfoRequest request) {
         jobService.saveJob(request);
         return ResultDTO.success(null);
     }
@@ -63,8 +63,8 @@ public class JobController {
     }
 
     @GetMapping("/run")
-    public ResultDTO<Long> runImmediately(String appId, String jobId) {
-        return ResultDTO.success(jobService.runJob(Long.valueOf(appId), Long.valueOf(jobId), null, 0L));
+    public ResultDTO<Long> runImmediately(String appId, String jobId, @RequestParam(required = false) String instanceParams) {
+        return ResultDTO.success(jobService.runJob(Long.valueOf(appId), Long.valueOf(jobId), instanceParams, 0L));
     }
 
     @PostMapping("/list")

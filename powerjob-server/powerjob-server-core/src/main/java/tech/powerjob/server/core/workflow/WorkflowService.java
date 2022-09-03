@@ -8,28 +8,27 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.common.enums.WorkflowNodeType;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
-import tech.powerjob.server.common.utils.CronExpression;
+import tech.powerjob.server.core.scheduler.TimingStrategyService;
+import tech.powerjob.server.core.service.NodeValidateService;
+import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
-import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -51,18 +50,20 @@ public class WorkflowService {
     @Resource
     private WorkflowNodeInfoRepository workflowNodeInfoRepository;
     @Resource
-    private JobInfoRepository jobInfoRepository;
+    private NodeValidateService nodeValidateService;
+    @Resource
+    private TimingStrategyService timingStrategyService;
 
     /**
      * 保存/修改工作流信息
-     *
+     * <p>
      * 注意这里不会保存 DAG 信息
      *
      * @param req 请求
      * @return 工作流ID
      */
     @Transactional(rollbackOn = Exception.class)
-    public Long saveWorkflow(SaveWorkflowRequest req) throws ParseException {
+    public Long saveWorkflow(SaveWorkflowRequest req) {
 
         req.valid();
 
@@ -84,14 +85,16 @@ public class WorkflowService {
         if (req.getNotifyUserIds() != null) {
             wf.setNotifyUserIds(SJ.COMMA_JOINER.join(req.getNotifyUserIds()));
         }
-
-        // 计算 NextTriggerTime
-        if (req.getTimeExpressionType() == TimeExpressionType.CRON) {
-            CronExpression cronExpression = new CronExpression(req.getTimeExpression());
-            Date nextValidTime = cronExpression.getNextValidTimeAfter(new Date());
-            wf.setNextTriggerTime(nextValidTime.getTime());
-        } else {
+        if (req.getLifeCycle() != null) {
+            wf.setLifecycle(JSON.toJSONString(req.getLifeCycle()));
+        }
+        if (TimeExpressionType.FREQUENT_TYPES.contains(req.getTimeExpressionType().getV())) {
+            // 固定频率类型的任务不计算
             wf.setTimeExpression(null);
+        } else {
+            LifeCycle lifeCycle = Optional.ofNullable(req.getLifeCycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
+            Long nextValidTime = timingStrategyService.calculateNextTriggerTimeWithInspection(TimeExpressionType.of(wf.getTimeExpressionType()), wf.getTimeExpression(), lifeCycle.getStart(), lifeCycle.getEnd());
+            wf.setNextTriggerTime(nextValidTime);
         }
         // 新增工作流，需要先 save 一下获取 ID
         if (wfId == null) {
@@ -108,16 +111,14 @@ public class WorkflowService {
      * 这里会物理删除游离的节点信息
      */
     private String validateAndConvert2String(Long wfId, PEWorkflowDAG dag) {
-        if (dag == null || CollectionUtils.isEmpty(dag.getNodes())) {
-            return "{}";
-        }
-        if (!WorkflowDAGUtils.valid(dag)) {
+        if (dag == null || !WorkflowDAGUtils.valid(dag)) {
             throw new PowerJobException("illegal DAG");
         }
         // 注意：这里只会保存图相关的基础信息，nodeId,jobId,jobName(nodeAlias)
         // 其中 jobId，jobName 均以节点中的信息为准
         List<Long> nodeIdList = Lists.newArrayList();
         List<PEWorkflowDAG.Node> newNodes = Lists.newArrayList();
+        WorkflowDAG complexDag = WorkflowDAGUtils.convert(dag);
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
             WorkflowNodeInfoDO nodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(() -> new PowerJobException("can't find node info by id :" + node.getNodeId()));
             // 更新工作流 ID
@@ -129,6 +130,7 @@ public class WorkflowService {
             if (!wfId.equals(nodeInfo.getWorkflowId())) {
                 throw new PowerJobException("can't use another workflow's node");
             }
+            nodeValidateService.complexValidate(nodeInfo, complexDag);
             // 只保存节点的 ID 信息，清空其他信息
             newNodes.add(new PEWorkflowDAG.Node(node.getNodeId()));
             nodeIdList.add(node.getNodeId());
@@ -271,7 +273,7 @@ public class WorkflowService {
         WorkflowInfoDO wfInfo = permissionCheck(wfId, appId);
 
         log.info("[WorkflowService-{}] try to run workflow, initParams={},delay={} ms.", wfInfo.getId(), initParams, delay);
-        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay);
+        Long wfInstanceId = workflowInstanceManager.create(wfInfo, initParams, System.currentTimeMillis() + delay, null);
         if (delay <= 0) {
             workflowInstanceManager.start(wfInfo, wfInstanceId);
         } else {
@@ -307,20 +309,9 @@ public class WorkflowService {
                 workflowNodeInfo = new WorkflowNodeInfoDO();
                 workflowNodeInfo.setGmtCreate(new Date());
             }
-
-            // valid job info
-            if (req.getType() == WorkflowNodeType.JOB) {
-                JobInfoDO jobInfoDO = jobInfoRepository.findById(req.getJobId()).orElseThrow(() -> new IllegalArgumentException("can't find job by id: " + req.getJobId()));
-                if (!jobInfoDO.getAppId().equals(appId)) {
-                    throw new PowerJobException("Permission Denied! can't use other app's job!");
-                }
-                if (StringUtils.isEmpty(workflowNodeInfo.getNodeName())) {
-                    workflowNodeInfo.setNodeName(jobInfoDO.getJobName());
-                }
-            }
-
             BeanUtils.copyProperties(req, workflowNodeInfo);
-            workflowNodeInfo.setType(req.getType().getCode());
+            workflowNodeInfo.setType(req.getType());
+            nodeValidateService.simpleValidate(workflowNodeInfo);
             workflowNodeInfo.setGmtModified(new Date());
             workflowNodeInfo = workflowNodeInfoRepository.saveAndFlush(workflowNodeInfo);
             res.add(workflowNodeInfo);

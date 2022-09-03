@@ -270,7 +270,7 @@ public class ProcessorTracker {
             // 超时检查，如果超时则自动关闭 TaskTracker
             long interval = System.currentTimeMillis() - startTime;
             // 秒级任务的ProcessorTracker不应该关闭
-            if (!TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType())) {
+            if (!TimeExpressionType.FREQUENT_TYPES.contains(instanceInfo.getTimeExpressionType())) {
                 if (interval > instanceInfo.getInstanceTimeoutMS()) {
                     log.warn("[ProcessorTracker-{}] detected instance timeout, maybe TaskTracker's destroy request missed, so try to kill self now.", instanceId);
                     destroy();
@@ -385,7 +385,7 @@ public class ProcessorTracker {
         if (executeType == ExecuteType.MAP_REDUCE || executeType == ExecuteType.MAP) {
             return instanceInfo.getThreadConcurrency();
         }
-        if (TimeExpressionType.frequentTypes.contains(instanceInfo.getTimeExpressionType())) {
+        if (TimeExpressionType.FREQUENT_TYPES.contains(instanceInfo.getTimeExpressionType())) {
             return instanceInfo.getThreadConcurrency();
         }
         return 2;

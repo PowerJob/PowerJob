@@ -3,10 +3,10 @@ package tech.powerjob.common.model;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import tech.powerjob.common.enums.WorkflowNodeType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,10 +38,10 @@ public class PEWorkflowDAG implements Serializable {
     @Data
     @Accessors(chain = true)
     @NoArgsConstructor
-    @AllArgsConstructor
     public static class Node implements Serializable {
         /**
          * node id
+         *
          * @since 20210128
          */
         private Long nodeId;
@@ -49,11 +49,15 @@ public class PEWorkflowDAG implements Serializable {
 
         /**
          * note type
+         *
+         * @see WorkflowNodeType
          * @since 20210316
          */
         private Integer nodeType;
         /**
-         * job id
+         * job id or workflow id (if this Node type is a nested workflow)
+         *
+         * @see WorkflowNodeType#NESTED_WORKFLOW
          */
         private Long jobId;
         /**
@@ -61,23 +65,41 @@ public class PEWorkflowDAG implements Serializable {
          */
         private String nodeName;
 
-        @JsonSerialize(using= ToStringSerializer.class)
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long instanceId;
-
+        /**
+         * for decision node, it is JavaScript code
+         */
         private String nodeParams;
 
         private Integer status;
-
+        /**
+         * for decision node, it only be can "true" or "false"
+         */
         private String result;
         /**
          * instanceId will be null if disable .
          */
         private Boolean enable;
+        /**
+         * mark node which disable by control node.
+         */
+        private Boolean disableByControlNode;
 
         private Boolean skipWhenFailed;
 
+        private String startTime;
+
+        private String finishedTime;
+
         public Node(Long nodeId) {
             this.nodeId = nodeId;
+            this.nodeType = WorkflowNodeType.JOB.getCode();
+        }
+
+        public Node(Long nodeId, Integer nodeType) {
+            this.nodeId = nodeId;
+            this.nodeType = nodeType;
         }
     }
 
@@ -86,10 +108,29 @@ public class PEWorkflowDAG implements Serializable {
      */
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
     public static class Edge implements Serializable {
+
         private Long from;
+
         private Long to;
+        /**
+         * property,support for complex flow control
+         * for decision node , it can be "true" or "false"
+         */
+        private String property;
+
+        private Boolean enable;
+
+        public Edge(long from, long to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public Edge(long from, long to, String property) {
+            this.from = from;
+            this.to = to;
+            this.property = property;
+        }
     }
 
     public PEWorkflowDAG(@Nonnull List<Node> nodes, @Nullable List<Edge> edges) {

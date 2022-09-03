@@ -1,11 +1,13 @@
 package tech.powerjob.worker.core.tracker.task;
 
 import akka.actor.ActorSelection;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
@@ -13,9 +15,11 @@ import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
@@ -23,10 +27,7 @@ import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.worker.common.utils.LRUCache;
 import tech.powerjob.worker.persistence.TaskDO;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -43,23 +44,39 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class FrequentTaskTracker extends TaskTracker {
 
-    // 时间表达式类型
+    /**
+     * 时间表达式类型
+     */
     private TimeExpressionType timeExpressionType;
+
     private long timeParams;
-    // 最大同时运行实例数
+    /**
+     * 最大同时运行实例数
+     */
     private int maxInstanceNum;
 
-    // 总运行次数（正常情况不会出现锁竞争，直接用 Atomic 系列，锁竞争严重推荐 LongAdder）
+    /**
+     * 总运行次数（正常情况不会出现锁竞争，直接用 Atomic 系列，锁竞争严重推荐 LongAdder）
+     */
     private AtomicLong triggerTimes;
-    private AtomicLong succeedTimes;
-    private AtomicLong failedTimes;
 
-    // 任务发射器
+    private AtomicLong succeedTimes;
+
+    private AtomicLong failedTimes;
+    /**
+     * 任务发射器
+     */
     private Launcher launcher;
-    // 保存最近10个子任务的信息，供用户查询（user -> server -> worker 传递查询）
+    /**
+     * 保存最近10个子任务的信息，供用户查询（user -> server -> worker 传递查询）
+     */
     private LRUCache<Long, SubInstanceInfo> recentSubInstanceInfo;
-    // 保存运行中的任务
+    /**
+     * 保存运行中的任务
+     */
     private Map<Long, SubInstanceTimeHolder> subInstanceId2TimeHolder;
+
+    private AlertManager alertManager;
 
     private static final int HISTORY_SIZE = 10;
     private static final String LAST_TASK_ID_PREFIX = "L";
@@ -88,7 +105,7 @@ public class FrequentTaskTracker extends TaskTracker {
         String poolName = String.format("ftttp-%d", req.getInstanceId()) + "-%d";
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat(poolName).build();
         this.scheduledPool = Executors.newScheduledThreadPool(4, factory);
-
+        this.alertManager = constructAlertManager(req);
         // 2. 启动任务发射器
         launcher = new Launcher();
         if (timeExpressionType == TimeExpressionType.FIXED_RATE) {
@@ -97,7 +114,7 @@ public class FrequentTaskTracker extends TaskTracker {
                 throw new PowerJobException("time interval too small, please set the timeExpressionInfo >= 1000");
             }
             scheduledPool.scheduleAtFixedRate(launcher, 1, timeParams, TimeUnit.MILLISECONDS);
-        }else {
+        } else {
             scheduledPool.schedule(launcher, 0, TimeUnit.MILLISECONDS);
         }
 
@@ -203,7 +220,7 @@ public class FrequentTaskTracker extends TaskTracker {
         public void run() {
             try {
                 innerRun();
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.error("[FQTaskTracker-{}] launch task failed.", instanceId, e);
             }
         }
@@ -224,7 +241,7 @@ public class FrequentTaskTracker extends TaskTracker {
             try {
                 checkStatus();
                 reportStatus();
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.warn("[FQTaskTracker-{}] check and report status failed.", instanceId, e);
             }
         }
@@ -283,12 +300,12 @@ public class FrequentTaskTracker extends TaskTracker {
                             boolean success = resultTask.getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
                             onFinished(subInstanceId, success, resultTask.getResult(), iterator);
                             continue;
-                        // MAP 不关心结果，最简单
+                            // MAP 不关心结果，最简单
                         case MAP:
                             String result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.succeedNum, holder.failedNum);
                             onFinished(subInstanceId, holder.failedNum == 0, result, iterator);
                             continue;
-                        // MapReduce 和 BroadCast 需要根据是否有 LAST_TASK 来判断结束与否
+                            // MapReduce 和 BroadCast 需要根据是否有 LAST_TASK 来判断结束与否
                         default:
                             Optional<TaskDO> lastTaskOptional = taskPersistenceService.getLastTask(instanceId, subInstanceId);
                             if (lastTaskOptional.isPresent()) {
@@ -297,7 +314,7 @@ public class FrequentTaskTracker extends TaskTracker {
                                 if (lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS || lastTaskStatus == TaskStatus.WORKER_PROCESS_FAILED) {
                                     onFinished(subInstanceId, lastTaskStatus == TaskStatus.WORKER_PROCESS_SUCCESS, lastTaskOptional.get().getResult(), iterator);
                                 }
-                            }else {
+                            } else {
 
                                 // 创建最终任务并提交执行
                                 TaskDO newLastTask = new TaskDO();
@@ -333,6 +350,13 @@ public class FrequentTaskTracker extends TaskTracker {
             req.setFailedTaskNum(failedTimes.get());
             req.setSourceAddress(workerRuntime.getWorkerAddress());
 
+            // alert
+            if (alertManager.alert()) {
+                req.setNeedAlert(true);
+                req.setAlertContent(alertManager.getAlertContent());
+                log.warn("[FQTaskTracker-{}] report alert req,time:{}", instanceId, req.getReportTime());
+            }
+
             String serverPath = AkkaUtils.getServerActorPath(currentServerAddress);
             if (StringUtils.isEmpty(serverPath)) {
                 return;
@@ -352,10 +376,12 @@ public class FrequentTaskTracker extends TaskTracker {
     }
 
     private void processFinishedSubInstance(long subInstanceId, boolean success, String result) {
+        long currentTime = System.currentTimeMillis();
         if (success) {
             succeedTimes.incrementAndGet();
         } else {
             failedTimes.incrementAndGet();
+            alertManager.update(currentTime, result);
         }
 
         // 从运行中任务列表移除
@@ -366,7 +392,7 @@ public class FrequentTaskTracker extends TaskTracker {
         if (subInstanceInfo != null) {
             subInstanceInfo.status = success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV();
             subInstanceInfo.result = result;
-            subInstanceInfo.finishedTime = System.currentTimeMillis();
+            subInstanceInfo.finishedTime = currentTime;
         }
         // 删除数据库相关数据
         taskPersistenceService.deleteAllSubInstanceTasks(instanceId, subInstanceId);
@@ -374,6 +400,86 @@ public class FrequentTaskTracker extends TaskTracker {
         // FIX_DELAY 则调度下次任务
         if (timeExpressionType == TimeExpressionType.FIXED_DELAY) {
             scheduledPool.schedule(launcher, timeParams, TimeUnit.MILLISECONDS);
+        }
+    }
+
+
+    private AlertManager constructAlertManager(ServerScheduleJobReq req) {
+
+        long rate = Long.parseLong(req.getTimeExpression());
+        if (!StringUtils.isEmpty(req.getAlarmConfig())) {
+            try {
+                log.debug("[FQTaskTracker-{}] alert config:{}", instanceId, req.getAlarmConfig());
+                AlarmConfig alarmConfig = JsonUtils.parseObject(req.getAlarmConfig(), AlarmConfig.class);
+                return new AlertManager(alarmConfig);
+            } catch (JsonProcessingException ignore) {
+                //
+            }
+        }
+        // 默认配置，失败一次就告警，沉默窗口 5 分钟
+        int statisticWindowLen = Math.max((int) (2 * rate / 1000), 1);
+        return new AlertManager(new AlarmConfig(1, statisticWindowLen, 300));
+    }
+
+    private class AlertManager {
+        /**
+         * 记录执行失败的时间
+         */
+        private final LinkedList<Long> failedRecordList = new LinkedList<>();
+        /**
+         * 告警配置
+         */
+        private final AlarmConfig config;
+        /**
+         * 告警的激活时间
+         */
+        private long alarmActiveTime = 0L;
+        /**
+         * 告警的内容（记录最后一次失败的任务执行结果）
+         */
+        private String content;
+        /**
+         * 是否处于激活状态
+         */
+        private boolean active;
+
+
+        public AlertManager(AlarmConfig config) {
+            log.info("[FQTaskTracker-{}] create alert manager,alertThreshold:{},statisticWindowLen:{} s,silenceWindowLen:{} s", instanceId, config.getAlertThreshold(), config.getStatisticWindowLen(), config.getSilenceWindowLen());
+            this.config = config;
+        }
+
+        public synchronized void update(long currentTime, String result) {
+            log.debug("[FQTaskTracker-{}] update alert statistic info,currentTime:{}", instanceId, currentTime);
+            if (currentTime < alarmActiveTime + config.getSilenceWindowLen() * 1000) {
+                // 处于沉默窗口内
+                return;
+            }
+            // 当前统计窗口允许的最小值
+            long minTime = currentTime - config.getStatisticWindowLen() * 1000;
+            while (!failedRecordList.isEmpty() && failedRecordList.peekFirst() < minTime) {
+                failedRecordList.removeFirst();
+            }
+            failedRecordList.add(currentTime);
+            if (failedRecordList.size() >= config.getAlertThreshold()) {
+                // 标记需要告警
+                active = true;
+                alarmActiveTime = currentTime;
+                content = result;
+            }
+        }
+
+
+        public synchronized boolean alert() {
+            if (active) {
+                active = false;
+                return true;
+            }
+            return false;
+        }
+
+        public String getAlertContent() {
+            return content;
         }
     }
 

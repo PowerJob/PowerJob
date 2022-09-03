@@ -1,34 +1,32 @@
 package tech.powerjob.server.core.handler;
 
-import akka.actor.Props;
-import akka.routing.RoundRobinPool;
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.RemoteConstant;
-import tech.powerjob.common.request.*;
-import tech.powerjob.server.core.handler.impl.WorkerRequestAkkaHandler;
-import tech.powerjob.server.core.handler.impl.WorkerRequestHttpHandler;
-import tech.powerjob.server.core.instance.InstanceLogService;
-import tech.powerjob.server.core.instance.InstanceManager;
-import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
-import tech.powerjob.server.remote.transport.starter.VertXStarter;
-import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
-import tech.powerjob.server.common.module.WorkerInfo;
-import tech.powerjob.common.response.AskResponse;
-import tech.powerjob.common.serialize.JsonUtils;
-import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.common.utils.SpringUtils;
-import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
-import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
-import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.request.*;
+import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.module.WorkerInfo;
+import tech.powerjob.server.common.utils.SpringUtils;
+import tech.powerjob.server.core.handler.impl.WorkerRequestAkkaHandler;
+import tech.powerjob.server.core.handler.impl.WorkerRequestHttpHandler;
+import tech.powerjob.server.core.instance.InstanceLogService;
+import tech.powerjob.server.core.instance.InstanceManager;
+import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
+import tech.powerjob.server.remote.transport.starter.AkkaStarter;
+import tech.powerjob.server.remote.transport.starter.VertXStarter;
+import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
+import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -66,9 +64,7 @@ public class WorkerRequestHandler {
     @PostConstruct
     public void initHandler() {
         // init akka
-        AkkaStarter.actorSystem.actorOf(Props.create(WorkerRequestAkkaHandler.class)
-                .withDispatcher("akka.server-actor-dispatcher")
-                .withRouter(new RoundRobinPool(Runtime.getRuntime().availableProcessors() * 4)), RemoteConstant.SERVER_ACTOR_NAME);
+        AkkaStarter.actorSystem.actorOf(WorkerRequestAkkaHandler.defaultProps(), RemoteConstant.SERVER_ACTOR_NAME);
         // init vert.x
         VertXStarter.vertx.deployVerticle(new WorkerRequestHttpHandler());
     }

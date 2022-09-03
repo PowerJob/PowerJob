@@ -78,7 +78,7 @@ public class InstanceService {
      * @param expectTriggerTime 预期执行时间
      * @return 任务实例ID
      */
-    public Long create(Long jobId, Long appId, String jobParams, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
+    public Long  create(Long jobId, Long appId, String jobParams, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
 
         Long instanceId = idGenerateService.allocate();
         Date now = new Date();
@@ -191,8 +191,8 @@ public class InstanceService {
      * @param instanceId 任务实例
      */
     @DesignateServer
-    public void cancelInstance(Long instanceId) {
-        log.info("[Instance-{}] try to cancel the instance.", instanceId);
+    public void cancelInstance(Long appId, Long instanceId) {
+        log.info("[Instance-{}] try to cancel the instance with appId {}.", instanceId, appId);
 
         try {
             InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);

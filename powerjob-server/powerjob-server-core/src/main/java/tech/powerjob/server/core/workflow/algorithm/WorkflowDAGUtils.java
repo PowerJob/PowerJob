@@ -1,11 +1,12 @@
 package tech.powerjob.server.core.workflow.algorithm;
 
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.exception.PowerJobException;
+import com.google.common.collect.*;
 import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.WorkflowNodeType;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.serialize.JsonUtils;
-import com.google.common.collect.*;
 
 import java.util.*;
 
@@ -20,6 +21,24 @@ public class WorkflowDAGUtils {
 
     private WorkflowDAGUtils() {
 
+    }
+
+    /**
+     * 重置可重试节点的状态信息
+     * @param dag 合法的有向无环图
+     */
+    public static void resetRetryableNode(PEWorkflowDAG dag){
+        // 将需要重试的节点状态重置（失败且不允许跳过的 或者 手动终止的）
+        for (PEWorkflowDAG.Node node : dag.getNodes()) {
+            boolean realFailed = node.getStatus() == InstanceStatus.FAILED.getV() && isNotAllowSkipWhenFailed(node);
+            if (realFailed || node.getStatus() == InstanceStatus.STOPPED.getV()) {
+                node.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
+                // 仅重置任务节点的实例 id 信息
+                if (node.getNodeType() == null || node.getNodeType() == WorkflowNodeType.JOB.getCode()){
+                    node.setInstanceId(null);
+                }
+            }
+        }
     }
 
     /**
@@ -47,6 +66,10 @@ public class WorkflowDAGUtils {
 
         // 校验节点 ID 是否重复
         Set<Long> nodeIds = Sets.newHashSet();
+        // 不允许为空
+        if (peWorkflowDAG.getNodes() == null || peWorkflowDAG.getNodes().isEmpty()){
+            return false;
+        }
         for (PEWorkflowDAG.Node n : peWorkflowDAG.getNodes()) {
             if (nodeIds.contains(n.getNodeId())) {
                 return false;
@@ -60,7 +83,7 @@ public class WorkflowDAGUtils {
             WorkflowDAG dag = convert(peWorkflowDAG);
             // 检查所有顶点的路径
             for (WorkflowDAG.Node root : dag.getRoots()) {
-                if (invalidPath(root, Sets.newHashSet(),traversalNodeIds)) {
+                if (invalidPath(root, Sets.newHashSet(), traversalNodeIds)) {
                     return false;
                 }
             }
@@ -173,9 +196,9 @@ public class WorkflowDAGUtils {
     private static boolean isReadyNode(long nodeId, Map<Long, PEWorkflowDAG.Node> nodeId2Node, Multimap<Long, Long> relyMap) {
         PEWorkflowDAG.Node currentNode = nodeId2Node.get(nodeId);
         int currentNodeStatus = currentNode.getStatus() == null ? InstanceStatus.WAITING_DISPATCH.getV() : currentNode.getStatus();
-        // 跳过已完成节点（处理成功 或者 处理失败）和已派发节点（存在 InstanceId）
+        // 跳过已完成节点（处理成功 或者 处理失败）和已派发节点（ 状态为运行中 ）
         if (InstanceStatus.FINISHED_STATUS.contains(currentNodeStatus)
-                || currentNode.getInstanceId() != null) {
+                || currentNodeStatus == InstanceStatus.RUNNING.getV()) {
             return false;
         }
         Collection<Long> relyNodeIds = relyMap.get(nodeId);
@@ -195,6 +218,56 @@ public class WorkflowDAGUtils {
         // 默认不允许跳过
         return node.getSkipWhenFailed() == null || !node.getSkipWhenFailed();
     }
+
+    /**
+     * 处理被 disable 掉的边
+     * 1. 将仅能通过被 disable 掉的边可达的节点标记为 disable（disableByControlNode），将状态更新为已取消
+     * 2. 将这些被 disable 掉的节点的出口边都标记为 disable
+     * 3. 递归调用自身，继续处理被 disable 的边
+     */
+    @SuppressWarnings("squid:S3776")
+    public static void handleDisableEdges(List<PEWorkflowDAG.Edge> disableEdges, WorkflowDAG dag) {
+        if (disableEdges.isEmpty()) {
+            return;
+        }
+        List<PEWorkflowDAG.Node> disableNodes = Lists.newArrayList();
+        // 处理边上的节点，如果该节点仅能通过被 disable 掉的边可达，那么将该节点标记为 disable ，disableByControlNode ，并且将状态更新为 已取消
+        for (PEWorkflowDAG.Edge disableEdge : disableEdges) {
+            WorkflowDAG.Node toNode = dag.getNode(disableEdge.getTo());
+            // 判断是否仅能通过被 disable 掉的边可达
+            Collection<PEWorkflowDAG.Edge> dependenceEdges = toNode.getDependenceEdgeMap().values();
+            boolean shouldBeDisable = true;
+            for (PEWorkflowDAG.Edge dependenceEdge : dependenceEdges) {
+                if (dependenceEdge.getEnable() == null || dependenceEdge.getEnable()) {
+                    shouldBeDisable = false;
+                    break;
+                }
+            }
+            if (shouldBeDisable) {
+                // disable
+                PEWorkflowDAG.Node node = toNode.getHolder();
+                node.setEnable(false)
+                        .setDisableByControlNode(true)
+                        .setStatus(InstanceStatus.CANCELED.getV());
+                disableNodes.add(node);
+            }
+        }
+        if (!disableNodes.isEmpty()) {
+            // 被 disable 掉的节点的出口边都会被标记为 disable
+            List<PEWorkflowDAG.Edge> targetEdges = Lists.newArrayList();
+            for (PEWorkflowDAG.Node disableNode : disableNodes) {
+                WorkflowDAG.Node node = dag.getNode(disableNode.getNodeId());
+                Collection<PEWorkflowDAG.Edge> edges = node.getSuccessorEdgeMap().values();
+                for (PEWorkflowDAG.Edge edge : edges) {
+                    edge.setEnable(false);
+                    targetEdges.add(edge);
+                }
+            }
+            // 广度优先 继续处理被 disable 掉的边
+            handleDisableEdges(targetEdges, dag);
+        }
+    }
+
     /**
      * 将点线表示法的DAG图转化为引用表达法的DAG图
      *
@@ -212,9 +285,8 @@ public class WorkflowDAGUtils {
         // 创建节点
         peWorkflowDAG.getNodes().forEach(node -> {
             Long nodeId = node.getNodeId();
-            WorkflowDAG.Node n = new WorkflowDAG.Node(Lists.newLinkedList(), node.getNodeId(), node.getJobId(), node.getNodeName(), InstanceStatus.WAITING_DISPATCH.getV());
+            WorkflowDAG.Node n = new WorkflowDAG.Node(node);
             id2Node.put(nodeId, n);
-
             // 初始阶段，每一个点都设为顶点
             rootIds.add(nodeId);
         });
@@ -229,7 +301,9 @@ public class WorkflowDAGUtils {
             }
 
             from.getSuccessors().add(to);
-
+            from.getSuccessorEdgeMap().put(to, edge);
+            to.getDependencies().add(from);
+            to.getDependenceEdgeMap().put(from, edge);
             // 被连接的点不可能成为 root，移除
             rootIds.remove(to.getNodeId());
         });
@@ -241,7 +315,7 @@ public class WorkflowDAGUtils {
 
         List<WorkflowDAG.Node> roots = Lists.newLinkedList();
         rootIds.forEach(id -> roots.add(id2Node.get(id)));
-        return new WorkflowDAG(roots);
+        return new WorkflowDAG(roots, id2Node);
     }
 
 
@@ -257,7 +331,7 @@ public class WorkflowDAGUtils {
         }
         ids.add(root.getNodeId());
         for (WorkflowDAG.Node node : root.getSuccessors()) {
-            if (invalidPath(node, Sets.newHashSet(ids),nodeIdContainer)) {
+            if (invalidPath(node, Sets.newHashSet(ids), nodeIdContainer)) {
                 return true;
             }
         }

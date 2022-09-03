@@ -126,7 +126,7 @@ public class OpenAPIController {
     @PostMapping(OpenAPIConstant.CANCEL_INSTANCE)
     public ResultDTO<Void> cancelInstance(Long instanceId, Long appId) {
         checkInstanceIdValid(instanceId, appId);
-        instanceService.cancelInstance(instanceId);
+        instanceService.cancelInstance(appId, instanceId);
         return ResultDTO.success(null);
     }
 
@@ -204,7 +204,7 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.STOP_WORKFLOW_INSTANCE)
     public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId, Long appId) {
-        workflowInstanceService.stopWorkflowInstance(wfInstanceId, appId);
+        workflowInstanceService.stopWorkflowInstanceEntrance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
 

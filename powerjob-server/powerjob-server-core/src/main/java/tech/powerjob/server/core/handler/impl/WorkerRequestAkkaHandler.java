@@ -1,6 +1,9 @@
 package tech.powerjob.server.core.handler.impl;
 
 import akka.actor.AbstractActor;
+import akka.actor.Props;
+import akka.routing.DefaultResizer;
+import akka.routing.RoundRobinPool;
 import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,24 @@ import static tech.powerjob.server.core.handler.WorkerRequestHandler.getWorkerRe
 @Slf4j
 public class WorkerRequestAkkaHandler extends AbstractActor {
 
+
+    public static Props defaultProps(){
+        return Props.create(WorkerRequestAkkaHandler.class)
+                .withDispatcher("akka.worker-request-actor-dispatcher")
+                .withRouter(
+                        new RoundRobinPool(Runtime.getRuntime().availableProcessors() * 4)
+                                .withResizer(new DefaultResizer(
+                                        Runtime.getRuntime().availableProcessors() * 4,
+                                        Runtime.getRuntime().availableProcessors() * 10,
+                                        1,
+                                        0.2d,
+                                        0.3d,
+                                        0.1d,
+                                        10
+                                ))
+                );
+    }
+
     @Override
     public Receive createReceive() {
         return receiveBuilder()
@@ -30,7 +51,18 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
                 .build();
     }
 
+    @Override
+    public void preStart() throws Exception {
+        super.preStart();
+        log.debug("[WorkerRequestAkkaHandler]init WorkerRequestActor");
+    }
 
+
+    @Override
+    public void postStop() throws Exception {
+        super.postStop();
+        log.debug("[WorkerRequestAkkaHandler]stop WorkerRequestActor");
+    }
 
     /**
      * 处理 instance 状态

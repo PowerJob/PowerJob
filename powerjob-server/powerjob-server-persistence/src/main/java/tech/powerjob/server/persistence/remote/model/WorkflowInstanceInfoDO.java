@@ -33,6 +33,10 @@ public class WorkflowInstanceInfoDO {
      * workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
      */
     private Long wfInstanceId;
+    /**
+     * 上层工作流实例 ID （用于支持工作流嵌套）
+     */
+    private Long parentWfInstanceId;
 
     private Long workflowId;
     /**

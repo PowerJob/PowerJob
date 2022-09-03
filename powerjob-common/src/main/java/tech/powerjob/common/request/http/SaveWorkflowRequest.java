@@ -1,6 +1,7 @@
 package tech.powerjob.common.request.http;
 
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.utils.CommonUtils;
 import com.google.common.collect.Lists;
@@ -62,6 +63,8 @@ public class SaveWorkflowRequest implements Serializable {
 
     /** 点线表示法*/
     private PEWorkflowDAG dag;
+
+    private LifeCycle lifeCycle;
 
     public void valid() {
         CommonUtils.requireNonNull(wfName, "workflow name can't be empty");
