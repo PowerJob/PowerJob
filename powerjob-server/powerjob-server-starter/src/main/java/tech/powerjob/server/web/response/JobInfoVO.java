@@ -140,7 +140,7 @@ public class JobInfoVO {
 
     private String dispatchStrategy;
 
-    private LifeCycle lifecycle;
+    private LifeCycle lifeCycle;
 
     private AlarmConfig alarmConfig;
 
@@ -170,7 +170,7 @@ public class JobInfoVO {
             jobInfoVO.setAlarmConfig(JSON.parseObject(jobInfoDO.getAlarmConfig(),AlarmConfig.class));
         }
         if (!StringUtils.isEmpty(jobInfoDO.getLifecycle())){
-            jobInfoVO.setLifecycle(LifeCycle.parse(jobInfoDO.getLifecycle()));
+            jobInfoVO.setLifeCycle(LifeCycle.parse(jobInfoDO.getLifecycle()));
         }
 
         return jobInfoVO;

@@ -91,7 +91,7 @@ public class JobService {
         if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
             jobInfoDO.setNotifyUserIds(SJ.COMMA_JOINER.join(request.getNotifyUserIds()));
         }
-        LifeCycle lifecycle = Optional.ofNullable(request.getLifecycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
+        LifeCycle lifecycle = Optional.ofNullable(request.getLifeCycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
         jobInfoDO.setLifecycle(JSON.toJSONString(lifecycle));
         // 检查定时策略
         timingStrategyService.validate(request.getTimeExpressionType(), request.getTimeExpression(), lifecycle.getStart(), lifecycle.getEnd());

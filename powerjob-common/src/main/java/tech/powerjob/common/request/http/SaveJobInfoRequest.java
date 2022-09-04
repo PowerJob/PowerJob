@@ -133,7 +133,7 @@ public class SaveJobInfoRequest {
 
     private DispatchStrategy dispatchStrategy;
 
-    private LifeCycle lifecycle;
+    private LifeCycle lifeCycle;
     /**
      * alarm config
      */
