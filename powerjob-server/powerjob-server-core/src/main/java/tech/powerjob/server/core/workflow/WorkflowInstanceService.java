@@ -231,16 +231,15 @@ public class WorkflowInstanceService {
     }
 
     /**
-     * 查找对应的工作流实例
+     * 查找对应工作流的实例列表
      *
      * @param workflowId 工作流 ID
      * @param appId      任务所属应用的ID
-     * @return 工作流实例
+     * @return 工作流的实例列表
      */
-    public List<WorkflowInstanceInfoDTO> queryWorkflowInstanceInfo(Long workflowId, Long appId) {
-        List<WorkflowInstanceInfoDO> workflowInstanceInfoDOList = wfInstanceInfoRepository.findByWorkflowIdAndAppId(workflowId, appId);
-        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = workflowInstanceInfoDOList.stream().map(WorkflowInstanceService::directConvert).collect(Collectors.toList());
-        return workflowInstanceInfoDTOList;
+    public List<WorkflowInstanceInfoDTO> queryWorkflowInstanceInfoList(Long workflowId, Long appId) {
+        List<WorkflowInstanceInfoDO> workflowInstanceInfoDOList = wfInstanceInfoRepository.findTop10ByWorkflowIdAndAppIdOrderByActualTriggerTimeDesc(workflowId, appId);
+        return workflowInstanceInfoDOList.stream().map(WorkflowInstanceService::directConvert).collect(Collectors.toList());
     }
 
     private static WorkflowInstanceInfoDTO directConvert(WorkflowInstanceInfoDO workflowInstanceInfoDO) {

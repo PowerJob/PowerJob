@@ -188,4 +188,12 @@ class TestWorkflow extends ClientInitializer {
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
+
+    @Test
+    void testQueryWorkflowInstanceInfoList() {
+        ResultDTO<List<WorkflowInstanceInfoDTO>> res = powerJobClient.queryWorkflowInstanceInfoList(WF_ID);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
+    }
+
 }

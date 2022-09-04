@@ -2,11 +2,11 @@ package tech.powerjob.server.web.controller;
 
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.OpenAPIConstant;
+import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
-import tech.powerjob.common.request.query.InstanceInfoQuery;
 import tech.powerjob.common.request.query.JobInfoQuery;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
@@ -59,7 +59,7 @@ public class OpenAPIController {
     /* ************* Job 区 ************* */
 
     @PostMapping(OpenAPIConstant.SAVE_JOB)
-    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) throws ParseException {
+    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) {
         if (request.getId() != null) {
             checkJobIdValid(request.getId(), request.getAppId());
         }
@@ -149,8 +149,14 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.QUERY_INSTANCE)
-    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody InstanceInfoQuery powerQuery) {
+    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody PowerQuery powerQuery) {
         return ResultDTO.success(instanceService.queryInstanceInfo(powerQuery));
+    }
+
+    @PostMapping(OpenAPIConstant.QUERY_INSTANCE_INFO_LIST)
+    public ResultDTO<List<InstanceInfoDTO>> queryInstanceInfoList(Long jobId, Long appId) {
+        checkJobIdValid(jobId, appId);
+        return ResultDTO.success(instanceService.queryInstanceInfoList(jobId));
     }
 
     /* ************* Workflow 区 ************* */
@@ -220,9 +226,9 @@ public class OpenAPIController {
         return ResultDTO.success(null);
     }
 
-    @PostMapping(OpenAPIConstant.QUERY_WORKFLOW_INSTANCE_INFO)
-    public ResultDTO<List<WorkflowInstanceInfoDTO>> queryWorkflowInstanceInfo(Long workflowId, Long appId) {
-        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = workflowInstanceService.queryWorkflowInstanceInfo(workflowId, appId);
+    @PostMapping(OpenAPIConstant.QUERY_WORKFLOW_INSTANCE_INFO_LIST)
+    public ResultDTO<List<WorkflowInstanceInfoDTO>> queryWorkflowInstanceInfoList(Long workflowId, Long appId) {
+        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = workflowInstanceService.queryWorkflowInstanceInfoList(workflowId, appId);
         return ResultDTO.success(workflowInstanceInfoDTOList);
     }
 

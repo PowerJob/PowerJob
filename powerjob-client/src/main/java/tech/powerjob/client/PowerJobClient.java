@@ -183,16 +183,17 @@ public class PowerJobClient {
     }
 
     /**
-     * 查询任务的示例
+     * 查询任务的实例列表
      *
-     * @param instanceInfoQuery
-     * @return
+     * @param jobId 任务ID
+     * @return 任务的实例列表
      */
-    public ResultDTO<List<InstanceInfoDTO>> queryInstanceInfo(InstanceInfoQuery instanceInfoQuery) {
-        instanceInfoQuery.setAppIdEq(appId);
-        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
-        String json = JsonUtils.toJSONStringUnsafe(instanceInfoQuery);
-        String post = postHA(OpenAPIConstant.QUERY_INSTANCE, RequestBody.create(jsonType, json));
+    public ResultDTO<List<InstanceInfoDTO>> queryInstanceInfoList(Long jobId) {
+        RequestBody body = new FormBody.Builder()
+                .add("jobId", jobId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.QUERY_INSTANCE_INFO_LIST, body);
         return JSON.parseObject(post, LIST_INSTANCE_RESULT_TYPE);
     }
 
@@ -529,17 +530,17 @@ public class PowerJobClient {
     }
 
     /**
-     * 查询工作流任务的示例
+     * 查询工作流的任务实例列表
      *
-     * @param workflowId
-     * @return
+     * @param workflowId 工作流ID
+     * @return 工作流的实例列表
      */
-    public ResultDTO<List<WorkflowInstanceInfoDTO>> queryWorkflowInstanceInfo(Long workflowId) {
+    public ResultDTO<List<WorkflowInstanceInfoDTO>> queryWorkflowInstanceInfoList(Long workflowId) {
         FormBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
                 .add("appId", appId.toString())
                 .build();
-        String post = postHA(OpenAPIConstant.QUERY_WORKFLOW_INSTANCE_INFO, body);
+        String post = postHA(OpenAPIConstant.QUERY_WORKFLOW_INSTANCE_INFO_LIST, body);
         return JSON.parseObject(post, LIST_WF_INSTANCE_RESULT_TYPE);
     }
 

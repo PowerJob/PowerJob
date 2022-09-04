@@ -49,20 +49,4 @@ class TestQuery extends ClientInitializer {
         System.out.println(jobQueryResult.getData().size());
     }
 
-    @Test
-    void testQueryInstanceInfo() {
-        InstanceInfoQuery instanceInfoQuery = new InstanceInfoQuery();
-        instanceInfoQuery.setJobIdEq(89L);
-        ResultDTO<List<InstanceInfoDTO>> resultDTO = powerJobClient.queryInstanceInfo(instanceInfoQuery);
-        List<InstanceInfoDTO> instanceInfoDTOList = resultDTO.getData();
-        instanceInfoDTOList.size();
-    }
-
-    @Test
-    void testQueryWorkflowInstanceInfo() {
-        ResultDTO<List<WorkflowInstanceInfoDTO>> resultDTO = powerJobClient.queryWorkflowInstanceInfo(2L);
-        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = resultDTO.getData();
-        workflowInstanceInfoDTOList.size();
-    }
-
 }
