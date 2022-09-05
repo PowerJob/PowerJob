@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<included>
+
+    <property name="MONITOR_LOG_PATH" value="${LOG_PATH}/monitors"/>
+    <property name="ROTATE_PATTERN" value="%d{yyyy-MM-dd}.%i"/>
+
+    <property name="MONITOR_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%thread|%msg%n"/>
+
+    <!-- Configuration for database monitor logs. -->
+    <appender name="MONITOR_LOGGER_DB_OPERATION_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${MONITOR_LOG_PATH}/database.log</file>
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${MONITOR_LOG_PATH}/database.log.${ROTATE_PATTERN}</fileNamePattern>
+            <maxHistory>3</maxHistory>
+            <maxFileSize>500MB</maxFileSize>
+            <totalSizeCap>1500MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="ASYNC_MONITOR_LOGGER_DB_OPERATION_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="MONITOR_LOGGER_DB_OPERATION_APPENDER"/>
+    </appender>
+    <logger name="MONITOR_LOGGER_DB_OPERATION" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_MONITOR_LOGGER_DB_OPERATION_APPENDER"/>
+    </logger>
+    <!-- End of configuration for database monitor logs. -->
+
+</included>
