@@ -21,6 +21,7 @@
         <module>powerjob-server-extension</module>
         <module>powerjob-server-migrate</module>
         <module>powerjob-server-core</module>
+        <module>powerjob-server-monitor</module>
     </modules>
 
 
@@ -54,6 +55,11 @@
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-monitor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

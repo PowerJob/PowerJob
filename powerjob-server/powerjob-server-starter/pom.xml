@@ -33,6 +33,10 @@
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-monitor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-persistence</artifactId>
         </dependency>
         <dependency>
