@@ -1,5 +1,6 @@
 package tech.powerjob.samples.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import tech.powerjob.common.utils.CommonUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import tech.powerjob.official.processors.impl.sql.SpringDatasourceSqlProcessor;
+import tech.powerjob.worker.PowerJobWorker;
 
 import javax.sql.DataSource;
 
@@ -17,6 +19,7 @@ import javax.sql.DataSource;
  * @since 2021/3/10
  */
 @Configuration
+@ConditionalOnBean(PowerJobWorker.class)
 public class SqlProcessorConfiguration {
 
 
