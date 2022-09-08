@@ -23,13 +23,21 @@ public class DatabaseMonitorAspect {
     @Resource
     private ServerMonitor serverMonitor;
 
-    @Around(value = "@annotation(databaseMonitor))")
-    public Object execute(ProceedingJoinPoint point, DatabaseMonitor databaseMonitor) throws Throwable {
+    @Around("execution(* tech.powerjob.server.persistence.remote.repository..*.*(..))")
+    public Object monitorCoreDB(ProceedingJoinPoint joinPoint) throws Throwable {
+        return wrapperMonitor(joinPoint, DatabaseType.CORE);
+    }
 
+    @Around("execution(* tech.powerjob.server.persistence.local..*.*(..))")
+    public Object monitorLocalDB(ProceedingJoinPoint joinPoint) throws Throwable {
+        return wrapperMonitor(joinPoint, DatabaseType.LOCAL);
+    }
+
+    private Object wrapperMonitor(ProceedingJoinPoint point, DatabaseType type) throws Throwable {
         final String className = point.getTarget().getClass().getSimpleName();
         final String methodName = point.getSignature().getName();
 
-        DatabaseEvent event = new DatabaseEvent().setType(databaseMonitor.type())
+        DatabaseEvent event = new DatabaseEvent().setType(type)
                 .setServiceName(className)
                 .setMethodName(methodName)
                 .setStatus(DatabaseEvent.Status.SUCCESS);
@@ -40,12 +48,11 @@ public class DatabaseMonitorAspect {
             event.setRows(parseEffectRows(ret));
             return ret;
         } catch (Throwable t) {
-
-            long cost = System.currentTimeMillis() - startTs;
-            event.setCost(cost).setErrorMsg(t.getMessage()).setStatus(DatabaseEvent.Status.FAILED);
-            serverMonitor.record(event);
-
+            event.setErrorMsg(t.getMessage()).setStatus(DatabaseEvent.Status.FAILED);
             throw t;
+        } finally {
+            long cost = System.currentTimeMillis() - startTs;
+            serverMonitor.record(event.setCost(cost));
         }
     }
 

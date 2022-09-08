@@ -15,7 +15,7 @@ import tech.powerjob.server.monitor.Event;
 @Accessors(chain = true)
 public class DatabaseEvent implements Event {
 
-    private DatabaseEventType type;
+    private DatabaseType type;
 
     private String serviceName;
 
