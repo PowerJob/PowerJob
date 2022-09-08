@@ -64,20 +64,21 @@ public class DatabaseMonitorAspect {
 
     private static Integer parseEffectRows(Object ret) {
 
-        if (ret instanceof Collection) {
-            return ((Collection<?>) ret).size();
-        }
         if (ret instanceof Number) {
             return ((Number) ret).intValue();
         }
         if (ret instanceof Optional) {
             return ((Optional<?>) ret).isPresent() ? 1 : 0;
         }
+        if (ret instanceof Collection) {
+            return ((Collection<?>) ret).size();
+        }
         if (ret instanceof Slice) {
             return ((Slice<?>) ret).getSize();
         }
 
-        // TODO: 计算影响行数，可能需要小改下 DAO 层，
-        return null;
+        // TODO: 直接返回对象的方法全部改成 Optional
+
+        return ret == null ? 0 : 1;
     }
 }
