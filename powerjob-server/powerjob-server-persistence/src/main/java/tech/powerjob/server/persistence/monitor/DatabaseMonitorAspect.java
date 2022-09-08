@@ -14,6 +14,7 @@ import tech.powerjob.server.monitor.monitors.ServerMonitor;
 import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * 监控切面
@@ -64,6 +65,8 @@ public class DatabaseMonitorAspect {
 
     private static Integer parseEffectRows(Object ret) {
 
+        // 从性能角度考虑，最高频场景放在最前面判断
+
         if (ret instanceof Number) {
             return ((Number) ret).intValue();
         }
@@ -77,6 +80,9 @@ public class DatabaseMonitorAspect {
             return ((Slice<?>) ret).getSize();
         }
 
+        if (ret instanceof Stream) {
+            return null;
+        }
         // TODO: 直接返回对象的方法全部改成 Optional
 
         return ret == null ? 0 : 1;
