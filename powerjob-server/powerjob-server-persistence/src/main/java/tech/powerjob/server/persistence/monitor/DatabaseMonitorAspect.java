@@ -1,15 +1,19 @@
-package tech.powerjob.server.monitor.events.db;
+package tech.powerjob.server.persistence.monitor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.aop.support.AopUtils;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import tech.powerjob.server.common.utils.AOPUtils;
+import tech.powerjob.server.monitor.events.db.DatabaseEvent;
+import tech.powerjob.server.monitor.events.db.DatabaseType;
 import tech.powerjob.server.monitor.monitors.ServerMonitor;
 
 import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * 监控切面
@@ -59,6 +63,20 @@ public class DatabaseMonitorAspect {
     }
 
     private static Integer parseEffectRows(Object ret) {
+
+        if (ret instanceof Collection) {
+            return ((Collection<?>) ret).size();
+        }
+        if (ret instanceof Number) {
+            return ((Number) ret).intValue();
+        }
+        if (ret instanceof Optional) {
+            return ((Optional<?>) ret).isPresent() ? 1 : 0;
+        }
+        if (ret instanceof Slice) {
+            return ((Slice<?>) ret).getSize();
+        }
+
         // TODO: 计算影响行数，可能需要小改下 DAO 层，
         return null;
     }
