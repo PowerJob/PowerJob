@@ -2,9 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ 4.1.1-docker-compose ]
-    tags:
-      - 'v*'
+    branches: [ master ]
 
 jobs:
 
@@ -22,6 +20,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: tjqq/powerjob-server
         tag_with_ref: true
+        tags: latest
         path: powerjob-server/docker/
     - uses: docker/build-push-action@v1
       with:
@@ -29,6 +28,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: tjqq/powerjob-agent
         tag_with_ref: true
+        tags: latest
         path: powerjob-worker-agent/
     - uses: docker/build-push-action@v1
       with:
@@ -36,4 +36,5 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: tjqq/powerjob-worker-samples
         tag_with_ref: true
+        tags: latest
         path: powerjob-worker-samples/
