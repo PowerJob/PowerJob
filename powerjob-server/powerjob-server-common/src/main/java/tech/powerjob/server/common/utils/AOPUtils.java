@@ -2,6 +2,7 @@ package tech.powerjob.server.common.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -26,6 +27,10 @@ public class AOPUtils {
 
     private static final ExpressionParser parser = new SpelExpressionParser();
     private static final ParameterNameDiscoverer discoverer = new LocalVariableTableParameterNameDiscoverer();
+
+    public static String parseRealClassName(JoinPoint joinPoint) {
+        return joinPoint.getSignature().getDeclaringType().getSimpleName();
+    }
 
     public static Method parseMethod(ProceedingJoinPoint joinPoint) {
         Signature pointSignature = joinPoint.getSignature();

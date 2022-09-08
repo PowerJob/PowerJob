@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.stereotype.Component;
+import tech.powerjob.server.common.utils.AOPUtils;
 import tech.powerjob.server.monitor.monitors.ServerMonitor;
 
 import javax.annotation.Resource;
@@ -34,11 +36,11 @@ public class DatabaseMonitorAspect {
     }
 
     private Object wrapperMonitor(ProceedingJoinPoint point, DatabaseType type) throws Throwable {
-        final String className = point.getTarget().getClass().getSimpleName();
+        String classNameMini = AOPUtils.parseRealClassName(point);
         final String methodName = point.getSignature().getName();
 
         DatabaseEvent event = new DatabaseEvent().setType(type)
-                .setServiceName(className)
+                .setServiceName(classNameMini)
                 .setMethodName(methodName)
                 .setStatus(DatabaseEvent.Status.SUCCESS);
 
