@@ -19,6 +19,8 @@ import tech.powerjob.server.core.handler.impl.WorkerRequestHttpHandler;
 import tech.powerjob.server.core.instance.InstanceLogService;
 import tech.powerjob.server.core.instance.InstanceManager;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.monitor.events.handler.WorkerHeartbeatEvent;
+import tech.powerjob.server.monitor.monitors.ServerMonitor;
 import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
@@ -45,6 +47,8 @@ import java.util.stream.Collectors;
 @Component
 public class WorkerRequestHandler {
 
+    @Resource
+    private ServerMonitor serverMonitor;
     @Resource
     private Environment environment;
     @Resource
@@ -74,6 +78,11 @@ public class WorkerRequestHandler {
      * @param heartbeat 心跳包
      */
     public void onReceiveWorkerHeartbeat(WorkerHeartbeat heartbeat) {
+
+        WorkerHeartbeatEvent event = new WorkerHeartbeatEvent();
+        BeanUtils.copyProperties(heartbeat, event);
+        serverMonitor.record(event.setScore(heartbeat.getSystemMetrics().getScore()));
+
         WorkerClusterManagerService.updateStatus(heartbeat);
     }
 
