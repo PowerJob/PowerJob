@@ -16,7 +16,10 @@ import tech.powerjob.server.monitor.Event;
 public class WorkerHeartbeatEvent implements Event {
 
     private String appName;
-
+    /**
+     * 虽然和 AppName 冗余，但考虑到其他日志使用 appId 监控，此处可方便潜在的其他处理
+     */
+    private Long appId;
     private String version;
 
     private String protocol;
@@ -33,6 +36,6 @@ public class WorkerHeartbeatEvent implements Event {
 
     @Override
     public String message() {
-        return SJ.MONITOR_JOINER.join(appName, version, protocol, tag, workerAddress, score);
+        return SJ.MONITOR_JOINER.join(appName, appId, version, protocol, tag, workerAddress, score);
     }
 }
