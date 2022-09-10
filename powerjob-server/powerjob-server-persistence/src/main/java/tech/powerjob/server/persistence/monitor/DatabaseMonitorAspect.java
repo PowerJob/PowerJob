@@ -7,9 +7,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import tech.powerjob.server.common.utils.AOPUtils;
+import tech.powerjob.server.monitor.MonitorService;
 import tech.powerjob.server.monitor.events.db.DatabaseEvent;
 import tech.powerjob.server.monitor.events.db.DatabaseType;
-import tech.powerjob.server.monitor.monitors.ServerMonitor;
 
 import javax.annotation.Resource;
 import java.util.Collection;
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 public class DatabaseMonitorAspect {
 
     @Resource
-    private ServerMonitor serverMonitor;
+    private MonitorService monitorService;
 
     @Around("execution(* tech.powerjob.server.persistence.remote.repository..*.*(..))")
     public Object monitorCoreDB(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -59,7 +59,7 @@ public class DatabaseMonitorAspect {
             throw t;
         } finally {
             long cost = System.currentTimeMillis() - startTs;
-            serverMonitor.record(event.setCost(cost));
+            monitorService.monitor(event.setCost(cost));
         }
     }
 

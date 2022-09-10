@@ -11,8 +11,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import tech.powerjob.server.common.utils.AOPUtils;
+import tech.powerjob.server.monitor.MonitorService;
 import tech.powerjob.server.monitor.events.lock.SlowLockEvent;
-import tech.powerjob.server.monitor.monitors.ServerMonitor;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class UseCacheLockAspect {
 
     @Resource
-    private ServerMonitor serverMonitor;
+    private MonitorService monitorService;
 
     private final Map<String, Cache<String, ReentrantLock>> lockContainer = Maps.newConcurrentMap();
 
@@ -67,7 +67,7 @@ public class UseCacheLockAspect {
                         .setCallerMethod(method.getName())
                         .setCost(timeCost);
 
-                serverMonitor.record(slowLockEvent);
+                monitorService.monitor(slowLockEvent);
 
                 log.warn("[UseSegmentLockAspect] wait lock for method({}#{}) cost {} ms! key = '{}', args = {}, ", method.getDeclaringClass().getSimpleName(), method.getName(), timeCost,
                         key,

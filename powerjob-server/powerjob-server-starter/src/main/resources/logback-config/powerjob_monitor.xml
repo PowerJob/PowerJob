@@ -4,7 +4,7 @@
     <property name="MONITOR_LOG_PATH" value="${LOG_PATH}/monitors"/>
     <property name="ROTATE_PATTERN" value="%d{yyyy-MM-dd}.%i"/>
 
-    <property name="MONITOR_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%thread|%msg%n"/>
+    <property name="MONITOR_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%thread|%X{serverId}|%msg%n"/>
 
     <!-- Configuration for database monitor logs. -->
     <appender name="MONITOR_LOGGER_DB_OPERATION_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
