@@ -17,10 +17,15 @@ import java.util.Map;
 @Slf4j
 public class ProcessorTrackerStatusHolder {
 
+    private final Long instanceId;
+    private final Integer maxWorkerCount;
     // ProcessorTracker的address(IP:Port) -> 状态
     private final Map<String, ProcessorTrackerStatus> address2Status;
 
-    public ProcessorTrackerStatusHolder(List<String> allWorkerAddress) {
+    public ProcessorTrackerStatusHolder(Long instanceId, Integer maxWorkerCount, List<String> allWorkerAddress) {
+
+        this.instanceId = instanceId;
+        this.maxWorkerCount = maxWorkerCount;
 
         address2Status = Maps.newConcurrentMap();
         allWorkerAddress.forEach(address -> {
@@ -38,7 +43,7 @@ public class ProcessorTrackerStatusHolder {
     public ProcessorTrackerStatus getProcessorTrackerStatus(String address) {
         // remove 前突然收到了 PT 心跳同时立即被派发才可能出现这种情况，0.001% 概率
         return address2Status.computeIfAbsent(address, ignore -> {
-            log.warn("[ProcessorTrackerStatusHolder] unregistered worker: {}", address);
+            log.warn("[PTStatusHolder-{}] unregistered worker: {}", instanceId, address);
             ProcessorTrackerStatus processorTrackerStatus = new ProcessorTrackerStatus();
             processorTrackerStatus.init(address);
             return processorTrackerStatus;
@@ -90,9 +95,9 @@ public class ProcessorTrackerStatusHolder {
     /**
      * 注册新的执行节点
      * @param address 新的执行节点地址
-     * @return true: 注册成功 / false：已存在
+     * @return true: register successfully / false: already exists
      */
-    public boolean register(String address) {
+    private boolean registerOne(String address) {
         ProcessorTrackerStatus pts = address2Status.get(address);
         if (pts != null) {
             return false;
@@ -100,7 +105,48 @@ public class ProcessorTrackerStatusHolder {
         pts = new ProcessorTrackerStatus();
         pts.init(address);
         address2Status.put(address, pts);
+        log.info("[PTStatusHolder-{}] register new worker: {}", instanceId, address);
         return true;
+    }
+
+    public void register(List<String> workerIpList) {
+        if (endlessWorkerNum()) {
+            workerIpList.forEach(this::registerOne);
+            return;
+        }
+        List<String> availableProcessorTrackers = getAvailableProcessorTrackers();
+        int currentWorkerSize = availableProcessorTrackers.size();
+        int needMoreNum = maxWorkerCount - currentWorkerSize;
+        if (needMoreNum <= 0) {
+            return;
+        }
+
+        log.info("[PTStatusHolder-{}] currentWorkerSize: {}, needMoreNum: {}", instanceId, currentWorkerSize, needMoreNum);
+
+        for (String newIp : workerIpList) {
+            boolean success = registerOne(newIp);
+            if (success) {
+                needMoreNum --;
+            }
+            if (needMoreNum <= 0) {
+                return;
+            }
+        }
+    }
+
+    /**
+     * 检查是否需要动态加载新的执行器
+     * @return check need more workers
+     */
+    public boolean checkNeedMoreWorker() {
+        if (endlessWorkerNum()) {
+            return true;
+        }
+        return getAvailableProcessorTrackers().size() < maxWorkerCount;
+    }
+
+    private boolean endlessWorkerNum() {
+        return maxWorkerCount == null || maxWorkerCount == 0;
     }
 
     public void remove(List<String> addressList) {

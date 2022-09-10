@@ -181,6 +181,7 @@ public class DispatchService {
         }
         req.setInstanceId(instanceInfo.getInstanceId());
         req.setAllWorkerAddress(finalWorkersIpList);
+        req.setMaxWorkerCount(jobInfo.getMaxWorkerCount());
 
         // 设置工作流ID
         req.setWfInstanceId(instanceInfo.getWfInstanceId());

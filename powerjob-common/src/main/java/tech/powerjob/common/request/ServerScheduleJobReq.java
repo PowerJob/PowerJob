@@ -20,6 +20,11 @@ public class ServerScheduleJobReq implements PowerSerializable {
      */
     private List<String> allWorkerAddress;
 
+    /**
+     * 最大机器数量
+     */
+    private Integer maxWorkerCount;
+
     /* *********************** 任务相关属性 *********************** */
 
     /**
