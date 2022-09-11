@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
-import static tech.powerjob.server.core.handler.WorkerRequestHandler.getWorkerRequestHandler;
+import static tech.powerjob.server.core.handler.WorkerRequestHandlerHolder.fetchWorkerRequestHandler;
 
 /**
  * 处理 Worker 请求
@@ -42,9 +42,9 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(WorkerHeartbeat.class, hb -> getWorkerRequestHandler().onReceiveWorkerHeartbeat(hb))
+                .match(WorkerHeartbeat.class, hb -> fetchWorkerRequestHandler().processWorkerHeartbeat(hb))
                 .match(TaskTrackerReportInstanceStatusReq.class, this::onReceiveTaskTrackerReportInstanceStatusReq)
-                .match(WorkerLogReportReq.class, req -> getWorkerRequestHandler().onReceiveWorkerLogReportReq(req))
+                .match(WorkerLogReportReq.class, req -> fetchWorkerRequestHandler().processWorkerLogReport(req))
                 .match(WorkerNeedDeployContainerRequest.class, this::onReceiveWorkerNeedDeployContainerRequest)
                 .match(WorkerQueryExecutorClusterReq.class, this::onReceiveWorkerQueryExecutorClusterReq)
                 .matchAny(obj -> log.warn("[WorkerRequestAkkaHandler] receive unknown request: {}.", obj))
@@ -71,7 +71,7 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
     private void onReceiveTaskTrackerReportInstanceStatusReq(TaskTrackerReportInstanceStatusReq req) {
 
         try {
-            Optional<AskResponse> askResponseOpt = getWorkerRequestHandler().onReceiveTaskTrackerReportInstanceStatusReq(req);
+            Optional<AskResponse> askResponseOpt = fetchWorkerRequestHandler().processTaskTrackerReportInstanceStatus(req);
             if (askResponseOpt.isPresent()) {
                 getSender().tell(AskResponse.succeed(null), getSelf());
             }
@@ -85,7 +85,7 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
      * @param req 容器部署请求
      */
     private void onReceiveWorkerNeedDeployContainerRequest(WorkerNeedDeployContainerRequest req) {
-        getSender().tell(getWorkerRequestHandler().onReceiveWorkerNeedDeployContainerRequest(req), getSelf());
+        getSender().tell(fetchWorkerRequestHandler().processWorkerNeedDeployContainer(req), getSelf());
     }
 
     /**
@@ -94,7 +94,7 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
      */
     private void onReceiveWorkerQueryExecutorClusterReq(WorkerQueryExecutorClusterReq req) {
 
-        getSender().tell(getWorkerRequestHandler().onReceiveWorkerQueryExecutorClusterReq(req), getSelf());
+        getSender().tell(fetchWorkerRequestHandler().processWorkerQueryExecutorCluster(req), getSelf());
     }
 
 }
