@@ -1,5 +1,6 @@
 package tech.powerjob.server.config;
 
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import tech.powerjob.server.common.RejectedExecutionHandlerFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ import java.util.concurrent.*;
 public class ThreadPoolConfig {
 
     @Bean(PJThreadPool.TIMING_POOL)
-    public Executor getTimingPool() {
+    public TaskExecutor getTimingPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors());
         executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 4);
@@ -38,7 +39,7 @@ public class ThreadPoolConfig {
     }
 
     @Bean(PJThreadPool.BACKGROUND_POOL)
-    public Executor initBackgroundPool() {
+    public AsyncTaskExecutor initBackgroundPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() * 8);
         executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() * 16);
@@ -50,7 +51,7 @@ public class ThreadPoolConfig {
     }
 
     @Bean(PJThreadPool.LOCAL_DB_POOL)
-    public Executor initOmsLocalDbPool() {
+    public TaskExecutor initOmsLocalDbPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() / 2);
         executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() / 2);

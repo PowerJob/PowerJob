@@ -1,5 +1,7 @@
 package tech.powerjob.server.core.instance;
 
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import tech.powerjob.common.enums.LogLevel;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -68,7 +70,9 @@ public class InstanceLogService {
      * 本地维护了在线日志的任务实例ID
      */
     private final Map<Long, Long> instanceId2LastReportTime = Maps.newConcurrentMap();
-    private final ExecutorService workerPool;
+
+    @Resource(name = PJThreadPool.BACKGROUND_POOL)
+    private AsyncTaskExecutor powerJobBackgroundPool;
 
     /**
      *  分段锁
@@ -87,11 +91,6 @@ public class InstanceLogService {
      * 过期时间
      */
     private static final long EXPIRE_INTERVAL_MS = 60000;
-
-    public InstanceLogService() {
-        int coreSize = Runtime.getRuntime().availableProcessors();
-        workerPool = new ThreadPoolExecutor(coreSize, coreSize, 1, TimeUnit.MINUTES, Queues.newLinkedBlockingQueue());
-    }
 
     /**
      * 提交日志记录，持久化到本地数据库中
@@ -192,7 +191,7 @@ public class InstanceLogService {
      * @return 异步结果
      */
     private Future<File> prepareLogFile(long instanceId) {
-        return workerPool.submit(() -> {
+        return powerJobBackgroundPool.submit(() -> {
             // 在线日志还在不断更新，需要使用本地数据库中的数据
             if (instanceId2LastReportTime.containsKey(instanceId)) {
                 return genTemporaryLogFile(instanceId);
