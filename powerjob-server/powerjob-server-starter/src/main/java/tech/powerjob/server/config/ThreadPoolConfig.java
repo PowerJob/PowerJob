@@ -53,8 +53,9 @@ public class ThreadPoolConfig {
     @Bean(PJThreadPool.LOCAL_DB_POOL)
     public TaskExecutor initOmsLocalDbPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() / 2);
-        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() / 2);
+        int tSize = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
+        executor.setCorePoolSize(tSize);
+        executor.setMaxPoolSize(tSize);
         executor.setQueueCapacity(2048);
         executor.setThreadNamePrefix("PJ-LOCALDB-");
         executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newAbort(PJThreadPool.LOCAL_DB_POOL));
