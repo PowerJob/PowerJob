@@ -1,29 +1,27 @@
 package tech.powerjob.worker.autoconfigure;
 
-import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.worker.PowerJobWorker;
-import tech.powerjob.worker.common.PowerJobWorkerConfig;
-import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.worker.PowerJobWorker;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Auto configuration class for PowerJob-worker.
+ * Autoconfiguration class for PowerJob-worker.
  *
  * @author songyinyin
  * @since 2020/7/26 16:37
  */
 @Configuration
 @EnableConfigurationProperties(PowerJobProperties.class)
-@Conditional(PowerJobAutoConfiguration.PowerJobWorkerCondition.class)
+@ConditionalOnProperty(prefix = "powerjob.worker", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class PowerJobAutoConfiguration {
 
     @Bean
@@ -36,7 +34,8 @@ public class PowerJobAutoConfiguration {
          * Address of PowerJob-server node(s). Do not mistake for ActorSystem port. Do not add
          * any prefix, i.e. http://.
          */
-        CommonUtils.requireNonNull(worker.getServerAddress(), "serverAddress can't be empty!");
+        CommonUtils.requireNonNull(worker.getServerAddress(), "serverAddress can't be empty! " +
+            "if you don't want to enable powerjob, please config program arguments: powerjob.worker.enabled=false");
         List<String> serverAddress = Arrays.asList(worker.getServerAddress().split(","));
 
         /*
@@ -85,21 +84,4 @@ public class PowerJobAutoConfiguration {
         return ohMyWorker;
     }
 
-    static class PowerJobWorkerCondition extends AnyNestedCondition {
-
-        public PowerJobWorkerCondition() {
-            super(ConfigurationPhase.PARSE_CONFIGURATION);
-        }
-
-        @Deprecated
-        @ConditionalOnProperty(prefix = "powerjob", name = "server-address")
-        static class PowerJobProperty {
-
-        }
-
-        @ConditionalOnProperty(prefix = "powerjob.worker", name = "server-address")
-        static class PowerJobWorkerProperty {
-
-        }
-    }
 }
