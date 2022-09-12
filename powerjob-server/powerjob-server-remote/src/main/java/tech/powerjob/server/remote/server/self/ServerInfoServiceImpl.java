@@ -88,7 +88,6 @@ public class ServerInfoServiceImpl implements ServerInfoService {
         log.info("[ServerInfoService] ip:{}, id:{}, cost:{}", ip, serverInfo.getId(), sw);
     }
 
-    @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(fixedRate = 15000, initialDelay = 15000)
     public void heartbeat() {
         serverInfoRepository.updateGmtModifiedByIp(serverInfo.getIp(), new Date());

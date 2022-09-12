@@ -10,6 +10,10 @@ import tech.powerjob.server.common.module.ServerInfo;
  */
 public interface ServerInfoService {
 
+    /**
+     * fetch current server info
+     * @return ServerInfo
+     */
     ServerInfo fetchServiceInfo();
 
 }
