@@ -16,8 +16,8 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${MONITOR_LOG_PATH}/database.log.${ROTATE_PATTERN}</fileNamePattern>
             <maxHistory>3</maxHistory>
-            <maxFileSize>500MB</maxFileSize>
-            <totalSizeCap>1500MB</totalSizeCap>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
         </rollingPolicy>
     </appender>
     <appender name="ASYNC_MONITOR_LOGGER_DB_OPERATION_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
@@ -41,8 +41,8 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${MONITOR_LOG_PATH}/tt_status_report.log.${ROTATE_PATTERN}</fileNamePattern>
             <maxHistory>3</maxHistory>
-            <maxFileSize>500MB</maxFileSize>
-            <totalSizeCap>1500MB</totalSizeCap>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
         </rollingPolicy>
     </appender>
     <appender name="ASYNC_MONITOR_LOGGER_TT_REPORT_STATUS_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
@@ -65,8 +65,8 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${MONITOR_LOG_PATH}/worker_heartbeat.log.${ROTATE_PATTERN}</fileNamePattern>
             <maxHistory>3</maxHistory>
-            <maxFileSize>500MB</maxFileSize>
-            <totalSizeCap>1500MB</totalSizeCap>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
         </rollingPolicy>
     </appender>
     <appender name="ASYNC_MONITOR_LOGGER_WORKER_HEART_BEAT_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
@@ -90,8 +90,8 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${MONITOR_LOG_PATH}/worker_log_report.log.${ROTATE_PATTERN}</fileNamePattern>
             <maxHistory>3</maxHistory>
-            <maxFileSize>500MB</maxFileSize>
-            <totalSizeCap>1500MB</totalSizeCap>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
         </rollingPolicy>
     </appender>
     <appender name="ASYNC_MONITOR_LOGGER_WORKER_LOG_REPORT_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
@@ -115,8 +115,8 @@
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${MONITOR_LOG_PATH}/lock.log.${ROTATE_PATTERN}</fileNamePattern>
             <maxHistory>3</maxHistory>
-            <maxFileSize>500MB</maxFileSize>
-            <totalSizeCap>1500MB</totalSizeCap>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
         </rollingPolicy>
     </appender>
     <appender name="ASYNC_MONITOR_LOGGER_SLOW_LOCK_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
