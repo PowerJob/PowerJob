@@ -14,4 +14,6 @@ public class SJ {
     public static final Splitter COMMA_SPLITTER = Splitter.on(",");
     public static final Joiner COMMA_JOINER = Joiner.on(",");
 
+    public static final Joiner MONITOR_JOINER = Joiner.on("|").useForNull("-");
+
 }

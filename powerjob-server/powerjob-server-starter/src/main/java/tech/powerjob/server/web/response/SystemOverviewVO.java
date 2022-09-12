@@ -3,6 +3,7 @@ package tech.powerjob.server.web.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import tech.powerjob.server.common.module.ServerInfo;
 
 /**
  * 系统概览
@@ -21,13 +22,5 @@ public class SystemOverviewVO {
     // 服务器时间
     private String serverTime;
 
-    private CurrentServerInfo currentServerInfo;
-
-    @Getter
-    @AllArgsConstructor
-    public static class CurrentServerInfo {
-        private final long id;
-        private final String ip;
-        private final String version;
-    }
+    private ServerInfo serverInfo;
 }

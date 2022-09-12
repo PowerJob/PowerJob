@@ -7,14 +7,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Data;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
@@ -339,6 +338,7 @@ public class FrequentTaskTracker extends TaskTracker {
             }
 
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
+            req.setAppId(workerRuntime.getAppId());
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
             req.setReportTime(System.currentTimeMillis());

@@ -3,6 +3,7 @@ package tech.powerjob.server.core.scheduler;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.LifeCycle;
+import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
@@ -73,7 +74,7 @@ public class PowerScheduleService {
 
     private static final long SCHEDULE_RATE = 15000;
 
-    @Async("omsTimingPool")
+    @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(fixedDelay = SCHEDULE_RATE)
     public void timingSchedule() {
 

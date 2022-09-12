@@ -1,5 +1,7 @@
 package tech.powerjob.server.core.instance;
 
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import tech.powerjob.common.enums.LogLevel;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -7,6 +9,7 @@ import tech.powerjob.common.model.InstanceLogContent;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SegmentLock;
+import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.StringPage;
@@ -67,7 +70,9 @@ public class InstanceLogService {
      * 本地维护了在线日志的任务实例ID
      */
     private final Map<Long, Long> instanceId2LastReportTime = Maps.newConcurrentMap();
-    private final ExecutorService workerPool;
+
+    @Resource(name = PJThreadPool.BACKGROUND_POOL)
+    private AsyncTaskExecutor powerJobBackgroundPool;
 
     /**
      *  分段锁
@@ -87,16 +92,12 @@ public class InstanceLogService {
      */
     private static final long EXPIRE_INTERVAL_MS = 60000;
 
-    public InstanceLogService() {
-        int coreSize = Runtime.getRuntime().availableProcessors();
-        workerPool = new ThreadPoolExecutor(coreSize, coreSize, 1, TimeUnit.MINUTES, Queues.newLinkedBlockingQueue());
-    }
-
     /**
      * 提交日志记录，持久化到本地数据库中
      * @param workerAddress 上报机器地址
      * @param logs 任务实例运行时日志
      */
+    @Async(value = PJThreadPool.LOCAL_DB_POOL)
     public void submitLogs(String workerAddress, List<InstanceLogContent> logs) {
 
         List<LocalInstanceLogDO> logList = logs.stream().map(x -> {
@@ -190,7 +191,7 @@ public class InstanceLogService {
      * @return 异步结果
      */
     private Future<File> prepareLogFile(long instanceId) {
-        return workerPool.submit(() -> {
+        return powerJobBackgroundPool.submit(() -> {
             // 在线日志还在不断更新，需要使用本地数据库中的数据
             if (instanceId2LastReportTime.containsKey(instanceId)) {
                 return genTemporaryLogFile(instanceId);
@@ -203,7 +204,7 @@ public class InstanceLogService {
      * 将本地的任务实例运行日志同步到 mongoDB 存储，在任务执行结束后异步执行
      * @param instanceId 任务实例ID
      */
-    @Async("omsBackgroundPool")
+    @Async(PJThreadPool.BACKGROUND_POOL)
     public void sync(Long instanceId) {
 
         Stopwatch sw = Stopwatch.createStarted();
@@ -345,7 +346,7 @@ public class InstanceLogService {
     }
 
 
-    @Async("omsTimingPool")
+    @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(fixedDelay = 120000)
     public void timingCheck() {
 

@@ -14,6 +14,9 @@
     -->
     <property name="LOG_PATH" value="${user.home}/powerjob/server/logs"/>
 
+    <!-- include other logback configs -->
+    <include resource="logback-config/powerjob_monitor.xml"/>
+
     <!-- Configuration for ERROR logs. All error logs will write twice. -->
     <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/powerjob-server-error.log</file>

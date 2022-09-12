@@ -23,6 +23,10 @@
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-monitor</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -146,9 +146,8 @@ public class DispatchService {
         // 构造任务调度请求
         ServerScheduleJobReq req = constructServerScheduleJobReq(jobInfo, instanceInfo, workerIpList);
 
-
         // 发送请求（不可靠，需要一个后台线程定期轮询状态）
-        WorkerInfo taskTracker = selectTaskTracker(jobInfo, suitableWorkers);
+        WorkerInfo taskTracker = suitableWorkers.get(0);
         String taskTrackerAddress = taskTracker.getAddress();
 
         transportService.tell(Protocol.of(taskTracker.getProtocol()), taskTrackerAddress, req);
@@ -182,6 +181,7 @@ public class DispatchService {
         }
         req.setInstanceId(instanceInfo.getInstanceId());
         req.setAllWorkerAddress(finalWorkersIpList);
+        req.setMaxWorkerCount(jobInfo.getMaxWorkerCount());
 
         // 设置工作流ID
         req.setWfInstanceId(instanceInfo.getWfInstanceId());
@@ -195,18 +195,5 @@ public class DispatchService {
         }
         req.setThreadConcurrency(jobInfo.getConcurrency());
         return req;
-    }
-
-    private WorkerInfo selectTaskTracker(JobInfoDO jobInfo, List<WorkerInfo> workerInfos) {
-        DispatchStrategy dispatchStrategy = DispatchStrategy.of(jobInfo.getDispatchStrategy());
-        switch (dispatchStrategy) {
-            case HEALTH_FIRST:
-                return workerInfos.get(0);
-            case RANDOM:
-                return workerInfos.get(ThreadLocalRandom.current().nextInt(workerInfos.size()));
-            default:
-        }
-        // impossible, indian java
-        return workerInfos.get(0);
     }
 }
