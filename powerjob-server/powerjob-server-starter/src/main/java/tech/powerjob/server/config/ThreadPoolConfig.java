@@ -46,7 +46,7 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(8192);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsBackgroundPool-");
-        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newReject("PowerJobBackgroundPool"));
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newDiscard("PowerJobBackgroundPool"));
         return executor;
     }
 
