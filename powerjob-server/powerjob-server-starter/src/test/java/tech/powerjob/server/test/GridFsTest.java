@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import org.junit.Ignore;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +18,6 @@ import java.io.IOException;
  * @author tjq
  * @since 2020/5/18
  */
-@ActiveProfiles("daily")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class GridFsTest {
@@ -26,25 +26,30 @@ public class GridFsTest {
     private GridFsManager gridFsManager;
 
     @Test
+    @Ignore
     public void testStore() throws IOException {
         File file = new File("/Users/tjq/Desktop/DistributeCompute/oms-template-origin.zip");
         gridFsManager.store(file, "test", "test.zip");
     }
 
     @Test
+    @Ignore
     public void testDownload() throws IOException {
         File file = new File("/Users/tjq/Desktop/tmp/test-download.zip");
         gridFsManager.download(file, "test", "test.zip");
     }
 
     @Test
+    @Ignore
     public void testDelete() {
         gridFsManager.deleteBefore("fs", 0);
     }
 
     @Test
+    @Ignore
     public void testExists() {
         System.out.println(gridFsManager.exists("test", "test.zip"));
         System.out.println(gridFsManager.exists("test", "oms-sql.sql"));
     }
+
 }

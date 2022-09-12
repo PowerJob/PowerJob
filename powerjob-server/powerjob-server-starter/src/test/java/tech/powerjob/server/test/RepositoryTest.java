@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import org.springframework.test.annotation.Rollback;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
@@ -48,8 +49,8 @@ public class RepositoryTest {
      */
     @Test
     @Transactional
+    @Rollback
     public void testBatchLock() {
-
         List<OmsLockDO> locks = Lists.newArrayList();
         for (int i = 0; i < 10; i++) {
             OmsLockDO lockDO = new OmsLockDO("lock" + i, NetUtils.getLocalHost(), 10000L);

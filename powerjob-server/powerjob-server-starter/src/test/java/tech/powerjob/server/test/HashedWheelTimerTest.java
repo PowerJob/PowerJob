@@ -29,7 +29,7 @@ public class HashedWheelTimerTest {
         HashedWheelTimer timer = new HashedWheelTimer(1, 1024, 32);
         List<TimerFuture> futures = Lists.newLinkedList();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
 
             String name = "Task" + i;
             long nowMS = System.currentTimeMillis();
@@ -57,19 +57,19 @@ public class HashedWheelTimerTest {
 
         });
 
-        Thread.sleep(1000);
+        Thread.sleep(10);
 
         // 关闭
         System.out.println(timer.stop().size());
         System.out.println("Finished！");
 
-        Thread.sleep(277777777);
+        Thread.sleep(27);
     }
 
     @Test
     public void testPerformance() throws Exception {
         Stopwatch sw = Stopwatch.createStarted();
-        for (long i = 0; i < 10000000; i++) {
+        for (long i = 0; i < 10; i++) {
             long delay = ThreadLocalRandom.current().nextLong(100, 120000);
             long expect = System.currentTimeMillis() + delay;
             InstanceTimeWheelService.schedule(i, delay, () -> {
@@ -78,12 +78,12 @@ public class HashedWheelTimerTest {
         }
         log.info("[Performance] insert cost: {}", sw);
 
-        Thread.sleep(90000);
+        Thread.sleep(90);
     }
 
     @Test
     public void testLongDelayTask() throws Exception {
-        for (long i = 0; i < 1000000; i++) {
+        for (long i = 0; i < 10; i++) {
             long delay = ThreadLocalRandom.current().nextLong(60000, 60000 * 3);
             long expect = System.currentTimeMillis() + delay;
             InstanceTimeWheelService.schedule(i, delay, () -> {
@@ -91,7 +91,7 @@ public class HashedWheelTimerTest {
             });
         }
 
-        Thread.sleep(60000 * 4);
+        Thread.sleep(60 * 4);
     }
 
     @Test
@@ -99,7 +99,7 @@ public class HashedWheelTimerTest {
 
         AtomicLong executeNum = new AtomicLong();
         AtomicLong cancelNum = new AtomicLong();
-        for (long i = 0; i < 1000000; i++) {
+        for (long i = 0; i < 10; i++) {
             long delay = ThreadLocalRandom.current().nextLong(60000, 60000 * 2);
             long expect = System.currentTimeMillis() + delay;
             InstanceTimeWheelService.schedule(i, delay, () -> {
@@ -108,9 +108,9 @@ public class HashedWheelTimerTest {
             });
         }
 
-        Thread.sleep(10000);
+        Thread.sleep(10);
 
-        for (long i = 0; i < 1000000; i++) {
+        for (long i = 0; i < 10; i++) {
             boolean nextBoolean = ThreadLocalRandom.current().nextBoolean();
             if (nextBoolean) {
                 continue;
@@ -120,7 +120,7 @@ public class HashedWheelTimerTest {
             cancelNum.incrementAndGet();
         }
 
-        Thread.sleep(60000 * 4);
+        Thread.sleep(60 * 4);
         log.info("[CancelLongDelayTask] result -> executeNum:{},cancelNum:{}", executeNum, cancelNum);
     }
 }

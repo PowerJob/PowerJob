@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import org.junit.Ignore;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
 import tech.powerjob.server.core.scheduler.CleanService;
@@ -24,9 +25,9 @@ import java.util.function.Consumer;
  * @since 2020/5/11
  */
 
-@ActiveProfiles("daily")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Ignore
 public class OmsLogTest {
 
     @Resource

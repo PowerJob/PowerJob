@@ -2,6 +2,7 @@ package tech.powerjob.server.core.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
+@ConditionalOnExpression("'${execution.env}'!='test'")
 public class WorkerRequestHandler {
 
     @Resource

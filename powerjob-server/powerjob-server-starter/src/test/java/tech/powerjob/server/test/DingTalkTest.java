@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import org.junit.Ignore;
 import tech.powerjob.server.extension.defaultimpl.alarm.impl.DingTalkUtils;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
@@ -18,11 +19,13 @@ public class DingTalkTest {
     private static final DingTalkUtils dingTalkUtils = new DingTalkUtils("dingauqwkvxxnqskknfv", "XWrEPdAZMPgJeFtHuL0LH73LRj-74umF2_0BFcoXMfvnX0pCQvt0rpb1JOJU_HLl");
 
     @Test
+    @Ignore
     public void testFetchUserId() throws Exception {
         System.out.println(dingTalkUtils.fetchUserIdByMobile("38353"));
     }
 
     @Test
+    @Ignore
     public void testSendMarkdown() throws Exception {
         String userId = "2159453017839770,1234";
 

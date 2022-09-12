@@ -27,7 +27,7 @@ public class ConflictTest {
 
         int len = CommonUtils.formatSize(1024) - 1;
         Map<Integer, Integer> matchCount = new TreeMap<>();
-        int maxTime = 100000;
+        int maxTime = 10000;
         int expectedMaxConflict = maxTime / len;
 
         for (int i = 0; i < maxTime; i++) {
