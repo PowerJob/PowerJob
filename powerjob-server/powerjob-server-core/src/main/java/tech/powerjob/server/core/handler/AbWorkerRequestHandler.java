@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
+import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -76,7 +77,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
                 .setJobId(req.getJobId())
                 .setInstanceId(req.getInstanceId())
                 .setWfInstanceId(req.getWfInstanceId())
-                .setInstanceStatus(req.getInstanceStatus())
+                .setInstanceStatus(InstanceStatus.of(req.getInstanceStatus()))
                 .setDelayMs(startMs - req.getReportTime())
                 .setServerProcessStatus(TtReportInstanceStatusEvent.Status.SUCCESS);
         try {

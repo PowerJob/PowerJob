@@ -2,6 +2,7 @@ package tech.powerjob.server.monitor.events.w2s;
 
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.monitor.Event;
 
@@ -21,7 +22,7 @@ public class TtReportInstanceStatusEvent implements Event {
 
     private Long wfInstanceId;
 
-    private int instanceStatus;
+    private InstanceStatus instanceStatus;
 
     private Long delayMs;
 

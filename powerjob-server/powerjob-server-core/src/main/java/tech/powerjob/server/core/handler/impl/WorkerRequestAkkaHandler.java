@@ -24,7 +24,7 @@ public class WorkerRequestAkkaHandler extends AbstractActor {
 
     public static Props defaultProps(){
         return Props.create(WorkerRequestAkkaHandler.class)
-                .withDispatcher("akka.worker-request-actor-dispatcher")
+                .withDispatcher("akka.w-r-c-d")
                 .withRouter(
                         new RoundRobinPool(Runtime.getRuntime().availableProcessors() * 4)
                                 .withResizer(new DefaultResizer(
