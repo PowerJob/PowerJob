@@ -61,7 +61,8 @@ public class UseCacheLockAspect {
             if (timeCost > SLOW_THRESHOLD) {
 
                 final SlowLockEvent slowLockEvent = new SlowLockEvent()
-                        .setLocKType(useCacheLock.type())
+                        .setType(SlowLockEvent.Type.LOCAL)
+                        .setLockType(useCacheLock.type())
                         .setLockKey(String.valueOf(key))
                         .setCallerService(method.getDeclaringClass().getSimpleName())
                         .setCallerMethod(method.getName())

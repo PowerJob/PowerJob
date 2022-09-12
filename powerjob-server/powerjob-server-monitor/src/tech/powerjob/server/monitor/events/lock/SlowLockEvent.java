@@ -15,11 +15,17 @@ import tech.powerjob.server.monitor.Event;
 @Accessors(chain = true)
 public class SlowLockEvent implements Event {
 
-    private String locKType;
+    private Type type;
+    private String lockType;
     private String lockKey;
     private String callerService;
     private String callerMethod;
     private long cost;
+
+    public enum Type {
+        LOCAL,
+        DB
+    }
 
     @Override
     public String type() {
@@ -28,6 +34,6 @@ public class SlowLockEvent implements Event {
 
     @Override
     public String message() {
-        return SJ.MONITOR_JOINER.join(locKType, lockKey, callerService, callerMethod, cost);
+        return SJ.MONITOR_JOINER.join(type, lockType, lockKey, callerService, callerMethod, cost);
     }
 }
