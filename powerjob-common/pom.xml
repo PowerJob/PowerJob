@@ -10,19 +10,19 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-common</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1</version>
     <packaging>jar</packaging>
 
     <properties>
         <slf4j.version>1.7.30</slf4j.version>
-        <commons.lang.version>3.10</commons.lang.version>
-        <commons.io.version>2.6</commons.io.version>
-        <guava.version>30.1.1-jre</guava.version>
+        <commons.lang.version>3.12.0</commons.lang.version>
+        <commons.io.version>2.7</commons.io.version>
+        <guava.version>31.1-jre</guava.version>
         <okhttp.version>3.14.9</okhttp.version>
         <akka.version>2.6.12</akka.version>
         <kryo.version>5.0.4</kryo.version>
         <jackson.version>2.12.2</jackson.version>
-        <junit.version>5.6.1</junit.version>
+        <junit.version>5.9.0</junit.version>
     </properties>
 
     <dependencies>
