@@ -52,6 +52,9 @@ public class InstanceLogService {
     private int port;
 
     @Resource
+    private Executor omsLocalDbPool;
+
+    @Resource
     private InstanceMetadataService instanceMetadataService;
     @Resource
     private GridFsManager gridFsManager;
@@ -99,20 +102,22 @@ public class InstanceLogService {
      */
     public void submitLogs(String workerAddress, List<InstanceLogContent> logs) {
 
-        List<LocalInstanceLogDO> logList = logs.stream().map(x -> {
-            instanceId2LastReportTime.put(x.getInstanceId(), System.currentTimeMillis());
+        omsLocalDbPool.execute(() -> {
+            List<LocalInstanceLogDO> logList = logs.stream().map(x -> {
+                instanceId2LastReportTime.put(x.getInstanceId(), System.currentTimeMillis());
 
-            LocalInstanceLogDO y = new LocalInstanceLogDO();
-            BeanUtils.copyProperties(x, y);
-            y.setWorkerAddress(workerAddress);
-            return y;
-        }).collect(Collectors.toList());
+                LocalInstanceLogDO y = new LocalInstanceLogDO();
+                BeanUtils.copyProperties(x, y);
+                y.setWorkerAddress(workerAddress);
+                return y;
+            }).collect(Collectors.toList());
 
-        try {
-            CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.saveAll(logList));
-        }catch (Exception e) {
-            log.warn("[InstanceLogService] persistent instance logs failed, these logs will be dropped: {}.", logs, e);
-        }
+            try {
+                CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.saveAll(logList));
+            }catch (Exception e) {
+                log.warn("[InstanceLogService] persistent instance logs failed, these logs will be dropped: {}.", logs, e);
+            }
+        });
     }
 
     /**

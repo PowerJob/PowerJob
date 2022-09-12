@@ -94,7 +94,6 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     @Override
     public void processWorkerLogReport(WorkerLogReportReq req) {
 
-        long startMs = System.currentTimeMillis();
         WorkerLogReportEvent event = new WorkerLogReportEvent()
                 .setWorkerAddress(req.getWorkerAddress());
         try {
@@ -106,7 +105,6 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
             event.setStatus(WorkerLogReportEvent.Status.EXCEPTION);
             log.warn("[WorkerRequestHandler] process worker report failed!", t);
         } finally {
-            event.setServerCost(System.currentTimeMillis() - startMs);
             monitorService.monitor(event);
         }
     }

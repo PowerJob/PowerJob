@@ -34,7 +34,7 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsTimingPool-");
-        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun("PowerJobTiming"));
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun("PJ-TIMING"));
         return executor;
     }
 
@@ -46,7 +46,18 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(8192);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("omsBackgroundPool-");
-        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newDiscard("PowerJobBackgroundPool"));
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newDiscard("PJ-BACKGROUND"));
+        return executor;
+    }
+
+    @Bean("omsLocalDbPool")
+    public Executor initOmsLocalDbPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(Runtime.getRuntime().availableProcessors() / 2);
+        executor.setMaxPoolSize(Runtime.getRuntime().availableProcessors() / 2);
+        executor.setQueueCapacity(2048);
+        executor.setThreadNamePrefix("omsLocalDbPool-");
+        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newAbort("PJ-LOCAL-DB"));
         return executor;
     }
 
@@ -55,7 +66,7 @@ public class ThreadPoolConfig {
     public TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(Runtime.getRuntime().availableProcessors());
-        scheduler.setThreadNamePrefix("PowerJobSchedulePool-");
+        scheduler.setThreadNamePrefix("PJ-WS-");
         scheduler.setDaemon(true);
         return scheduler;
     }

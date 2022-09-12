@@ -22,8 +22,6 @@ public class WorkerLogReportEvent implements Event {
 
     private Status status;
 
-    private long serverCost;
-
     public enum Status {
         SUCCESS,
         REJECTED,
@@ -37,6 +35,6 @@ public class WorkerLogReportEvent implements Event {
 
     @Override
     public String message() {
-        return SJ.MONITOR_JOINER.join(workerAddress, logSize, status, serverCost);
+        return SJ.MONITOR_JOINER.join(workerAddress, logSize, status);
     }
 }
