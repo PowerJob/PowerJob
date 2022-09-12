@@ -2,9 +2,11 @@ package tech.powerjob.server.remote.server.self;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.scheduling.annotation.Async;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.ServerInfoDO;
@@ -86,6 +88,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
         log.info("[ServerInfoService] ip:{}, id:{}, cost:{}", ip, serverInfo.getId(), sw);
     }
 
+    @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(fixedRate = 15000, initialDelay = 15000)
     public void heartbeat() {
         serverInfoRepository.updateGmtModifiedByIp(serverInfo.getIp(), new Date());
