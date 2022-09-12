@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<included>
+
+    <property name="MONITOR_LOG_PATH" value="${LOG_PATH}/monitors"/>
+    <property name="ROTATE_PATTERN" value="%d{yyyy-MM-dd}.%i"/>
+
+    <property name="MONITOR_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%thread|%X{serverId}|%msg%n"/>
+
+    <!-- database -->
+    <appender name="MONITOR_LOGGER_DB_OPERATION_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${MONITOR_LOG_PATH}/database.log</file>
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${MONITOR_LOG_PATH}/database.log.${ROTATE_PATTERN}</fileNamePattern>
+            <maxHistory>3</maxHistory>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="ASYNC_MONITOR_LOGGER_DB_OPERATION_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="MONITOR_LOGGER_DB_OPERATION_APPENDER"/>
+    </appender>
+    <logger name="MONITOR_LOGGER_DB_OPERATION" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_MONITOR_LOGGER_DB_OPERATION_APPENDER"/>
+    </logger>
+
+
+    <!-- TtReportInstanceStatusEvent -->
+    <appender name="MONITOR_LOGGER_TT_REPORT_STATUS_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${MONITOR_LOG_PATH}/tt_status_report.log</file>
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${MONITOR_LOG_PATH}/tt_status_report.log.${ROTATE_PATTERN}</fileNamePattern>
+            <maxHistory>3</maxHistory>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="ASYNC_MONITOR_LOGGER_TT_REPORT_STATUS_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="MONITOR_LOGGER_TT_REPORT_STATUS_APPENDER"/>
+    </appender>
+    <logger name="MONITOR_LOGGER_TT_REPORT_STATUS" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_MONITOR_LOGGER_TT_REPORT_STATUS_APPENDER"/>
+    </logger>
+
+    <!-- WorkerHeartbeatEvent -->
+    <appender name="MONITOR_LOGGER_WORKER_HEART_BEAT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${MONITOR_LOG_PATH}/worker_heartbeat.log</file>
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${MONITOR_LOG_PATH}/worker_heartbeat.log.${ROTATE_PATTERN}</fileNamePattern>
+            <maxHistory>3</maxHistory>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="ASYNC_MONITOR_LOGGER_WORKER_HEART_BEAT_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="MONITOR_LOGGER_WORKER_HEART_BEAT_APPENDER"/>
+    </appender>
+    <logger name="MONITOR_LOGGER_WORKER_HEART_BEAT" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_MONITOR_LOGGER_WORKER_HEART_BEAT_APPENDER"/>
+    </logger>
+
+
+    <!-- WorkerLogReportEvent -->
+    <appender name="MONITOR_LOGGER_WORKER_LOG_REPORT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${MONITOR_LOG_PATH}/worker_log_report.log</file>
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${MONITOR_LOG_PATH}/worker_log_report.log.${ROTATE_PATTERN}</fileNamePattern>
+            <maxHistory>3</maxHistory>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="ASYNC_MONITOR_LOGGER_WORKER_LOG_REPORT_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="MONITOR_LOGGER_WORKER_LOG_REPORT_APPENDER"/>
+    </appender>
+    <logger name="MONITOR_LOGGER_WORKER_LOG_REPORT" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_MONITOR_LOGGER_WORKER_LOG_REPORT_APPENDER"/>
+    </logger>
+
+
+    <!-- SlowLockEvent -->
+    <appender name="MONITOR_LOGGER_SLOW_LOCK_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${MONITOR_LOG_PATH}/lock.log</file>
+        <encoder>
+            <pattern>${MONITOR_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${MONITOR_LOG_PATH}/lock.log.${ROTATE_PATTERN}</fileNamePattern>
+            <maxHistory>3</maxHistory>
+            <maxFileSize>200MB</maxFileSize>
+            <totalSizeCap>1000MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    <appender name="ASYNC_MONITOR_LOGGER_SLOW_LOCK_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="MONITOR_LOGGER_SLOW_LOCK_APPENDER"/>
+    </appender>
+    <logger name="MONITOR_LOGGER_SLOW_LOCK" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_MONITOR_LOGGER_SLOW_LOCK_APPENDER"/>
+    </logger>
+
+</included>

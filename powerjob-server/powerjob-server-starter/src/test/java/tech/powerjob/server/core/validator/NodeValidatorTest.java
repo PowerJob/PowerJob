@@ -1,6 +1,6 @@
 package tech.powerjob.server.core.validator;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
 import tech.powerjob.common.enums.WorkflowNodeType;
@@ -41,7 +41,7 @@ class NodeValidatorTest {
         final WorkflowNodeInfoDO workflowNodeInfo1 = new WorkflowNodeInfoDO();
         BeanUtils.copyProperties(node1, workflowNodeInfo1);
         workflowNodeInfo1.setId(node1.getNodeId());
-        Assert.assertThrows(PowerJobException.class, () -> decisionNodeValidator.complexValidate(workflowNodeInfo1, dag));
+        Assertions.assertThrows(PowerJobException.class, () -> decisionNodeValidator.complexValidate(workflowNodeInfo1, dag));
 
     }
 

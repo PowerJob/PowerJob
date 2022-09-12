@@ -158,6 +158,7 @@ public class CommonTaskTracker extends TaskTracker {
             log.debug("[TaskTracker-{}] status check result: {}", instanceId, holder);
 
             TaskTrackerReportInstanceStatusReq req = new TaskTrackerReportInstanceStatusReq();
+            req.setAppId(workerRuntime.getAppId());
             req.setJobId(instanceInfo.getJobId());
             req.setInstanceId(instanceId);
             req.setWfInstanceId(instanceInfo.getWfInstanceId());

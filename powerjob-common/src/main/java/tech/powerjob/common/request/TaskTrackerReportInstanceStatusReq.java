@@ -15,6 +15,12 @@ import java.util.Map;
 @Data
 public class TaskTrackerReportInstanceStatusReq implements PowerSerializable {
 
+    /**
+     * 追加上报自己的 appId
+     * 方便后续的监控日志埋点
+     */
+    private Long appId;
+
     private Long jobId;
 
     private Long instanceId;

@@ -124,7 +124,7 @@ public abstract class TaskTracker {
         // 保护性操作
         instanceInfo.setThreadConcurrency(Math.max(1, instanceInfo.getThreadConcurrency()));
 
-        this.ptStatusHolder = new ProcessorTrackerStatusHolder(req.getAllWorkerAddress());
+        this.ptStatusHolder = new ProcessorTrackerStatusHolder(instanceId, req.getMaxWorkerCount(), req.getAllWorkerAddress());
         this.taskPersistenceService = workerRuntime.getTaskPersistenceService();
         this.finished = new AtomicBoolean(false);
         // 只有工作流中的任务允许向工作流中追加上下文数据
@@ -562,6 +562,13 @@ public abstract class TaskTracker {
     protected class WorkerDetector implements Runnable {
         @Override
         public void run() {
+
+            boolean needMoreWorker = ptStatusHolder.checkNeedMoreWorker();
+            log.info("[TaskTracker-{}] checkNeedMoreWorker: {}", instanceId, needMoreWorker);
+            if (!needMoreWorker) {
+                return;
+            }
+
             String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
             if (StringUtils.isEmpty(serverPath)) {
                 log.warn("[TaskTracker-{}] no server available, won't start worker detective!", instanceId);
@@ -575,11 +582,7 @@ public abstract class TaskTracker {
             }
             try {
                 List<String> workerList = JsonUtils.parseObject(response.getData(), new TypeReference<List<String>>() {});
-                workerList.forEach(address -> {
-                    if (ptStatusHolder.register(address)) {
-                        log.info("[TaskTracker-{}] detective new worker: {}", instanceId, address);
-                    }
-                });
+                ptStatusHolder.register(workerList);
             } catch (Exception e) {
                 log.warn("[TaskTracker-{}] detective failed!", instanceId, e);
             }

@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -21,13 +21,14 @@
         <module>powerjob-server-extension</module>
         <module>powerjob-server-migrate</module>
         <module>powerjob-server-core</module>
+        <module>powerjob-server-monitor</module>
     </modules>
 
 
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.3.4.RELEASE</springboot.version>
-        <powerjob.common.version>4.1.0</powerjob.common.version>
+        <powerjob.common.version>4.1.1</powerjob.common.version>
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
         <mysql.version>8.0.28</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
@@ -54,6 +55,11 @@
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-monitor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

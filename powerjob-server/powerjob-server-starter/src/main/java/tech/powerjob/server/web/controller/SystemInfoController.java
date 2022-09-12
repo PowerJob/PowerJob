@@ -4,9 +4,10 @@ import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
-import tech.powerjob.server.remote.server.ServerInfoService;
+import tech.powerjob.server.remote.server.self.ServerInfoService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.web.response.SystemOverviewVO;
@@ -70,8 +71,7 @@ public class SystemInfoController {
         // 服务器时间
         overview.setServerTime(DateFormatUtils.format(new Date(), OmsConstant.TIME_PATTERN));
 
-        SystemOverviewVO.CurrentServerInfo info = new SystemOverviewVO.CurrentServerInfo(serverInfoService.getServerId(), serverInfoService.getServerIp(), serverInfoService.getServerVersion());
-        overview.setCurrentServerInfo(info);
+        overview.setServerInfo(serverInfoService.fetchServiceInfo());
 
         return ResultDTO.success(overview);
     }

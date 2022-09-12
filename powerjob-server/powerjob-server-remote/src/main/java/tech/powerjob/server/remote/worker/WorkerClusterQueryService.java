@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.enums.DispatchStrategy;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.extension.WorkerFilter;
@@ -44,8 +45,17 @@ public class WorkerClusterQueryService {
 
         workers.removeIf(workerInfo -> filterWorker(workerInfo, jobInfo));
 
-        // 按健康度排序
-        workers.sort((o1, o2) -> o2.getSystemMetrics().calculateScore() - o1.getSystemMetrics().calculateScore());
+        DispatchStrategy dispatchStrategy = DispatchStrategy.of(jobInfo.getDispatchStrategy());
+        switch (dispatchStrategy) {
+            case RANDOM:
+                Collections.shuffle(workers);
+                break;
+            case HEALTH_FIRST:
+                workers.sort((o1, o2) -> o2.getSystemMetrics().calculateScore() - o1.getSystemMetrics().calculateScore());
+                break;
+            default:
+                // do nothing
+        }
 
         // 限定集群大小（0代表不限制）
         if (!workers.isEmpty() && jobInfo.getMaxWorkerCount() > 0 && workers.size() > jobInfo.getMaxWorkerCount()) {

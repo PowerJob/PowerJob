@@ -2,7 +2,7 @@ package tech.powerjob.server.test;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.core.uid.SnowFlakeIdGenerator;
 
@@ -27,7 +27,7 @@ public class ConflictTest {
 
         int len = CommonUtils.formatSize(1024) - 1;
         Map<Integer, Integer> matchCount = new TreeMap<>();
-        int maxTime = 100000;
+        int maxTime = 10000;
         int expectedMaxConflict = maxTime / len;
 
         for (int i = 0; i < maxTime; i++) {

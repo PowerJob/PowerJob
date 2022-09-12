@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import tech.powerjob.server.common.utils.AOPUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,8 +61,8 @@ public class WebLogAspect {
             }
             HttpServletRequest request = requestAttributes.getRequest();
 
-            String[] classNameSplit = joinPoint.getSignature().getDeclaringTypeName().split("\\.");
-            String classNameMini = classNameSplit[classNameSplit.length - 1];
+
+            String classNameMini = AOPUtils.parseRealClassName(joinPoint);
             String classMethod = classNameMini + "." + joinPoint.getSignature().getName();
 
             // 排除特殊类

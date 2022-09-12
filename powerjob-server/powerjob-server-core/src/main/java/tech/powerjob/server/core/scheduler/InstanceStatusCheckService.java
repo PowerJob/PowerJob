@@ -4,6 +4,7 @@ import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import tech.powerjob.server.persistence.remote.model.*;
@@ -59,7 +60,7 @@ public class InstanceStatusCheckService {
     @Resource
     private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
-    @Async("omsTimingPool")
+    @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(fixedDelay = 10000)
     public void timingStatusCheck() {
         Stopwatch stopwatch = Stopwatch.createStarted();

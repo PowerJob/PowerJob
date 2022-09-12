@@ -2,6 +2,7 @@ package tech.powerjob.server.core.scheduler;
 
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
@@ -62,7 +63,7 @@ public class CleanService {
     private static final String HISTORY_DELETE_LOCK = "history_delete_lock";
 
 
-    @Async("omsTimingPool")
+    @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(cron = CLEAN_TIME_EXPRESSION)
     public void timingClean() {
 

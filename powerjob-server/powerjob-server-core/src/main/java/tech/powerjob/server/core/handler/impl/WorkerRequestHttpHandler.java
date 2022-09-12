@@ -21,7 +21,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Properties;
 
-import static tech.powerjob.server.core.handler.WorkerRequestHandler.getWorkerRequestHandler;
+import static tech.powerjob.server.core.handler.WorkerRequestHandlerHolder.fetchWorkerRequestHandler;
 
 /**
  * WorkerRequestHandler
@@ -46,14 +46,14 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
         router.post(ProtocolConstant.SERVER_PATH_HEARTBEAT)
                 .handler(ctx -> {
                     WorkerHeartbeat heartbeat = ctx.getBodyAsJson().mapTo(WorkerHeartbeat.class);
-                    getWorkerRequestHandler().onReceiveWorkerHeartbeat(heartbeat);
+                    fetchWorkerRequestHandler().processWorkerHeartbeat(heartbeat);
                     success(ctx);
                 });
         router.post(ProtocolConstant.SERVER_PATH_STATUS_REPORT)
                 .blockingHandler(ctx -> {
                     TaskTrackerReportInstanceStatusReq req = ctx.getBodyAsJson().mapTo(TaskTrackerReportInstanceStatusReq.class);
                     try {
-                        getWorkerRequestHandler().onReceiveTaskTrackerReportInstanceStatusReq(req);
+                        fetchWorkerRequestHandler().processTaskTrackerReportInstanceStatus(req);
                         out(ctx, AskResponse.succeed(null));
                     } catch (Exception e) {
                         log.error("[WorkerRequestHttpHandler] update instance status failed for request: {}.", req, e);
@@ -63,7 +63,7 @@ public class WorkerRequestHttpHandler extends AbstractVerticle {
         router.post(ProtocolConstant.SERVER_PATH_LOG_REPORT)
                 .blockingHandler(ctx -> {
                     WorkerLogReportReq req = ctx.getBodyAsJson().mapTo(WorkerLogReportReq.class);
-                    getWorkerRequestHandler().onReceiveWorkerLogReportReq(req);
+                    fetchWorkerRequestHandler().processWorkerLogReport(req);
                     success(ctx);
                 });
         server.requestHandler(router).listen(port);

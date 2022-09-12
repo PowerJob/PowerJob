@@ -33,13 +33,14 @@ public class InstanceMetadataService implements InitializingBean {
 
     @Value("${oms.instance.metadata.cache.size}")
     private int instanceMetadataCacheSize;
-    private static final int CACHE_CONCURRENCY_LEVEL = 4;
+    private static final int CACHE_CONCURRENCY_LEVEL = 16;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         instanceId2JobInfoCache = CacheBuilder.newBuilder()
                 .concurrencyLevel(CACHE_CONCURRENCY_LEVEL)
                 .maximumSize(instanceMetadataCacheSize)
+                .softValues()
                 .build();
     }
 

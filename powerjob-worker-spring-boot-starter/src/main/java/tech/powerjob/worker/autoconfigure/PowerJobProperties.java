@@ -107,6 +107,12 @@ public class PowerJobProperties {
     @Setter
     @Getter
     public static class Worker {
+
+        /**
+         * Whether to enable PowerJob Worker
+         */
+        private boolean enabled = true;
+
         /**
          * Name of application, String type. Total length of this property should be no more than 255
          * characters. This is one of the required properties when registering a new application. This
