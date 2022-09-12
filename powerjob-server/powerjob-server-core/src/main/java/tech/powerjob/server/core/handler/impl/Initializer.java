@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.handler.impl;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.server.remote.transport.starter.AkkaStarter;
@@ -14,6 +15,7 @@ import javax.annotation.PostConstruct;
  * @since 2022/9/11
  */
 @Component
+@ConditionalOnExpression("'${execution.env}'!='test'")
 public class Initializer {
 
     @PostConstruct

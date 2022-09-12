@@ -1,11 +1,10 @@
 package tech.powerjob.server.test;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.server.core.uid.IdGenerateService;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.core.scheduler.CleanService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -18,7 +17,6 @@ import javax.annotation.Resource;
  * @since 2020/4/2
  */
 //@ActiveProfiles("daily")
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ServiceTest {
 

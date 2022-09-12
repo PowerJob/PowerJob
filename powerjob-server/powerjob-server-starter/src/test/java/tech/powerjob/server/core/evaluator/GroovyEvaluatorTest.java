@@ -3,8 +3,8 @@ package tech.powerjob.server.core.evaluator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.common.serialize.JsonUtils;
 
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public class GroovyEvaluatorTest {
     @Test
     public void testSimpleEval1() {
         Object res = groovyEvaluator.evaluate("var x = false; x;", null);
-        Assert.assertEquals(false, res);
+        Assertions.assertEquals(false, res);
     }
 
     @Test
@@ -53,14 +53,14 @@ public class GroovyEvaluatorTest {
         // inject simple context
         Object res = groovyEvaluator.evaluate("var res = context.k3; res;", SIMPLE_CONTEXT);
         Boolean s = JsonUtils.parseObjectUnsafe(res.toString(), Boolean.class);
-        Assert.assertEquals(false, s);
+        Assertions.assertEquals(false, s);
     }
 
 
     @Test
     public void testSimpleEval3() {
         Object res = groovyEvaluator.evaluate("var res = new groovy.json.JsonSlurper().parseText(context.k3); res == false;", SIMPLE_CONTEXT);
-        Assert.assertEquals(true, res);
+        Assertions.assertEquals(true, res);
     }
 
 
@@ -68,13 +68,13 @@ public class GroovyEvaluatorTest {
     public void testComplexEval1() {
         // array
         Object res = groovyEvaluator.evaluate("var res = new groovy.json.JsonSlurper().parseText(context.array) ; res[0] == 1;", COMPLEX_CONTEXT);
-        Assert.assertEquals(true, res);
+        Assertions.assertEquals(true, res);
         // map
         res = groovyEvaluator.evaluate("var map = new groovy.json.JsonSlurper().parseText(context.map); var e1 = map.e1; e1.value ",COMPLEX_CONTEXT);
-        Assert.assertEquals(1,res);
+        Assertions.assertEquals(1,res);
         // object
         res = groovyEvaluator.evaluate("var e3 = new groovy.json.JsonSlurper().parseText(context.obj); var e1 = e3.sub.sub; e1.value ",COMPLEX_CONTEXT);
-        Assert.assertEquals(1,res);
+        Assertions.assertEquals(1,res);
     }
 
 

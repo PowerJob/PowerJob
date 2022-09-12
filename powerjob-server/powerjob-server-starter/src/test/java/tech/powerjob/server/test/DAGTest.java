@@ -1,13 +1,13 @@
 package tech.powerjob.server.test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAG;
 import com.google.common.collect.Lists;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +32,7 @@ public class DAGTest {
         nodes.add(new PEWorkflowDAG.Node(2L));
         edges.add(new PEWorkflowDAG.Edge(1L, 2L));
         edges.add(new PEWorkflowDAG.Edge(2L, 1L));
-        Assert.assertFalse(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
+        Assertions.assertFalse(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
     }
 
     @Test
@@ -51,14 +51,14 @@ public class DAGTest {
         edges.add(new PEWorkflowDAG.Edge(3L, 4L));
 
         PEWorkflowDAG validPEDAG = new PEWorkflowDAG(nodes, edges);
-        Assert.assertTrue(WorkflowDAGUtils.valid(validPEDAG));
+        Assertions.assertTrue(WorkflowDAGUtils.valid(validPEDAG));
 
         WorkflowDAG wfDAG = WorkflowDAGUtils.convert(validPEDAG);
 
-        Assert.assertEquals(1, wfDAG.getRoots().size());
+        Assertions.assertEquals(1, wfDAG.getRoots().size());
         WorkflowDAG.Node node = wfDAG.getNode(3L);
-        Assert.assertEquals(1, (long) node.getDependencies().get(0).getNodeId());
-        Assert.assertEquals(4, (long) node.getSuccessors().get(0).getNodeId());
+        Assertions.assertEquals(1, (long) node.getDependencies().get(0).getNodeId());
+        Assertions.assertEquals(4, (long) node.getSuccessors().get(0).getNodeId());
     }
 
     @Test
@@ -76,7 +76,7 @@ public class DAGTest {
         edges.add(new PEWorkflowDAG.Edge(2L, 4L));
 
         PEWorkflowDAG multiRootPEDAG = new PEWorkflowDAG(nodes, edges);
-        Assert.assertTrue(WorkflowDAGUtils.valid(multiRootPEDAG));
+        Assertions.assertTrue(WorkflowDAGUtils.valid(multiRootPEDAG));
         WorkflowDAG multiRootDAG = WorkflowDAGUtils.convert(multiRootPEDAG);
         System.out.println(multiRootDAG);
     }
@@ -100,7 +100,7 @@ public class DAGTest {
         edges.add(new PEWorkflowDAG.Edge(3L, 1L));
         edges.add(new PEWorkflowDAG.Edge(2L, 4L));
 
-        Assert.assertFalse(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
+        Assertions.assertFalse(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
 
     }
 
@@ -136,7 +136,7 @@ public class DAGTest {
         edges.add(new PEWorkflowDAG.Edge(1L, 6L));
 
 
-        Assert.assertTrue(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
+        Assertions.assertTrue(WorkflowDAGUtils.valid(new PEWorkflowDAG(nodes, edges)));
 
     }
 
@@ -178,9 +178,9 @@ public class DAGTest {
         List<Long> readyNodeIds1 = WorkflowDAGUtils.listReadyNodes(dag1).stream().map(PEWorkflowDAG.Node::getNodeId).collect(Collectors.toList());
 
         System.out.println(readyNodeIds1);
-        Assert.assertTrue(readyNodeIds1.contains(1L));
-        Assert.assertTrue(readyNodeIds1.contains(4L));
-        Assert.assertTrue(readyNodeIds1.contains(9L));
+        Assertions.assertTrue(readyNodeIds1.contains(1L));
+        Assertions.assertTrue(readyNodeIds1.contains(4L));
+        Assertions.assertTrue(readyNodeIds1.contains(9L));
 
     }
 
@@ -215,8 +215,8 @@ public class DAGTest {
 
         System.out.println(readyNodeIds2);
 
-        Assert.assertEquals(1, readyNodeIds2.size());
-        Assert.assertTrue(readyNodeIds2.contains(3L));
+        Assertions.assertEquals(1, readyNodeIds2.size());
+        Assertions.assertTrue(readyNodeIds2.contains(3L));
 
     }
 
@@ -256,9 +256,9 @@ public class DAGTest {
 
         System.out.println(readyNodeIds2);
 
-        Assert.assertEquals(2, readyNodeIds2.size());
-        Assert.assertTrue(readyNodeIds2.contains(4L));
-        Assert.assertTrue(readyNodeIds2.contains(7L));
+        Assertions.assertEquals(2, readyNodeIds2.size());
+        Assertions.assertTrue(readyNodeIds2.contains(4L));
+        Assertions.assertTrue(readyNodeIds2.contains(7L));
 
     }
 
@@ -299,8 +299,8 @@ public class DAGTest {
 
         System.out.println(readyNodeIds2);
 
-        Assert.assertEquals(1, readyNodeIds2.size());
-        Assert.assertTrue(readyNodeIds2.contains(5L));
+        Assertions.assertEquals(1, readyNodeIds2.size());
+        Assertions.assertTrue(readyNodeIds2.contains(5L));
 
     }
 
@@ -344,9 +344,9 @@ public class DAGTest {
 
         System.out.println(readyNodeIds2);
 
-        Assert.assertEquals(2, readyNodeIds2.size());
-        Assert.assertTrue(readyNodeIds2.contains(5L));
-        Assert.assertTrue(readyNodeIds2.contains(7L));
+        Assertions.assertEquals(2, readyNodeIds2.size());
+        Assertions.assertTrue(readyNodeIds2.contains(5L));
+        Assertions.assertTrue(readyNodeIds2.contains(7L));
 
     }
 

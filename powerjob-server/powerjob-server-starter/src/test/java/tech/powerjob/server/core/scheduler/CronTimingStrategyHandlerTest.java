@@ -4,8 +4,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.assertj.core.util.Lists;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.server.core.scheduler.auxiliary.impl.CronTimingStrategyHandler;
 
