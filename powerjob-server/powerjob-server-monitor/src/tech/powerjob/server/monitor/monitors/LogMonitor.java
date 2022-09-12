@@ -3,9 +3,10 @@ package tech.powerjob.server.monitor.monitors;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
+import tech.powerjob.server.common.aware.ServerInfoAware;
+import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.monitor.Event;
 import tech.powerjob.server.monitor.Monitor;
-import tech.powerjob.server.monitor.MonitorContext;
 
 /**
  * 系统默认实现——基于日志的监控监视器
@@ -15,22 +16,30 @@ import tech.powerjob.server.monitor.MonitorContext;
  * @since 2022/9/6
  */
 @Component
-public class LogMonitor implements Monitor {
+public class LogMonitor implements Monitor, ServerInfoAware {
 
-    private MonitorContext monitorContext;
+    /**
+     * server 启动依赖 DB，DB会被 monitor，因此最初的几条 log serverInfo 一定为空，在此处简单防空
+     */
+    private ServerInfo serverInfo = new ServerInfo();
 
     private static final String MDC_KEY_SERVER_ID = "serverId";
     private static final String MDC_KEY_SERVER_ADDRESS = "serverAddress";
 
+
     @Override
-    public void init(MonitorContext monitorContext) {
-        this.monitorContext = monitorContext;
+    public void init() {
     }
 
     @Override
     public void record(Event event) {
-        MDC.put(MDC_KEY_SERVER_ID, String.valueOf(monitorContext.getServerId()));
-        MDC.put(MDC_KEY_SERVER_ADDRESS, monitorContext.getServerAddress());
+        MDC.put(MDC_KEY_SERVER_ID, String.valueOf(serverInfo.getId()));
+        MDC.put(MDC_KEY_SERVER_ADDRESS, serverInfo.getIp());
         LoggerFactory.getLogger(event.type()).info(event.message());
+    }
+
+    @Override
+    public void setServerInfo(ServerInfo serverInfo) {
+        this.serverInfo = serverInfo;
     }
 }

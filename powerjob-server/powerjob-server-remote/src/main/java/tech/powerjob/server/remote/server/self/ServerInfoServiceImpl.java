@@ -1,10 +1,11 @@
-package tech.powerjob.server.remote.server;
+package tech.powerjob.server.remote.server.self;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.info.BuildProperties;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.ServerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ServerInfoRepository;
@@ -28,37 +29,25 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class ServerInfoService {
+public class ServerInfoServiceImpl implements ServerInfoService {
 
-    private final String ip;
-    private final long serverId;
+    private final ServerInfo serverInfo;
 
     private final ServerInfoRepository serverInfoRepository;
-
-    private String version = "UNKNOWN";
 
     private static final long MAX_SERVER_CLUSTER_SIZE = 10000;
 
     private static final String SERVER_INIT_LOCK = "server_init_lock";
     private static final int SERVER_INIT_LOCK_MAX_TIME = 15000;
 
-    public long getServerId() {
-        return serverId;
-    }
-
-    public String getServerIp() {
-        return ip;
-    }
-
-    public String getServerVersion() {
-        return version;
-    }
-
 
     @Autowired
-    public ServerInfoService(LockService lockService, ServerInfoRepository serverInfoRepository) {
+    public ServerInfoServiceImpl(LockService lockService, ServerInfoRepository serverInfoRepository) {
 
-        this.ip = NetUtils.getLocalHost();
+        this.serverInfo = new ServerInfo();
+
+        String ip = NetUtils.getLocalHost();
+        serverInfo.setIp(ip);
         this.serverInfoRepository = serverInfoRepository;
 
         Stopwatch sw = Stopwatch.createStarted();
@@ -80,10 +69,11 @@ public class ServerInfoService {
             }
 
             if (server.getId() < MAX_SERVER_CLUSTER_SIZE) {
-                this.serverId = server.getId();
+                serverInfo.setId(server.getId());
             } else {
-                this.serverId = retryServerId();
-                serverInfoRepository.updateIdByIp(this.serverId, ip);
+                long retryServerId = retryServerId();
+                serverInfo.setId(retryServerId);
+                serverInfoRepository.updateIdByIp(retryServerId, ip);
             }
 
         } catch (Exception e) {
@@ -93,12 +83,12 @@ public class ServerInfoService {
             lockService.unlock(SERVER_INIT_LOCK);
         }
 
-        log.info("[ServerInfoService] ip:{}, id:{}, cost:{}", ip, serverId, sw);
+        log.info("[ServerInfoService] ip:{}, id:{}, cost:{}", ip, serverInfo.getId(), sw);
     }
 
     @Scheduled(fixedRate = 15000, initialDelay = 15000)
     public void heartbeat() {
-        serverInfoRepository.updateGmtModifiedByIp(ip, new Date());
+        serverInfoRepository.updateGmtModifiedByIp(serverInfo.getIp(), new Date());
     }
 
 
@@ -142,7 +132,12 @@ public class ServerInfoService {
         }
         String pomVersion = buildProperties.getVersion();
         if (StringUtils.isNotBlank(pomVersion)) {
-            version = pomVersion;
+            serverInfo.setVersion(pomVersion);
         }
+    }
+
+    @Override
+    public ServerInfo fetchServiceInfo() {
+        return serverInfo;
     }
 }

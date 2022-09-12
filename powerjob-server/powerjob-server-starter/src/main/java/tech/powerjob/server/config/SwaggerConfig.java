@@ -9,7 +9,7 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
-import tech.powerjob.server.remote.server.ServerInfoService;
+import tech.powerjob.server.remote.server.self.ServerInfoService;
 
 import javax.annotation.Resource;
 
@@ -39,7 +39,7 @@ public class SwaggerConfig {
                 .description("Distributed scheduling and computing framework.")
                 .license("Apache Licence 2")
                 .termsOfServiceUrl("https://github.com/PowerJob/PowerJob")
-                .version(serverInfoService.getServerVersion())
+                .version(serverInfoService.fetchServiceInfo().getVersion())
                 .build();
         
         return new Docket(DocumentationType.SWAGGER_2)

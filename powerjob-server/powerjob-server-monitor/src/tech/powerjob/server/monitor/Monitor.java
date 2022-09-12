@@ -10,9 +10,8 @@ public interface Monitor {
 
     /**
      * 全局上下文绑定 & 初始化
-     * @param monitorContext 日志上下文
      */
-    void init(MonitorContext monitorContext);
+    void init();
     /**
      * 记录监控事件
      * 请注意该方法务必异步不阻塞！！！

@@ -1,9 +1,9 @@
 package tech.powerjob.server.core.uid;
 
-import tech.powerjob.server.remote.server.ServerInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.server.remote.server.self.ServerInfoService;
 
 /**
  * 唯一ID生成服务，使用 Twitter snowflake 算法
@@ -23,7 +23,7 @@ public class IdGenerateService {
     @Autowired
     public IdGenerateService(ServerInfoService serverInfoService) {
 
-        long id = serverInfoService.getServerId();
+        long id = serverInfoService.fetchServiceInfo().getId();
         snowFlakeIdGenerator = new SnowFlakeIdGenerator(DATA_CENTER_ID, id);
         log.info("[IdGenerateService] initialize IdGenerateService successfully, ID:{}", id);
     }
