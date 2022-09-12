@@ -1,7 +1,7 @@
 package tech.powerjob.server.test;
 
 import com.alibaba.fastjson.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.server.core.service.JobService;
@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.util.Lists;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -24,7 +23,6 @@ import java.util.List;
  * @author tjq
  * @since 2021/1/16
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class QueryConvertUtilsTest {
 

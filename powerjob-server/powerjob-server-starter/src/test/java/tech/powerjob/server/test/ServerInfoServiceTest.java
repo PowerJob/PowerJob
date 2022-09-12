@@ -1,12 +1,11 @@
 package tech.powerjob.server.test;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.Rollback;
 import tech.powerjob.server.persistence.remote.model.ServerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ServerInfoRepository;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.time.DateUtils;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -23,7 +22,6 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author tjq
  * @since 2021/2/21
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ServerInfoServiceTest {
 

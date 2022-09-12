@@ -1,5 +1,6 @@
 package tech.powerjob.server.test;
 
+import org.junit.jupiter.api.Test;
 import tech.powerjob.server.common.timewheel.HashedWheelTimer;
 import tech.powerjob.server.common.timewheel.TimerFuture;
 import tech.powerjob.server.common.timewheel.TimerTask;
@@ -7,7 +8,6 @@ import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;

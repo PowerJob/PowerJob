@@ -1,8 +1,7 @@
 package tech.powerjob.server.core.scheduler;
 
-import org.junit.Assert;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.core.scheduler.auxiliary.TimingStrategyHandler;
@@ -37,11 +36,11 @@ public class TimingStrategyServiceTest {
         // api
         Assertions.assertDoesNotThrow(() -> timingStrategyService.validate(TimeExpressionType.API, "", null, null));
         List<String> triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.API, "", null, null);
-        Assert.assertEquals(1, triggerTimes.size());
+        Assertions.assertEquals(1, triggerTimes.size());
         // workflow
         Assertions.assertDoesNotThrow(() -> timingStrategyService.validate(TimeExpressionType.WORKFLOW, "", null, null));
         triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.WORKFLOW, "", null, null);
-        Assert.assertEquals(1, triggerTimes.size());
+        Assertions.assertEquals(1, triggerTimes.size());
     }
 
     @Test
@@ -54,12 +53,12 @@ public class TimingStrategyServiceTest {
 
         long timeParam = 1000;
         List<String> triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.FIXED_RATE, String.valueOf(timeParam), null, null);
-        Assert.assertEquals(5, triggerTimes.size());
+        Assertions.assertEquals(5, triggerTimes.size());
 
         Long startTime = System.currentTimeMillis() + timeParam;
         Long endTime = System.currentTimeMillis() + timeParam * 3;
         triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.FIXED_RATE, String.valueOf(timeParam), startTime, endTime);
-        Assert.assertEquals(3, triggerTimes.size());
+        Assertions.assertEquals(3, triggerTimes.size());
 
     }
 
@@ -72,7 +71,7 @@ public class TimingStrategyServiceTest {
         Assertions.assertDoesNotThrow(() -> timingStrategyService.validate(TimeExpressionType.FIXED_DELAY, "10000", null, null));
 
         List<String> triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.FIXED_DELAY, "1", null, null);
-        Assert.assertEquals(1, triggerTimes.size());
+        Assertions.assertEquals(1, triggerTimes.size());
     }
 
 
@@ -86,6 +85,6 @@ public class TimingStrategyServiceTest {
         LocalDateTime start = LocalDateTime.of(2088, 5, 24, 7, 0, 0);
         LocalDateTime end = LocalDateTime.of(2088, 7, 12, 7, 0, 0);
         List<String> triggerTimes = timingStrategyService.calculateNextTriggerTimes(TimeExpressionType.CRON, "0 0 7 8-14,22-28 * 2", start.toEpochSecond(ZoneOffset.of("+8")) * 1000, end.toEpochSecond(ZoneOffset.of("+8")) * 1000);
-        Assert.assertNotNull(triggerTimes);
+        Assertions.assertNotNull(triggerTimes);
     }
 }

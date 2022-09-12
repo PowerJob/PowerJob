@@ -1,12 +1,11 @@
 package tech.powerjob.server.test;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.mongodb.GridFsManager;
 import tech.powerjob.server.core.scheduler.CleanService;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -25,9 +24,8 @@ import java.util.function.Consumer;
  * @since 2020/5/11
  */
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Ignore
+@Disabled
 public class OmsLogTest {
 
     @Resource

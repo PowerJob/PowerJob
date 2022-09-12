@@ -2,7 +2,7 @@ package tech.powerjob.server.test;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.core.uid.SnowFlakeIdGenerator;
 
