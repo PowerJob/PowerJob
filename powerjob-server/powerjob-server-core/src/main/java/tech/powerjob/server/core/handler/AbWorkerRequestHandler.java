@@ -95,7 +95,8 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     public void processWorkerLogReport(WorkerLogReportReq req) {
 
         WorkerLogReportEvent event = new WorkerLogReportEvent()
-                .setWorkerAddress(req.getWorkerAddress());
+                .setWorkerAddress(req.getWorkerAddress())
+                .setLogNum(req.getInstanceLogContents().size());
         try {
             processWorkerLogReport0(req, event);
             event.setStatus(WorkerLogReportEvent.Status.SUCCESS);

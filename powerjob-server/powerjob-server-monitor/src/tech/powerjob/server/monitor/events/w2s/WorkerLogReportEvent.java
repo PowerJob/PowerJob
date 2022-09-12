@@ -18,6 +18,14 @@ public class WorkerLogReportEvent implements Event {
 
     private String workerAddress;
 
+    /**
+     * 日志条数
+     */
+    private long logNum;
+
+    /**
+     * 日志大小，用于统计 IO 压力
+     */
     private long logSize;
 
     private Status status;
@@ -35,6 +43,6 @@ public class WorkerLogReportEvent implements Event {
 
     @Override
     public String message() {
-        return SJ.MONITOR_JOINER.join(workerAddress, logSize, status);
+        return SJ.MONITOR_JOINER.join(workerAddress, logNum, logSize, status);
     }
 }
