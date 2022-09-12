@@ -55,7 +55,7 @@ public class DatabaseMonitorAspect {
             event.setRows(parseEffectRows(ret));
             return ret;
         } catch (Throwable t) {
-            event.setErrorMsg(t.getMessage()).setStatus(DatabaseEvent.Status.FAILED);
+            event.setErrorMsg(t.getClass().getSimpleName()).setStatus(DatabaseEvent.Status.FAILED);
             throw t;
         } finally {
             long cost = System.currentTimeMillis() - startTs;
