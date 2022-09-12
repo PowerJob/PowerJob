@@ -7,6 +7,7 @@ import tech.powerjob.common.model.InstanceLogContent;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SegmentLock;
+import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.StringPage;
@@ -50,9 +51,6 @@ public class InstanceLogService {
 
     @Value("${server.port}")
     private int port;
-
-    @Resource
-    private Executor omsLocalDbPool;
 
     @Resource
     private InstanceMetadataService instanceMetadataService;
@@ -100,24 +98,23 @@ public class InstanceLogService {
      * @param workerAddress 上报机器地址
      * @param logs 任务实例运行时日志
      */
+    @Async(value = PJThreadPool.LOCAL_DB_POOL)
     public void submitLogs(String workerAddress, List<InstanceLogContent> logs) {
 
-        omsLocalDbPool.execute(() -> {
-            List<LocalInstanceLogDO> logList = logs.stream().map(x -> {
-                instanceId2LastReportTime.put(x.getInstanceId(), System.currentTimeMillis());
+        List<LocalInstanceLogDO> logList = logs.stream().map(x -> {
+            instanceId2LastReportTime.put(x.getInstanceId(), System.currentTimeMillis());
 
-                LocalInstanceLogDO y = new LocalInstanceLogDO();
-                BeanUtils.copyProperties(x, y);
-                y.setWorkerAddress(workerAddress);
-                return y;
-            }).collect(Collectors.toList());
+            LocalInstanceLogDO y = new LocalInstanceLogDO();
+            BeanUtils.copyProperties(x, y);
+            y.setWorkerAddress(workerAddress);
+            return y;
+        }).collect(Collectors.toList());
 
-            try {
-                CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.saveAll(logList));
-            }catch (Exception e) {
-                log.warn("[InstanceLogService] persistent instance logs failed, these logs will be dropped: {}.", logs, e);
-            }
-        });
+        try {
+            CommonUtils.executeWithRetry0(() -> localInstanceLogRepository.saveAll(logList));
+        }catch (Exception e) {
+            log.warn("[InstanceLogService] persistent instance logs failed, these logs will be dropped: {}.", logs, e);
+        }
     }
 
     /**
@@ -208,7 +205,7 @@ public class InstanceLogService {
      * 将本地的任务实例运行日志同步到 mongoDB 存储，在任务执行结束后异步执行
      * @param instanceId 任务实例ID
      */
-    @Async("omsBackgroundPool")
+    @Async(PJThreadPool.BACKGROUND_POOL)
     public void sync(Long instanceId) {
 
         Stopwatch sw = Stopwatch.createStarted();
@@ -350,7 +347,7 @@ public class InstanceLogService {
     }
 
 
-    @Async("omsTimingPool")
+    @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(fixedDelay = 120000)
     public void timingCheck() {
 
