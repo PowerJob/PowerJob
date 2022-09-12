@@ -32,7 +32,7 @@ services:
       - "10086:10086"
       - "10010:10010"
     volumes:
-      - ./powerjob-data/powerjob-server:/powerjob/server/
+      - ./powerjob-data/powerjob-server:/root/powerjob/server/
 
   powerjob-worker-samples:
     container_name: powerjob-worker-samples
@@ -47,4 +47,4 @@ services:
       - "8081:8081"
       - "27777:27777"
     volumes:
-      - ./powerjob-data/powerjob-worker-samples:/powerjob/worker
+      - ./powerjob-data/powerjob-worker-samples:/root/powerjob/worker
