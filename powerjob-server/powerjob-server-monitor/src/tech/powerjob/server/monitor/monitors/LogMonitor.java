@@ -24,7 +24,6 @@ public class LogMonitor implements Monitor, ServerInfoAware {
     private ServerInfo serverInfo = new ServerInfo();
 
     private static final String MDC_KEY_SERVER_ID = "serverId";
-    private static final String MDC_KEY_SERVER_ADDRESS = "serverAddress";
 
 
     @Override
@@ -34,7 +33,6 @@ public class LogMonitor implements Monitor, ServerInfoAware {
     @Override
     public void record(Event event) {
         MDC.put(MDC_KEY_SERVER_ID, String.valueOf(serverInfo.getId()));
-        MDC.put(MDC_KEY_SERVER_ADDRESS, serverInfo.getIp());
         LoggerFactory.getLogger(event.type()).info(event.message());
     }
 
