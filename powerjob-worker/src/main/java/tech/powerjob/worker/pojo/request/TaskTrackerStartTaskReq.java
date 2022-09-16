@@ -32,6 +32,8 @@ public class TaskTrackerStartTaskReq implements PowerSerializable {
     // 秒级任务专用
     private long subInstanceId;
 
+    private String logConfig;
+
 
     /**
      * 创建 TaskTrackerStartTaskReq，该构造方法必须在 TaskTracker 节点调用
@@ -47,5 +49,7 @@ public class TaskTrackerStartTaskReq implements PowerSerializable {
 
         this.taskCurrentRetryNums = task.getFailedCnt();
         this.subInstanceId = task.getSubInstanceId();
+
+        this.logConfig = instanceInfo.getLogConfig();
     }
 }

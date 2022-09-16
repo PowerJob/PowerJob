@@ -94,6 +94,10 @@ public class ServerScheduleJobReq implements PowerSerializable {
      */
     private String alarmConfig;
 
+    /**
+     * 日志配置
+     */
+    private String logConfig;
 
     @Override
     public String path() {

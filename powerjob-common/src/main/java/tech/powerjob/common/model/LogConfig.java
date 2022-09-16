@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 @Setter
 @ToString
 @Accessors(chain = true)
-public class JobLogConfig {
+public class LogConfig {
     /**
      * log type {@link LogType}
      */
@@ -25,6 +25,8 @@ public class JobLogConfig {
      * log level {@link tech.powerjob.common.enums.LogLevel}
      */
     private Integer level;
+
+    private String loggerName;
 
     @Getter
     @AllArgsConstructor

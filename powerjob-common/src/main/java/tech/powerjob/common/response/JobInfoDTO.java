@@ -2,7 +2,7 @@ package tech.powerjob.common.response;
 
 import lombok.Data;
 import tech.powerjob.common.model.AlarmConfig;
-import tech.powerjob.common.model.JobLogConfig;
+import tech.powerjob.common.model.LogConfig;
 
 import java.util.Date;
 
@@ -135,6 +135,6 @@ public class JobInfoDTO {
     /**
      * 日志配置，包括日志级别、日志方式等配置信息
      */
-    private JobLogConfig logConfig;
+    private LogConfig logConfig;
 
 }

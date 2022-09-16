@@ -11,6 +11,8 @@ import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.LogConfig;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskStatus;
@@ -22,6 +24,7 @@ import tech.powerjob.worker.core.ProcessorBeanFactory;
 import tech.powerjob.worker.core.executor.ProcessorRunnable;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
 import tech.powerjob.worker.log.OmsLogger;
+import tech.powerjob.worker.log.OmsLoggerFactory;
 import tech.powerjob.worker.log.impl.OmsServerLogger;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
@@ -116,7 +119,7 @@ public class ProcessorTracker {
             String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.TASK_TRACKER_ACTOR_NAME);
             this.taskTrackerActorRef = workerRuntime.getActorSystem().actorSelection(akkaRemotePath);
 
-            this.omsLogger = new OmsServerLogger(instanceId, workerRuntime.getOmsLogHandler());
+            this.omsLogger = OmsLoggerFactory.build(instanceId, request.getLogConfig(), workerRuntime);
             this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
             this.lastIdleTime = -1L;
             this.lastCompletedTaskCount = 0L;
