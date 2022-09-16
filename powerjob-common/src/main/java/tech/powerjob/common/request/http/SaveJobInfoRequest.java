@@ -5,6 +5,7 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.AlarmConfig;
+import tech.powerjob.common.model.JobLogConfig;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.utils.CommonUtils;
 import lombok.Data;
@@ -138,6 +139,16 @@ public class SaveJobInfoRequest {
      * alarm config
      */
     private AlarmConfig alarmConfig;
+
+    /**
+     * 任务归类，开放给接入方自由定制
+     */
+    private String tag;
+
+    /**
+     * 日志配置，包括日志级别、日志方式等配置信息
+     */
+    private JobLogConfig logConfig;
 
 
     /**
