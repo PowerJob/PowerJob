@@ -36,6 +36,9 @@ public class MainApplication implements Runnable {
     @Option(names = {"-l", "--length"}, description = "ProcessResult#msg max length")
     private int length = 1024;
 
+    @Option(names = {"-t", "--tag"}, description = "worker-agent's tag")
+    private String tag;
+
     public static void main(String[] args) {
         CommandLine commandLine = new CommandLine(new MainApplication());
         commandLine.execute(args);
@@ -52,6 +55,7 @@ public class MainApplication implements Runnable {
             cfg.setServerAddress(Splitter.on(",").splitToList(server));
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);
+            cfg.setTag(tag);
 
             PowerJobWorker worker = new PowerJobWorker();
             worker.setConfig(cfg);
