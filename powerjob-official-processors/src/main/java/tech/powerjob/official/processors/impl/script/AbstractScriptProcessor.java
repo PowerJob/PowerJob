@@ -15,6 +15,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 
@@ -75,12 +76,11 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
         boolean success = true;
         String result;
 
-        //解决windows平台中文乱码
-        Charset loggerCharset =  SystemUtils.IS_OS_WINDOWS? Charset.forName("GBK"):StandardCharsets.UTF_8;
+        final Charset charset = getCharset();
         try (InputStream is = process.getInputStream(); InputStream es = process.getErrorStream()) {
 
-            POOL.execute(() -> copyStream(is, inputBuilder, omsLogger,loggerCharset));
-            POOL.execute(() -> copyStream(es, errorBuilder, omsLogger,loggerCharset));
+            POOL.execute(() -> copyStream(is, inputBuilder, omsLogger, charset));
+            POOL.execute(() -> copyStream(es, errorBuilder, omsLogger, charset));
 
             success = process.waitFor() == 0;
 
@@ -113,10 +113,11 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
             }
         }
 
-        // 非下载链接，为 processInfo 生成可执行文件
-        if(SystemUtils.IS_OS_WINDOWS)
+        final Charset charset = getCharset();
+
+        if(charset != null)
         {
-            try (Writer fstream = new OutputStreamWriter(new FileOutputStream(script), Charset.forName("GBK")); BufferedWriter out = new BufferedWriter(fstream)) {
+            try (Writer fstream = new OutputStreamWriter(Files.newOutputStream(script.toPath()), charset); BufferedWriter out = new BufferedWriter(fstream)) {
                 out.write(processorInfo);
                 out.flush();
             }
@@ -158,4 +159,12 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
      * @return 执行脚本的命令
      */
     protected abstract String getRunCommand();
+
+    /**
+     * 默认不指定
+     * @return Charset
+     */
+    protected Charset getCharset() {
+        return StandardCharsets.UTF_8;
+    }
 }

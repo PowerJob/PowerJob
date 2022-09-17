@@ -1,5 +1,7 @@
 package tech.powerjob.official.processors.impl.script;
 
+import java.nio.charset.Charset;
+
 /**
  * python processor
  *
@@ -16,5 +18,10 @@ public class CMDProcessor extends AbstractScriptProcessor {
     @Override
     protected String getRunCommand() {
         return "cmd.exe";
+    }
+
+    @Override
+    protected Charset getCharset() {
+        return Charset.forName("GBK");
     }
 }
