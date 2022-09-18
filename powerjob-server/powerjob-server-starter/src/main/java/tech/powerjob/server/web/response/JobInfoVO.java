@@ -187,6 +187,9 @@ public class JobInfoVO {
 
         if (!StringUtils.isEmpty(jobInfoDO.getLogConfig())) {
             jobInfoVO.setLogConfig(JSONObject.parseObject(jobInfoDO.getLogConfig(), LogConfig.class));
+        } else {
+            // 不存在 job 配置时防止前端报错
+            jobInfoVO.setLogConfig(new LogConfig());
         }
 
         return jobInfoVO;
