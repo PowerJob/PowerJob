@@ -25,7 +25,7 @@ docker run -d \
        --name powerjob-server \
        -p 7700:7700 -p 10086:10086 -p 5001:5005 -p 10001:10000 \
        -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" \
-       -e PARAMS="--oms.swagger.enable=true --spring.profiles.active=product --spring.datasource.core.jdbc-url=jdbc:mysql://remotehost:3306/powerjob-product?useUnicode=true&characterEncoding=UTF-8 --spring.data.mongodb.uri=mongodb://remotehost:27017/powerjob-product" \
+       -e PARAMS="--oms.swagger.enable=true --spring.profiles.active=product --spring.datasource.core.jdbc-url=jdbc:mysql://remotehost:3306/powerjob-product?useUnicode=true&characterEncoding=UTF-8 --oms.mongodb.enable=false --spring.data.mongodb.uri=" \
        -v ~/docker/powerjob-server:/root/powerjob/server -v ~/.m2:/root/.m2 \
        tjqq/powerjob-server:latest
 sleep 60
@@ -39,7 +39,7 @@ docker run -d \
        --name powerjob-worker-samples \
        -p 27777:27777 -p 5002:5005 -p 10002:10000 \
        -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" \
-       -e PARAMS="-Dpowerjob.worker.server-address $serverAddress" \
+       -e PARAMS="--powerjob.worker.server-address $serverAddress" \
        -v ~/docker/powerjob-worker-samples:/root \
        tjqq/powerjob-worker-samples:latest
 
@@ -48,7 +48,7 @@ docker run -d \
        --name powerjob-worker-samples2 \
        -p 27778:27777 -p 5003:5005 -p 10003:10000 \
        -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" \
-       -e PARAMS="-Dpowerjob.worker.server-address $serverAddress" \
+       -e PARAMS="--powerjob.worker.server-address $serverAddress" \
        -v ~/docker/powerjob-worker-samples2:/root \
        tjqq/powerjob-worker-samples:latest
 
