@@ -1,7 +1,7 @@
 #!/bin/bash
 cd `dirname $0`/../.. || exit
 echo "================== 构建 jar =================="
-mvn clean package -Pdev -DskipTests -U -e
+mvn clean package -Pdev -DskipTests -e
 echo "================== 拷贝 jar =================="
 /bin/cp -rf powerjob-server/powerjob-server-starter/target/*.jar powerjob-server/docker/powerjob-server.jar
 echo "================== 关闭老应用 =================="
