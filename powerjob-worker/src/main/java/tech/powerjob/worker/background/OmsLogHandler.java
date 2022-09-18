@@ -35,7 +35,7 @@ public class OmsLogHandler {
     // 上报锁，只需要一个线程上报即可
     private final Lock reportLock = new ReentrantLock();
     // 生产者消费者模式，异步上传日志
-    private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue();
+    private final BlockingQueue<InstanceLogContent> logQueue = Queues.newLinkedBlockingQueue(10240);
 
     // 每次上报携带的数据条数
     private static final int BATCH_SIZE = 20;
@@ -61,7 +61,10 @@ public class OmsLogHandler {
         }
 
         InstanceLogContent tuple = new InstanceLogContent(instanceId, System.currentTimeMillis(), logLevel.getV(), logContent);
-        logQueue.offer(tuple);
+        boolean offerRet = logQueue.offer(tuple);
+        if (!offerRet) {
+            log.warn("[OmsLogHandler] [{}] submit log failed, maybe your log speed is too fast!", instanceId);
+        }
     }
 
 
