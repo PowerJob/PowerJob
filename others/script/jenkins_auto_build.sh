@@ -4,22 +4,21 @@ echo "================== 构建 jar =================="
 mvn clean package -Pdev -DskipTests -U -e
 echo "================== 拷贝 jar =================="
 /bin/cp -rf powerjob-server/powerjob-server-starter/target/*.jar powerjob-server/docker/powerjob-server.jar
-/bin/cp -rf powerjob-worker-agent/target/*.jar powerjob-worker-agent/powerjob-agent.jar
 echo "================== 关闭老应用 =================="
 docker stop powerjob-server
-docker stop powerjob-agent
-docker stop powerjob-agent2
+docker stop powerjob-worker-samples
+docker stop powerjob-worker-samples2
 echo "================== 删除老容器 =================="
 docker container rm powerjob-server
-docker container rm powerjob-agent
-docker container rm powerjob-agent2
+docker container rm powerjob-worker-samples
+docker container rm powerjob-worker-samples2
 echo "================== 删除旧镜像 =================="
 docker rmi -f tjqq/powerjob-server:latest
-docker rmi -f tjqq/powerjob-agent:latest
+docker rmi -f tjqq/powerjob-worker-samples:latest
 echo "================== 构建 powerjob-server 镜像 =================="
 docker build -t tjqq/powerjob-server:latest powerjob-server/docker/. || exit
-echo "================== 构建 powerjob-agent 镜像 =================="
-docker build -t tjqq/powerjob-agent:latest powerjob-worker-agent/. || exit
+echo "================== 构建 powerjob-worker-samples 镜像 =================="
+docker build -t tjqq/powerjob-worker-samples:latest powerjob-worker-samples/. || exit
 echo "================== 准备启动 powerjob-server =================="
 docker run -d \
        --restart=always \
@@ -37,19 +36,19 @@ echo "使用的Server地址：$serverAddress"
 
 docker run -d \
        --restart=always \
-       --name powerjob-agent \
+       --name powerjob-worker-samples \
        -p 27777:27777 -p 5002:5005 -p 10002:10000 \
        -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" \
-       -e PARAMS="--app powerjob-agent-test --server $serverAddress" \
-       -v ~/docker/powerjob-agent:/root \
-       tjqq/powerjob-agent:latest
+       -e PARAMS="-Dpowerjob.worker.server-address $serverAddress" \
+       -v ~/docker/powerjob-worker-samples:/root \
+       tjqq/powerjob-worker-samples:latest
 
 docker run -d \
        --restart=always \
-       --name powerjob-agent2 \
+       --name powerjob-worker-samples2 \
        -p 27778:27777 -p 5003:5005 -p 10003:10000 \
        -e JVMOPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" \
-       -e PARAMS="--app powerjob-agent-test --server $serverAddress" \
-       -v ~/docker/powerjob-agent2:/root \
-       tjqq/powerjob-agent:latest
+       -e PARAMS="-Dpowerjob.worker.server-address $serverAddress" \
+       -v ~/docker/powerjob-worker-samples2:/root \
+       tjqq/powerjob-worker-samples:latest
 
