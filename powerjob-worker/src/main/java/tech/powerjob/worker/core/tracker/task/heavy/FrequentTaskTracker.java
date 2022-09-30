@@ -1,4 +1,4 @@
-package tech.powerjob.worker.core.tracker.task;
+package tech.powerjob.worker.core.tracker.task.heavy;
 
 import akka.actor.ActorSelection;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 2020/4/8
  */
 @Slf4j
-public class FrequentTaskTracker extends TaskTracker {
+public class FrequentTaskTracker extends HeavyTaskTracker {
 
     /**
      * 时间表达式类型
@@ -272,6 +272,7 @@ public class FrequentTaskTracker extends TaskTracker {
                 long executeTimeout = nowTS - timeHolder.startTime;
 
                 // 超时（包含总运行时间超时和心跳包超时），直接判定为失败
+
                 if (executeTimeout > instanceTimeoutMS) {
                     onFinished(subInstanceId, false, "RUNNING_TIMEOUT", iterator);
                     continue;

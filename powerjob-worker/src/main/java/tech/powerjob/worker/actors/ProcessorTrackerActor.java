@@ -4,7 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.core.tracker.processor.ProcessorTracker;
-import tech.powerjob.worker.core.tracker.processor.ProcessorTrackerPool;
+import tech.powerjob.worker.core.tracker.manager.ProcessorTrackerManager;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStopInstanceReq;
@@ -48,7 +48,7 @@ public class ProcessorTrackerActor extends AbstractActor {
         Long instanceId = req.getInstanceInfo().getInstanceId();
 
         // 创建 ProcessorTracker 一定能成功
-        ProcessorTracker processorTracker = ProcessorTrackerPool.getProcessorTracker(
+        ProcessorTracker processorTracker = ProcessorTrackerManager.getProcessorTracker(
                 instanceId,
                 req.getTaskTrackerAddress(),
                 () -> new ProcessorTracker(req, workerRuntime));
@@ -71,7 +71,7 @@ public class ProcessorTrackerActor extends AbstractActor {
     private void onReceiveTaskTrackerStopInstanceReq(TaskTrackerStopInstanceReq req) {
 
         Long instanceId = req.getInstanceId();
-        List<ProcessorTracker> removedPts = ProcessorTrackerPool.removeProcessorTracker(instanceId);
+        List<ProcessorTracker> removedPts = ProcessorTrackerManager.removeProcessorTracker(instanceId);
         if (!CollectionUtils.isEmpty(removedPts)) {
             removedPts.forEach(ProcessorTracker::destroy);
         }

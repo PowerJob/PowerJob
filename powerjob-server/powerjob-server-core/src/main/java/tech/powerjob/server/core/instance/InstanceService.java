@@ -77,7 +77,7 @@ public class InstanceService {
      * @param expectTriggerTime 预期执行时间
      * @return 任务实例ID
      */
-    public Long  create(Long jobId, Long appId, String jobParams, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
+    public InstanceInfoDO create(Long jobId, Long appId, String jobParams, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
 
         Long instanceId = idGenerateService.allocate();
         Date now = new Date();
@@ -99,7 +99,7 @@ public class InstanceService {
         newInstanceInfo.setGmtModified(now);
 
         instanceInfoRepository.save(newInstanceInfo);
-        return instanceId;
+        return newInstanceInfo;
     }
 
     /**
@@ -180,7 +180,7 @@ public class InstanceService {
         // 派发任务
         Long jobId = instanceInfo.getJobId();
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new PowerJobException("can't find job info by jobId: " + jobId));
-        dispatchService.redispatch(jobInfo, instanceId);
+        dispatchService.dispatch(jobInfo, instanceId,Optional.of(instanceInfo),Optional.empty());
     }
 
     /**

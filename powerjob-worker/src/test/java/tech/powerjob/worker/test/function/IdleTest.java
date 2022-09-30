@@ -7,7 +7,7 @@ import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.core.tracker.processor.ProcessorTracker;
-import tech.powerjob.worker.core.tracker.task.TaskTracker;
+import tech.powerjob.worker.core.tracker.task.heavy.HeavyTaskTracker;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ public class IdleTest extends CommonTest {
         ProcessorTrackerStatusReportReq req = ProcessorTrackerStatusReportReq.buildIdleReport(10086L);
         ServerScheduleJobReq serverScheduleJobReq = TestUtils.genServerScheduleJobReq(ExecuteType.STANDALONE, TimeExpressionType.API);
 
-        TaskTracker taskTracker = TaskTracker.create(serverScheduleJobReq, new WorkerRuntime());
+        HeavyTaskTracker taskTracker = HeavyTaskTracker.create(serverScheduleJobReq, new WorkerRuntime());
         if (taskTracker != null) {
             taskTracker.receiveProcessorTrackerHeartbeat(req);
         }

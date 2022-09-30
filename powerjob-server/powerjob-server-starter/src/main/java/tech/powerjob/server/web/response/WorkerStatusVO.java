@@ -1,10 +1,10 @@
 package tech.powerjob.server.web.response;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.module.WorkerInfo;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.text.DecimalFormat;
 
@@ -27,17 +27,25 @@ public class WorkerStatusVO {
     private String tag;
     private String lastActiveTime;
 
+    private Integer lightTaskTrackerNum;
+
+    private Integer heavyTaskTrackerNum;
+
+    private long lastOverloadTime;
+
+    private boolean overloading;
+
     /**
-     *  1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色，9999 -> 非在线机器
+     * 1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色，9999 -> 非在线机器
      */
     private int status;
 
     /**
-     * 12.3%(4 cores)
+     *  12.3%(4 cores)
      */
     private static final String CPU_FORMAT = "%s / %s cores";
     /**
-     * 27.7%(2.9/8.0 GB)
+     *  27.7%(2.9/8.0 GB)
      */
     private static final String OTHER_FORMAT = "%s%%（%s / %s GB）";
     private static final DecimalFormat df = new DecimalFormat("#.#");
@@ -71,6 +79,11 @@ public class WorkerStatusVO {
             this.status ++;
         }
 
+        if (workerInfo.overload()){
+            // 超载的情况直接置为 3
+            this.status = 3;
+        }
+
         if (workerInfo.timeout()) {
             this.status = 9999;
         }
@@ -78,5 +91,9 @@ public class WorkerStatusVO {
         this.protocol = workerInfo.getProtocol();
         this.tag = CommonUtils.formatString(workerInfo.getTag());
         this.lastActiveTime = CommonUtils.formatTime(workerInfo.getLastActiveTime());
+        this.lightTaskTrackerNum = workerInfo.getLightTaskTrackerNum();
+        this.heavyTaskTrackerNum = workerInfo.getHeavyTaskTrackerNum();
+        this.lastOverloadTime = workerInfo.getLastOverloadTime();
+        this.overloading = workerInfo.isOverloading();
     }
 }

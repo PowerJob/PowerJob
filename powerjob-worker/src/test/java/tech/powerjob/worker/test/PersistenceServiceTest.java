@@ -11,7 +11,7 @@ import org.junit.jupiter.api.*;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static tech.powerjob.worker.core.tracker.task.CommonTaskTracker.ROOT_TASK_ID;
+import static tech.powerjob.worker.core.tracker.task.heavy.CommonTaskTracker.ROOT_TASK_ID;
 
 /**
  * H2 数据库持久化测试

@@ -65,9 +65,11 @@ public class HashedWheelTimer implements Timer {
             taskProcessPool = null;
         }else {
             ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("HashedWheelTimer-Executor-%d").build();
-            BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(16);
+            // 这里需要调整一下队列大小
+            BlockingQueue<Runnable> queue = Queues.newLinkedBlockingQueue(8192);
             int core = Math.max(Runtime.getRuntime().availableProcessors(), processThreadNum);
-            taskProcessPool = new ThreadPoolExecutor(core, 4 * core,
+            // 基本都是 io 密集型任务
+            taskProcessPool = new ThreadPoolExecutor(core, 2 * core,
                     60, TimeUnit.SECONDS,
                     queue, threadFactory, RejectedExecutionHandlerFactory.newCallerRun("PowerJobTimeWheelPool"));
         }

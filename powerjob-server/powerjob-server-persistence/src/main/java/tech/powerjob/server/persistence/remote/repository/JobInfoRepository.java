@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -43,5 +44,7 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long>, JpaSp
     long countByAppIdAndStatusNot(long appId, int status);
 
     List<JobInfoDO> findByAppId(Long appId);
+
+    List<JobInfoDO> findByIdIn(Collection<Long> jobIds);
 
 }

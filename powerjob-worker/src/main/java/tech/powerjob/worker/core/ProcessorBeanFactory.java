@@ -16,8 +16,11 @@ import java.util.Map;
 @Slf4j
 public class ProcessorBeanFactory {
 
-    // key（用来防止不同jar包同名类的冲突） -> (className -> Processor)
+    /**
+     * key（用来防止不同jar包同名类的冲突） -> (className -> Processor)
+     */
     private final Map<String, Map<String, BasicProcessor>> cache;
+
     private static final String LOCAL_KEY = "local";
 
     private static volatile ProcessorBeanFactory processorBeanFactory;

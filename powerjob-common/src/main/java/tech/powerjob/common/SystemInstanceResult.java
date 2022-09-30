@@ -27,6 +27,14 @@ public class SystemInstanceResult {
      */
     public static final String INSTANCE_EXECUTE_TIMEOUT = "instance execute timeout";
     /**
+     * 任务执行超时，成功打断任务
+     */
+    public static final String INSTANCE_EXECUTE_TIMEOUT_INTERRUPTED = "instance execute timeout,interrupted success";
+    /**
+     * 任务执行超时，强制终止任务
+     */
+    public static final String INSTANCE_EXECUTE_TIMEOUT_FORCE_STOP= "instance execute timeout,force stop success";
+    /**
      * 创建根任务失败
      */
     public static final String TASK_INIT_FAILED = "create root task failed";

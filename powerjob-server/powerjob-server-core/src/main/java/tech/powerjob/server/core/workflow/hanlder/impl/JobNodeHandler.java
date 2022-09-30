@@ -15,6 +15,7 @@ import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 
+import java.util.Optional;
 
 /**
  * @author Echo009
@@ -30,7 +31,7 @@ public class JobNodeHandler implements TaskNodeHandler {
     @Override
     public void createTaskInstance(PEWorkflowDAG.Node node, PEWorkflowDAG dag, WorkflowInstanceInfoDO wfInstanceInfo) {
         // instanceParam 传递的是工作流实例的 wfContext
-        Long instanceId = SpringUtils.getBean(InstanceService.class).create(node.getJobId(), wfInstanceInfo.getAppId(), node.getNodeParams(), wfInstanceInfo.getWfContext(), wfInstanceInfo.getWfInstanceId(), System.currentTimeMillis());
+        Long instanceId = SpringUtils.getBean(InstanceService.class).create(node.getJobId(), wfInstanceInfo.getAppId(), node.getNodeParams(), wfInstanceInfo.getWfContext(), wfInstanceInfo.getWfInstanceId(), System.currentTimeMillis()).getInstanceId();
         node.setInstanceId(instanceId);
         node.setStatus(InstanceStatus.RUNNING.getV());
         log.info("[Workflow-{}|{}] create readyNode(JOB) instance(nodeId={},jobId={},instanceId={}) successfully~", wfInstanceInfo.getWorkflowId(), wfInstanceInfo.getWfInstanceId(), node.getNodeId(), node.getJobId(), instanceId);
@@ -41,7 +42,7 @@ public class JobNodeHandler implements TaskNodeHandler {
         JobInfoDO jobInfo = jobInfoRepository.findById(node.getJobId()).orElseGet(JobInfoDO::new);
         // 洗去时间表达式类型
         jobInfo.setTimeExpressionType(TimeExpressionType.WORKFLOW.getV());
-        SpringUtils.getBean(DispatchService.class).dispatch(jobInfo, node.getInstanceId());
+        SpringUtils.getBean(DispatchService.class).dispatch(jobInfo, node.getInstanceId(), Optional.empty(), Optional.empty());
     }
 
     @Override

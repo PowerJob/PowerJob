@@ -5,28 +5,8 @@ import akka.actor.ActorSystem;
 import akka.actor.DeadLetter;
 import akka.actor.Props;
 import akka.routing.RoundRobinPool;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.RemoteConstant;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.HttpUtils;
-import tech.powerjob.common.serialize.JsonUtils;
-import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.worker.actors.ProcessorTrackerActor;
-import tech.powerjob.worker.actors.TaskTrackerActor;
-import tech.powerjob.worker.actors.TroubleshootingActor;
-import tech.powerjob.worker.actors.WorkerActor;
-import tech.powerjob.worker.background.OmsLogHandler;
-import tech.powerjob.worker.background.ServerDiscoveryService;
-import tech.powerjob.worker.background.WorkerHealthReporter;
-import tech.powerjob.worker.common.PowerJobWorkerConfig;
-import tech.powerjob.worker.common.PowerBannerPrinter;
-import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.common.utils.SpringUtils;
-import tech.powerjob.worker.persistence.TaskPersistenceService;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +15,29 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.HttpUtils;
+import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.worker.actors.ProcessorTrackerActor;
+import tech.powerjob.worker.actors.TaskTrackerActor;
+import tech.powerjob.worker.actors.TroubleshootingActor;
+import tech.powerjob.worker.actors.WorkerActor;
+import tech.powerjob.worker.background.OmsLogHandler;
+import tech.powerjob.worker.background.ServerDiscoveryService;
+import tech.powerjob.worker.background.WorkerHealthReporter;
+import tech.powerjob.worker.common.PowerBannerPrinter;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
+import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.worker.common.utils.SpringUtils;
+import tech.powerjob.worker.core.executor.ExecutorManager;
+import tech.powerjob.worker.persistence.TaskPersistenceService;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,8 +50,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class PowerJobWorker implements ApplicationContextAware, InitializingBean, DisposableBean {
 
-    private ScheduledExecutorService timingPool;
     private final WorkerRuntime workerRuntime = new WorkerRuntime();
+
     private final AtomicBoolean initialized = new AtomicBoolean();
 
     @Override
@@ -78,6 +75,10 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
         log.info("[PowerJobWorker] start to initialize PowerJobWorker...");
 
         PowerJobWorkerConfig config = workerRuntime.getWorkerConfig();
+
+        // 打印 worker 配置
+        log.info("[PowerJobWorker] worker config: {}", JsonUtils.toJSONString(config));
+
         CommonUtils.requireNonNull(config, "can't find OhMyConfig, please set OhMyConfig first");
 
         try {
@@ -85,7 +86,7 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             // 校验 appName
             if (!config.isEnableTestMode()) {
                 assertAppName();
-            }else {
+            } else {
                 log.warn("[PowerJobWorker] using TestMode now, it's dangerous if this is production env.");
             }
 
@@ -93,14 +94,9 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             String workerAddress = NetUtils.getLocalHost() + ":" + config.getPort();
             workerRuntime.setWorkerAddress(workerAddress);
 
-            // 初始化定时线程池
-            ThreadFactory timingPoolFactory = new ThreadFactoryBuilder().setNameFormat("oms-worker-timing-pool-%d").build();
-            timingPool = Executors.newScheduledThreadPool(3, timingPoolFactory);
-
-            // 连接 server
-            ServerDiscoveryService serverDiscoveryService = new ServerDiscoveryService(workerRuntime.getAppId(), workerRuntime.getWorkerConfig());
-            serverDiscoveryService.start(timingPool);
-            workerRuntime.setServerDiscoveryService(serverDiscoveryService);
+            // 初始化 线程池
+            final ExecutorManager executorManager = new ExecutorManager(workerRuntime.getWorkerConfig());
+            workerRuntime.setExecutorManager(executorManager);
 
             // 初始化 ActorSystem（macOS上 new ServerSocket 检测端口占用的方法并不生效，可能是AKKA是Scala写的缘故？没办法...只能靠异常重试了）
             Map<String, Object> overrideConfig = Maps.newHashMap();
@@ -113,6 +109,12 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             int cores = Runtime.getRuntime().availableProcessors();
             ActorSystem actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
             workerRuntime.setActorSystem(actorSystem);
+
+            // 连接 server
+            ServerDiscoveryService serverDiscoveryService = new ServerDiscoveryService(workerRuntime.getAppId(), workerRuntime.getWorkerConfig());
+
+            serverDiscoveryService.start(workerRuntime.getExecutorManager().getCoreExecutor());
+            workerRuntime.setServerDiscoveryService(serverDiscoveryService);
 
             ActorRef taskTrackerActorRef = actorSystem.actorOf(TaskTrackerActor.props(workerRuntime)
                     .withDispatcher("akka.task-tracker-dispatcher")
@@ -141,9 +143,10 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             workerRuntime.setTaskPersistenceService(taskPersistenceService);
             log.info("[PowerJobWorker] local storage initialized successfully.");
 
+
             // 初始化定时任务
-            timingPool.scheduleAtFixedRate(new WorkerHealthReporter(workerRuntime), 0, 15, TimeUnit.SECONDS);
-            timingPool.scheduleWithFixedDelay(omsLogHandler.logSubmitter, 0, 5, TimeUnit.SECONDS);
+            workerRuntime.getExecutorManager().getCoreExecutor().scheduleAtFixedRate(new WorkerHealthReporter(workerRuntime), 0, config.getHealthReportInterval(), TimeUnit.SECONDS);
+            workerRuntime.getExecutorManager().getCoreExecutor().scheduleWithFixedDelay(omsLogHandler.logSubmitter, 0, 5, TimeUnit.SECONDS);
 
             log.info("[PowerJobWorker] PowerJobWorker initialized successfully, using time: {}, congratulations!", stopwatch);
         }catch (Exception e) {
@@ -190,7 +193,7 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
 
     @Override
     public void destroy() throws Exception {
-        timingPool.shutdownNow();
+        workerRuntime.getExecutorManager().shutdown();
         workerRuntime.getActorSystem().terminate();
     }
 }

@@ -1,9 +1,10 @@
 package tech.powerjob.server.common.module;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.common.request.WorkerHeartbeat;
-import lombok.Data;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * @since 2021/2/7
  */
 @Data
+@Slf4j
 public class WorkerInfo {
 
     private String address;
@@ -25,6 +27,14 @@ public class WorkerInfo {
     private String client;
 
     private String tag;
+
+    private int lightTaskTrackerNum;
+
+    private int heavyTaskTrackerNum;
+
+    private long lastOverloadTime;
+
+    private boolean overloading;
 
     private SystemMetrics systemMetrics;
 
@@ -40,10 +50,25 @@ public class WorkerInfo {
         tag = workerHeartbeat.getTag();
         systemMetrics = workerHeartbeat.getSystemMetrics();
         containerInfos = workerHeartbeat.getContainerInfos();
+
+        lightTaskTrackerNum = workerHeartbeat.getLightTaskTrackerNum();
+        heavyTaskTrackerNum = workerHeartbeat.getHeavyTaskTrackerNum();
+
+        if (workerHeartbeat.isOverload()) {
+            overloading = true;
+            lastOverloadTime = workerHeartbeat.getHeartbeatTime();
+            log.warn("[WorkerInfo] worker {} is overload!", getAddress());
+        } else {
+            overloading = false;
+        }
     }
 
     public boolean timeout() {
         long timeout = System.currentTimeMillis() - lastActiveTime;
         return timeout > WORKER_TIMEOUT_MS;
+    }
+
+    public boolean overload() {
+        return overloading;
     }
 }

@@ -1,4 +1,4 @@
-package tech.powerjob.worker.core.executor;
+package tech.powerjob.worker.core.processor.runnable;
 
 import akka.actor.ActorSelection;
 import tech.powerjob.common.enums.ExecuteType;
@@ -41,7 +41,7 @@ import java.util.Queue;
 @Slf4j
 @AllArgsConstructor
 @SuppressWarnings("squid:S1181")
-public class ProcessorRunnable implements Runnable {
+public class HeavyProcessorRunnable implements Runnable {
 
 
     private final InstanceInfo instanceInfo;
@@ -221,7 +221,7 @@ public class ProcessorRunnable implements Runnable {
         req.setAppendedWfContext(appendedWfContext);
 
         // 最终结束状态要求可靠发送
-        if (TaskStatus.finishedStatus.contains(status.getValue())) {
+        if (TaskStatus.FINISHED_STATUS.contains(status.getValue())) {
             boolean success = AkkaUtils.reliableTransmit(taskTrackerActor, req);
             if (!success) {
                 // 插入重试队列，等待重试

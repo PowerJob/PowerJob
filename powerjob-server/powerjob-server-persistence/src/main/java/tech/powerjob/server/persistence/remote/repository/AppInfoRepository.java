@@ -1,5 +1,7 @@
 package tech.powerjob.server.persistence.remote.repository;
 
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +27,8 @@ public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long> {
      * 其实只需要 id，处于性能考虑可以直接写SQL只返回ID
      */
     List<AppInfoDO> findAllByCurrentServer(String currentServer);
+
+    @Query(value = "select id from AppInfoDO where currentServer = :currentServer")
+    List<Long> listAppIdByCurrentServer(@Param("currentServer")String currentServer);
+
 }
