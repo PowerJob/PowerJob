@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class LogConfig {
     /**
-     * log type {@link LogType}
+     * log type {@link tech.powerjob.common.enums.LogType}
      */
     private Integer type;
     /**
@@ -28,28 +28,5 @@ public class LogConfig {
 
     private String loggerName;
 
-    @Getter
-    @AllArgsConstructor
-    public enum LogType {
-        ONLINE(1),
-        LOCAL(2),
-        STDOUT(3),
 
-        NULL(999);
-        private final Integer v;
-
-        public static LogType of(Integer type) {
-
-            if (type == null) {
-                return ONLINE;
-            }
-
-            for (LogType logType : values()) {
-                if (logType.v.equals(type)) {
-                    return logType;
-                }
-            }
-            return ONLINE;
-        }
-    }
 }

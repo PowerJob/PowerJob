@@ -4,6 +4,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 import tech.powerjob.common.enums.LogLevel;
+import tech.powerjob.common.enums.LogType;
 import tech.powerjob.common.model.LogConfig;
 import tech.powerjob.worker.log.OmsLogger;
 
@@ -25,7 +26,7 @@ public abstract class AbstractOmsLogger implements OmsLogger {
             logConfig.setLevel(LogLevel.INFO.getV());
         }
         if (logConfig.getType() == null) {
-            logConfig.setType(LogConfig.LogType.ONLINE.getV());
+            logConfig.setType(LogType.ONLINE.getV());
         }
     }
 

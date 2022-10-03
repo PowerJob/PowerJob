@@ -1,6 +1,7 @@
 package tech.powerjob.worker.log;
 
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.common.enums.LogType;
 import tech.powerjob.common.model.LogConfig;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
@@ -29,7 +30,7 @@ public class OmsLoggerFactory {
             }
         }
 
-        switch (LogConfig.LogType.of(cfg.getType())) {
+        switch (LogType.of(cfg.getType())) {
             case LOCAL:
                 return new OmsLocalLogger(cfg);
             case STDOUT:
