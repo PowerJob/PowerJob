@@ -1,3 +1,4 @@
+-- Upgrade SQL FROM 4.0.x to 4.1.x
 -- ----------------------------
 -- Table change for workflow_instance_info
 -- ----------------------------

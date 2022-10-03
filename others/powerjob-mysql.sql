@@ -110,6 +110,8 @@ CREATE TABLE `job_info`
     `task_retry_num`       int      not NULL default 0 COMMENT 'Task重试次数',
     `time_expression`      varchar(255)      default NULL COMMENT '时间表达式,内容取决于time_expression_type,1:CRON/2:NULL/3:LONG/4:LONG',
     `time_expression_type` int      not NULL COMMENT '时间表达式类型,1:CRON/2:API/3:FIX_RATE/4:FIX_DELAY,5:WORKFLOW\n）',
+    `tag`      varchar(255)      DEFAULT NULL COMMENT 'TAG',
+    `log_config`      varchar(255)      DEFAULT NULL COMMENT '日志配置',
     `extra`                varchar(255)      DEFAULT NULL COMMENT '扩展字段',
     `gmt_create`           datetime not NULL COMMENT '创建时间',
     `gmt_modified`         datetime not NULL COMMENT '更新时间',
