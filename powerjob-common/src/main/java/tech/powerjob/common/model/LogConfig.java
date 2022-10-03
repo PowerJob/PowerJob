@@ -33,6 +33,7 @@ public class LogConfig {
     public enum LogType {
         ONLINE(1),
         LOCAL(2),
+        STDOUT(3),
 
         NULL(999);
         private final Integer v;

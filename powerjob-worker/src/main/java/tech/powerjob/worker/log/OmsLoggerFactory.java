@@ -7,6 +7,7 @@ import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.log.impl.OmsLocalLogger;
 import tech.powerjob.worker.log.impl.OmsNullLogger;
 import tech.powerjob.worker.log.impl.OmsServerLogger;
+import tech.powerjob.worker.log.impl.OmsStdOutLogger;
 
 /**
  * OmsLoggerFactory
@@ -31,6 +32,8 @@ public class OmsLoggerFactory {
         switch (LogConfig.LogType.of(cfg.getType())) {
             case LOCAL:
                 return new OmsLocalLogger(cfg);
+            case STDOUT:
+                return new OmsStdOutLogger(cfg);
             case NULL:
                 return new OmsNullLogger();
             default:

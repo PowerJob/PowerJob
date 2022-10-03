@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import tech.powerjob.common.model.LogConfig;
 
 /**
- * More user feedback when the task volume server timeout serious. After pressure testing, we found that there is no bottleneck in the server processing scheduling tasks, and it is assumed that the large amount of logs is causing a serious bottleneck. Therefore, we need to provide local logging API for large MR tasks.
+ * Many user feedback when the task volume server timeout serious. After pressure testing, we found that there is no bottleneck in the server processing scheduling tasks, and it is assumed that the large amount of logs is causing a serious bottleneck. Therefore, we need to provide local logging API for large MR tasks.
  *
  * @author tjq
  * @since 2021/2/4
