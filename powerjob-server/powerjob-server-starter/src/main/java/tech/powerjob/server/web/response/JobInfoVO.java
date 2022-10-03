@@ -2,6 +2,7 @@ package tech.powerjob.server.web.response;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -16,7 +17,6 @@ import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -180,6 +180,8 @@ public class JobInfoVO {
 
         if (!StringUtils.isEmpty(jobInfoDO.getAlarmConfig())){
             jobInfoVO.setAlarmConfig(JSON.parseObject(jobInfoDO.getAlarmConfig(),AlarmConfig.class));
+        } else {
+            jobInfoVO.setAlarmConfig(new AlarmConfig());
         }
         if (!StringUtils.isEmpty(jobInfoDO.getLifecycle())){
             jobInfoVO.setLifeCycle(LifeCycle.parse(jobInfoDO.getLifecycle()));
