@@ -9,9 +9,9 @@ import org.slf4j.helpers.MessageFormatter;
 
 
 /**
- * WARN：Please do not use this logger to print large amounts of logs!
- * WARN：Please do not use this logger to print large amounts of logs!
- * WARN：Please do not use this logger to print large amounts of logs!
+ * WARN：Please do not use this logger to print large amounts of logs! <br/>
+ * WARN：Please do not use this logger to print large amounts of logs! <br/>
+ * WARN：Please do not use this logger to print large amounts of logs! <br/>
  *
  * @author tjq
  * @since 2022/9/16
