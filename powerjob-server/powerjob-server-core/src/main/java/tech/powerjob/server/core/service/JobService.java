@@ -1,6 +1,7 @@
 package tech.powerjob.server.core.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.jpa.domain.Specification;
@@ -106,6 +107,10 @@ public class JobService {
                 throw new PowerJobException("illegal alarm config!");
             }
             jobInfoDO.setAlarmConfig(JSON.toJSONString(request.getAlarmConfig()));
+        }
+        // 日志配置
+        if (request.getLogConfig() != null) {
+            jobInfoDO.setLogConfig(JSONObject.toJSONString(request.getLogConfig()));
         }
         JobInfoDO res = jobInfoRepository.saveAndFlush(jobInfoDO);
         return res.getId();

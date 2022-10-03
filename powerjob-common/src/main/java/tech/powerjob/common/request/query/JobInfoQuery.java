@@ -50,4 +50,6 @@ public class JobInfoQuery extends PowerQuery {
     private Date gmtModifiedGt;
 
     private Integer dispatchStrategyEq;
+
+    private String tagEq;
 }

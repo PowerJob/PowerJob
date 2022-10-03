@@ -1,10 +1,12 @@
 package tech.powerjob.server.web.response;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.AlarmConfig;
+import tech.powerjob.common.model.LogConfig;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.SJ;
@@ -144,6 +146,16 @@ public class JobInfoVO {
 
     private AlarmConfig alarmConfig;
 
+    /**
+     * 任务归类，开放给接入方自由定制
+     */
+    private String tag;
+
+    /**
+     * 日志配置，包括日志级别、日志方式等配置信息
+     */
+    private LogConfig logConfig;
+
     public static JobInfoVO from(JobInfoDO jobInfoDO) {
         JobInfoVO jobInfoVO = new JobInfoVO();
         BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
@@ -171,6 +183,10 @@ public class JobInfoVO {
         }
         if (!StringUtils.isEmpty(jobInfoDO.getLifecycle())){
             jobInfoVO.setLifeCycle(LifeCycle.parse(jobInfoDO.getLifecycle()));
+        }
+
+        if (!StringUtils.isEmpty(jobInfoDO.getLogConfig())) {
+            jobInfoVO.setLogConfig(JSONObject.parseObject(jobInfoDO.getLogConfig(), LogConfig.class));
         }
 
         return jobInfoVO;
