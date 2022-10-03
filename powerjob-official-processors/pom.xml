@@ -20,7 +20,7 @@
         <!-- 不会被打包的部分，scope 只能是 test 或 provide -->
         <junit.version>5.6.1</junit.version>
         <logback.version>1.2.3</logback.version>
-        <powerjob.worker.version>4.1.1</powerjob.worker.version>
+        <powerjob.worker.version>4.2.0</powerjob.worker.version>
         <spring.jdbc.version>5.2.9.RELEASE</spring.jdbc.version>
         <h2.db.version>1.4.200</h2.db.version>
         <mysql.version>8.0.28</mysql.version>
