@@ -87,7 +87,7 @@ public class MapReduceProcessorDemo implements MapReduceProcessor {
     @ToString
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class TestSubTask {
+    public static class TestSubTask {
         private String name;
         private int age;
     }
