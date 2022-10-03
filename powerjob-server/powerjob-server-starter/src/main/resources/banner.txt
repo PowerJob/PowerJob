@@ -12,3 +12,4 @@ ${AnsiColor.BRIGHT_RED}
 * OfficialWebsite: http://www.powerjob.tech/
 * SourceCode: https://github.com/PowerJob/PowerJob
 * PoweredBy:  SpringBoot${spring-boot.formatted-version} & Akka (v2.6.12) & Vert.x (v4.0.2)
+${AnsiColor.DEFAULT}

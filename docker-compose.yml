@@ -14,7 +14,7 @@ services:
     container_name: powerjob-mysql
     image: powerjob/powerjob-mysql:4.1.1
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./powerjob-data/powerjob-mysql:/var/lib/mysql
     command: --lower_case_table_names=1
