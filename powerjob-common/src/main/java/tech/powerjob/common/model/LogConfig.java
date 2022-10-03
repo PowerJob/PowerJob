@@ -32,10 +32,17 @@ public class LogConfig {
     @AllArgsConstructor
     public enum LogType {
         ONLINE(1),
-        LOCAL(2);
+        LOCAL(2),
+
+        NULL(999);
         private final Integer v;
 
-        public LogType of(Integer type) {
+        public static LogType of(Integer type) {
+
+            if (type == null) {
+                return ONLINE;
+            }
+
             for (LogType logType : values()) {
                 if (logType.v.equals(type)) {
                     return logType;
