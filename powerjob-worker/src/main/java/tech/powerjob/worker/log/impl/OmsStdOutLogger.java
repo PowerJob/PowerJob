@@ -11,6 +11,8 @@ import tech.powerjob.common.model.LogConfig;
  */
 public class OmsStdOutLogger extends AbstractOmsLogger {
 
+    private static final String PREFIX = "[PowerJob] [%s] ";
+
     public OmsStdOutLogger(LogConfig logConfig) {
         super(logConfig);
     }
@@ -36,6 +38,6 @@ public class OmsStdOutLogger extends AbstractOmsLogger {
     }
 
     private static String buildStdOut(LogLevel logLevel, String messagePattern, Object... args) {
-        return logLevel.name().concat("-").concat(genLogContent(messagePattern, args));
+        return String.format(PREFIX, logLevel.name()).concat(genLogContent(messagePattern, args));
     }
 }
