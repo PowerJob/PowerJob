@@ -3,7 +3,7 @@ package tech.powerjob.official.processors.impl.script;
 import java.nio.charset.Charset;
 
 /**
- * python processor
+ * PowerShellProcessor
  *
  * @author fddc
  * @since 2021/5/14

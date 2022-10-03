@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * description
+ * LogType
  *
  * @author tjq
  * @since 2022/10/3
