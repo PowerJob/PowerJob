@@ -145,4 +145,13 @@ public class JobInfoDO {
      */
     private String alarmConfig;
 
+    /**
+     * 任务归类，开放给接入方自由定制
+     */
+    private String tag;
+
+    /**
+     * 日志配置，包括日志级别、日志方式等配置信息
+     */
+    private String logConfig;
 }

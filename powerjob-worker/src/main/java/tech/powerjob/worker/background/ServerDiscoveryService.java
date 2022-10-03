@@ -87,7 +87,7 @@ public class ServerDiscoveryService {
         }
 
         if (StringUtils.isEmpty(result)) {
-            log.warn("[PowerDiscovery] can't find any available server, this worker has been quarantined.");
+            log.warn("[PowerDiscovery] can't find any available server, this worker[appId={}] has been quarantined.", appId);
 
             // 在 Server 高可用的前提下，连续失败多次，说明该节点与外界失联，Server已经将秒级任务转移到其他Worker，需要杀死本地的任务
             if (FAILED_COUNT++ > MAX_FAILED_COUNT) {
@@ -108,7 +108,7 @@ public class ServerDiscoveryService {
         } else {
             // 重置失败次数
             FAILED_COUNT = 0;
-            log.debug("[PowerDiscovery] current server is {}.", result);
+            log.debug("[PowerDiscovery] appId={}, current server is {}.", appId, result);
             return result;
         }
     }

@@ -87,7 +87,7 @@ public class MapProcessorDemo implements MapProcessor {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    private static class SubTask {
+    public static class SubTask {
         private Integer siteId;
         private List<Integer> itemIds;
     }

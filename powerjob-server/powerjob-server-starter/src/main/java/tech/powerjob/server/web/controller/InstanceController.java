@@ -54,8 +54,6 @@ public class InstanceController {
     @Resource
     private CacheService cacheService;
     @Resource
-    private AppInfoRepository appInfoRepository;
-    @Resource
     private InstanceInfoRepository instanceInfoRepository;
 
     @GetMapping("/stop")
