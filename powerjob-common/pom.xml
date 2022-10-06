@@ -21,6 +21,7 @@
         <okhttp.version>3.14.9</okhttp.version>
         <akka.version>2.6.12</akka.version>
         <kryo.version>5.0.4</kryo.version>
+        <hessian_lite.version>3.2.13</hessian_lite.version>
         <jackson.version>2.12.2</jackson.version>
         <junit.version>5.9.0</junit.version>
     </properties>
@@ -79,7 +80,12 @@
             <artifactId>kryo5</artifactId>
             <version>${kryo.version}</version>
         </dependency>
-
+        <!-- hessian2跨语言序列化框架 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>hessian-lite</artifactId>
+            <version>${hessian_lite.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
