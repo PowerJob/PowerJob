@@ -20,7 +20,7 @@
         <hikaricp.version>3.4.2</hikaricp.version>
         <junit.version>5.6.1</junit.version>
 
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.4.4</logback.version>
     </properties>
 
     <dependencies>
