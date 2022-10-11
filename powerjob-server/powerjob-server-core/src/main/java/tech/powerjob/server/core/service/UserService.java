@@ -5,7 +5,7 @@ import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;

@@ -3,6 +3,7 @@ package tech.powerjob.worker.core.tracker.task;
 import akka.actor.ActorSelection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.RemoteConstant;
@@ -36,7 +37,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.Collections;

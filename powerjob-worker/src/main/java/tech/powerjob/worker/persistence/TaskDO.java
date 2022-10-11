@@ -2,7 +2,7 @@ package tech.powerjob.worker.persistence;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * TaskDO（为了简化 DAO 层，一张表实现两种功能）

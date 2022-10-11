@@ -11,7 +11,7 @@ import tech.powerjob.worker.common.utils.SystemInfoUtils;
 import tech.powerjob.worker.container.OmsContainerFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Worker健康度定时上报

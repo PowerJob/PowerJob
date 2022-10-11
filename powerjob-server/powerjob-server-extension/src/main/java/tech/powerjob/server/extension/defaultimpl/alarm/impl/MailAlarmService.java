@@ -1,5 +1,6 @@
 package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
@@ -10,7 +11,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
