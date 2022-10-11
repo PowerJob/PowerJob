@@ -17,7 +17,7 @@
         <spring.version>5.3.23</spring.version>
         <powerjob.common.version>4.2.0</powerjob.common.version>
         <h2.db.version>1.4.200</h2.db.version>
-        <hikaricp.version>3.4.2</hikaricp.version>
+        <hikaricp.version>4.0.3</hikaricp.version>
         <junit.version>5.9.1</junit.version>
 
         <logback.version>1.4.4</logback.version>
@@ -45,7 +45,7 @@
             <artifactId>h2</artifactId>
             <version>${h2.db.version}</version>
         </dependency>
-        <!-- HikariCP -->
+        <!-- HikariCP, Java8 只能用 4.X 版本 -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
