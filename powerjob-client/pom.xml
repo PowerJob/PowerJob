@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <junit.version>5.6.1</junit.version>
+        <junit.version>5.9.1</junit.version>
         <fastjson.version>1.2.83</fastjson.version>
         <powerjob.common.version>4.2.0</powerjob.common.version>
 

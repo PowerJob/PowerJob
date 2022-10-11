@@ -18,7 +18,7 @@
         <powerjob.common.version>4.2.0</powerjob.common.version>
         <h2.db.version>1.4.200</h2.db.version>
         <hikaricp.version>3.4.2</hikaricp.version>
-        <junit.version>5.6.1</junit.version>
+        <junit.version>5.9.1</junit.version>
 
         <logback.version>1.4.4</logback.version>
     </properties>
