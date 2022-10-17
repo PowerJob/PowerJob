@@ -28,7 +28,7 @@ public class TaskDAOImpl implements TaskDAO {
         String delTableSQL = "drop table if exists task_info";
         // 感谢 Gitee 用户 @Linfly 反馈的 BUG
         // bigint(20) 与 Java Long 取值范围完全一致
-        String createTableSQL = "create table task_info (task_id varchar(255), instance_id bigint(20), sub_instance_id bigint(20), task_name varchar(255), task_content blob, address varchar(255), status int(5), result text, failed_cnt int(11), created_time bigint(20), last_modified_time bigint(20), last_report_time bigint(20), unique KEY pkey (instance_id, task_id))";
+        String createTableSQL = "create table task_info (task_id varchar(255), instance_id bigint, sub_instance_id bigint, task_name varchar(255), task_content blob, address varchar(255), status int, result text, failed_cnt int, created_time bigint, last_modified_time bigint, last_report_time bigint, constraint pkey unique(instance_id, task_id))";
 
         try (Connection conn = connectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);

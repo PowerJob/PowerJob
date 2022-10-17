@@ -23,7 +23,7 @@ import java.io.File;
 public class MultiDatasourceConfig {
 
     private static final String H2_DRIVER_CLASS_NAME = "org.h2.Driver";
-    private static final String H2_JDBC_URL_PATTERN = "jdbc:h2:file:%spowerjob_server_db";
+    private static final String H2_JDBC_URL_PATTERN = "jdbc:h2:file:%spowerjob_server_db;mode=LEGACY";
     private static final int H2_MIN_SIZE = 4;
     private static final int H2_MAX_ACTIVE_SIZE = 10;
 
