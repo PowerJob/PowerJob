@@ -35,7 +35,7 @@
         <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
         <postgresql.version>42.2.14</postgresql.version>
-        <h2.db.version>1.4.200</h2.db.version>
+        <h2.db.version>2.1.214</h2.db.version>
 
         <zip4j.version>2.11.2</zip4j.version>
         <jgit.version>5.7.0.202003110725-r</jgit.version>
