@@ -44,7 +44,7 @@ class TaskDAOTest {
     @SneakyThrows
     void testUniqueKey() {
 
-        TaskDO taskDO = buildTaskDO("2", 2L, TaskStatus.WORKER_PROCESS_FAILED);
+        TaskDO taskDO = buildTaskDO("2", 200000000000000L, TaskStatus.WORKER_PROCESS_FAILED);
         boolean firstSaveRet = taskDAO.save(taskDO);
         assert firstSaveRet;
         log.info("[testUniqueKey] first save result: {}", firstSaveRet);
