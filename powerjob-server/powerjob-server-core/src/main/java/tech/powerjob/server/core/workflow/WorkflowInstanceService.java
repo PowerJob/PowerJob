@@ -1,14 +1,18 @@
 package tech.powerjob.server.core.workflow;
 
 import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.SystemInstanceResult;
-import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
@@ -16,15 +20,13 @@ import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.core.instance.InstanceService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 工作流实例服务
@@ -226,6 +228,24 @@ public class WorkflowInstanceService {
         // 其他情况均拒绝处理
         throw new PowerJobException("you can only mark the node which is failed and not allow to skip!");
 
+    }
+
+    /**
+     * 查找对应工作流的实例列表
+     *
+     * @param workflowId 工作流 ID
+     * @param appId      任务所属应用的ID
+     * @return 工作流的实例列表
+     */
+    public List<WorkflowInstanceInfoDTO> queryWorkflowInstanceInfoList(Long workflowId, Long appId) {
+        List<WorkflowInstanceInfoDO> workflowInstanceInfoDOList = wfInstanceInfoRepository.findTop10ByWorkflowIdAndAppIdOrderByActualTriggerTimeDesc(workflowId, appId);
+        return workflowInstanceInfoDOList.stream().map(WorkflowInstanceService::directConvert).collect(Collectors.toList());
+    }
+
+    private static WorkflowInstanceInfoDTO directConvert(WorkflowInstanceInfoDO workflowInstanceInfoDO) {
+        WorkflowInstanceInfoDTO workflowInstanceInfoDTO = new WorkflowInstanceInfoDTO();
+        BeanUtils.copyProperties(workflowInstanceInfoDO, workflowInstanceInfoDTO);
+        return workflowInstanceInfoDTO;
     }
 
 }

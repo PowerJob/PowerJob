@@ -36,6 +36,7 @@ public class OpenAPIConstant {
     public static final String FETCH_INSTANCE_STATUS = "/fetchInstanceStatus";
     public static final String FETCH_INSTANCE_INFO = "/fetchInstanceInfo";
     public static final String QUERY_INSTANCE = "/queryInstance";
+    public static final String QUERY_INSTANCE_INFO_LIST = "/queryInstanceInfoList";
 
     /* ************* Workflow 区 ************* */
 
@@ -54,4 +55,5 @@ public class OpenAPIConstant {
     public static final String RETRY_WORKFLOW_INSTANCE = "/retryWfInstance";
     public static final String FETCH_WORKFLOW_INSTANCE_INFO = "/fetchWfInstanceInfo";
     public static final String MARK_WORKFLOW_NODE_AS_SUCCESS = "/markWorkflowNodeAsSuccess";
+    public static final String QUERY_WORKFLOW_INSTANCE_INFO_LIST = "/queryWfInstanceInfoList";
 }

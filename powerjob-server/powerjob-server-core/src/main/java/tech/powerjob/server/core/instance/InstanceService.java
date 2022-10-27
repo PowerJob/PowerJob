@@ -235,6 +235,16 @@ public class InstanceService {
     }
 
     /**
+     * 查询对应任务的实例列表
+     *
+     * @param jobId 任务ID
+     * @return 任务的实例列表
+     */
+    public List<InstanceInfoDTO> queryInstanceInfoList(Long jobId) {
+        return instanceInfoRepository.findTop10ByJobIdOrderByActualTriggerTimeDesc(jobId).stream().map(InstanceService::directConvert).collect(Collectors.toList());
+    }
+
+    /**
      * 获取任务实例的信息
      *
      * @param instanceId 任务实例ID

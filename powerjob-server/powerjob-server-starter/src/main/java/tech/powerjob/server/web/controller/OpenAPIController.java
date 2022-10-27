@@ -1,8 +1,9 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.enums.InstanceStatus;
+import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -11,16 +12,15 @@ import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
-import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
-import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
+import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.core.service.CacheService;
 import tech.powerjob.server.core.service.JobService;
-import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceService;
 import tech.powerjob.server.core.workflow.WorkflowService;
+import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
-import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -59,7 +59,7 @@ public class OpenAPIController {
     /* ************* Job 区 ************* */
 
     @PostMapping(OpenAPIConstant.SAVE_JOB)
-    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) throws ParseException {
+    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) {
         if (request.getId() != null) {
             checkJobIdValid(request.getId(), request.getAppId());
         }
@@ -153,6 +153,12 @@ public class OpenAPIController {
         return ResultDTO.success(instanceService.queryInstanceInfo(powerQuery));
     }
 
+    @PostMapping(OpenAPIConstant.QUERY_INSTANCE_INFO_LIST)
+    public ResultDTO<List<InstanceInfoDTO>> queryInstanceInfoList(Long jobId, Long appId) {
+        checkJobIdValid(jobId, appId);
+        return ResultDTO.success(instanceService.queryInstanceInfoList(jobId));
+    }
+
     /* ************* Workflow 区 ************* */
 
     @PostMapping(OpenAPIConstant.SAVE_WORKFLOW)
@@ -218,6 +224,12 @@ public class OpenAPIController {
     public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId, Long nodeId, Long appId) {
         workflowInstanceService.markNodeAsSuccess(appId, wfInstanceId, nodeId);
         return ResultDTO.success(null);
+    }
+
+    @PostMapping(OpenAPIConstant.QUERY_WORKFLOW_INSTANCE_INFO_LIST)
+    public ResultDTO<List<WorkflowInstanceInfoDTO>> queryWorkflowInstanceInfoList(Long workflowId, Long appId) {
+        List<WorkflowInstanceInfoDTO> workflowInstanceInfoDTOList = workflowInstanceService.queryWorkflowInstanceInfoList(workflowId, appId);
+        return ResultDTO.success(workflowInstanceInfoDTOList);
     }
 
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO)

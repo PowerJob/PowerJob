@@ -13,6 +13,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -149,4 +150,12 @@ class TestClient extends ClientInitializer {
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
+
+    @Test
+    void testQueryInstanceInfoList() {
+        ResultDTO<List<InstanceInfoDTO>> res = powerJobClient.queryInstanceInfoList(JOB_ID);
+        System.out.println(res);
+        Assertions.assertNotNull(res);
+    }
+
 }

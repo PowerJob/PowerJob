@@ -85,6 +85,13 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
 
     List<InstanceInfoDO> findByAppIdInAndStatusAndGmtModifiedBefore(List<Long> jobIds, int status, Date time);
 
+    /**
+     * 查找对应任务的实例列表
+     *
+     * @param jobId 任务ID
+     * @return 任务的实例列表
+     */
+    List<InstanceInfoDO> findTop10ByJobIdOrderByActualTriggerTimeDesc(long jobId);
 
     InstanceInfoDO findByInstanceId(long instanceId);
 
