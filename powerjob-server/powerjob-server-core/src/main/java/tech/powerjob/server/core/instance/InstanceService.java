@@ -1,13 +1,14 @@
 package tech.powerjob.server.core.instance;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerStopInstanceReq;
@@ -28,7 +29,6 @@ import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.remote.transport.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -45,23 +45,22 @@ import static tech.powerjob.common.enums.InstanceStatus.STOPPED;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InstanceService {
 
-    @Resource
-    private TransportService transportService;
-    @Resource
-    private DispatchService dispatchService;
-    @Resource
-    private IdGenerateService idGenerateService;
-    @Resource
-    private InstanceManager instanceManager;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
+    private final TransportService transportService;
 
-    @Resource
-    private WorkerClusterQueryService workerClusterQueryService;
+    private final DispatchService dispatchService;
+
+    private final IdGenerateService idGenerateService;
+
+    private final InstanceManager instanceManager;
+
+    private final JobInfoRepository jobInfoRepository;
+
+    private final InstanceInfoRepository instanceInfoRepository;
+
+    private final WorkerClusterQueryService workerClusterQueryService;
 
     /**
      * 创建任务实例（注意，该方法并不调用 saveAndFlush，如果有需要立即同步到DB的需求，请在方法结束后手动调用 flush）

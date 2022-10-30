@@ -2,6 +2,7 @@ package tech.powerjob.server.core.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.jpa.domain.Specification;
@@ -43,20 +44,18 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class JobService {
 
-    @Resource
-    private InstanceService instanceService;
+    private final InstanceService instanceService;
 
-    @Resource
-    private DispatchService dispatchService;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
-    @Resource
-    private TimingStrategyService timingStrategyService;
+    private final DispatchService dispatchService;
 
+    private final JobInfoRepository jobInfoRepository;
+
+    private final InstanceInfoRepository instanceInfoRepository;
+
+    private final TimingStrategyService timingStrategyService;
 
     /**
      * 保存/修改任务
@@ -205,9 +204,8 @@ public class JobService {
      * 启用某个任务
      *
      * @param jobId 任务ID
-     * @throws ParseException 异常（CRON表达式错误）
      */
-    public void enableJob(Long jobId) throws ParseException {
+    public void enableJob(Long jobId) {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
 
         jobInfoDO.setStatus(SwitchableStatus.ENABLE.getV());

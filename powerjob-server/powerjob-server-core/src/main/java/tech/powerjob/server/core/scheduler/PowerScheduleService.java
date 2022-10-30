@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.scheduler;
 
+import lombok.RequiredArgsConstructor;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.LifeCycle;
@@ -30,7 +31,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PowerScheduleService {
 
     /**
@@ -51,26 +52,23 @@ public class PowerScheduleService {
      */
     private static final int MAX_APP_NUM = 10;
 
-    @Resource
-    private DispatchService dispatchService;
-    @Resource
-    private InstanceService instanceService;
-    @Resource
-    private WorkflowInstanceManager workflowInstanceManager;
+    private final DispatchService dispatchService;
 
-    @Resource
-    private AppInfoRepository appInfoRepository;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
+    private final InstanceService instanceService;
 
-    @Resource
-    private JobService jobService;
-    @Resource
-    private TimingStrategyService timingStrategyService;
+    private final WorkflowInstanceManager workflowInstanceManager;
+
+    private final AppInfoRepository appInfoRepository;
+
+    private final JobInfoRepository jobInfoRepository;
+
+    private final WorkflowInfoRepository workflowInfoRepository;
+
+    private final InstanceInfoRepository instanceInfoRepository;
+
+    private final JobService jobService;
+
+    private final TimingStrategyService timingStrategyService;
 
     private static final long SCHEDULE_RATE = 15000;
 

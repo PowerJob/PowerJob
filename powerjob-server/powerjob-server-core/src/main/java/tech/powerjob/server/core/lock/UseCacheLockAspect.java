@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -30,10 +31,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Aspect
 @Component
 @Order(1)
+@RequiredArgsConstructor
 public class UseCacheLockAspect {
 
-    @Resource
-    private MonitorService monitorService;
+    private final MonitorService monitorService;
 
     private final Map<String, Cache<String, ReentrantLock>> lockContainer = Maps.newConcurrentMap();
 

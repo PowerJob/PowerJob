@@ -27,12 +27,18 @@ public class WorkerStatusVO {
     private String tag;
     private String lastActiveTime;
 
-    // 1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色，9999 -> 非在线机器
+    /**
+     *  1 -> 健康，绿色，2 -> 一般，橙色，3 -> 糟糕，红色，9999 -> 非在线机器
+     */
     private int status;
 
-    // 12.3%(4 cores)
+    /**
+     * 12.3%(4 cores)
+     */
     private static final String CPU_FORMAT = "%s / %s cores";
-    // 27.7%(2.9/8.0 GB)
+    /**
+     * 27.7%(2.9/8.0 GB)
+     */
     private static final String OTHER_FORMAT = "%s%%（%s / %s GB）";
     private static final DecimalFormat df = new DecimalFormat("#.#");
 

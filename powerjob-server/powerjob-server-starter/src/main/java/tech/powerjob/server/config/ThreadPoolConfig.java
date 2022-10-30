@@ -62,7 +62,9 @@ public class ThreadPoolConfig {
         return executor;
     }
 
-    // 引入 WebSocket 支持后需要手动初始化调度线程池
+    /**
+     * 引入 WebSocket 支持后需要手动初始化调度线程池
+     */
     @Bean
     public TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();

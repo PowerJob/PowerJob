@@ -18,11 +18,10 @@ import tech.powerjob.server.remote.server.self.ServerInfoService;
 public class IdGenerateService {
 
     private final SnowFlakeIdGenerator snowFlakeIdGenerator;
+
     private static final int DATA_CENTER_ID = 0;
 
-    @Autowired
     public IdGenerateService(ServerInfoService serverInfoService) {
-
         long id = serverInfoService.fetchServiceInfo().getId();
         snowFlakeIdGenerator = new SnowFlakeIdGenerator(DATA_CENTER_ID, id);
         log.info("[IdGenerateService] initialize IdGenerateService successfully, ID:{}", id);

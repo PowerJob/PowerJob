@@ -1,6 +1,7 @@
 package tech.powerjob.server.core.workflow.hanlder.impl;
 
 import com.alibaba.fastjson.JSON;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.SystemInstanceResult;
@@ -11,6 +12,7 @@ import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.core.workflow.hanlder.TaskNodeHandler;
@@ -19,7 +21,6 @@ import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
 
-import javax.annotation.Resource;
 import java.util.Date;
 
 /**
@@ -28,16 +29,12 @@ import java.util.Date;
  */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class NestedWorkflowNodeHandler implements TaskNodeHandler {
 
-    @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
+    private final WorkflowInfoRepository workflowInfoRepository;
 
-    @Resource
-    private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
-
-    @Resource
-    private WorkflowInstanceManager workflowInstanceManager;
+    private final WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
     @Override
     public void createTaskInstance(PEWorkflowDAG.Node node, PEWorkflowDAG dag, WorkflowInstanceInfoDO wfInstanceInfo) {
@@ -78,7 +75,7 @@ public class NestedWorkflowNodeHandler implements TaskNodeHandler {
         } else {
             // 透传当前的上下文创建新的工作流实例
             String wfContext = wfInstanceInfo.getWfContext();
-            Long instanceId = workflowInstanceManager.create(targetWf, wfContext, System.currentTimeMillis(), wfInstanceInfo.getWfInstanceId());
+            Long instanceId = SpringUtils.getBean(WorkflowInstanceManager.class).create(targetWf, wfContext, System.currentTimeMillis(), wfInstanceInfo.getWfInstanceId());
             node.setInstanceId(instanceId);
         }
         node.setStartTime(CommonUtils.formatTime(System.currentTimeMillis()));
@@ -89,7 +86,7 @@ public class NestedWorkflowNodeHandler implements TaskNodeHandler {
     public void startTaskInstance(PEWorkflowDAG.Node node) {
         Long wfId = node.getJobId();
         WorkflowInfoDO targetWf = workflowInfoRepository.findById(wfId).orElse(null);
-        workflowInstanceManager.start(targetWf, node.getInstanceId());
+        SpringUtils.getBean(WorkflowInstanceManager.class).start(targetWf, node.getInstanceId());
     }
 
     @Override

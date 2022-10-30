@@ -18,8 +18,10 @@ import java.util.Set;
 @Slf4j
 public class WorkerClusterManagerService {
 
-    // 存储Worker健康信息，appId -> ClusterStatusHolder
-    private static final Map<Long, ClusterStatusHolder> appId2ClusterStatus = Maps.newConcurrentMap();
+    /**
+     * 存储Worker健康信息，appId -> ClusterStatusHolder
+     */
+    private static final Map<Long, ClusterStatusHolder> APP_ID_2_CLUSTER_STATUS = Maps.newConcurrentMap();
 
     /**
      * 更新状态
@@ -28,7 +30,7 @@ public class WorkerClusterManagerService {
     public static void updateStatus(WorkerHeartbeat heartbeat) {
         Long appId = heartbeat.getAppId();
         String appName = heartbeat.getAppName();
-        ClusterStatusHolder clusterStatusHolder = appId2ClusterStatus.computeIfAbsent(appId, ignore -> new ClusterStatusHolder(appName));
+        ClusterStatusHolder clusterStatusHolder = APP_ID_2_CLUSTER_STATUS.computeIfAbsent(appId, ignore -> new ClusterStatusHolder(appName));
         clusterStatusHolder.updateStatus(heartbeat);
     }
 
@@ -38,7 +40,7 @@ public class WorkerClusterManagerService {
      */
     public static void clean(List<Long> usingAppIds) {
         Set<Long> keys = Sets.newHashSet(usingAppIds);
-        appId2ClusterStatus.entrySet().removeIf(entry -> !keys.contains(entry.getKey()));
+        APP_ID_2_CLUSTER_STATUS.entrySet().removeIf(entry -> !keys.contains(entry.getKey()));
     }
 
 
@@ -46,11 +48,11 @@ public class WorkerClusterManagerService {
      * 清理缓存信息，防止 OOM
      */
     public static void cleanUp() {
-        appId2ClusterStatus.values().forEach(ClusterStatusHolder::release);
+        APP_ID_2_CLUSTER_STATUS.values().forEach(ClusterStatusHolder::release);
     }
 
     protected static Map<Long, ClusterStatusHolder> getAppId2ClusterStatus() {
-        return appId2ClusterStatus;
+        return APP_ID_2_CLUSTER_STATUS;
     }
 
 }

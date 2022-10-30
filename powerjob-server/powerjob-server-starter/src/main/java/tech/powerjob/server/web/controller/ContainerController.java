@@ -41,15 +41,21 @@ import java.util.stream.Collectors;
 @RequestMapping("/container")
 public class ContainerController {
 
-    @Value("${server.port}")
-    private int port;
 
-    @Resource
-    private ContainerService containerService;
-    @Resource
-    private AppInfoRepository appInfoRepository;
-    @Resource
-    private ContainerInfoRepository containerInfoRepository;
+    private final int port;
+
+    private final ContainerService containerService;
+
+    private final AppInfoRepository appInfoRepository;
+
+    private final ContainerInfoRepository containerInfoRepository;
+
+    public ContainerController(@Value("${server.port}") int port, ContainerService containerService, AppInfoRepository appInfoRepository, ContainerInfoRepository containerInfoRepository) {
+        this.port = port;
+        this.containerService = containerService;
+        this.appInfoRepository = appInfoRepository;
+        this.containerInfoRepository = containerInfoRepository;
+    }
 
     @GetMapping("/downloadJar")
     public void downloadJar(String version, HttpServletResponse response) throws IOException {

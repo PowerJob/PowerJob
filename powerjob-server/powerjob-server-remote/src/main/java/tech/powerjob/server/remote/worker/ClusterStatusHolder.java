@@ -21,11 +21,17 @@ import java.util.Map;
 @Slf4j
 public class ClusterStatusHolder {
 
-    // 集群所属的应用名称
+    /**
+     * 集群所属的应用名称
+     */
     private final String appName;
-    // 集群中所有机器的信息
+    /**
+     * 集群中所有机器的信息
+     */
     private final Map<String, WorkerInfo> address2WorkerInfo;
-    // 集群中所有机器的容器部署状态 containerId -> (workerAddress -> containerInfo)
+    /**
+     * 集群中所有机器的容器部署状态 containerId -> (workerAddress -> containerInfo)
+     */
     private Map<Long, Map<String, DeployedContainerInfo>> containerId2Infos;
 
 

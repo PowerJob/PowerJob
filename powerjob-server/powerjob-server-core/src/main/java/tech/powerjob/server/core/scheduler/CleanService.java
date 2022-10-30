@@ -1,15 +1,5 @@
 package tech.powerjob.server.core.scheduler;
 
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.enums.WorkflowInstanceStatus;
-import tech.powerjob.server.common.constants.PJThreadPool;
-import tech.powerjob.server.common.utils.OmsFileUtils;
-import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
-import tech.powerjob.server.persistence.mongodb.GridFsManager;
-import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
-import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
-import tech.powerjob.server.extension.LockService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +8,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.server.common.constants.PJThreadPool;
+import tech.powerjob.server.common.utils.OmsFileUtils;
+import tech.powerjob.server.extension.LockService;
+import tech.powerjob.server.persistence.mongodb.GridFsManager;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
+import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
 
@@ -33,25 +32,21 @@ import java.util.Date;
 @Service
 public class CleanService {
 
-    @Resource
-    private GridFsManager gridFsManager;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
-    @Resource
-    private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
-    @Resource
-    private WorkflowNodeInfoRepository workflowNodeInfoRepository;
-    @Resource
-    private LockService lockService;
+    private final GridFsManager gridFsManager;
 
-    @Value("${oms.instanceinfo.retention}")
-    private int instanceInfoRetentionDay;
+    private final InstanceInfoRepository instanceInfoRepository;
 
-    @Value("${oms.container.retention.local}")
-    private int localContainerRetentionDay;
-    @Value("${oms.container.retention.remote}")
-    private int remoteContainerRetentionDay;
+    private final WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
+    private final WorkflowNodeInfoRepository workflowNodeInfoRepository;
+
+    private final LockService lockService;
+
+    private final int instanceInfoRetentionDay;
+
+    private final int localContainerRetentionDay;
+
+    private final int remoteContainerRetentionDay;
 
     private static final int TEMPORARY_RETENTION_DAY = 3;
 
@@ -61,6 +56,21 @@ public class CleanService {
     private static final String CLEAN_TIME_EXPRESSION = "0 0 3 * * ?";
 
     private static final String HISTORY_DELETE_LOCK = "history_delete_lock";
+
+    public CleanService(GridFsManager gridFsManager, InstanceInfoRepository instanceInfoRepository, WorkflowInstanceInfoRepository workflowInstanceInfoRepository,
+                        WorkflowNodeInfoRepository workflowNodeInfoRepository, LockService lockService,
+                        @Value("${oms.instanceinfo.retention}") int instanceInfoRetentionDay,
+                        @Value("${oms.container.retention.local}") int localContainerRetentionDay,
+                        @Value("${oms.container.retention.remote}") int remoteContainerRetentionDay) {
+        this.gridFsManager = gridFsManager;
+        this.instanceInfoRepository = instanceInfoRepository;
+        this.workflowInstanceInfoRepository = workflowInstanceInfoRepository;
+        this.workflowNodeInfoRepository = workflowNodeInfoRepository;
+        this.lockService = lockService;
+        this.instanceInfoRetentionDay = instanceInfoRetentionDay;
+        this.localContainerRetentionDay = localContainerRetentionDay;
+        this.remoteContainerRetentionDay = remoteContainerRetentionDay;
+    }
 
 
     @Async(PJThreadPool.TIMING_POOL)

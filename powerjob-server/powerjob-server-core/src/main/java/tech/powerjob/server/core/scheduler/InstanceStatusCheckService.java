@@ -1,26 +1,27 @@
 package tech.powerjob.server.core.scheduler;
 
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.SystemInstanceResult;
-import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.common.enums.WorkflowInstanceStatus;
-import tech.powerjob.server.common.constants.PJThreadPool;
-import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
-import tech.powerjob.server.persistence.remote.model.*;
-import tech.powerjob.server.persistence.remote.repository.*;
-import tech.powerjob.server.core.DispatchService;
-import tech.powerjob.server.core.instance.InstanceManager;
-import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.server.common.constants.PJThreadPool;
+import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.core.DispatchService;
+import tech.powerjob.server.core.instance.InstanceManager;
+import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.persistence.remote.model.*;
+import tech.powerjob.server.persistence.remote.repository.*;
+import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InstanceStatusCheckService {
 
     private static final int MAX_BATCH_NUM = 10;
@@ -42,23 +44,21 @@ public class InstanceStatusCheckService {
     private static final long RUNNING_TIMEOUT_MS = 60000;
     private static final long WORKFLOW_WAITING_TIMEOUT_MS = 60000;
 
-    @Resource
-    private DispatchService dispatchService;
-    @Resource
-    private InstanceManager instanceManager;
-    @Resource
-    private WorkflowInstanceManager workflowInstanceManager;
+    private  final DispatchService dispatchService;
 
-    @Resource
-    private AppInfoRepository appInfoRepository;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
-    @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
-    @Resource
-    private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
+    private final InstanceManager instanceManager;
+
+    private final WorkflowInstanceManager workflowInstanceManager;
+
+    private final AppInfoRepository appInfoRepository;
+
+    private final JobInfoRepository jobInfoRepository;
+
+    private final InstanceInfoRepository instanceInfoRepository;
+
+    private final WorkflowInfoRepository workflowInfoRepository;
+
+    private final WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
 
     @Async(PJThreadPool.TIMING_POOL)
     @Scheduled(fixedDelay = 10000)

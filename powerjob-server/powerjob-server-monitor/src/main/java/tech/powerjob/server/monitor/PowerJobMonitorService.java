@@ -2,7 +2,6 @@ package tech.powerjob.server.monitor;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,9 +18,7 @@ public class PowerJobMonitorService implements MonitorService {
 
     private final List<Monitor> monitors = Lists.newLinkedList();
 
-    @Autowired
     public PowerJobMonitorService(List<Monitor> monitors) {
-
         monitors.forEach(m -> {
             log.info("[MonitorService] register monitor: {}", m.getClass().getName());
             this.monitors.add(m);

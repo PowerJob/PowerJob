@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -32,7 +33,6 @@ import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,25 +47,25 @@ import static tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils.isNo
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @SuppressWarnings("squid:S1192")
 public class WorkflowInstanceManager {
 
-    @Resource
-    private AlarmCenter alarmCenter;
-    @Resource
-    private IdGenerateService idGenerateService;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private UserService userService;
-    @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
-    @Resource
-    private WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
-    @Resource
-    private WorkflowNodeInfoRepository workflowNodeInfoRepository;
-    @Resource
-    private WorkflowNodeHandleService workflowNodeHandleService;
+    private final AlarmCenter alarmCenter;
+
+    private final IdGenerateService idGenerateService;
+
+    private final JobInfoRepository jobInfoRepository;
+
+    private final UserService userService;
+
+    private final WorkflowInfoRepository workflowInfoRepository;
+
+    private final WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
+
+    private final WorkflowNodeInfoRepository workflowNodeInfoRepository;
+
+    private final WorkflowNodeHandleService workflowNodeHandleService;
 
     /**
      * 创建工作流任务实例

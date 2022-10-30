@@ -26,9 +26,8 @@ import java.util.Optional;
 @Service
 public class WorkerClusterQueryService {
 
-    private List<WorkerFilter> workerFilters;
+    private final List<WorkerFilter> workerFilters;
 
-    @Autowired
     public WorkerClusterQueryService(List<WorkerFilter> workerFilters) {
         this.workerFilters = workerFilters;
     }
@@ -92,7 +91,6 @@ public class WorkerClusterQueryService {
      */
     public Optional<WorkerInfo> getWorkerInfoByAddress(Long appId, String address) {
         // this may cause NPE while address value is null .
-        //return Optional.ofNullable(getWorkerInfosByAppId(appId).get(address));
         final Map<String, WorkerInfo> workerInfosByAppId = getWorkerInfosByAppId(appId);
         //add null check for both workerInfos Map and  address
         if (null != workerInfosByAppId && null != address) {

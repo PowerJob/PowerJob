@@ -11,7 +11,9 @@ import tech.powerjob.server.common.timewheel.Timer;
  */
 public class HashedWheelTimerHolder {
 
-    // 非精确时间轮，每 5S 走一格
+    /**
+     * 非精确时间轮，每 5S 走一格
+     */
     public static final Timer INACCURATE_TIMER = new HashedWheelTimer(5000, 16, 0);
 
     private HashedWheelTimerHolder() {

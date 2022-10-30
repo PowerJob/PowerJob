@@ -2,6 +2,11 @@ package tech.powerjob.server.web.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
@@ -10,12 +15,7 @@ import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.server.election.ServerElectionService;
 import tech.powerjob.server.remote.transport.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -28,16 +28,16 @@ import java.util.TimeZone;
  */
 @RestController
 @RequestMapping("/server")
+@RequiredArgsConstructor
 public class ServerController {
 
-    @Resource
-    private TransportService transportService;
-    @Resource
-    private ServerElectionService serverElectionService;
-    @Resource
-    private AppInfoRepository appInfoRepository;
-    @Resource
-    private WorkerClusterQueryService workerClusterQueryService;
+    private final TransportService transportService;
+
+    private final ServerElectionService serverElectionService;
+
+    private final AppInfoRepository appInfoRepository;
+
+    private final WorkerClusterQueryService workerClusterQueryService;
 
     @GetMapping("/assert")
     public ResultDTO<Long> assertAppName(String appName) {

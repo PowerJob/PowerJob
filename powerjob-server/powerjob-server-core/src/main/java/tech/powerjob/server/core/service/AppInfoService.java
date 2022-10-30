@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.service;
 
+import lombok.RequiredArgsConstructor;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
@@ -15,10 +16,10 @@ import java.util.Objects;
  * @since 2020/6/20
  */
 @Service
+@RequiredArgsConstructor
 public class AppInfoService {
 
-    @Resource
-    private AppInfoRepository appInfoRepository;
+    private final AppInfoRepository appInfoRepository;
 
     /**
      * 验证应用访问权限

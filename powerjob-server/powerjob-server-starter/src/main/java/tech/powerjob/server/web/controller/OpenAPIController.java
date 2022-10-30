@@ -1,8 +1,10 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.enums.InstanceStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -11,19 +13,16 @@ import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
-import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
-import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
+import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.core.service.CacheService;
 import tech.powerjob.server.core.service.JobService;
-import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceService;
 import tech.powerjob.server.core.workflow.WorkflowService;
+import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
+import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
-import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -34,21 +33,20 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(OpenAPIConstant.WEB_PATH)
+@RequiredArgsConstructor
 public class OpenAPIController {
 
-    @Resource
-    private AppInfoService appInfoService;
-    @Resource
-    private JobService jobService;
-    @Resource
-    private InstanceService instanceService;
-    @Resource
-    private WorkflowService workflowService;
-    @Resource
-    private WorkflowInstanceService workflowInstanceService;
+    private final AppInfoService appInfoService;
 
-    @Resource
-    private CacheService cacheService;
+    private final JobService jobService;
+
+    private final InstanceService instanceService;
+
+    private final WorkflowService workflowService;
+
+    private final WorkflowInstanceService workflowInstanceService;
+
+    private final CacheService cacheService;
 
 
     @PostMapping(OpenAPIConstant.ASSERT)
@@ -59,7 +57,7 @@ public class OpenAPIController {
     /* ************* Job 区 ************* */
 
     @PostMapping(OpenAPIConstant.SAVE_JOB)
-    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) throws ParseException {
+    public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) {
         if (request.getId() != null) {
             checkJobIdValid(request.getId(), request.getAppId());
         }
@@ -102,7 +100,7 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.ENABLE_JOB)
-    public ResultDTO<Void> enableJob(Long jobId, Long appId) throws ParseException {
+    public ResultDTO<Void> enableJob(Long jobId, Long appId) {
         checkJobIdValid(jobId, appId);
         jobService.enableJob(jobId);
         return ResultDTO.success(null);
@@ -156,7 +154,7 @@ public class OpenAPIController {
     /* ************* Workflow 区 ************* */
 
     @PostMapping(OpenAPIConstant.SAVE_WORKFLOW)
-    public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) throws ParseException {
+    public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) {
         return ResultDTO.success(workflowService.saveWorkflow(request));
     }
 

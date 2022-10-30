@@ -1,16 +1,15 @@
 package tech.powerjob.server.core.instance;
 
-import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
-import tech.powerjob.server.persistence.remote.model.JobInfoDO;
-import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
+import tech.powerjob.server.persistence.remote.model.JobInfoDO;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 
-import javax.annotation.Resource;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -23,17 +22,23 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class InstanceMetadataService implements InitializingBean {
 
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
+    private final JobInfoRepository jobInfoRepository;
 
-    // 缓存，一旦生成任务实例，其对应的 JobInfo 不应该再改变（即使源数据改变）
+    private final InstanceInfoRepository instanceInfoRepository;
+    /**
+     * 缓存，一旦生成任务实例，其对应的 JobInfo 不应该再改变（即使源数据改变）
+     */
     private Cache<Long, JobInfoDO> instanceId2JobInfoCache;
 
-    @Value("${oms.instance.metadata.cache.size}")
-    private int instanceMetadataCacheSize;
-    private static final int CACHE_CONCURRENCY_LEVEL = 16;
+    private final int instanceMetadataCacheSize;
+
+    private static final int CACHE_CONCURRENCY_LEVEL = 32;
+
+    public InstanceMetadataService(JobInfoRepository jobInfoRepository, InstanceInfoRepository instanceInfoRepository, @Value("${oms.instance.metadata.cache.size}") Integer instanceMetadataCacheSize) {
+        this.jobInfoRepository = jobInfoRepository;
+        this.instanceInfoRepository = instanceInfoRepository;
+        this.instanceMetadataCacheSize = instanceMetadataCacheSize;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
