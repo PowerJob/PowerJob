@@ -19,6 +19,7 @@ import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.core.helper.StatusMappingHelper;
 import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.core.service.UserService;
@@ -440,10 +441,10 @@ public class WorkflowInstanceManager {
             if (workflowInstanceStatus == WorkflowInstanceStatus.SUCCEED){
                 HashMap<String, String> wfContext = JSON.parseObject(wfInstance.getWfContext(), new TypeReference<HashMap<String, String>>() {
                 });
-                updateWorkflowContext(wfInstance.getParentWfInstanceId(),wfContext);
+                SpringUtils.getBean(this.getClass()).updateWorkflowContext(wfInstance.getParentWfInstanceId(), wfContext);
             }
-            // 处理父工作流
-            move(wfInstance.getParentWfInstanceId(), wfInstance.getWfInstanceId(), StatusMappingHelper.toInstanceStatus(workflowInstanceStatus), result);
+            // 处理父工作流, fix https://github.com/PowerJob/PowerJob/issues/465
+            SpringUtils.getBean(this.getClass()).move(wfInstance.getParentWfInstanceId(), wfInstance.getWfInstanceId(), StatusMappingHelper.toInstanceStatus(workflowInstanceStatus), result);
         }
 
         // 报警
