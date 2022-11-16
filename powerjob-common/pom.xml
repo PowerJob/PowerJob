@@ -21,7 +21,7 @@
         <okhttp.version>3.14.9</okhttp.version>
         <akka.version>2.6.12</akka.version>
         <kryo.version>5.0.4</kryo.version>
-        <jackson.version>2.12.2</jackson.version>
+        <jackson.version>2.12.7.1</jackson.version>
         <junit.version>5.9.0</junit.version>
     </properties>
 
