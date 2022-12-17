@@ -94,7 +94,7 @@ public class CleanService {
      */
     private void cleanByOneServer() {
         // 只要第一个server抢到锁其他server就会返回，所以锁10分钟应该足够了
-        boolean lock = lockService.tryLock(HISTORY_DELETE_LOCK, 10 * 60 * 1000);
+        boolean lock = lockService.tryLock(HISTORY_DELETE_LOCK, 10 * 60 * 1000L);
         if (!lock) {
             log.info("[CleanService] clean job is already running, just return.");
             return;
