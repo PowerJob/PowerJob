@@ -84,7 +84,9 @@ public class ContainerService {
     // 并发部署的机器数量
     private static final int DEPLOY_BATCH_NUM = 50;
     // 部署间隔
-    private static final long DEPLOY_MIN_INTERVAL = 10 * 60 * 1000;
+    private static final long DEPLOY_MIN_INTERVAL = 10 * 60 * 1000L;
+    // 最长部署时间
+    private static final long DEPLOY_MAX_COST_TIME = 10 * 60 * 1000L;
 
     /**
      * 保存容器
@@ -208,14 +210,13 @@ public class ContainerService {
         String deployLock = "containerDeployLock-" + containerId;
         RemoteEndpoint.Async remote = session.getAsyncRemote();
         // 最长部署时间：10分钟
-        boolean lock = lockService.tryLock(deployLock, 10 * 60 * 1000);
+        boolean lock = lockService.tryLock(deployLock, DEPLOY_MAX_COST_TIME);
         if (!lock) {
             remote.sendText("SYSTEM: acquire deploy lock failed, maybe other user is deploying, please wait until the running deploy task finished.");
             return;
         }
 
         try {
-
             Optional<ContainerInfoDO> containerInfoOpt = containerInfoRepository.findById(containerId);
             if (!containerInfoOpt.isPresent()) {
                 remote.sendText("SYSTEM: can't find container by id: " + containerId);

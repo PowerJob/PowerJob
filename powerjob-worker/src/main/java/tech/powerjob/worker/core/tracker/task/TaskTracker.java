@@ -527,12 +527,11 @@ public abstract class TaskTracker {
             // 3. 避免大查询，分批派发任务
             long currentDispatchNum = 0;
             long maxDispatchNum = availablePtIps.size() * instanceInfo.getThreadConcurrency() * 2L;
+            int dbQueryLimit = Math.min(DB_QUERY_LIMIT, (int) maxDispatchNum);
             AtomicInteger index = new AtomicInteger(0);
 
             // 4. 循环查询数据库，获取需要派发的任务
             while (maxDispatchNum > currentDispatchNum) {
-
-                int dbQueryLimit = Math.min(DB_QUERY_LIMIT, (int) maxDispatchNum);
                 List<TaskDO> needDispatchTasks = taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.WAITING_DISPATCH, dbQueryLimit);
                 currentDispatchNum += needDispatchTasks.size();
 
