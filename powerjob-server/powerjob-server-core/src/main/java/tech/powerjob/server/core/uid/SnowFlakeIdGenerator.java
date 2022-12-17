@@ -69,7 +69,7 @@ public class SnowFlakeIdGenerator {
     public synchronized long nextId() {
         long currStamp = getNewStamp();
         if (currStamp < lastTimestamp) {
-            throw new RuntimeException("clock moved backwards, refusing to generate id");
+            return futureId();
         }
 
         if (currStamp == lastTimestamp) {
@@ -87,6 +87,22 @@ public class SnowFlakeIdGenerator {
         lastTimestamp = currStamp;
 
         return (currStamp - START_STAMP) << TIMESTAMP_LEFT //时间戳部分
+                | dataCenterId << DATA_CENTER_LEFT       //数据中心部分
+                | machineId << MACHINE_LEFT             //机器标识部分
+                | sequence;                             //序列号部分
+    }
+
+    /**
+     * 发生时钟回拨时借用未来时间生成Id，避免运行过程中任务调度和工作流直接进入不可用状态
+     * 注：该方式不可解决原算法中停服状态下时钟回拨导致的重复id问题
+     */
+    private long futureId() {
+        sequence = (sequence + 1) & MAX_SEQUENCE;
+        if (sequence == 0L) {
+            lastTimestamp = lastTimestamp + 1;
+        }
+
+        return (lastTimestamp - START_STAMP) << TIMESTAMP_LEFT //时间戳部分
                 | dataCenterId << DATA_CENTER_LEFT       //数据中心部分
                 | machineId << MACHINE_LEFT             //机器标识部分
                 | sequence;                             //序列号部分
