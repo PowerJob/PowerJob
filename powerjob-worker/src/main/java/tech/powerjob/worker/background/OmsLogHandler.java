@@ -60,7 +60,7 @@ public class OmsLogHandler {
             new Thread(logSubmitter).start();
         }
 
-        InstanceLogContent tuple = new InstanceLogContent(instanceId, System.currentTimeMillis(), logLevel.getV(), logContent);
+        InstanceLogContent tuple = new InstanceLogContent(instanceId, System.nanoTime(), logLevel.getV(), logContent);
         boolean offerRet = logQueue.offer(tuple);
         if (!offerRet) {
             log.warn("[OmsLogHandler] [{}] submit log failed, maybe your log speed is too fast!", instanceId);
