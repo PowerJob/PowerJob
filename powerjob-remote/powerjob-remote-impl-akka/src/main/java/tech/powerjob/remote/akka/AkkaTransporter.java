@@ -48,7 +48,7 @@ public class AkkaTransporter implements Transporter {
     public AkkaTransporter(ServerType serverType, ActorSystem actorSystem) {
         this.actorSystem = actorSystem;
         this.serverType = serverType;
-        this.targetActorSystemName = AkkaConstant.fetchActorSystemName(serverType, true);
+        this.targetActorSystemName = AkkaConstant.fetchActorSystemName(serverType, false);
     }
 
     @Override

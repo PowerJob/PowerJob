@@ -20,13 +20,13 @@ public class AkkaConstant {
     /**
      * 获取 actorSystem 名称
      * @param serverType 当前服务器类型，powerjob-server 为 server，powerjob-worker 为 worker
-     * @param reversed 是否反向输出，默认输出当前服务器对应的 actorSystemName，reversed = true 后倒置为目标服务器的 actorSystemName
+     * @param mine 是否输出当前服务器对应的 actorSystemName，mine = false 后倒置为目标服务器的 actorSystemName
      * @return actorSystemName
      */
-    public static String fetchActorSystemName(ServerType serverType, boolean reversed) {
+    public static String fetchActorSystemName(ServerType serverType, boolean mine) {
 
         boolean outputServer = serverType == ServerType.SERVER;
-        if (reversed) {
+        if (!mine) {
             outputServer = !outputServer;
         }
 

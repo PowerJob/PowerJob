@@ -50,7 +50,7 @@ public class AkkaCSInitializer implements CSInitializer {
         Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
         // 启动时绑定当前的 actorSystemName
-        String actorSystemName = AkkaConstant.fetchActorSystemName(config.getServerType(), false);
+        String actorSystemName = AkkaConstant.fetchActorSystemName(config.getServerType(), true);
         this.actorSystem = ActorSystem.create(actorSystemName, akkaFinalConfig);
 
         // 处理系统中产生的异常情况
