@@ -37,7 +37,10 @@ public class PowerJobRemoteEngine implements RemoteEngine {
             Stopwatch sw = Stopwatch.createStarted();
             log.info("[PowerJobRemoteEngine] try to startup CSInitializer[type={}]", type);
 
-            csInitializer.init(new CSInitializerConfig().setBindAddress(engineConfig.getBindAddress()));
+            csInitializer.init(new CSInitializerConfig()
+                    .setBindAddress(engineConfig.getBindAddress())
+                    .setServerType(engineConfig.getServerType())
+            );
             Transporter transporter = csInitializer.buildTransporter();
             engineOutput.getType2Transport().put(type, transporter);
 

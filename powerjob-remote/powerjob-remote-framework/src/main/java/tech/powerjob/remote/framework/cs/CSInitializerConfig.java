@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import tech.powerjob.remote.framework.base.Address;
+import tech.powerjob.remote.framework.base.ServerType;
 
 import java.io.Serializable;
 
@@ -19,4 +20,6 @@ import java.io.Serializable;
 public class CSInitializerConfig implements Serializable {
 
     private Address bindAddress;
+
+    private ServerType serverType;
 }

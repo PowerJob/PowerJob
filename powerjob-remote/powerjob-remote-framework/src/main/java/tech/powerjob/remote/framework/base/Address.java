@@ -18,4 +18,8 @@ import java.io.Serializable;
 public class Address implements Serializable {
     private String host;
     private int port;
+
+    public String toFullAddress() {
+        return String.format("%s:%d", host, port);
+    }
 }

@@ -9,6 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <version>4.2.0</version>
     <artifactId>powerjob-remote-framework</artifactId>
 
     <properties>
