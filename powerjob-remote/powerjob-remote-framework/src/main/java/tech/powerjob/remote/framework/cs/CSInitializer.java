@@ -9,10 +9,16 @@ import java.util.List;
 /**
  * client & server initializer
  *
- * @author tjq
+ * @author MuBao
  * @since 2022/12/31
  */
 public interface CSInitializer extends Closeable {
+
+    /**
+     * 类型名称，比如 akka, netty4，httpJson
+     * @return 名称
+     */
+    String type();
 
     /**
      * initialize the framework
