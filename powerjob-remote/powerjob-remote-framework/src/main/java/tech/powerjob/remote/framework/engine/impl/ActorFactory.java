@@ -23,36 +23,9 @@ import java.util.Set;
  * @since 2022/12/31
  */
 @Slf4j
-class HandlerFactory {
+class ActorFactory {
 
-    public static List<HandlerInfo> load() {
-        List<ActorInfo> actorInfos = loadActorInfos();
-        List<HandlerInfo> ret = Lists.newArrayList();
-        actorInfos.forEach(actorInfo -> {
-            Actor anno = actorInfo.getAnno();
-            String rootPath = anno.path();
-            Object actor = actorInfo.getActor();
-            Set<Method> allHandlerMethods = ReflectionUtils.getAllMethods(actor.getClass(), (input -> input != null && input.isAnnotationPresent(Handler.class)));
-            allHandlerMethods.forEach(handlerMethod -> {
-                Handler handlerMethodAnnotation = handlerMethod.getAnnotation(Handler.class);
-
-                HandlerLocation handlerLocation = new HandlerLocation()
-                        .setRootPath(rootPath)
-                        .setMethodPath(handlerMethodAnnotation.path());
-
-
-                HandlerInfo handlerInfo = new HandlerInfo()
-                        .setActorInfo(actorInfo)
-                        .setMethod(handlerMethod)
-                        .setLocation(handlerLocation);
-                ret.add(handlerInfo);
-            });
-
-        });
-        return ret;
-    }
-
-    static List<ActorInfo> loadActorInfos() {
+    static List<ActorInfo> load() {
         Reflections reflections = new Reflections(OmsConstant.PACKAGE);
         final Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Actor.class);
 
@@ -64,7 +37,10 @@ class HandlerFactory {
 
                 log.info("[ActorFactory] load Actor[clz={},path={}] successfully!", clz, anno.path());
 
-                actorInfos.add(new ActorInfo(object, anno));
+                ActorInfo actorInfo = new ActorInfo().setActor(object).setAnno(anno);
+                actorInfo.setHandlerInfos(loadHandlerInfos4Actor(actorInfo));
+
+                actorInfos.add(actorInfo);
             } catch (Throwable t) {
                 log.error("[ActorFactory] process Actor[{}] failed!", clz);
                 ExceptionUtils.rethrow(t);
@@ -72,5 +48,29 @@ class HandlerFactory {
         });
 
         return actorInfos;
+    }
+
+    private static List<HandlerInfo> loadHandlerInfos4Actor(ActorInfo actorInfo) {
+        List<HandlerInfo> ret = Lists.newArrayList();
+
+        Actor anno = actorInfo.getAnno();
+        String rootPath = anno.path();
+        Object actor = actorInfo.getActor();
+        Set<Method> allHandlerMethods = ReflectionUtils.getAllMethods(actor.getClass(), (input -> input != null && input.isAnnotationPresent(Handler.class)));
+        allHandlerMethods.forEach(handlerMethod -> {
+            Handler handlerMethodAnnotation = handlerMethod.getAnnotation(Handler.class);
+
+            HandlerLocation handlerLocation = new HandlerLocation()
+                    .setRootPath(rootPath)
+                    .setMethodPath(handlerMethodAnnotation.path());
+
+
+            HandlerInfo handlerInfo = new HandlerInfo()
+                    .setActorInfo(actorInfo)
+                    .setMethod(handlerMethod)
+                    .setLocation(handlerLocation);
+            ret.add(handlerInfo);
+        });
+        return ret;
     }
 }

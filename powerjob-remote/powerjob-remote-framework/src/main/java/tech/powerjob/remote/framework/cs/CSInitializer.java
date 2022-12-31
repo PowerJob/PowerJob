@@ -1,5 +1,6 @@
 package tech.powerjob.remote.framework.cs;
 
+import tech.powerjob.remote.framework.actor.ActorInfo;
 import tech.powerjob.remote.framework.actor.HandlerInfo;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
@@ -34,7 +35,7 @@ public interface CSInitializer extends Closeable {
 
     /**
      * bind Actor, publish handler's service
-     * @param handlerInfos handler infos
+     * @param actorInfos actor infos
      */
-    void bindHandlers(List<HandlerInfo> handlerInfos);
+    void bindHandlers(List<ActorInfo> actorInfos);
 }

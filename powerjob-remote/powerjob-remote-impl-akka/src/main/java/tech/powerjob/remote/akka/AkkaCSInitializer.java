@@ -7,6 +7,7 @@ import akka.actor.Props;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import tech.powerjob.remote.framework.actor.ActorInfo;
 import tech.powerjob.remote.framework.actor.HandlerInfo;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.ServerType;
@@ -64,7 +65,7 @@ public class AkkaCSInitializer implements CSInitializer {
     }
 
     @Override
-    public void bindHandlers(List<HandlerInfo> handlerInfos) {
+    public void bindHandlers(List<ActorInfo> actorInfos) {
 
     }
 

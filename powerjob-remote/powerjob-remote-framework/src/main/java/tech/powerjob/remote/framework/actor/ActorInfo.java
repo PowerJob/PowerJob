@@ -1,28 +1,27 @@
 package tech.powerjob.remote.framework.actor;
 
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+import java.util.List;
+
 /**
  * ActorInfo
  *
  * @author tjq
  * @since 2022/12/31
  */
+@Getter
+@Setter
+@Accessors(chain = true)
 public class ActorInfo {
 
-    private final Object actor;
+    private Object actor;
 
-    private final Actor anno;
+    private Actor anno;
 
-    public ActorInfo(Object actor, Actor anno) {
-        this.actor = actor;
-        this.anno = anno;
-    }
+    private List<HandlerInfo> handlerInfos;
 
-    public Object getActor() {
-        return actor;
-    }
-
-    public Actor getAnno() {
-        return anno;
-    }
 }
