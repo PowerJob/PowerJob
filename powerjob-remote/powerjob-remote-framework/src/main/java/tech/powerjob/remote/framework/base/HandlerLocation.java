@@ -2,6 +2,7 @@ package tech.powerjob.remote.framework.base;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
+@ToString
 @Accessors(chain = true)
 public class HandlerLocation implements Serializable {
     /**

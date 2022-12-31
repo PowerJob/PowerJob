@@ -1,5 +1,9 @@
 package tech.powerjob.remote.framework.actor;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import tech.powerjob.remote.framework.base.HandlerLocation;
 
 import java.io.Serializable;
@@ -11,7 +15,11 @@ import java.lang.reflect.Method;
  * @author tjq
  * @since 2022/12/31
  */
-public class HandlerInfo implements Serializable {
+@Getter
+@Setter
+@ToString
+@Accessors(chain = true)
+public class HandlerInfo {
 
     private HandlerLocation location;
     /**
@@ -21,5 +29,5 @@ public class HandlerInfo implements Serializable {
     /**
      * actor 对象
      */
-    private Object actor;
+    private transient ActorInfo actorInfo;
 }

@@ -17,6 +17,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <powerjob-common.version>4.2.0</powerjob-common.version>
+        <reflections.version>0.10.2</reflections.version>
+
+        <junit.version>5.9.0</junit.version>
+        <logback.version>1.2.9</logback.version>
     </properties>
 
     <dependencies>
@@ -24,6 +28,27 @@
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
             <version>${powerjob-common.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
+        </dependency>
+
+        <!-- Junit tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- log for test stage -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
