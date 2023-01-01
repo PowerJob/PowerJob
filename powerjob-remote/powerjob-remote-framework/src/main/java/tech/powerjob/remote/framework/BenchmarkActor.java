@@ -19,11 +19,6 @@ import tech.powerjob.remote.framework.actor.Handler;
 @Actor(path = "benchmark")
 public class BenchmarkActor {
 
-    @Handler(path = "simple")
-    public String simpleRequest(String k) {
-        return k;
-    }
-
     @Handler(path = "standard")
     public BenchmarkResponse processStandardRequest(BenchmarkRequest request) {
         log.info("[BenchmarkActor] receive request: {}", request);

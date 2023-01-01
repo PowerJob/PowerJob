@@ -12,8 +12,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
-import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.remote.framework.actor.ActorInfo;
 import tech.powerjob.remote.framework.actor.HandlerInfo;
@@ -70,12 +68,12 @@ public class HttpVertxCSInitializer implements CSInitializer {
         // 处理请求响应
         router.route().handler(BodyHandler.create());
         actorInfos.forEach(actorInfo -> {
-            log.info("[HttpVertxCSInitializer] start to bind Actor[{}]'s handler!", actorInfo.getAnno().path());
+            log.info("[PowerJob-Vertx] start to bind Actor[{}]'s handler!", actorInfo.getAnno().path());
             Optional.ofNullable(actorInfo.getHandlerInfos()).orElse(Collections.emptyList()).forEach(handlerInfo -> {
                 Method method = handlerInfo.getMethod();
                 String handlerHttpPath = handlerInfo.getLocation().toPath();
                 ProcessType processType = handlerInfo.getAnno().processType();
-                log.info("[HttpVertxCSInitializer] register Handler with[path={},methodName={},processType={}]", handlerHttpPath, method.getName(), processType);
+                log.info("[PowerJob-Vertx] start to register Handler with[path={},methodName={},processType={}]", handlerHttpPath, method.getName(), processType);
 
                 Handler<RoutingContext> routingContextHandler = buildRequestHandler(actorInfo, handlerInfo);
                 Route route = router.post(handlerHttpPath);
@@ -84,6 +82,7 @@ public class HttpVertxCSInitializer implements CSInitializer {
                 } else {
                     route.handler(routingContextHandler);
                 }
+                log.info("[PowerJob-Vertx] register Handler[path={},methodName={}] successfully!", handlerHttpPath, method.getName());
             });
         });
 
@@ -104,11 +103,19 @@ public class HttpVertxCSInitializer implements CSInitializer {
     }
 
     private Handler<RoutingContext> buildRequestHandler(ActorInfo actorInfo, HandlerInfo handlerInfo) {
+        Method method = handlerInfo.getMethod();
+        Optional<Class<?>> powerSerializeClz = RemoteUtils.findPowerSerialize(method.getParameterTypes());
+
+        // 内部框架，严格模式，绑定失败直接报错
+        if (!powerSerializeClz.isPresent()) {
+            throw new PowerJobException("can't find any 'PowerSerialize' object in handler args: " + handlerInfo.getLocation());
+        }
+
         return ctx -> {
             final RequestBody body = ctx.body();
-            final Object convertResult = convertResult(body, handlerInfo);
+            final Object convertResult = body.asPojo(powerSerializeClz.get());
             try {
-                Object response = handlerInfo.getMethod().invoke(actorInfo.getActor(), convertResult);
+                Object response = method.invoke(actorInfo.getActor(), convertResult);
                 if (response != null) {
                     if (response instanceof String) {
                         ctx.end((String) response);
@@ -124,18 +131,6 @@ public class HttpVertxCSInitializer implements CSInitializer {
                 ctx.fail(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), t);
             }
         };
-    }
-
-    private static Object convertResult(RequestBody body, HandlerInfo handlerInfo) {
-        final Method method = handlerInfo.getMethod();
-
-        Optional<Class<?>> powerSerializeClz = RemoteUtils.findPowerSerialize(method.getParameterTypes());
-        // 内部框架，严格模式，绑定失败直接报错
-        if (!powerSerializeClz.isPresent()) {
-            throw new PowerJobException("can't find any 'PowerSerialize' object in handler args: " + handlerInfo.getLocation());
-        }
-
-        return body.asPojo(powerSerializeClz.get());
     }
 
 
