@@ -6,6 +6,7 @@ import akka.pattern.Patterns;
 import com.google.common.collect.Maps;
 import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.remote.framework.base.RemotingException;
 import tech.powerjob.remote.framework.base.ServerType;
@@ -63,9 +64,10 @@ public class AkkaTransporter implements Transporter {
     }
 
     @Override
-    public CompletionStage<Object> ask(URL url, PowerSerializable request, ExecutorService executorService) throws RemotingException {
+    @SuppressWarnings("unchecked")
+    public <T> CompletionStage<T> ask(URL url, PowerSerializable request, Class<T> clz) throws RemotingException {
         ActorSelection actorSelection = fetchActorSelection(url);
-        return Patterns.ask(actorSelection, request, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
+        return (CompletionStage<T>) Patterns.ask(actorSelection, request, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
     }
 
     private ActorSelection fetchActorSelection(URL url) {

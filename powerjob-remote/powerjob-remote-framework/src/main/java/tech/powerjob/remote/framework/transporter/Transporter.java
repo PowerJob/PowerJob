@@ -32,9 +32,9 @@ public interface Transporter {
      * ask by request
      * @param url url
      * @param request request
-     * @param executorService thread pool, null is acceptable
+     * @param clz response type
      * @return CompletionStage
      * @throws RemotingException remote exception
      */
-    CompletionStage<Object> ask(URL url, PowerSerializable request, ExecutorService executorService) throws RemotingException;
+    <T> CompletionStage<T> ask(URL url, PowerSerializable request, Class<T> clz) throws RemotingException;
 }
