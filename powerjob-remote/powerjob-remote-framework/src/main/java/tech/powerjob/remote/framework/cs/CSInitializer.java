@@ -1,7 +1,6 @@
 package tech.powerjob.remote.framework.cs;
 
 import tech.powerjob.remote.framework.actor.ActorInfo;
-import tech.powerjob.remote.framework.actor.HandlerInfo;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
 import java.io.Closeable;
