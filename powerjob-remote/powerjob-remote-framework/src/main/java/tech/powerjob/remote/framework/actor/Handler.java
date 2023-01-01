@@ -18,4 +18,10 @@ public @interface Handler {
      * @return handler path
      */
     String path();
+
+    /**
+     * 处理类型
+     * @return 阻塞 or 非阻塞
+     */
+    ProcessType processType() default ProcessType.BLOCKING;
 }

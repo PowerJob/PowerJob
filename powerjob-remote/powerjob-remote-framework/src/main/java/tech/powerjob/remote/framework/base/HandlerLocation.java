@@ -15,7 +15,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-@ToString
 @Accessors(chain = true)
 public class HandlerLocation implements Serializable {
     /**
@@ -29,5 +28,10 @@ public class HandlerLocation implements Serializable {
 
     public String toPath() {
         return String.format("/%s/%s", rootPath, methodPath);
+    }
+
+    @Override
+    public String toString() {
+        return toPath();
     }
 }

@@ -26,8 +26,9 @@ public class HandlerInfo {
      * handler 对应的方法
      */
     private Method method;
+
     /**
-     * actor 对象
+     * Handler 注解携带的信息
      */
-    private transient ActorInfo actorInfo;
+    private Handler anno;
 }

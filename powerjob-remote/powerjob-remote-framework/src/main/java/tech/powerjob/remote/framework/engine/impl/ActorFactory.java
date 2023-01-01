@@ -66,7 +66,7 @@ class ActorFactory {
 
 
             HandlerInfo handlerInfo = new HandlerInfo()
-                    .setActorInfo(actorInfo)
+                    .setAnno(handlerMethodAnnotation)
                     .setMethod(handlerMethod)
                     .setLocation(handlerLocation);
             ret.add(handlerInfo);
