@@ -12,6 +12,6 @@ public class HttpProtocol implements Protocol {
 
     @Override
     public String name() {
-        return null;
+        return tech.powerjob.common.enums.Protocol.HTTP.name();
     }
 }

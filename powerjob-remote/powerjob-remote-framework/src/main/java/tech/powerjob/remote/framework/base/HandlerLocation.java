@@ -26,4 +26,8 @@ public class HandlerLocation implements Serializable {
      * 方法路径
      */
     private String methodPath;
+
+    public String toPath() {
+        return String.format("/%s/%s", rootPath, methodPath);
+    }
 }
