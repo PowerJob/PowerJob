@@ -32,7 +32,7 @@ public class AkkaCSInitializer implements CSInitializer {
 
     @Override
     public String type() {
-        return AkkaConstant.PROTOCOL;
+        return tech.powerjob.common.enums.Protocol.AKKA.name();
     }
 
     @Override

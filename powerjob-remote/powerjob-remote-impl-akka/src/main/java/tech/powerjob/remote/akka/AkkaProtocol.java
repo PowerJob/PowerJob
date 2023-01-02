@@ -11,6 +11,6 @@ import tech.powerjob.remote.framework.transporter.Protocol;
 public class AkkaProtocol implements Protocol {
     @Override
     public String name() {
-        return AkkaConstant.PROTOCOL;
+        return tech.powerjob.common.enums.Protocol.AKKA.name();
     }
 }

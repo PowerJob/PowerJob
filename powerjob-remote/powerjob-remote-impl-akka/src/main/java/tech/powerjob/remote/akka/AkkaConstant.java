@@ -10,8 +10,6 @@ import tech.powerjob.remote.framework.base.ServerType;
  */
 public class AkkaConstant {
 
-    public static final String PROTOCOL = "AKKA";
-
     public static final String AKKA_CONFIG = "powerjob.akka.conf";
 
     public static final String WORKER_ACTOR_SYSTEM_NAME = "oms";
