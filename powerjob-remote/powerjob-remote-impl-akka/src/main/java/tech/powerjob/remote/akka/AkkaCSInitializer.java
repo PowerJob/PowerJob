@@ -66,7 +66,7 @@ public class AkkaCSInitializer implements CSInitializer {
 
     @Override
     public void bindHandlers(List<ActorInfo> actorInfos) {
-
+        // TODO: 考虑如何优雅绑定（实在不行就暴力绑定到一个 actor 上，反正可以切协议）
     }
 
     @Override

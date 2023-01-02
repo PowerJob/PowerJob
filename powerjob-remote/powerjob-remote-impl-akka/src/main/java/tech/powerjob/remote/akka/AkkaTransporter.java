@@ -40,6 +40,9 @@ public class AkkaTransporter implements Transporter {
     private static final Map<String, String> SERVER_PATH_MAP = Maps.newHashMap();
     private static final Map<String, String> WORKER_PATH_MAP = Maps.newHashMap();
 
+    /*
+    HandlerLocation#fullPath -> actorName
+     */
     static {
         SERVER_PATH_MAP.put("", "");
 
