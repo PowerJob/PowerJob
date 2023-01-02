@@ -27,7 +27,7 @@ public class VertxInitializer {
     public static HttpServer buildHttpServer(Vertx vertx) {
         HttpServerOptions httpServerOptions = new HttpServerOptions();
         tryEnableCompression(httpServerOptions);
-        log.info("[PowerJob-Vertx] use HttpServerOptions: {}", httpServerOptions);
+        log.info("[PowerJob-Vertx] use HttpServerOptions: {}", httpServerOptions.toJson());
         return vertx.createHttpServer(httpServerOptions);
     }
     private static void tryEnableCompression(HttpServerOptions httpServerOptions) {
@@ -44,7 +44,7 @@ public class VertxInitializer {
 
     public static HttpClient buildHttpClient(Vertx vertx) {
         HttpClientOptions httpClientOptions = new HttpClientOptions();
-        log.info("[PowerJob-Vertx] use HttpClientOptions: {}", httpClientOptions);
+        log.info("[PowerJob-Vertx] use HttpClientOptions: {}", httpClientOptions.toJson());
         return vertx.createHttpClient(httpClientOptions);
     }
 
