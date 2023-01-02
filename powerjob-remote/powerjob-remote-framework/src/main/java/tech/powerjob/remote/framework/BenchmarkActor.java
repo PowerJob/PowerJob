@@ -21,23 +21,26 @@ public class BenchmarkActor {
 
     @Handler(path = "standard")
     public BenchmarkResponse processStandardRequest(BenchmarkRequest request) {
+        long startTs = System.currentTimeMillis();
         log.info("[BenchmarkActor] receive request: {}", request);
         BenchmarkResponse response = new BenchmarkResponse()
                 .setSuccess(true)
                 .setContent(request.getContent())
                 .setProcessThread(Thread.currentThread().getName())
                 .setServerReceiveTs(System.currentTimeMillis());
-        if (request.getResponseSize() != 0 && request.getResponseSize() > 0) {
-            response.setExtra(RandomStringUtils.random(request.getResponseSize()));
+        if (request.getResponseSize() != null && request.getResponseSize() > 0) {
+            response.setExtra(RandomStringUtils.randomPrint(request.getResponseSize()));
         }
-        if (request.getBlockingMills() !=0 && request.getBlockingMills() > 0) {
+        if (request.getBlockingMills() != null && request.getBlockingMills() > 0) {
             CommonUtils.easySleep(request.getBlockingMills());
         }
+        response.setServerCost(System.currentTimeMillis() - startTs);
         return response;
     }
 
 
     @Data
+    @Accessors(chain = true)
     public static class BenchmarkRequest implements PowerSerializable {
         /**
          * 请求内容
@@ -64,6 +67,8 @@ public class BenchmarkActor {
 
         private String processThread;
         private long serverReceiveTs;
+
+        private long serverCost;
 
         private String extra;
     }

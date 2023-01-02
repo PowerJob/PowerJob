@@ -11,6 +11,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.remote.framework.actor.ActorInfo;
@@ -28,6 +29,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * HttpCSInitializer
@@ -67,6 +69,7 @@ public class HttpVertxCSInitializer implements CSInitializer {
     }
 
     @Override
+    @SneakyThrows
     public void bindHandlers(List<ActorInfo> actorInfos) {
         Router router = Router.router(vertx);
         // 处理请求响应
@@ -93,17 +96,15 @@ public class HttpVertxCSInitializer implements CSInitializer {
         // 启动 vertx http server
         final int port = config.getBindAddress().getPort();
         final String host = config.getBindAddress().getHost();
+
         httpServer.requestHandler(router)
                 .exceptionHandler(e -> log.error("[PowerJob] unknown exception in Actor communication!", e))
-                .listen(port, host, asyncResult -> {
-                    if (asyncResult.succeeded()) {
-                        log.info("[PowerJob] startup vertx HttpServer successfully!");
-                    } else {
-                        log.error("[PowerJob] startup vertx HttpServer failed!", asyncResult.cause());
-                        throw new PowerJobException("startup vertx HttpServer failed", asyncResult.cause());
-                    }
-                });
+                .listen(port, host)
+                .toCompletionStage()
+                .toCompletableFuture()
+                .get(1, TimeUnit.MINUTES);
 
+        log.info("[PowerJob] startup vertx HttpServer successfully!");
     }
 
     private Handler<RoutingContext> buildRequestHandler(ActorInfo actorInfo, HandlerInfo handlerInfo) {
@@ -124,8 +125,9 @@ public class HttpVertxCSInitializer implements CSInitializer {
                     if (response instanceof String) {
                         ctx.end((String) response);
                     } else {
-                        ctx.end(JsonObject.mapFrom(response).toBuffer());
+                        ctx.json(JsonObject.mapFrom(response));
                     }
+                    return;
                 }
 
                 ctx.end();
