@@ -23,6 +23,17 @@ public class PowerJobDKey {
      */
     public static final String IGNORED_NETWORK_INTERFACE_REGEX = "powerjob.network.interface.ignored";
 
+    /**
+     * Enables compression during data transfer, such as gzip under the HTTP protocol. default value is 'false'
+     * Note that enabling compression reduces network usage, but increases CPU consumption
+     */
+    public static final String TRANSPORTER_USE_COMPRESSING = "powerjob.transporter.compression.enabled";
+
+    /**
+     * keep-alive connection timeout(in seconds), value <= 0 means disable keepalive. default value is 75
+     */
+    public static final String TRANSPORTER_KEEP_ALIVE_TIMEOUT = "powerjob.transporter.keepalive.timeout";
+
     public static final String WORKER_STATUS_CHECK_PERIOD = "powerjob.worker.status-check.normal.period";
     /**
      * ms
