@@ -31,6 +31,10 @@ import java.util.Optional;
 
 /**
  * HttpCSInitializer
+ * 在纠结了1晚上后，最终决定选用 vertx 作为 http 底层，而不是直接使用 netty，理由如下：
+ *  - netty 实现容易，但性能调优方面需要时间成本和实践经验，而 vertx 作为 netty 的"嫡系"框架，对 netty 的封装理论上炉火纯青，性能不成问题
+ *  - vertx 唯一的缺点是其作为相对上层的框架，可能存在较为严重的包冲突问题，尤其是对于那些本身跑在 vertx-framework 上的用户
+ *      - 不过该问题可以通过更换协议解决，预计后续提供一个基于 netty 和自定义协议的实现
  *
  * @author tjq
  * @since 2022/12/31
@@ -132,7 +136,6 @@ public class HttpVertxCSInitializer implements CSInitializer {
             }
         };
     }
-
 
 
     @Override
