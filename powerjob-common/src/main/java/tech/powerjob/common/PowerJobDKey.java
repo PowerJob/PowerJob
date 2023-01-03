@@ -24,6 +24,12 @@ public class PowerJobDKey {
     public static final String IGNORED_NETWORK_INTERFACE_REGEX = "powerjob.network.interface.ignored";
 
     public static final String WORKER_STATUS_CHECK_PERIOD = "powerjob.worker.status-check.normal.period";
+
+    /**
+     * allowed PowerJob to invoke Thread#stop to kill a thread when PowerJob can't interrupt the thread
+     * <a href="https://stackoverflow.com/questions/16504140/thread-stop-deprecated">It's VERY dangerous</a>
+     */
+    public static final String WORKER_ALLOWED_FORCE_STOP_THREAD = "powerjob.worker.allowed-force-stop-thread";
     /**
      * ms
      */

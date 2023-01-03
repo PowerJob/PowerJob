@@ -5,7 +5,6 @@ import akka.pattern.Patterns;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
@@ -113,7 +112,7 @@ public abstract class TaskTracker {
         serverActor.tell(response, null);
     }
 
-    protected void reportFinalStatus(ActorSelection serverActor, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
+    protected void reportFinalStatusThenDestory(ActorSelection serverActor, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
         // 最终状态需要可靠上报
         CompletionStage<Object> ask = Patterns.ask(serverActor, reportInstanceStatusReq, Duration.ofSeconds(15));
         boolean serverAccepted = false;

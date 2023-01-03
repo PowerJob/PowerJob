@@ -236,6 +236,13 @@ public class LightTaskTracker extends TaskTracker {
     }
 
 
+    /*
+    TODO：建议添加 锁 + 销毁判断，2种极限场景：
+    1.  先 processTask 调用，同时定时任务再次触发：理论上定时任务的处理栈上会抛出 InterruptException（虽然无实际功能的影响，但不够优雅，而且总归是问题）
+    2.  先定时任务触发，同时 processTask 调用：这种情况好像没太大的问题，重复上报2次
+
+    总而言之建议考虑理论情况下的"并行"场景，价格锁和入口状态判断增加代码健壮性
+     */
     private void checkAndReportStatus() {
         String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
         ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
@@ -255,13 +262,13 @@ public class LightTaskTracker extends TaskTracker {
             final Thread workerThread = executeThread.get();
             if (!finished.get() && workerThread != null) {
                 // 未能成功打断任务，强制停止
-                log.warn("[TaskTracker-{}] task need stop,but fail to interrupt it,force stop thread {}", instanceId, executeThread.get().getName());
                 try {
-                    workerThread.stop();
-                    finished.set(true);
-                    log.warn("[TaskTracker-{}] task need stop, force stop thread {} success!", instanceId, workerThread.getName());
-                    // 被终止的任务不需要上报状态
-                    destroy();
+                    if (tryForceStopThread(workerThread)) {
+                        finished.set(true);
+                        log.warn("[TaskTracker-{}] task need stop, force stop thread {} success!", instanceId, workerThread.getName());
+                        // 被终止的任务不需要上报状态
+                        destroy();
+                    }
                 } catch (Exception e) {
                     log.warn("[TaskTracker-{}] task need stop,fail to stop thread {}", instanceId, workerThread.getName(), e);
                 }
@@ -283,7 +290,7 @@ public class LightTaskTracker extends TaskTracker {
             reportInstanceStatusReq.setEndTime(taskEndTime);
             // 微操一下，上报最终状态时重新设置下时间，并且增加一小段偏移，保证在并发上报运行中状态以及最终状态时，最终状态的上报时间晚于运行中的状态
             reportInstanceStatusReq.setReportTime(System.currentTimeMillis() + 1);
-            reportFinalStatus(serverActor, reportInstanceStatusReq);
+            reportFinalStatusThenDestory(serverActor, reportInstanceStatusReq);
             return;
         }
         // 未完成的任务，只需要上报状态
@@ -322,13 +329,13 @@ public class LightTaskTracker extends TaskTracker {
             return;
         }
         // 未能成功打断任务，强制终止
-        log.warn("[TaskTracker-{}] task timeout,but fail to interrupt it,force stop thread {}", instanceId, workerThread.getName());
         try {
-            workerThread.stop();
-            finished.set(true);
-            taskEndTime = System.currentTimeMillis();
-            result = new ProcessResult(false, SystemInstanceResult.INSTANCE_EXECUTE_TIMEOUT_FORCE_STOP);
-            log.warn("[TaskTracker-{}] task timeout, force stop thread {} success!", instanceId, workerThread.getName());
+            if (tryForceStopThread(workerThread)) {
+                finished.set(true);
+                taskEndTime = System.currentTimeMillis();
+                result = new ProcessResult(false, SystemInstanceResult.INSTANCE_EXECUTE_TIMEOUT_FORCE_STOP);
+                log.warn("[TaskTracker-{}] task timeout, force stop thread {} success!", instanceId, workerThread.getName());
+            }
         } catch (Exception e) {
             log.warn("[TaskTracker-{}] task timeout,fail to stop thread {}", instanceId, workerThread.getName(), e);
         }
@@ -362,6 +369,31 @@ public class LightTaskTracker extends TaskTracker {
         log.warn("[TaskTracker-{}] task's result is too large({}>{}), a part will be discarded.",
                 instanceId, result.length(), maxLength);
         return result.substring(0, maxLength).concat("...");
+    }
+
+    /**
+     * try force stop thread
+     * @param thread thread
+     * @return stop result
+     */
+    private boolean tryForceStopThread(Thread thread) {
+
+        String threadName = thread.getName();
+
+        String allowStopThread = System.getProperty(PowerJobDKey.WORKER_ALLOWED_FORCE_STOP_THREAD);
+        if (!StringUtils.equalsIgnoreCase(allowStopThread, Boolean.TRUE.toString())) {
+            log.warn("[TaskTracker-{}] PowerJob not allowed to force stop a thread by config", instanceId);
+            return false;
+        }
+
+        log.warn("[TaskTracker-{}] fail to interrupt the thread[{}], try to force stop.", instanceId, threadName);
+        try {
+            thread.stop();
+            return true;
+        } catch (Throwable t) {
+            log.warn("[TaskTracker-{}] stop thread[{}] failed, msg: {}", instanceId, threadName, t.getMessage());
+        }
+        return false;
     }
 
 }
