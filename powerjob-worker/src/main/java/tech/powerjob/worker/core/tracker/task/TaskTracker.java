@@ -61,7 +61,7 @@ public abstract class TaskTracker {
 
     protected static final int MAX_REPORT_FAILED_THRESHOLD = 5;
 
-    public TaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
+    protected TaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
         this.createTime = System.currentTimeMillis();
         this.workerRuntime = workerRuntime;
         this.instanceId = req.getInstanceId();
@@ -112,7 +112,7 @@ public abstract class TaskTracker {
         serverActor.tell(response, null);
     }
 
-    protected void reportFinalStatusThenDestory(ActorSelection serverActor, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
+    protected void reportFinalStatusThenDestroy(ActorSelection serverActor, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
         // 最终状态需要可靠上报
         CompletionStage<Object> ask = Patterns.ask(serverActor, reportInstanceStatusReq, Duration.ofSeconds(15));
         boolean serverAccepted = false;

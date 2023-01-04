@@ -234,35 +234,11 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
             // 4. 执行完毕，报告服务器
             if (finished.get()) {
-
                 req.setResult(result);
                 // 上报追加的工作流上下文信息
                 req.setAppendedWfContext(appendedWfContext);
                 req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
-
-                CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-
-                boolean serverAccepted = false;
-                try {
-                    AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-                    serverAccepted = askResponse.isSuccess();
-                } catch (Exception e) {
-                    log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, result, e);
-                }
-
-                // 服务器未接受上报，则等待下次重新上报
-                if (!serverAccepted) {
-                    if (++reportFailedCnt > MAX_REPORT_FAILED_THRESHOLD) {
-                        log.error("[TaskTracker-{}] try to report finished status(success={}, result={}) lots of times but all failed, it's time to give up, so the process result will be dropped", instanceId, success, result);
-                        destroy();
-                    }
-                    return;
-                }
-
-                // 服务器已经更新状态，任务已经执行完毕，开始释放所有资源
-                log.info("[TaskTracker-{}] instance process finished,result = {}, start to release resource...", instanceId, result);
-
-                destroy();
+                reportFinalStatusThenDestroy(serverActor,req);
                 return;
             }
 
