@@ -4,10 +4,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import tech.powerjob.remote.framework.actor.PowerJobActor;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.ServerType;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,4 +31,8 @@ public class EngineConfig implements Serializable {
      * 绑定的本地地址
      */
     private Address bindAddress;
+    /**
+     * actor实例，交由使用侧自己实例化以便自行注入各种 bean
+     */
+    private List<PowerJobActor> actorList;
 }

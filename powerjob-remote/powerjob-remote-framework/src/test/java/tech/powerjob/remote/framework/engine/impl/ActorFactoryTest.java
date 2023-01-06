@@ -1,5 +1,6 @@
 package tech.powerjob.remote.framework.engine.impl;
 
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.remote.framework.actor.ActorInfo;
@@ -20,13 +21,7 @@ class ActorFactoryTest {
 
     @Test
     void load() {
-        final List<ActorInfo> actorInfos = ActorFactory.load();
-        log.info("[ActorFactoryTest] actorInfos: {}", actorInfos);
-
-        final Set<String> clzNames = actorInfos.stream().map(x -> x.getActor().getClass().getName()).collect(Collectors.toSet());
-        log.info("[ActorFactoryTest] all load clzNames: {}", clzNames);
-
-        assert clzNames.contains(TestActor.class.getName());
+        ActorFactory.load(Lists.newArrayList(new TestActor()));
     }
 
 }

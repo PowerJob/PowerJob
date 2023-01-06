@@ -2,14 +2,13 @@ package tech.powerjob.remote.framework.engine.impl;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import tech.powerjob.common.OmsConstant;
-import tech.powerjob.remote.framework.actor.Actor;
-import tech.powerjob.remote.framework.actor.ActorInfo;
-import tech.powerjob.remote.framework.actor.Handler;
-import tech.powerjob.remote.framework.actor.HandlerInfo;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.remote.framework.actor.*;
 import tech.powerjob.remote.framework.base.HandlerLocation;
 
 import java.lang.reflect.Method;
@@ -25,19 +24,16 @@ import java.util.Set;
 @Slf4j
 class ActorFactory {
 
-    static List<ActorInfo> load() {
-        Reflections reflections = new Reflections(OmsConstant.PACKAGE);
-        final Set<Class<?>> typesAnnotatedWith = reflections.getTypesAnnotatedWith(Actor.class);
+    static List<ActorInfo> load(List<PowerJobActor> actorList) {
 
         List<ActorInfo> actorInfos = Lists.newArrayList();
-        typesAnnotatedWith.forEach(clz -> {
+
+        actorList.forEach(actor -> {
+            final Class<? extends PowerJobActor> clz = actor.getClass();
             try {
                 final Actor anno = clz.getAnnotation(Actor.class);
-                final Object object = clz.getDeclaredConstructor().newInstance();
 
-                log.info("[ActorFactory] load Actor[clz={},path={}] successfully!", clz, anno.path());
-
-                ActorInfo actorInfo = new ActorInfo().setActor(object).setAnno(anno);
+                ActorInfo actorInfo = new ActorInfo().setActor(actor).setAnno(anno);
                 actorInfo.setHandlerInfos(loadHandlerInfos4Actor(actorInfo));
 
                 actorInfos.add(actorInfo);
@@ -56,21 +52,24 @@ class ActorFactory {
         Actor anno = actorInfo.getAnno();
         String rootPath = anno.path();
         Object actor = actorInfo.getActor();
-        Set<Method> allHandlerMethods = ReflectionUtils.getAllMethods(actor.getClass(), (input -> input != null && input.isAnnotationPresent(Handler.class)));
-        allHandlerMethods.forEach(handlerMethod -> {
+
+        Method[] declaredMethods = actor.getClass().getDeclaredMethods();
+        for (Method handlerMethod: declaredMethods) {
             Handler handlerMethodAnnotation = handlerMethod.getAnnotation(Handler.class);
+            if (handlerMethodAnnotation == null) {
+                continue;
+            }
 
             HandlerLocation handlerLocation = new HandlerLocation()
                     .setRootPath(rootPath)
                     .setMethodPath(handlerMethodAnnotation.path());
-
 
             HandlerInfo handlerInfo = new HandlerInfo()
                     .setAnno(handlerMethodAnnotation)
                     .setMethod(handlerMethod)
                     .setLocation(handlerLocation);
             ret.add(handlerInfo);
-        });
+        }
         return ret;
     }
 }

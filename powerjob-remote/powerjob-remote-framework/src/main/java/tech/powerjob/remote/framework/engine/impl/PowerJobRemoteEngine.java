@@ -27,7 +27,7 @@ public class PowerJobRemoteEngine implements RemoteEngine {
         EngineOutput engineOutput = new EngineOutput();
         log.info("[PowerJobRemoteEngine] start remote engine with config: {}", engineConfig);
 
-        List<ActorInfo> actorInfos = ActorFactory.load();
+        List<ActorInfo> actorInfos = ActorFactory.load(engineConfig.getActorList());
         List<CSInitializer> csInitializerList = CSInitializerFactory.build(engineConfig.getTypes());
 
         csInitializerList.forEach(csInitializer -> {
