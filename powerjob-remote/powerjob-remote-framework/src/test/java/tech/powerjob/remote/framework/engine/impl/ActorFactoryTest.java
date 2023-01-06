@@ -24,4 +24,12 @@ class ActorFactoryTest {
         ActorFactory.load(Lists.newArrayList(new TestActor()));
     }
 
+    @Test
+    void testSuitPath() {
+        final String testPath1 = ActorFactory.suitPath("/test");
+        final String testPath2 = ActorFactory.suitPath("test");
+        log.info("[ActorFactoryTest] testPath1: {}, testPath2: {}", testPath1, testPath2);
+        assert testPath1.equals(testPath2);
+    }
+
 }

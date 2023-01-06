@@ -61,8 +61,8 @@ class ActorFactory {
             }
 
             HandlerLocation handlerLocation = new HandlerLocation()
-                    .setRootPath(rootPath)
-                    .setMethodPath(handlerMethodAnnotation.path());
+                    .setRootPath(suitPath(rootPath))
+                    .setMethodPath(suitPath(handlerMethodAnnotation.path()));
 
             HandlerInfo handlerInfo = new HandlerInfo()
                     .setAnno(handlerMethodAnnotation)
@@ -71,5 +71,12 @@ class ActorFactory {
             ret.add(handlerInfo);
         }
         return ret;
+    }
+
+    static String suitPath(String path) {
+        if (path.startsWith("/")) {
+            return path.replaceFirst("/", "");
+        }
+        return path;
     }
 }
