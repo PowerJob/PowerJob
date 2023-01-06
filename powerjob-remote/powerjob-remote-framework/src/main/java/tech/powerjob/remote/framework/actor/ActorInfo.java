@@ -18,7 +18,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class ActorInfo {
 
-    private Object actor;
+    private PowerJobActor actor;
 
     private Actor anno;
 
