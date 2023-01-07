@@ -4,9 +4,13 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.DeadLetter;
 import akka.actor.Props;
+import akka.routing.RoundRobinPool;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import lombok.extern.slf4j.Slf4j;
+import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.remote.framework.actor.ActorInfo;
 import tech.powerjob.remote.framework.actor.HandlerInfo;
 import tech.powerjob.remote.framework.base.Address;
@@ -25,6 +29,7 @@ import java.util.Map;
  * @author tjq
  * @since 2022/12/31
  */
+@Slf4j
 public class AkkaCSInitializer implements CSInitializer {
 
     private ActorSystem actorSystem;
@@ -50,6 +55,8 @@ public class AkkaCSInitializer implements CSInitializer {
         Config akkaBasicConfig = ConfigFactory.load(AkkaConstant.AKKA_CONFIG);
         Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
+        log.info("[PowerJob-AKKA] try to start AKKA System by config: {}", akkaFinalConfig);
+
         // 启动时绑定当前的 actorSystemName
         String actorSystemName = AkkaConstant.fetchActorSystemName(config.getServerType(), true);
         this.actorSystem = ActorSystem.create(actorSystemName, akkaFinalConfig);
@@ -66,7 +73,18 @@ public class AkkaCSInitializer implements CSInitializer {
 
     @Override
     public void bindHandlers(List<ActorInfo> actorInfos) {
-        // TODO: 考虑如何优雅绑定（实在不行就暴力绑定到一个 actor 上，反正可以切协议）
+        int cores = Runtime.getRuntime().availableProcessors();
+        actorInfos.forEach(actorInfo -> {
+            String rootPath = actorInfo.getAnno().path();
+            AkkaMappingService.ActorConfig actorConfig = AkkaMappingService.parseActorName(rootPath);
+
+            log.info("[PowerJob-AKKA] start to process actor[path={},config={}]", rootPath, JsonUtils.toJSONString(actorConfig));
+
+            actorSystem.actorOf(AkkaProxyActor.props(actorInfo)
+                    .withDispatcher(actorConfig.getDispatcherName())
+                    .withRouter(new RoundRobinPool(cores)), actorConfig.getActorName());
+
+        });
     }
 
     @Override

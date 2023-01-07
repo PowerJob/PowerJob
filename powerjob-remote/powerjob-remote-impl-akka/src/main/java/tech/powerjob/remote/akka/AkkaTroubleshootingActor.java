@@ -20,6 +20,6 @@ public class AkkaTroubleshootingActor extends AbstractActor {
     }
 
     public void onReceiveDeadLetter(DeadLetter dl) {
-        log.warn("[TroubleshootingActor] receive DeadLetter: {}", dl);
+        log.warn("[PowerJob-AKKA] receive DeadLetter: {}", dl);
     }
 }

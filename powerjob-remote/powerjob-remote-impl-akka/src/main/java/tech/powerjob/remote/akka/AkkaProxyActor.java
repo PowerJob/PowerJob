@@ -1,6 +1,7 @@
 package tech.powerjob.remote.akka;
 
 import akka.actor.AbstractActor;
+import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.exception.PowerJobException;
@@ -24,6 +25,10 @@ public class AkkaProxyActor extends AbstractActor {
     private final Receive receive;
     private final ActorInfo actorInfo;
 
+    public static Props props(ActorInfo actorInfo) {
+        return Props.create(AkkaProxyActor.class, () -> new AkkaProxyActor(actorInfo));
+    }
+
     public AkkaProxyActor(ActorInfo actorInfo) {
         this.actorInfo = actorInfo;
         final ReceiveBuilder receiveBuilder = receiveBuilder();
@@ -36,7 +41,7 @@ public class AkkaProxyActor extends AbstractActor {
             }
             final Class<?> bindClz = powerSerializeClz.get();
             receiveBuilder.match(bindClz, req -> onReceiveProcessorReportTaskStatusReq(req, handlerInfo));
-            log.info("[PowerJobProxyActor] bind handler[{}] to [{}]", location, bindClz);
+            log.info("[PowerJob-AKKA] bind handler[{}] to [{}]", location, bindClz);
         });
         this.receive = receiveBuilder.build();
     }
@@ -54,7 +59,7 @@ public class AkkaProxyActor extends AbstractActor {
                 getSender().tell(ret, getSelf());
             }
         } catch (Exception e) {
-            log.error("[TaskTrackerProxyActor] process failed!", e);
+            log.error("[PowerJob-AKKA] process failed!", e);
         }
     }
 }
