@@ -81,7 +81,7 @@ public class AkkaCSInitializer implements CSInitializer {
             log.info("[PowerJob-AKKA] start to process actor[path={},config={}]", rootPath, JsonUtils.toJSONString(actorConfig));
 
             actorSystem.actorOf(AkkaProxyActor.props(actorInfo)
-                    .withDispatcher(actorConfig.getDispatcherName())
+                    .withDispatcher("akka.".concat(actorConfig.getDispatcherName()))
                     .withRouter(new RoundRobinPool(cores)), actorConfig.getActorName());
 
         });

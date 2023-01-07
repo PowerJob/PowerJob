@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>powerjob-remote-framework</module>
+        <module>powerjob-remote-benchmark</module>
         <module>powerjob-remote-impl-http</module>
         <module>powerjob-remote-impl-akka</module>
     </modules>
