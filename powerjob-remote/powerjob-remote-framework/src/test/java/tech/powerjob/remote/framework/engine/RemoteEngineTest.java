@@ -21,7 +21,7 @@ class RemoteEngineTest {
         RemoteEngine remoteEngine = new PowerJobRemoteEngine();
 
         EngineConfig engineConfig = new EngineConfig();
-        engineConfig.setTypes(Sets.newHashSet("TEST"));
+        engineConfig.setType("TEST");
         engineConfig.setBindAddress(new Address().setHost("127.0.0.1").setPort(10086));
         remoteEngine.start(engineConfig);
     }

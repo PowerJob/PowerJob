@@ -1,5 +1,6 @@
 package tech.powerjob.remote.http;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -37,13 +38,14 @@ class HttpVertxCSInitializerTest {
         final Address address = new Address().setPort(7890).setHost("127.0.0.1");
 
         EngineConfig engineConfig = new EngineConfig()
-                .setTypes(Sets.newHashSet(Protocol.HTTP.name()))
-                .setBindAddress(address);
+                .setType(Protocol.HTTP.name())
+                .setBindAddress(address)
+                .setActorList(Lists.newArrayList(new BenchmarkActor()));
 
         RemoteEngine engine = new PowerJobRemoteEngine();
         EngineOutput engineOutput = engine.start(engineConfig);
         log.info("[HttpVertxCSInitializerTest] engine start up successfully!");
-        final Transporter transporter = engineOutput.getType2Transport().get(Protocol.HTTP.name());
+        Transporter transporter = engineOutput.getTransporter();
 
         URL url = new URL()
                 .setAddress(address)

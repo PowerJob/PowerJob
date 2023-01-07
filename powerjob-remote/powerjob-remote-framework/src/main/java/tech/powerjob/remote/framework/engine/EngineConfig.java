@@ -1,16 +1,12 @@
 package tech.powerjob.remote.framework.engine;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
-import tech.powerjob.remote.framework.actor.PowerJobActor;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.ServerType;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 /**
  * EngineConfig
@@ -22,11 +18,14 @@ import java.util.Set;
 @Accessors(chain = true)
 public class EngineConfig implements Serializable {
 
+    /**
+     * 服务类型
+     */
     private ServerType serverType;
     /**
      * 需要启动的引擎类型
      */
-    private Set<String> types;
+    private String type;
     /**
      * 绑定的本地地址
      */
@@ -34,5 +33,5 @@ public class EngineConfig implements Serializable {
     /**
      * actor实例，交由使用侧自己实例化以便自行注入各种 bean
      */
-    private List<PowerJobActor> actorList;
+    private List<Object> actorList;
 }

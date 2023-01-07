@@ -3,7 +3,6 @@ package tech.powerjob.remote.framework.test;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.actor.Handler;
-import tech.powerjob.remote.framework.actor.PowerJobActor;
 
 import java.util.Map;
 
@@ -15,7 +14,7 @@ import java.util.Map;
  */
 @Slf4j
 @Actor(path = "/test")
-public class TestActor implements PowerJobActor {
+public class TestActor {
 
     public static void simpleStaticMethod() {
     }

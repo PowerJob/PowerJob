@@ -24,12 +24,12 @@ import java.util.Set;
 @Slf4j
 class ActorFactory {
 
-    static List<ActorInfo> load(List<PowerJobActor> actorList) {
+    static List<ActorInfo> load(List<Object> actorList) {
 
         List<ActorInfo> actorInfos = Lists.newArrayList();
 
         actorList.forEach(actor -> {
-            final Class<? extends PowerJobActor> clz = actor.getClass();
+            final Class<?> clz = actor.getClass();
             try {
                 final Actor anno = clz.getAnnotation(Actor.class);
 

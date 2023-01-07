@@ -2,6 +2,7 @@ package tech.powerjob.remote.framework.engine;
 
 import com.google.common.collect.Maps;
 import lombok.Getter;
+import lombok.Setter;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
  * @since 2022/12/31
  */
 @Getter
+@Setter
 public class EngineOutput {
-    private Map<String, Transporter> type2Transport = Maps.newHashMap();
+    private Transporter transporter;
 }

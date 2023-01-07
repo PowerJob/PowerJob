@@ -17,13 +17,13 @@ class CSInitializerFactoryTest {
 
     @Test
     void testBuildNormal() {
-        CSInitializerFactory.build(Sets.newHashSet("TEST"));
+        CSInitializerFactory.build("TEST");
     }
 
     @Test
     void testNotFind() {
         Assertions.assertThrows(PowerJobException.class, () -> {
-            CSInitializerFactory.build(Sets.newHashSet("omicron"));
+            CSInitializerFactory.build("omicron");
         });
     }
 }
