@@ -19,7 +19,7 @@
         <commons.io.version>2.7</commons.io.version>
         <guava.version>31.1-jre</guava.version>
         <okhttp.version>3.14.9</okhttp.version>
-        <akka.version>2.6.12</akka.version>
+        <akka.version>2.6.20</akka.version>
         <kryo.version>5.0.4</kryo.version>
         <jackson.version>2.12.2</jackson.version>
         <junit.version>5.9.0</junit.version>

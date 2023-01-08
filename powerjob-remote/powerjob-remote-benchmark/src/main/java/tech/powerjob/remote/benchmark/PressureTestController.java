@@ -1,5 +1,7 @@
 package tech.powerjob.remote.benchmark;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +12,8 @@ import tech.powerjob.remote.framework.base.URL;
 
 import javax.annotation.Resource;
 
+import java.util.concurrent.CompletionStage;
+
 import static tech.powerjob.remote.benchmark.EngineService.*;
 
 /**
@@ -18,6 +22,7 @@ import static tech.powerjob.remote.benchmark.EngineService.*;
  * @author tjq
  * @since 2023/1/7
  */
+@Slf4j
 @RestController
 @RequestMapping("/pressure")
 public class PressureTestController {
@@ -31,7 +36,26 @@ public class PressureTestController {
     public void httpTell(Integer blockMs, Integer responseSize, String content) {
         URL url = new URL().setLocation(HL).setAddress(new Address().setPort(SERVER_HTTP_PORT).setHost(HOST));
         final BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest().setContent(content).setBlockingMills(blockMs).setResponseSize(responseSize);
-        engineService.getHttpTransporter().tell(url, request);
+        try {
+            engineService.getHttpTransporter().tell(url, request);
+        } catch (Exception e) {
+            log.error("[HttpTell] process failed!", e);
+        }
+    }
+
+    @GetMapping("/httpAsk")
+    public void httpAsk(Integer blockMs, Integer responseSize, String content, Boolean debug) {
+        URL url = new URL().setLocation(HL).setAddress(new Address().setPort(SERVER_HTTP_PORT).setHost(HOST));
+        final BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest().setContent(content).setBlockingMills(blockMs).setResponseSize(responseSize);
+        try {
+            CompletionStage<BenchmarkActor.BenchmarkResponse> responseOpt = engineService.getHttpTransporter().ask(url, request, BenchmarkActor.BenchmarkResponse.class);
+            final BenchmarkActor.BenchmarkResponse response = responseOpt.toCompletableFuture().get();
+            if (BooleanUtils.isTrue(debug)) {
+                log.info("[httpAsk] response: {}", response);
+            }
+        } catch (Exception e) {
+            log.error("[httpAsk] process failed", e);
+        }
     }
 
 }
