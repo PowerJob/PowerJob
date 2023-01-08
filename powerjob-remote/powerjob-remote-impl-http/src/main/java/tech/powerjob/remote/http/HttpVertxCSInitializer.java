@@ -142,8 +142,8 @@ public class HttpVertxCSInitializer implements CSInitializer {
 
     @Override
     public void close() throws IOException {
-        vertx.close();
-        httpServer.close();
         httpClient.close();
+        httpServer.close();
+        vertx.close();
     }
 }
