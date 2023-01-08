@@ -2,9 +2,11 @@ package tech.powerjob.remote.benchmark;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.remote.framework.BenchmarkActor;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.HandlerLocation;
@@ -32,29 +34,42 @@ public class PressureTestController {
     @Resource
     private EngineService engineService;
 
-    @GetMapping("/httpTell")
-    public void httpTell(Integer blockMs, Integer responseSize, String content) {
+    @GetMapping("/tell")
+    public void httpTell(String protocol, Integer blockMs, Integer responseSize, String content) {
         URL url = new URL().setLocation(HL).setAddress(new Address().setPort(SERVER_HTTP_PORT).setHost(HOST));
         final BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest().setContent(content).setBlockingMills(blockMs).setResponseSize(responseSize);
         try {
-            engineService.getHttpTransporter().tell(url, request);
+            if (Protocol.HTTP.name().equalsIgnoreCase(protocol)) {
+                engineService.getHttpTransporter().tell(url, request);
+            } else {
+                engineService.getAkkaTransporter().tell(url, request);
+            }
         } catch (Exception e) {
             log.error("[HttpTell] process failed!", e);
+            ExceptionUtils.rethrow(e);
         }
     }
 
-    @GetMapping("/httpAsk")
-    public void httpAsk(Integer blockMs, Integer responseSize, String content, Boolean debug) {
+
+    @GetMapping("/ask")
+    public void httpAsk(String protocol, Integer blockMs, Integer responseSize, String content, Boolean debug) {
         URL url = new URL().setLocation(HL).setAddress(new Address().setPort(SERVER_HTTP_PORT).setHost(HOST));
         final BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest().setContent(content).setBlockingMills(blockMs).setResponseSize(responseSize);
         try {
-            CompletionStage<BenchmarkActor.BenchmarkResponse> responseOpt = engineService.getHttpTransporter().ask(url, request, BenchmarkActor.BenchmarkResponse.class);
+            CompletionStage<BenchmarkActor.BenchmarkResponse> responseOpt = null;
+
+            if (Protocol.HTTP.name().equalsIgnoreCase(protocol)) {
+                responseOpt = engineService.getHttpTransporter().ask(url, request, BenchmarkActor.BenchmarkResponse.class);
+            } else {
+                responseOpt = engineService.getAkkaTransporter().ask(url, request, BenchmarkActor.BenchmarkResponse.class);
+            }
             final BenchmarkActor.BenchmarkResponse response = responseOpt.toCompletableFuture().get();
             if (BooleanUtils.isTrue(debug)) {
                 log.info("[httpAsk] response: {}", response);
             }
         } catch (Exception e) {
             log.error("[httpAsk] process failed", e);
+            ExceptionUtils.rethrow(e);
         }
     }
 

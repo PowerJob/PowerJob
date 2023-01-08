@@ -2,7 +2,7 @@ import io.gatling.app.Gatling;
 import io.gatling.core.config.GatlingPropertiesBuilder;
 
 /**
- * 压测启动入口
+ * <a href="https://gatling.io/">压测启动入口</a>
  *
  * @author tjq
  * @since 2023/1/8

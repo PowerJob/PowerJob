@@ -41,12 +41,13 @@ public class AkkaTransporter implements Transporter {
     private static final Map<String, String> WORKER_PATH_MAP = Maps.newHashMap();
 
     /*
-    HandlerLocation#fullPath -> actorName
+    Akka 使用 ActorName + 入参类型 寻址，因此只需要 rootPath
+    HandlerLocation#rootPathName -> actorName
      */
     static {
-        SERVER_PATH_MAP.put("", "");
+        SERVER_PATH_MAP.put("benchmark", "benchmark");
 
-        WORKER_PATH_MAP.put("", "");
+        WORKER_PATH_MAP.put("benchmark", "benchmark");
     }
 
     public AkkaTransporter(ServerType serverType, ActorSystem actorSystem) {

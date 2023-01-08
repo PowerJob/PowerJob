@@ -6,7 +6,9 @@ import static io.gatling.javaapi.http.HttpDsl.*;
 import io.gatling.javaapi.core.*;
 import io.gatling.javaapi.http.*;
 /**
- * description
+ * HTTP 压测模拟
+ *
+ *
  *
  * @author tjq
  * @since 2023/1/8
@@ -24,12 +26,20 @@ public class HttpSimulation extends Simulation {
 
     ScenarioBuilder scn = scenario("HttpSimulation") // 7
             .exec(http("request_http") // 请求名称，用于压测报表展示
-                    .get("/httpAsk?debug=true&responseSize=1024")) // 9
+                    .get("/pressure/ask?protocol=HTTP&debug=true&responseSize=1024")) // 9
             .pause(5); // 10
+
+    /*
+    atOnceUsers(10) 一次模拟的用户数量(10)
+    nothingFor(4 seconds)  在指定的时间段(4 seconds)内什么都不干
+    constantUsersPerSec(10) during(20 seconds) 以固定的速度模拟用户，指定每秒模拟的用户数(10)，指定模拟测试时间长度(20 seconds)
+    rampUsersPerSec(10) to (20) during(20 seconds) 在指定的时间(20 seconds)内，使每秒模拟的用户从数量1(10)逐渐增加到数量2(20)，速度匀速
+    heavisideUsers(100) over(10 seconds)    在指定的时间(10 seconds)内使用类似单位阶跃函数的方法逐渐增加模拟并发的用户，直到总数达到指定的数量(100).简单说就是每秒并发用户数递增
+     */
 
     {
         setUp( // 11
-                scn.injectOpen(atOnceUsers(1)) // 12
+                scn.injectOpen(incrementUsersPerSec(10.0).times(2).eachLevelLasting(10)) // 12
         ).protocols(httpProtocol); // 13
     }
 }
