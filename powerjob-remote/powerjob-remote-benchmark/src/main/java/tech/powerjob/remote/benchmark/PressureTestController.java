@@ -36,12 +36,15 @@ public class PressureTestController {
 
     @GetMapping("/tell")
     public void httpTell(String protocol, Integer blockMs, Integer responseSize, String content) {
-        URL url = new URL().setLocation(HL).setAddress(new Address().setPort(SERVER_HTTP_PORT).setHost(HOST));
+        Address address = new Address().setHost(HOST);
+        URL url = new URL().setLocation(HL).setAddress(address);
         final BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest().setContent(content).setBlockingMills(blockMs).setResponseSize(responseSize);
         try {
             if (Protocol.HTTP.name().equalsIgnoreCase(protocol)) {
+                address.setPort(SERVER_HTTP_PORT);
                 engineService.getHttpTransporter().tell(url, request);
             } else {
+                address.setPort(SERVER_AKKA_PORT);
                 engineService.getAkkaTransporter().tell(url, request);
             }
         } catch (Exception e) {
@@ -53,14 +56,17 @@ public class PressureTestController {
 
     @GetMapping("/ask")
     public void httpAsk(String protocol, Integer blockMs, Integer responseSize, String content, Boolean debug) {
-        URL url = new URL().setLocation(HL).setAddress(new Address().setPort(SERVER_HTTP_PORT).setHost(HOST));
+        Address address = new Address().setHost(HOST);
+        URL url = new URL().setLocation(HL).setAddress(address);
         final BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest().setContent(content).setBlockingMills(blockMs).setResponseSize(responseSize);
         try {
             CompletionStage<BenchmarkActor.BenchmarkResponse> responseOpt = null;
 
             if (Protocol.HTTP.name().equalsIgnoreCase(protocol)) {
+                address.setPort(SERVER_HTTP_PORT);
                 responseOpt = engineService.getHttpTransporter().ask(url, request, BenchmarkActor.BenchmarkResponse.class);
             } else {
+                address.setPort(SERVER_AKKA_PORT);
                 responseOpt = engineService.getAkkaTransporter().ask(url, request, BenchmarkActor.BenchmarkResponse.class);
             }
             final BenchmarkActor.BenchmarkResponse response = responseOpt.toCompletableFuture().get();

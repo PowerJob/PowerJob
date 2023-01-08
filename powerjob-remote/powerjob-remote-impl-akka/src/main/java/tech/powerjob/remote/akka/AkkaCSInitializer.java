@@ -64,6 +64,8 @@ public class AkkaCSInitializer implements CSInitializer {
         // 处理系统中产生的异常情况
         ActorRef troubleshootingActor = actorSystem.actorOf(Props.create(AkkaTroubleshootingActor.class), "troubleshooting");
         actorSystem.eventStream().subscribe(troubleshootingActor, DeadLetter.class);
+
+        log.info("[PowerJob-AKKA] initialize actorSystem[{}] successfully!", actorSystem.name());
     }
 
     @Override

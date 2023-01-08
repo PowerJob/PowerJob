@@ -1,11 +1,9 @@
 package tech.powerjob.remote.framework.engine;
 
-import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
-import java.util.Map;
 
 /**
  * 引擎输出
