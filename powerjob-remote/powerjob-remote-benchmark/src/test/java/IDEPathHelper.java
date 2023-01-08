@@ -4,6 +4,9 @@ import java.nio.file.Paths;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * @author <a href="https://github.com/gatling/gatling-maven-plugin-demo-java">gatling-maven-plugin-demo-java</a>
+ */
 public class IDEPathHelper {
 
   static final Path mavenSourcesDirectory;
