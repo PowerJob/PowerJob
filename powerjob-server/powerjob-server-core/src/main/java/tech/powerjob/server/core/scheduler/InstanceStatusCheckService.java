@@ -105,7 +105,7 @@ public class InstanceStatusCheckService {
 
     /**
      * 检查等待 worker 接收的实例
-     *  WAITING_WORKER_RECEIVE 超时：由于网络错误导致 worker 未接受成功
+     * WAITING_WORKER_RECEIVE 超时：由于网络错误导致 worker 未接受成功
      */
     public void checkWaitingWorkerReceiveInstance() {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -240,7 +240,7 @@ public class InstanceStatusCheckService {
                 }
                 // CRON 和 API一样，失败次数 + 1，根据重试配置进行重试
                 if (instance.getRunningTimes() < jobInfoOpt.get().getInstanceRetryNum()) {
-                    dispatchService.redispatchAsync(instance.getInstanceId(),InstanceStatus.RUNNING.getV());
+                    dispatchService.redispatchAsync(instance.getInstanceId(), InstanceStatus.RUNNING.getV());
                 } else {
                     final Optional<InstanceInfoDO> opt = instanceInfoRepository.findById(instance.getId());
                     opt.ifPresent(e -> updateFailedInstance(e, SystemInstanceResult.REPORT_TIMEOUT));

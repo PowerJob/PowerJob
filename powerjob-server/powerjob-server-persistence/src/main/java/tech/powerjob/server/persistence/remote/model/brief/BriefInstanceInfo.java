@@ -23,20 +23,20 @@ public class BriefInstanceInfo {
      */
     private Long instanceId;
     /**
-     *  总共执行的次数（用于重试判断）
+     * 总共执行的次数（用于重试判断）
      */
     private Long runningTimes;
 
 
-    public BriefInstanceInfo(Long appId,Long id, Long jobId, Long instanceId) {
-        this.appId = id;
+    public BriefInstanceInfo(Long appId, Long id, Long jobId, Long instanceId) {
+        this.appId = appId;
         this.id = id;
         this.jobId = jobId;
         this.instanceId = instanceId;
     }
 
-    public BriefInstanceInfo(Long appId,Long id, Long jobId, Long instanceId, Long runningTimes) {
-        this.appId = id;
+    public BriefInstanceInfo(Long appId, Long id, Long jobId, Long instanceId, Long runningTimes) {
+        this.appId = appId;
         this.id = id;
         this.jobId = jobId;
         this.instanceId = instanceId;

@@ -33,9 +33,12 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     /**
      * 更新状态变更信息
      *
-     * @param instanceId 实例 ID
-     * @param status     目标状态
-     * @param oldStatus  旧状态
+     * @param lastReportTime 最近一次上报时间
+     * @param modifyTime     更新时间
+     * @param runningTimes   运行次数
+     * @param instanceId     实例 ID
+     * @param status         目标状态
+     * @param oldStatus      旧状态
      * @return 更新记录数
      */
     @Transactional(rollbackOn = Exception.class)
@@ -62,13 +65,6 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
     int update4TriggerFailed(@Param("instanceId") long instanceId, @Param("status") int status, @Param("actualTriggerTime") long actualTriggerTime, @Param("finishedTime") long finishedTime, @Param("taskTrackerAddress") String taskTrackerAddress, @Param("result") String result, @Param("modifyTime") Date modifyTime);
 
 
-    @Transactional(rollbackOn = Exception.class)
-    @Modifying
-    @CanIgnoreReturnValue
-    @Query(value = "update InstanceInfoDO set expectedTriggerTime = :expectedTriggerTime, gmtModified = :modifyTime where instanceId = :instanceId and status = :status")
-    int updateExpectedTriggerTimeByInstanceIdAndStatus(@Param("instanceId") long instanceId, @Param("status") int status, @Param("expectedTriggerTime") long expectedTriggerTime, @Param("modifyTime") Date modifyTime);
-
-
     /**
      * 更新任务执行记录内容（DispatchService专用）
      *
@@ -77,6 +73,7 @@ public interface InstanceInfoRepository extends JpaRepository<InstanceInfoDO, Lo
      * @param actualTriggerTime  实际调度时间
      * @param taskTrackerAddress taskTracker 地址
      * @param modifyTime         更新时间
+     * @param oldStatus          旧状态
      * @return 更新记录数量
      */
     @Transactional(rollbackOn = Exception.class)

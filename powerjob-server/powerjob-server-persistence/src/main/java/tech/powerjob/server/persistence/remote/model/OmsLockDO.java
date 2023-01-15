@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(uniqueConstraints = {@UniqueConstraint(name = "lockNameUK", columnNames = {"lockName"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name = "uidx01_oms_lock", columnNames = {"lockName"})})
 public class OmsLockDO {
 
     @Id

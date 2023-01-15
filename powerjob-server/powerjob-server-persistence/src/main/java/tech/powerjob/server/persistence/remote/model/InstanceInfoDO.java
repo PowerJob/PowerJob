@@ -19,7 +19,11 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(indexes = {@Index(columnList = "jobId"), @Index(columnList = "appId"), @Index(columnList = "instanceId")})
+@Table(indexes = {
+        @Index(name = "idx01_instance_info", columnList = "jobId,status"),
+        @Index(name = "idx02_instance_info", columnList = "appId,status"),
+        @Index(name = "idx03_instance_info", columnList = "instanceId,status")
+})
 public class InstanceInfoDO {
 
     @Id
@@ -40,6 +44,7 @@ public class InstanceInfoDO {
     private Long instanceId;
     /**
      * 任务参数（静态）
+     *
      * @since 2021/2/01
      */
     @Lob

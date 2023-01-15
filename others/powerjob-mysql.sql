@@ -69,11 +69,9 @@ CREATE TABLE `instance_info`
     `gmt_create`            datetime not NULL COMMENT '创建时间',
     `gmt_modified`          datetime not NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx01_instance_info` (`job_id`),
-    KEY `idx02_instance_info` (`app_id`),
-    KEY `idx03_instance_info` (`instance_id`),
-    KEY `idx04_instance_info` (`wf_instance_id`),
-    KEY `idx05_instance_info` (`expected_trigger_time`)
+    KEY `idx01_instance_info` (`job_id`, 'status'),
+    KEY `idx02_instance_info` (`app_id`, `status`),
+    KEY `idx03_instance_info` (`instance_id`, `status`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -110,15 +108,13 @@ CREATE TABLE `job_info`
     `task_retry_num`       int      not NULL default 0 COMMENT 'Task重试次数',
     `time_expression`      varchar(255)      default NULL COMMENT '时间表达式,内容取决于time_expression_type,1:CRON/2:NULL/3:LONG/4:LONG',
     `time_expression_type` int      not NULL COMMENT '时间表达式类型,1:CRON/2:API/3:FIX_RATE/4:FIX_DELAY,5:WORKFLOW\n）',
-    `tag`      varchar(255)      DEFAULT NULL COMMENT 'TAG',
-    `log_config`      varchar(255)      DEFAULT NULL COMMENT '日志配置',
+    `tag`                  varchar(255)      DEFAULT NULL COMMENT 'TAG',
+    `log_config`           varchar(255)      DEFAULT NULL COMMENT '日志配置',
     `extra`                varchar(255)      DEFAULT NULL COMMENT '扩展字段',
     `gmt_create`           datetime not NULL COMMENT '创建时间',
     `gmt_modified`         datetime not NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx01_job_info` (`app_id`),
-    KEY `idx02_job_info` (`job_name`),
-    KEY `idx03_job_info` (`next_trigger_time`)
+    KEY `idx01_job_info` (`app_id`, `status`, `time_expression_type`, `next_trigger_time`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -154,7 +150,8 @@ CREATE TABLE `server_info`
     `gmt_modified` datetime     DEFAULT NULL COMMENT '更新时间',
     `ip`           varchar(128) DEFAULT NULL COMMENT '服务器IP地址',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uidx01_server_info` (`ip`)
+    UNIQUE KEY `uidx01_server_info` (`ip`),
+    KEY `idx01_server_info` (`gmt_modified`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -204,7 +201,7 @@ CREATE TABLE `workflow_info`
     `gmt_create`           datetime              DEFAULT NULL COMMENT '创建时间',
     `gmt_modified`         datetime              DEFAULT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx01_workflow_info` (`app_id`)
+    KEY `idx01_workflow_info` (`app_id`, `status`, `time_expression_type`, next_trigger_time)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -231,9 +228,9 @@ CREATE TABLE `workflow_instance_info`
     `gmt_create`            datetime DEFAULT NULL COMMENT '创建时间',
     `gmt_modified`          datetime DEFAULT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    unique index uidx01_wf_instance (wf_instance_id),
-    index idx01_wf_instance (workflow_id),
-    index idx02_wf_instance (app_id, status)
+    unique index uidx01_wf_instance (`wf_instance_id`),
+    index idx01_wf_instance (`workflow_id`, `status`),
+    index idx02_wf_instance (`app_id`, `status`, `expected_trigger_time`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -258,9 +255,7 @@ CREATE TABLE `workflow_node_info`
     `type`             int          DEFAULT NULL COMMENT '节点类型,1:任务JOB',
     `workflow_id`      bigint       DEFAULT NULL COMMENT '工作流ID',
     PRIMARY KEY (`id`),
-    KEY `idx01_workflow_node_info` (`app_id`),
-    KEY `idx02_workflow_node_info` (`workflow_id`),
-    KEY `idx03_workflow_node_info` (`job_id`)
+    KEY `idx01_workflow_node_info` (`workflow_id`,`gmt_create`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4

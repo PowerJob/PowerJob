@@ -14,7 +14,7 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table(indexes = {@Index(columnList = "appId")})
+@Table(indexes = {@Index(name = "idx01_container_info", columnList = "appId")})
 public class ContainerInfoDO {
 
     @Id
