@@ -22,15 +22,22 @@ public class HttpSimulation extends Simulation {
             .acceptEncodingHeader("gzip, deflate")
             .userAgentHeader("Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0");
 
+    ScenarioBuilder warmup = scenario("WarmupSimulation")
+            .exec(http("PowerJob-Warmup-HTTP")
+                    .get("/pressure/ask?protocol=HTTP&debug=false&responseSize=1024"))
+            .exec(http("PowerJob-Warmup-AKKA")
+                    .get("/pressure/ask?protocol=AKKA&debug=false&responseSize=1024"))
+            ;
+
     ScenarioBuilder httpAsk = scenario("HttpSimulation") // 7
             .exec(http("PowerJob-Remote-Http") // 请求名称，用于压测报表展示
                     .get("/pressure/ask?protocol=HTTP&debug=false&responseSize=1024")) // 9
-            .pause(5); // 10
+            ;
 
     ScenarioBuilder akkaAsk = scenario("AkkaSimulation") // 7
             .exec(http("PowerJob-Remote-AKKA") // 请求名称，用于压测报表展示
                     .get("/pressure/ask?protocol=AKKA&debug=false&responseSize=1024")) // 9
-            .pause(5); // 10
+            ;
 
 
     /*
@@ -43,9 +50,13 @@ public class HttpSimulation extends Simulation {
 
     {
         setUp( // 11
-                httpAsk.injectOpen(incrementUsersPerSec(10.0).times(2).eachLevelLasting(10)).andThen(
-                        akkaAsk.injectOpen(incrementUsersPerSec(10.0).times(2).eachLevelLasting(10))
-                ) // 12
+                warmup.injectOpen(constantUsersPerSec(50).during(10))
+                        .andThen(
+                                httpAsk.injectOpen(incrementUsersPerSec(100).times(10).eachLevelLasting(10))
+                                )
+                        .andThen(
+                                akkaAsk.injectOpen(incrementUsersPerSec(100).times(10).eachLevelLasting(10))
+                        )
         ).protocols(httpProtocol); // 13
     }
 }
