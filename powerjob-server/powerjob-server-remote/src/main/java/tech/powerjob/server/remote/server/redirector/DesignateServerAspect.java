@@ -4,6 +4,7 @@ import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import lombok.RequiredArgsConstructor;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.response.AskResponse;
@@ -39,10 +40,10 @@ import java.util.concurrent.CompletionStage;
 @Aspect
 @Component
 @Order(0)
+@RequiredArgsConstructor
 public class DesignateServerAspect {
 
-    @Resource
-    private AppInfoRepository appInfoRepository;
+    private final AppInfoRepository appInfoRepository;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -70,7 +71,7 @@ public class DesignateServerAspect {
         }
 
         if (appId == null) {
-            throw new PowerJobException("can't find appId in params for:" + signature.toString());
+            throw new PowerJobException("can't find appId in params for:" + signature);
         }
 
         // 获取执行机器

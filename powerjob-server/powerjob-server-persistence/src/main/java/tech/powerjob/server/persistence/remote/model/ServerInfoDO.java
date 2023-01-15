@@ -16,7 +16,10 @@ import java.util.Date;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "ip")})
+@Table(
+        uniqueConstraints = {@UniqueConstraint(name = "uidx01_server_info", columnNames = "ip")},
+        indexes = {@Index(name = "idx01_server_info", columnList = "gmtModified")}
+)
 public class ServerInfoDO {
 
     @Id

@@ -16,13 +16,13 @@ import javax.transaction.Transactional;
 public interface OmsLockRepository extends JpaRepository<OmsLockDO, Long> {
 
     @Modifying
-    @Transactional
+    @Transactional(rollbackOn = Exception.class)
     @Query(value = "delete from OmsLockDO where lockName = ?1")
     int deleteByLockName(String lockName);
 
     OmsLockDO findByLockName(String lockName);
 
     @Modifying
-    @Transactional
+    @Transactional(rollbackOn = Exception.class)
     int deleteByOwnerIP(String ip);
 }

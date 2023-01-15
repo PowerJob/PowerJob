@@ -1,5 +1,6 @@
 package tech.powerjob.server.persistence.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -13,7 +14,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Objects;
@@ -35,12 +35,6 @@ import java.util.Objects;
         transactionManagerRef = "remoteTransactionManager"
 )
 public class RemoteJpaConfig {
-
-    @Resource(name = "omsRemoteDatasource")
-    private DataSource omsRemoteDatasource;
-
-    @Resource(name = "multiDatasourceProperties")
-    private MultiDatasourceProperties properties;
 
     public static final String CORE_PACKAGES = "tech.powerjob.server.persistence.remote";
 
@@ -69,7 +63,7 @@ public class RemoteJpaConfig {
 
     @Primary
     @Bean(name = "remoteEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean initRemoteEntityManagerFactory(EntityManagerFactoryBuilder builder) {
+    public LocalContainerEntityManagerFactoryBean initRemoteEntityManagerFactory(@Qualifier("omsRemoteDatasource") DataSource omsRemoteDatasource,@Qualifier("multiDatasourceProperties") MultiDatasourceProperties properties, EntityManagerFactoryBuilder builder) {
         Map<String, Object> datasourceProperties = genDatasourceProperties();
         datasourceProperties.putAll(properties.getRemote().getHibernate().getProperties());
         return builder
@@ -83,7 +77,7 @@ public class RemoteJpaConfig {
 
     @Primary
     @Bean(name = "remoteTransactionManager")
-    public PlatformTransactionManager initRemoteTransactionManager(EntityManagerFactoryBuilder builder) {
-        return new JpaTransactionManager(Objects.requireNonNull(initRemoteEntityManagerFactory(builder).getObject()));
+    public PlatformTransactionManager initRemoteTransactionManager(@Qualifier("remoteEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
+        return new JpaTransactionManager(Objects.requireNonNull(localContainerEntityManagerFactoryBean.getObject()));
     }
 }

@@ -90,17 +90,6 @@ public class PowerJobProperties {
         getWorker().setEnableTestMode(enableTestMode);
     }
 
-    @Deprecated
-    @DeprecatedConfigurationProperty(replacement = "powerjob.worker.tag")
-    public String getTag() {
-        return getWorker().tag;
-    }
-
-    @Deprecated
-    public void setTag(String tag) {
-        getWorker().setTag(tag);
-    }
-
     /**
      * Powerjob worker configuration properties.
      */
@@ -147,17 +136,28 @@ public class PowerJobProperties {
         private int maxResultLength = 8192;
         /**
          * If test mode is set as true, Powerjob-worker no longer connects to the server or validates appName.
-         * Test mode is used for conditions that your have no powerjob-server in your develop env so you can't startup the application
+         * Test mode is used for conditions that your have no powerjob-server in your develop env, so you can't start up the application
          */
         private boolean enableTestMode = false;
         /**
-         * Max length of appended workflow context value length. Appended workflow context value that is longer than the value will be ignore.
+         * Max length of appended workflow context value length. Appended workflow context value that is longer than the value will be ignored.
          * {@link WorkflowContext} max length for #appendedContextData
          */
         private int maxAppendedWfContextLength = 8192;
-        /**
-         * Worker Tag
-         */
+
         private String tag;
+        /**
+         * Max numbers of LightTaskTacker
+         */
+        private Integer maxLightweightTaskNum = 1024;
+        /**
+         * Max numbers of HeavyTaskTacker
+         */
+        private Integer maxHeavyweightTaskNum = 64;
+        /**
+         * Interval(s) of worker health report
+         */
+        private Integer healthReportInterval = 10;
+
     }
 }

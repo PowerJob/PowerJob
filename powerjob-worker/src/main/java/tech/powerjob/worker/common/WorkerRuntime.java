@@ -3,6 +3,8 @@ package tech.powerjob.worker.common;
 import akka.actor.ActorSystem;
 import tech.powerjob.worker.background.OmsLogHandler;
 import tech.powerjob.worker.background.ServerDiscoveryService;
+import tech.powerjob.worker.background.WorkerHealthReporter;
+import tech.powerjob.worker.core.executor.ExecutorManager;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
 import lombok.Data;
 
@@ -17,12 +19,19 @@ public class WorkerRuntime {
 
     private Long appId;
 
-    private PowerJobWorkerConfig workerConfig;
-
     private String workerAddress;
 
+    private PowerJobWorkerConfig workerConfig;
+
     private ActorSystem actorSystem;
+
+    private WorkerHealthReporter healthReporter;
+
+    private ExecutorManager executorManager;
+
     private OmsLogHandler omsLogHandler;
+
     private ServerDiscoveryService serverDiscoveryService;
+
     private TaskPersistenceService taskPersistenceService;
 }

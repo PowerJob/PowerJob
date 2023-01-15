@@ -6,7 +6,7 @@ import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.RemoteConstant;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;

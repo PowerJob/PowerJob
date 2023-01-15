@@ -39,13 +39,13 @@ public class MapProcessorDemo implements MapProcessor {
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
 
-        System.out.println("============== MapProcessorDemo#process ==============");
-        System.out.println("isRootTask:" + isRootTask());
-        System.out.println("taskContext:" + JsonUtils.toJSONString(context));
-        System.out.println(mysteryService.hasaki());
+        log.info("============== MapProcessorDemo#process ==============");
+        log.info("isRootTask:{}", isRootTask());
+        log.info("taskContext:{}", JsonUtils.toJSONString(context));
+        log.info("{}", mysteryService.hasaki());
 
         if (isRootTask()) {
-            System.out.println("==== MAP ====");
+            log.info("==== MAP ====");
             List<SubTask> subTasks = Lists.newLinkedList();
             for (int j = 0; j < BATCH_NUM; j++) {
                 SubTask subTask = new SubTask();
@@ -60,16 +60,16 @@ public class MapProcessorDemo implements MapProcessor {
             return new ProcessResult(true, "map successfully");
         } else {
 
-            System.out.println("==== PROCESS ====");
+            log.info("==== PROCESS ====");
             SubTask subTask = (SubTask) context.getSubTask();
             for (Integer itemId : subTask.getItemIds()) {
                 if (Thread.interrupted()) {
                     // 任务被中断
-                    System.out.println("job has been stop! so stop to process subTask:" + subTask.getSiteId() + "=>" + itemId);
+                    log.info("job has been stop! so stop to process subTask: {} => {}", subTask.getSiteId(), itemId);
                     break;
                 }
-                System.out.println("processing subTask: " + subTask.getSiteId() + "=>" + itemId);
-                int max = Integer.MAX_VALUE >> 4;
+                log.info("processing subTask: {} => {}", subTask.getSiteId(), itemId);
+                int max = Integer.MAX_VALUE >> 7;
                 for (int i = 0; ; i++) {
                     // 模拟耗时操作
                     if (i > max) {
@@ -80,6 +80,10 @@ public class MapProcessorDemo implements MapProcessor {
             // 测试在 Map 任务中追加上下文
             context.getWorkflowContext().appendData2WfContext("Yasuo", "A sword's poor company for a long road.");
             boolean b = ThreadLocalRandom.current().nextBoolean();
+            if (context.getCurrentRetryTimes() >= 1) {
+                // 重试的话一定会成功
+                b = true;
+            }
             return new ProcessResult(b, "RESULT:" + b);
         }
     }

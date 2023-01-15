@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -38,9 +39,6 @@ import java.util.Objects;
 )
 public class LocalJpaConfig {
 
-    @Resource(name = "omsLocalDatasource")
-    private DataSource omsLocalDatasource;
-
     public static final String LOCAL_PACKAGES = "tech.powerjob.server.persistence.local";
 
     private static Map<String, Object> genDatasourceProperties() {
@@ -56,8 +54,7 @@ public class LocalJpaConfig {
     }
 
     @Bean(name = "localEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean initLocalEntityManagerFactory(EntityManagerFactoryBuilder builder) {
-
+    public LocalContainerEntityManagerFactoryBean initLocalEntityManagerFactory(@Qualifier("omsLocalDatasource") DataSource omsLocalDatasource,EntityManagerFactoryBuilder builder) {
         return builder
                 .dataSource(omsLocalDatasource)
                 .properties(genDatasourceProperties())
@@ -66,10 +63,9 @@ public class LocalJpaConfig {
                 .build();
     }
 
-
     @Bean(name = "localTransactionManager")
-    public PlatformTransactionManager initLocalTransactionManager(EntityManagerFactoryBuilder builder) {
-        return new JpaTransactionManager(Objects.requireNonNull(initLocalEntityManagerFactory(builder).getObject()));
+    public PlatformTransactionManager initLocalTransactionManager(@Qualifier("localEntityManagerFactory") LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
+        return new JpaTransactionManager(Objects.requireNonNull(localContainerEntityManagerFactoryBean.getObject()));
     }
 
     @Bean(name = "localTransactionTemplate")

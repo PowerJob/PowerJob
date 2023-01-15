@@ -11,15 +11,25 @@ import lombok.Data;
 @Data
 public class GenerateContainerTemplateRequest {
 
-    // Maven Group
+    /**
+     * Maven Group
+     */
     private String group;
-    // Maven artifact
+    /**
+     * Maven artifact
+     */
     private String artifact;
-    // Maven name
+    /**
+     * Maven name
+     */
     private String name;
-    // 包名（com.xx.xx.xx）
+    /**
+     * 包名（com.xx.xx.xx）
+     */
     private String packageName;
-    // Java版本号，8或者11
+    /**
+     * Java版本号，8或者11
+     */
     private Integer javaVersion;
 
 }

@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.instance;
 
+import lombok.RequiredArgsConstructor;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
@@ -21,14 +22,16 @@ import java.util.concurrent.ExecutionException;
  * @since 2020/6/23
  */
 @Service
+@RequiredArgsConstructor
 public class InstanceMetadataService implements InitializingBean {
 
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
+    private final JobInfoRepository jobInfoRepository;
 
-    // 缓存，一旦生成任务实例，其对应的 JobInfo 不应该再改变（即使源数据改变）
+    private final InstanceInfoRepository instanceInfoRepository;
+
+    /**
+     * 缓存，一旦生成任务实例，其对应的 JobInfo 不应该再改变（即使源数据改变）
+     */
     private Cache<Long, JobInfoDO> instanceId2JobInfoCache;
 
     @Value("${oms.instance.metadata.cache.size}")

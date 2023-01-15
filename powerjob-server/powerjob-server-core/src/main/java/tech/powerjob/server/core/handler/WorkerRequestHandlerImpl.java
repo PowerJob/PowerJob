@@ -1,7 +1,7 @@
 package tech.powerjob.server.core.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.enums.InstanceStatus;
@@ -12,12 +12,14 @@ import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.server.core.instance.InstanceLogService;
 import tech.powerjob.server.core.instance.InstanceManager;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
+import tech.powerjob.server.monitor.MonitorService;
 import tech.powerjob.server.monitor.events.w2s.TtReportInstanceStatusEvent;
 import tech.powerjob.server.monitor.events.w2s.WorkerHeartbeatEvent;
 import tech.powerjob.server.monitor.events.w2s.WorkerLogReportEvent;
+import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
 import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
+import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
-import javax.annotation.Resource;
 import java.util.Optional;
 
 /**
@@ -30,12 +32,19 @@ import java.util.Optional;
 @Component
 public class WorkerRequestHandlerImpl extends AbWorkerRequestHandler {
 
-    @Resource
-    private InstanceManager instanceManager;
-    @Resource
-    private WorkflowInstanceManager workflowInstanceManager;
-    @Resource
-    private InstanceLogService instanceLogService;
+    private final InstanceManager instanceManager;
+
+    private final WorkflowInstanceManager workflowInstanceManager;
+
+    private final InstanceLogService instanceLogService;
+
+    public WorkerRequestHandlerImpl(InstanceManager instanceManager, WorkflowInstanceManager workflowInstanceManager, InstanceLogService instanceLogService,
+                                    MonitorService monitorService, Environment environment, ContainerInfoRepository containerInfoRepository, WorkerClusterQueryService workerClusterQueryService) {
+        super(monitorService, environment, containerInfoRepository, workerClusterQueryService);
+        this.instanceManager = instanceManager;
+        this.workflowInstanceManager = workflowInstanceManager;
+        this.instanceLogService = instanceLogService;
+    }
 
     @Override
     protected void processWorkerHeartbeat0(WorkerHeartbeat heartbeat, WorkerHeartbeatEvent event) {

@@ -1,9 +1,10 @@
 package tech.powerjob.server.core.instance;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -39,22 +40,22 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InstanceManager {
 
-    @Resource
-    private AlarmCenter alarmCenter;
-    @Resource
-    private InstanceLogService instanceLogService;
-    @Resource
-    private InstanceMetadataService instanceMetadataService;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
-    @Resource
-    private WorkflowInstanceManager workflowInstanceManager;
-    @Resource
-    private TransportService transportService;
-    @Resource
-    private WorkerClusterQueryService workerClusterQueryService;
+    private final AlarmCenter alarmCenter;
+
+    private final InstanceLogService instanceLogService;
+
+    private final InstanceMetadataService instanceMetadataService;
+
+    private final InstanceInfoRepository instanceInfoRepository;
+
+    private final WorkflowInstanceManager workflowInstanceManager;
+
+    private final TransportService transportService;
+
+    private final WorkerClusterQueryService workerClusterQueryService;
 
     /**
      * 更新任务状态
@@ -69,7 +70,6 @@ public class InstanceManager {
     public void updateStatus(TaskTrackerReportInstanceStatusReq req) throws ExecutionException {
 
         Long instanceId = req.getInstanceId();
-
         // 获取相关数据
         JobInfoDO jobInfo = instanceMetadataService.fetchJobInfoByInstanceId(req.getInstanceId());
         InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
@@ -77,6 +77,7 @@ public class InstanceManager {
             log.warn("[InstanceManager-{}] can't find InstanceInfo from database", instanceId);
             return;
         }
+        int originStatus = instanceInfo.getStatus();
         // 丢弃过期的上报数据
         if (req.getReportTime() <= instanceInfo.getLastReportTime()) {
             log.warn("[InstanceManager-{}] receive the expired status report request: {}, this report will be dropped.", instanceId, req);
@@ -134,8 +135,7 @@ public class InstanceManager {
         boolean finished = false;
         if (receivedInstanceStatus == InstanceStatus.SUCCEED) {
             instanceInfo.setResult(req.getResult());
-            instanceInfo.setFinishedTime(System.currentTimeMillis());
-
+            instanceInfo.setFinishedTime(req.getEndTime() == null ? System.currentTimeMillis() : req.getEndTime());
             finished = true;
         } else if (receivedInstanceStatus == InstanceStatus.FAILED) {
 
@@ -152,21 +152,23 @@ public class InstanceManager {
                 instanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
             } else {
                 instanceInfo.setResult(req.getResult());
-                instanceInfo.setFinishedTime(System.currentTimeMillis());
+                instanceInfo.setFinishedTime(req.getEndTime() == null ? System.currentTimeMillis() : req.getEndTime());
                 finished = true;
                 log.info("[InstanceManager-{}] instance execute failed and have no chance to retry.", instanceId);
             }
         }
-
-        // 同步状态变更信息到数据库
-        instanceInfoRepository.saveAndFlush(instanceInfo);
-
         if (finished) {
+            // 最终状态允许直接覆盖更新
+            instanceInfoRepository.saveAndFlush(instanceInfo);
             // 这里的 InstanceStatus 只有 成功/失败 两种，手动停止不会由 TaskTracker 上报
             processFinishedInstance(instanceId, req.getWfInstanceId(), receivedInstanceStatus, req.getResult());
-
+            return;
         }
-
+        // 带条件更新
+        final int i = instanceInfoRepository.updateStatusChangeInfoByInstanceIdAndStatus(instanceInfo.getLastReportTime(), instanceInfo.getGmtModified(), instanceInfo.getRunningTimes(), instanceInfo.getStatus(), instanceInfo.getInstanceId(), originStatus);
+        if (i == 0) {
+            log.warn("[InstanceManager-{}] update instance status failed, maybe the instance status has been changed by other thread. discard this status change,{}", instanceId, instanceInfo);
+        }
     }
 
     private void stopInstance(Long instanceId, InstanceInfoDO instanceInfo) {

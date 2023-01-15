@@ -1,6 +1,7 @@
 package tech.powerjob.worker.persistence;
 
 import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.JavaUtils;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -33,6 +34,10 @@ public class ConnectionFactory {
     }
 
     public synchronized void initDatasource(StoreStrategy strategy) {
+
+        // H2 兼容性问题较多，前置输出版本方便排查
+        log.info("[PowerDatasource] H2 database version: {}", JavaUtils.determinePackageVersion(Driver.class));
+
         // 兼容单元测试，否则没办法单独测试 DAO 层了
         strategy = strategy == null ? StoreStrategy.DISK : strategy;
 

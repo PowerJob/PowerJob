@@ -14,7 +14,7 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(name = "appNameUK", columnNames = {"appName"})})
+@Table(uniqueConstraints = {@UniqueConstraint(name = "uidx01_app_info", columnNames = {"appName"})})
 public class AppInfoDO {
 
     @Id

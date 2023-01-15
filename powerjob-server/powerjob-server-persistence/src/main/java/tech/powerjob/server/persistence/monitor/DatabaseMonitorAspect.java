@@ -1,5 +1,6 @@
 package tech.powerjob.server.persistence.monitor;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -11,7 +12,6 @@ import tech.powerjob.server.monitor.MonitorService;
 import tech.powerjob.server.monitor.events.db.DatabaseEvent;
 import tech.powerjob.server.monitor.events.db.DatabaseType;
 
-import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -25,10 +25,10 @@ import java.util.stream.Stream;
 @Slf4j
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class DatabaseMonitorAspect {
 
-    @Resource
-    private MonitorService monitorService;
+    private final MonitorService monitorService;
 
     @Around("execution(* tech.powerjob.server.persistence.remote.repository..*.*(..))")
     public Object monitorCoreDB(ProceedingJoinPoint joinPoint) throws Throwable {

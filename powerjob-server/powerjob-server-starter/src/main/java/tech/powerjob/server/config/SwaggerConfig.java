@@ -1,5 +1,6 @@
 package tech.powerjob.server.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +26,10 @@ import static springfox.documentation.builders.PathSelectors.any;
 @Configuration
 @EnableSwagger2
 @ConditionalOnProperty(name = PowerJobServerConfigKey.SWAGGER_UI_ENABLE, havingValue = "true")
+@RequiredArgsConstructor
 public class SwaggerConfig {
     
-    @Resource
-    private ServerInfoService serverInfoService;
+    private final ServerInfoService serverInfoService;
     
     @Bean
     public Docket createRestApi() {

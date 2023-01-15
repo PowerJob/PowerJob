@@ -125,7 +125,7 @@ public class DingTalkUtils implements Closeable {
 
     @AllArgsConstructor
     public static final class MarkdownEntity {
-        private String title;
-        private String detail;
+        private final String title;
+        private final String detail;
     }
 }

@@ -11,7 +11,7 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 

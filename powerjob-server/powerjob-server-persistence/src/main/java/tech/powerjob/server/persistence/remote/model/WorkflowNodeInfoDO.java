@@ -21,7 +21,9 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(indexes = {@Index(columnList = "appId"), @Index(columnList = "workflowId")})
+@Table(indexes = {
+        @Index(name = "idx01_workflow_node_info", columnList = "workflowId,gmtCreate")
+})
 public class WorkflowNodeInfoDO {
 
     @Id

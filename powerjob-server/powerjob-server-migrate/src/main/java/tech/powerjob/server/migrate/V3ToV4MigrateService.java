@@ -2,9 +2,11 @@ package tech.powerjob.server.migrate;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import lombok.RequiredArgsConstructor;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.model.PEWorkflowDAG;
+import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
@@ -20,7 +22,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.util.*;
@@ -35,23 +36,18 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class V3ToV4MigrateService {
 
     private static final String MIGRATE_LOCK_TEMPLATE = "v3to4MigrateLock-%s-%s";
 
-    @Resource
-    private LockService lockService;
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
-    @Resource
-    private WorkflowNodeInfoRepository workflowNodeInfoRepository;
-    /**
-     * 避免内部方法调用导致事务不生效
-     */
-    @Resource
-    private V3ToV4MigrateService self;
+    private final LockService lockService;
+
+    private final JobInfoRepository jobInfoRepository;
+
+    private final WorkflowInfoRepository workflowInfoRepository;
+
+    private final WorkflowNodeInfoRepository workflowNodeInfoRepository;
 
     /* ********************** 3.x => 4.x ********************** */
 
@@ -149,7 +145,7 @@ public class V3ToV4MigrateService {
             for (WorkflowInfoDO workflowInfo : workflowInfoList) {
 
                 try {
-                    boolean fixed = self.fixWorkflowInfoCoreFromV3ToV4(workflowInfo, jobId2NodeIdMap);
+                    boolean fixed = SpringUtils.getBean(this.getClass()).fixWorkflowInfoCoreFromV3ToV4(workflowInfo, jobId2NodeIdMap);
                     if (fixed) {
                         fixedWorkflowIds.add(workflowInfo.getId());
                     }

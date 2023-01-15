@@ -1,9 +1,7 @@
 package tech.powerjob.server.core.handler;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 
 /**
  * WorkerRequestHandlerHolder
@@ -16,13 +14,14 @@ public class WorkerRequestHandlerHolder {
 
     private static IWorkerRequestHandler workerRequestHandler;
 
-
-    public static IWorkerRequestHandler fetchWorkerRequestHandler() {
-        return workerRequestHandler;
+    public WorkerRequestHandlerHolder(IWorkerRequestHandler injectedWorkerRequestHandler) {
+        workerRequestHandler = injectedWorkerRequestHandler;
     }
 
-    @Autowired
-    public void setWorkerRequestHandler(IWorkerRequestHandler workerRequestHandler) {
-        WorkerRequestHandlerHolder.workerRequestHandler = workerRequestHandler;
+    public static IWorkerRequestHandler fetchWorkerRequestHandler() {
+        if (workerRequestHandler == null){
+            throw new IllegalStateException("WorkerRequestHandlerHolder not initialized!");
+        }
+        return workerRequestHandler;
     }
 }

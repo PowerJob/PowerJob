@@ -1,4 +1,4 @@
-package tech.powerjob.worker.core.tracker.task;
+package tech.powerjob.worker.core.tracker.task.heavy;
 
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
@@ -8,11 +8,11 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.PowerJobDKey;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
@@ -39,12 +39,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @ToString
-public class CommonTaskTracker extends TaskTracker {
+public class CommonTaskTracker extends HeavyTaskTracker {
 
-    /**
-     * 连续上报多次失败后放弃上报，视为结果不可达，TaskTracker down
-     */
-    private int reportFailedCnt = 0;
     /**
      * 根任务 ID
      */
@@ -54,8 +50,6 @@ public class CommonTaskTracker extends TaskTracker {
      * 除 {@link #ROOT_TASK_ID} 外任何数都可以
      */
     public static final String LAST_TASK_ID = "9999";
-
-    private static final int MAX_REPORT_FAILED_THRESHOLD = 5;
 
     protected CommonTaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
         super(req, workerRuntime);
@@ -107,12 +101,7 @@ public class CommonTaskTracker extends TaskTracker {
     }
 
 
-    /**
-     * 任务是否超时
-     */
-    public boolean isTimeout() {
-        return System.currentTimeMillis() - createTime > instanceInfo.getInstanceTimeoutMS();
-    }
+
 
     /**
      * 持久化根任务，只有完成持久化才能视为任务开始running（先持久化，再报告server）
@@ -133,7 +122,7 @@ public class CommonTaskTracker extends TaskTracker {
 
         if (taskPersistenceService.save(rootTask)) {
             log.info("[TaskTracker-{}] create root task successfully.", instanceId);
-        }else {
+        } else {
             log.error("[TaskTracker-{}] create root task failed.", instanceId);
             throw new PowerJobException("create root task failed for instance: " + instanceId);
         }
@@ -179,7 +168,7 @@ public class CommonTaskTracker extends TaskTracker {
                 if (finishedNum == 0) {
                     finished.set(true);
                     result = SystemInstanceResult.TASK_INIT_FAILED;
-                }else {
+                } else {
                     ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
 
                     switch (executeType) {
@@ -192,7 +181,7 @@ public class CommonTaskTracker extends TaskTracker {
                                 success = false;
                                 result = SystemInstanceResult.UNKNOWN_BUG;
                                 log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
-                            }else {
+                            } else {
                                 result = allTask.get(0).getResult();
                                 success = allTask.get(0).getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
                             }
@@ -219,7 +208,7 @@ public class CommonTaskTracker extends TaskTracker {
                                     result = resultTask.getResult();
                                 }
 
-                            }else {
+                            } else {
 
                                 // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
                                 TaskDO newLastTask = new TaskDO();
@@ -245,35 +234,11 @@ public class CommonTaskTracker extends TaskTracker {
 
             // 4. 执行完毕，报告服务器
             if (finished.get()) {
-
                 req.setResult(result);
                 // 上报追加的工作流上下文信息
                 req.setAppendedWfContext(appendedWfContext);
                 req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
-
-                CompletionStage<Object> askCS = Patterns.ask(serverActor, req, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-
-                boolean serverAccepted = false;
-                try {
-                    AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-                    serverAccepted = askResponse.isSuccess();
-                }catch (Exception e) {
-                    log.warn("[TaskTracker-{}] report finished status failed, result={}.", instanceId, result, e);
-                }
-
-                // 服务器未接受上报，则等待下次重新上报
-                if (!serverAccepted) {
-                    if (++reportFailedCnt > MAX_REPORT_FAILED_THRESHOLD) {
-                        log.error("[TaskTracker-{}] try to report finished status(success={}, result={}) lots of times but all failed, it's time to give up, so the process result will be dropped", instanceId, success, result);
-                        destroy();
-                    }
-                    return;
-                }
-
-                // 服务器已经更新状态，任务已经执行完毕，开始释放所有资源
-                log.info("[TaskTracker-{}] instance process finished,result = {}, start to release resource...", instanceId, result);
-
-                destroy();
+                reportFinalStatusThenDestroy(serverActor,req);
                 return;
             }
 
@@ -318,11 +283,21 @@ public class CommonTaskTracker extends TaskTracker {
             }
         }
 
+        /**
+         * 任务是否超时
+         */
+        public boolean isTimeout() {
+            if (instanceInfo.getInstanceTimeoutMS() > 0) {
+                return System.currentTimeMillis() - createTime > instanceInfo.getInstanceTimeoutMS();
+            }
+            return false;
+        }
+
         @Override
         public void run() {
             try {
                 innerRun();
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.warn("[TaskTracker-{}] status checker execute failed, please fix the bug (@tjq)!", instanceId, e);
             }
         }

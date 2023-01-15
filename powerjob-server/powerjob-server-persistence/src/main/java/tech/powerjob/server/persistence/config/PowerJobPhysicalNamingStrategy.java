@@ -5,7 +5,7 @@ import tech.powerjob.server.common.utils.PropertyUtils;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 
@@ -39,7 +39,7 @@ public class PowerJobPhysicalNamingStrategy extends SpringPhysicalNamingStrategy
 
         String text = name.getText();
         String noDOText = StringUtils.endsWithIgnoreCase(text, "do") ? text.substring(0, text.length() - 2) : text;
-        String newText = StringUtils.hasLength(tablePrefix) ? tablePrefix + noDOText : noDOText;
+        String newText = StringUtils.isEmpty(tablePrefix) ? tablePrefix + noDOText : noDOText;
         return super.toPhysicalTableName(new Identifier(newText, name.isQuoted()), jdbcEnvironment);
     }
 
