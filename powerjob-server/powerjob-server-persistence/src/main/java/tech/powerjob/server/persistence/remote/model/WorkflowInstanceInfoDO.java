@@ -18,7 +18,13 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table
+@Table(
+        uniqueConstraints = {@UniqueConstraint(name = "uidx01_wf_instance", columnNames = {"wfInstanceId"})},
+        indexes = {
+                @Index(name = "idx01_wf_instance", columnList = "workflowId,status"),
+                @Index(name = "idx01_wf_instance", columnList = "appId,status,expectedTriggerTime")
+        }
+)
 public class WorkflowInstanceInfoDO {
 
     @Id

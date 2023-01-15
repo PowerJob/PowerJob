@@ -1,5 +1,7 @@
 package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
 import tech.powerjob.server.extension.Alarmable;
@@ -10,7 +12,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -31,12 +32,11 @@ public class MailAlarmService implements Alarmable {
 
     private JavaMailSender javaMailSender;
 
+    @Value("${spring.mail.username:''}")
     private String from;
-    private static final String FROM_KEY = "spring.mail.username";
 
     @Override
     public void onFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
-        initFrom();
         if (CollectionUtils.isEmpty(targetUserList) || javaMailSender == null || StringUtils.isEmpty(from)) {
             return;
         }
@@ -59,10 +59,4 @@ public class MailAlarmService implements Alarmable {
         this.javaMailSender = javaMailSender;
     }
 
-    // 不能直接使用 @Value 注入，不存在的时候会报错
-    private void initFrom() {
-        if (StringUtils.isEmpty(from)) {
-            from = environment.getProperty(FROM_KEY);
-        }
-    }
 }

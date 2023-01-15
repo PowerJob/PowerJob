@@ -16,16 +16,20 @@ import java.util.stream.Stream;
  */
 public interface LocalInstanceLogRepository extends JpaRepository<LocalInstanceLogDO, Long> {
 
-    // 流式查询
+    /**
+     * 流式查询
+     */
     Stream<LocalInstanceLogDO> findByInstanceIdOrderByLogTime(Long instanceId);
 
-    // 删除数据
+    /**
+     * 删除数据
+     */
     @Modifying
-    @Transactional
+    @Transactional(rollbackOn = Exception.class)
     long deleteByInstanceId(Long instanceId);
 
     @Modifying
-    @Transactional
+    @Transactional(rollbackOn = Exception.class)
     @CanIgnoreReturnValue
     long deleteByInstanceIdInAndLogTimeLessThan(List<Long> instanceIds, Long t);
 

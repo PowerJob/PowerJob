@@ -26,8 +26,8 @@ public enum ExecuteType {
     MAP_REDUCE(3, "MapReduce"),
     MAP(4, "Map");
 
-    int v;
-    String des;
+    private final int v;
+    private final String des;
 
     public static ExecuteType of(int v) {
         for (ExecuteType type : values()) {

@@ -69,13 +69,17 @@ public class PowerJobAutoConfiguration {
          */
         config.setEnableTestMode(worker.isEnableTestMode());
         /*
-         * Max length of appended workflow context . Appended workflow context value that is longer than the value will be ignore.
+         * Max length of appended workflow context . Appended workflow context value that is longer than the value will be ignored.
          */
         config.setMaxAppendedWfContextLength(worker.getMaxAppendedWfContextLength());
-        /*
-         * Worker Tag
-         */
+
         config.setTag(worker.getTag());
+
+        config.setMaxHeavyweightTaskNum(worker.getMaxHeavyweightTaskNum());
+
+        config.setMaxLightweightTaskNum(worker.getMaxLightweightTaskNum());
+
+        config.setHealthReportInterval(worker.getHealthReportInterval());
         /*
          * Create OhMyWorker object and set properties.
          */

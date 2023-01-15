@@ -1,18 +1,17 @@
 package tech.powerjob.server.config;
 
-import org.springframework.core.task.AsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import tech.powerjob.server.common.RejectedExecutionHandlerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import tech.powerjob.server.common.RejectedExecutionHandlerFactory;
 import tech.powerjob.server.common.constants.PJThreadPool;
-
-import java.util.concurrent.*;
+import tech.powerjob.server.common.thread.NewThreadRunRejectedExecutionHandler;
 
 /**
  * 公用线程池配置
@@ -34,7 +33,7 @@ public class ThreadPoolConfig {
         executor.setQueueCapacity(0);
         executor.setKeepAliveSeconds(60);
         executor.setThreadNamePrefix("PJ-TIMING-");
-        executor.setRejectedExecutionHandler(RejectedExecutionHandlerFactory.newThreadRun(PJThreadPool.TIMING_POOL));
+        executor.setRejectedExecutionHandler(new NewThreadRunRejectedExecutionHandler(PJThreadPool.TIMING_POOL));
         return executor;
     }
 
@@ -62,12 +61,14 @@ public class ThreadPoolConfig {
         return executor;
     }
 
-    // 引入 WebSocket 支持后需要手动初始化调度线程池
+    /**
+     * 引入 WebSocket 支持后需要手动初始化调度线程池
+     */
     @Bean
     public TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(Runtime.getRuntime().availableProcessors());
-        scheduler.setThreadNamePrefix("PJ-WS-");
+        scheduler.setPoolSize(Math.max(Runtime.getRuntime().availableProcessors() * 8, 32));
+        scheduler.setThreadNamePrefix("PJ-DEFAULT-");
         scheduler.setDaemon(true);
         return scheduler;
     }

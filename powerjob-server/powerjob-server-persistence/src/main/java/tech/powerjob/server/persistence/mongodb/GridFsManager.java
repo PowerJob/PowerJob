@@ -1,6 +1,5 @@
 package tech.powerjob.server.persistence.mongodb;
 
-import tech.powerjob.server.common.PowerJobServerConfigKey;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.mongodb.client.MongoDatabase;
@@ -19,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+import tech.powerjob.server.common.PowerJobServerConfigKey;
 
-import javax.annotation.Resource;
 import java.io.*;
 import java.util.Date;
 import java.util.Map;
@@ -36,21 +35,24 @@ import java.util.function.Consumer;
 @Service
 public class GridFsManager implements InitializingBean {
 
-    @Resource
-    private Environment environment;
+    private final Environment environment;
 
-    private MongoDatabase db;
+    private final MongoDatabase db;
+
     private boolean available;
 
     private final Map<String, GridFSBucket> bucketCache = Maps.newConcurrentMap();
 
     public static final String LOG_BUCKET = "log";
+
     public static final String CONTAINER_BUCKET = "container";
 
-    @Autowired(required = false)
-    public void setMongoTemplate(MongoTemplate mongoTemplate) {
+    public GridFsManager(Environment environment, @Autowired(required = false) MongoTemplate mongoTemplate) {
+        this.environment = environment;
         if (mongoTemplate != null) {
             this.db = mongoTemplate.getDb();
+        } else {
+            this.db = null;
         }
     }
 

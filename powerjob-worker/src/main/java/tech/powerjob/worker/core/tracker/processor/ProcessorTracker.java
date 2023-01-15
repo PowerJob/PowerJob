@@ -6,7 +6,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.util.CollectionUtils;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
@@ -17,12 +16,10 @@ import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.AkkaUtils;
-import tech.powerjob.worker.common.utils.SpringUtils;
-import tech.powerjob.worker.container.OmsContainer;
-import tech.powerjob.worker.container.OmsContainerFactory;
-import tech.powerjob.worker.core.ProcessorBeanFactory;
-import tech.powerjob.worker.core.executor.ProcessorRunnable;
-import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
+import tech.powerjob.worker.core.processor.ProcessorInfo;
+import tech.powerjob.worker.core.processor.runnable.HeavyProcessorRunnable;
+import tech.powerjob.worker.core.processor.ProcessorLoader;
+import tech.powerjob.worker.core.tracker.manager.ProcessorTrackerManager;
 import tech.powerjob.worker.log.OmsLogger;
 import tech.powerjob.worker.log.OmsLoggerFactory;
 import tech.powerjob.worker.log.impl.OmsServerLogger;
@@ -58,14 +55,8 @@ public class ProcessorTracker {
      * 冗余 instanceId，方便日志
      */
     private Long instanceId;
-    /**
-     * 任务执行器
-     */
-    private BasicProcessor processor;
-    /**
-     * 容器（可能为空）
-     */
-    private OmsContainer omsContainer;
+
+    private ProcessorInfo processorInfo;
     /**
      * 在线日志
      */
@@ -129,8 +120,7 @@ public class ProcessorTracker {
             // 初始化定时任务
             initTimingJob();
             // 初始化 Processor
-            initProcessor();
-
+            processorInfo = ProcessorLoader.loadProcessor(workerRuntime, instanceInfo.getProcessorType(), instanceInfo.getProcessorInfo());
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
         } catch (Throwable t) {
             log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, t);
@@ -171,10 +161,10 @@ public class ProcessorTracker {
         newTask.setInstanceId(instanceInfo.getInstanceId());
         newTask.setAddress(taskTrackerAddress);
 
-        ClassLoader classLoader = omsContainer == null ? getClass().getClassLoader() : omsContainer.getContainerClassLoader();
-        ProcessorRunnable processorRunnable = new ProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processor, omsLogger, classLoader, statusReportRetryQueue, workerRuntime);
+        ClassLoader classLoader = processorInfo.getClassLoader();
+        HeavyProcessorRunnable heavyProcessorRunnable = new HeavyProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processorInfo.getBasicProcessor(), omsLogger, classLoader, statusReportRetryQueue, workerRuntime);
         try {
-            threadPool.submit(processorRunnable);
+            threadPool.submit(heavyProcessorRunnable);
             success = true;
         } catch (RejectedExecutionException ignore) {
             log.warn("[ProcessorTracker-{}] submit task(taskId={},taskName={}) to ThreadPool failed due to ThreadPool has too much task waiting to process, this task will dispatch to other ProcessorTracker.",
@@ -204,11 +194,6 @@ public class ProcessorTracker {
      */
     public void destroy() {
 
-        // 0. 移除Container引用
-        if (omsContainer != null) {
-            omsContainer.tryRelease();
-        }
-
         // 1. 关闭执行执行线程池
         CommonUtils.executeIgnoreException(() -> {
             List<Runnable> tasks = threadPool.shutdownNow();
@@ -220,7 +205,7 @@ public class ProcessorTracker {
         // 2. 去除顶层引用，送入GC世界
         taskTrackerActorRef = null;
         statusReportRetryQueue.clear();
-        ProcessorTrackerPool.removeProcessorTracker(instanceId);
+        ProcessorTrackerManager.removeProcessorTracker(instanceId);
 
         log.info("[ProcessorTracker-{}] ProcessorTracker destroyed successfully!", instanceId);
 
@@ -326,52 +311,6 @@ public class ProcessorTracker {
 
     }
 
-    /**
-     * 初始化处理器 Processor
-     */
-    private void initProcessor() throws Exception {
-
-        ProcessorType processorType = ProcessorType.valueOf(instanceInfo.getProcessorType());
-        String processorInfo = instanceInfo.getProcessorInfo();
-
-        switch (processorType) {
-            case BUILT_IN:
-                // 先使用 Spring 加载
-                if (SpringUtils.supportSpringBean()) {
-                    try {
-                        processor = SpringUtils.getBean(processorInfo);
-                    } catch (Exception e) {
-                        log.warn("[ProcessorTracker-{}] no spring bean of processor(className={}), reason is {}.", instanceId, processorInfo, ExceptionUtils.getMessage(e));
-                    }
-                }
-                // 反射加载
-                if (processor == null) {
-                    processor = ProcessorBeanFactory.getInstance().getLocalProcessor(processorInfo);
-                }
-                break;
-            case EXTERNAL:
-                String[] split = processorInfo.split("#");
-                log.info("[ProcessorTracker-{}] try to load processor({}) in container({})", instanceId, split[1], split[0]);
-
-                String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-                ActorSelection actorSelection = workerRuntime.getActorSystem().actorSelection(serverPath);
-                omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), actorSelection);
-                if (omsContainer != null) {
-                    processor = omsContainer.getProcessor(split[1]);
-                } else {
-                    log.warn("[ProcessorTracker-{}] load container failed.", instanceId);
-                }
-                break;
-            default:
-                log.warn("[ProcessorTracker-{}] unknown processor type: {}.", instanceId, processorType);
-                throw new PowerJobException("unknown processor type of " + processorType);
-        }
-
-        if (processor == null) {
-            log.warn("[ProcessorTracker-{}] fetch Processor(type={},info={}) failed.", instanceId, processorType, processorInfo);
-            throw new PowerJobException("fetch Processor failed, please check your processorType and processorInfo config");
-        }
-    }
 
     /**
      * 计算线程池大小

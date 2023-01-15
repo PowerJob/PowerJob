@@ -23,7 +23,7 @@ public enum TaskStatus {
     WORKER_PROCESS_FAILED(5, "worker执行失败"),
     WORKER_PROCESS_SUCCESS(6, "worker执行成功");
 
-    public static final Set<Integer> finishedStatus = Sets.newHashSet(WORKER_PROCESS_FAILED.value, WORKER_PROCESS_SUCCESS.value);
+    public static final Set<Integer> FINISHED_STATUS = Sets.newHashSet(WORKER_PROCESS_FAILED.value, WORKER_PROCESS_SUCCESS.value);
 
     private final int value;
     private final String des;

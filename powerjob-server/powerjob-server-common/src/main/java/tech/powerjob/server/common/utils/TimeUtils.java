@@ -19,9 +19,13 @@ import java.util.List;
 @Slf4j
 public class TimeUtils {
 
-    // NTP 授时服务器（阿里云 -> 交大 -> 水果）
+    /**
+     * NTP 授时服务器（阿里云 -> 交大 -> 水果）
+     */
     private static final List<String> NTP_SERVER_LIST = Lists.newArrayList("ntp.aliyun.com", "ntp.sjtu.edu.cn", "time1.apple.com");
-    // 最大误差 5S
+    /**
+     * 最大误差 5S
+     */
     private static final long MAX_OFFSET = 5000;
 
     public static void check() throws TimeCheckException {

@@ -1,6 +1,7 @@
 package tech.powerjob.server.web.controller;
 
 import com.google.common.collect.Lists;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +11,6 @@ import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.core.scheduler.TimingStrategyService;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -22,10 +22,10 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/validate")
+@RequiredArgsConstructor
 public class ValidateController {
 
-    @Resource
-    private TimingStrategyService timingStrategyService;
+    private final TimingStrategyService timingStrategyService;
 
     @GetMapping("/timeExpression")
     public ResultDTO<List<String>> checkTimeExpression(TimeExpressionType timeExpressionType,

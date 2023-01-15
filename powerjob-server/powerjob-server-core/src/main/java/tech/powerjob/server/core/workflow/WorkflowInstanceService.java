@@ -1,14 +1,20 @@
 package tech.powerjob.server.core.workflow;
 
 import com.alibaba.fastjson.JSON;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.SystemInstanceResult;
-import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
 import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.utils.SpringUtils;
+import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
@@ -16,12 +22,7 @@ import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.core.instance.InstanceService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,18 +36,16 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class WorkflowInstanceService {
 
-    @Resource
-    private InstanceService instanceService;
-    @Resource
-    private WorkflowInstanceInfoRepository wfInstanceInfoRepository;
-    @Resource
-    private WorkflowInstanceManager workflowInstanceManager;
-    @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
-    @Resource
-    private WorkflowInstanceService self;
+    private final InstanceService instanceService;
+
+    private final WorkflowInstanceInfoRepository wfInstanceInfoRepository;
+
+    private final WorkflowInstanceManager workflowInstanceManager;
+
+    private final WorkflowInfoRepository workflowInfoRepository;
 
     /**
      * 停止工作流实例（入口）
@@ -61,10 +60,10 @@ public class WorkflowInstanceService {
         }
         // 如果这是一个被嵌套的工作流，则终止父工作流
         if (wfInstance.getParentWfInstanceId() != null) {
-            self.stopWorkflowInstance(wfInstance.getParentWfInstanceId(), appId);
+            SpringUtils.getBean(this.getClass()).stopWorkflowInstance(wfInstance.getParentWfInstanceId(), appId);
             return;
         }
-        self.stopWorkflowInstance(wfInstanceId, appId);
+        SpringUtils.getBean(this.getClass()).stopWorkflowInstance(wfInstanceId, appId);
     }
 
     /**

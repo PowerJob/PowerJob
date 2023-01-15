@@ -19,7 +19,6 @@ public class AppendWorkflowContextTester implements BasicProcessor {
 
     private static final String FAIL_CODE = "0";
 
-
     @Override
     @SuppressWarnings("squid:S106")
     public ProcessResult process(TaskContext context) throws Exception {

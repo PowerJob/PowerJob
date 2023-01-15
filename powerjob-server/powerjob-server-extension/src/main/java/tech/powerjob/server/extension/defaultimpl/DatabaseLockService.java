@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class DatabaseLockService implements LockService {
 
     private final String ownerIp;
+
     private final OmsLockRepository omsLockRepository;
 
     @Autowired

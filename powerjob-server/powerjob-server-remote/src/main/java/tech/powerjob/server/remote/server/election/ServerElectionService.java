@@ -37,19 +37,24 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ServerElectionService {
 
-    @Resource
-    private LockService lockService;
-    @Resource
-    private TransportService transportService;
-    @Resource
-    private AppInfoRepository appInfoRepository;
+    private final LockService lockService;
 
-    @Value("${oms.accurate.select.server.percentage}")
-    private int accurateSelectServerPercentage;
+    private final TransportService transportService;
+
+    private final AppInfoRepository appInfoRepository;
+
+    private final int accurateSelectServerPercentage;
 
     private static final int RETRY_TIMES = 10;
     private static final long PING_TIMEOUT_MS = 1000;
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
+
+    public ServerElectionService(LockService lockService, TransportService transportService, AppInfoRepository appInfoRepository,@Value("${oms.accurate.select.server.percentage}") int accurateSelectServerPercentage) {
+        this.lockService = lockService;
+        this.transportService = transportService;
+        this.appInfoRepository = appInfoRepository;
+        this.accurateSelectServerPercentage = accurateSelectServerPercentage;
+    }
 
     public String elect(Long appId, String protocol, String currentServer) {
         if (!accurate()) {

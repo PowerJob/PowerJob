@@ -14,7 +14,10 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table
+@Table(indexes = {
+        @Index(name = "uidx01_user_info", columnList = "username"),
+        @Index(name = "uidx02_user_info", columnList = "email")
+})
 public class UserInfoDO {
 
     @Id

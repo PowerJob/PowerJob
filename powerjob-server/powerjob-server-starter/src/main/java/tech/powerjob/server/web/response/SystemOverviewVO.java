@@ -17,9 +17,13 @@ public class SystemOverviewVO {
     private long jobCount;
     private long runningInstanceCount;
     private long failedInstanceCount;
-    // 服务器时区
+    /**
+     * 服务器时区
+     */
     private String timezone;
-    // 服务器时间
+    /**
+     * 服务器时间
+     */
     private String serverTime;
 
     private ServerInfo serverInfo;

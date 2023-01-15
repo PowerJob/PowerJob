@@ -1,5 +1,6 @@
 package tech.powerjob.server.web.controller;
 
+import lombok.RequiredArgsConstructor;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
@@ -31,12 +32,12 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/appInfo")
+@RequiredArgsConstructor
 public class AppInfoController {
 
-    @Resource
-    private AppInfoService appInfoService;
-    @Resource
-    private AppInfoRepository appInfoRepository;
+    private final AppInfoService appInfoService;
+
+    private final AppInfoRepository appInfoRepository;
 
     private static final int MAX_APP_NUM = 200;
 

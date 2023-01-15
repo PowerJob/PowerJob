@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.handler;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
@@ -22,7 +23,6 @@ import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepositor
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
@@ -34,17 +34,18 @@ import java.util.stream.Collectors;
  * @author tjq
  * @since 2022/9/11
  */
+@RequiredArgsConstructor
 @Slf4j
 public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
 
-    @Resource
-    protected MonitorService monitorService;
-    @Resource
-    protected Environment environment;
-    @Resource
-    protected ContainerInfoRepository containerInfoRepository;
-    @Resource
-    private WorkerClusterQueryService workerClusterQueryService;
+
+    protected final MonitorService monitorService;
+
+    protected final Environment environment;
+
+    protected final ContainerInfoRepository containerInfoRepository;
+
+    private final WorkerClusterQueryService workerClusterQueryService;
 
     protected abstract void processWorkerHeartbeat0(WorkerHeartbeat heartbeat, WorkerHeartbeatEvent event);
 

@@ -1,13 +1,13 @@
 package tech.powerjob.worker.common;
 
+import com.google.common.collect.Lists;
+import lombok.Getter;
+import lombok.Setter;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.WorkflowContext;
 import tech.powerjob.worker.extension.SystemMetricsCollector;
-import com.google.common.collect.Lists;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
@@ -65,5 +65,17 @@ public class PowerJobWorkerConfig {
     private SystemMetricsCollector systemMetricsCollector;
 
     private String tag;
+    /**
+     * Max numbers of LightTaskTacker
+     */
+    private Integer maxLightweightTaskNum = 1024;
+    /**
+     * Max numbers of HeavyTaskTacker
+     */
+    private Integer maxHeavyweightTaskNum = 64;
+    /**
+     * Interval(s) of worker health report
+     */
+    private Integer healthReportInterval = 10;
 
 }

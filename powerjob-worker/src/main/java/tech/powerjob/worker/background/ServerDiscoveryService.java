@@ -1,17 +1,17 @@
 package tech.powerjob.worker.background;
 
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.serialize.JsonUtils;
-import tech.powerjob.common.utils.HttpUtils;
-import tech.powerjob.worker.common.PowerJobWorkerConfig;
-import tech.powerjob.worker.core.tracker.task.TaskTracker;
-import tech.powerjob.worker.core.tracker.task.TaskTrackerPool;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.HttpUtils;
+import tech.powerjob.worker.common.PowerJobWorkerConfig;
+import tech.powerjob.worker.core.tracker.task.heavy.HeavyTaskTracker;
+import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
 
 import java.util.List;
 import java.util.Map;
@@ -34,12 +34,19 @@ public class ServerDiscoveryService {
 
     private final Map<String, String> ip2Address = Maps.newHashMap();
 
-    // 服务发现地址
+    /**
+     *  服务发现地址
+     */
     private static final String DISCOVERY_URL = "http://%s/server/acquire?appId=%d&currentServer=%s&protocol=AKKA";
-    // 失败次数
+    /**
+     * 失败次数
+     */
     private static int FAILED_COUNT = 0;
-    // 最大失败次数
+    /**
+     * 最大失败次数
+     */
     private static final int MAX_FAILED_COUNT = 3;
+
 
     public ServerDiscoveryService(Long appId, PowerJobWorkerConfig config) {
         this.appId = appId;
@@ -51,7 +58,15 @@ public class ServerDiscoveryService {
         if (org.springframework.util.StringUtils.isEmpty(this.currentServerAddress) && !config.isEnableTestMode()) {
             throw new PowerJobException("can't find any available server, this worker has been quarantined.");
         }
-        timingPool.scheduleAtFixedRate(() -> this.currentServerAddress = discovery(), 10, 10, TimeUnit.SECONDS);
+        // 这里必须保证成功
+        timingPool.scheduleAtFixedRate(() -> {
+                    try {
+                        this.currentServerAddress = discovery();
+                    } catch (Exception e) {
+                        log.error("[PowerDiscovery] fail to discovery server!", e);
+                    }
+                }
+                , 10, 10, TimeUnit.SECONDS);
     }
 
     public String getCurrentServerAddress() {
@@ -87,16 +102,16 @@ public class ServerDiscoveryService {
         }
 
         if (StringUtils.isEmpty(result)) {
-            log.warn("[PowerDiscovery] can't find any available server, this worker[appId={}] has been quarantined.", appId);
+            log.warn("[PowerDiscovery] can't find any available server, this worker has been quarantined.");
 
             // 在 Server 高可用的前提下，连续失败多次，说明该节点与外界失联，Server已经将秒级任务转移到其他Worker，需要杀死本地的任务
             if (FAILED_COUNT++ > MAX_FAILED_COUNT) {
 
                 log.warn("[PowerDiscovery] can't find any available server for 3 consecutive times, It's time to kill all frequent job in this worker.");
-                List<Long> frequentInstanceIds = TaskTrackerPool.getAllFrequentTaskTrackerKeys();
+                List<Long> frequentInstanceIds = HeavyTaskTrackerManager.getAllFrequentTaskTrackerKeys();
                 if (!CollectionUtils.isEmpty(frequentInstanceIds)) {
                     frequentInstanceIds.forEach(instanceId -> {
-                        TaskTracker taskTracker = TaskTrackerPool.remove(instanceId);
+                        HeavyTaskTracker taskTracker = HeavyTaskTrackerManager.removeTaskTracker(instanceId);
                         taskTracker.destroy();
                         log.warn("[PowerDiscovery] kill frequent instance(instanceId={}) due to can't find any available server.", instanceId);
                     });
@@ -108,7 +123,7 @@ public class ServerDiscoveryService {
         } else {
             // 重置失败次数
             FAILED_COUNT = 0;
-            log.debug("[PowerDiscovery] appId={}, current server is {}.", appId, result);
+            log.debug("[PowerDiscovery] current server is {}.", result);
             return result;
         }
     }

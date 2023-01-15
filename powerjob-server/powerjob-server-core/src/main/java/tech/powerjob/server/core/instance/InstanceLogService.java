@@ -56,6 +56,7 @@ public class InstanceLogService {
 
     @Resource
     private InstanceMetadataService instanceMetadataService;
+
     @Resource
     private GridFsManager gridFsManager;
     /**
@@ -63,6 +64,7 @@ public class InstanceLogService {
      */
     @Resource(name = "localTransactionTemplate")
     private TransactionTemplate localTransactionTemplate;
+
     @Resource
     private LocalInstanceLogRepository localInstanceLogRepository;
 

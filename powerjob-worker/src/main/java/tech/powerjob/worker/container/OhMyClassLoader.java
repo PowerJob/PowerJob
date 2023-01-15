@@ -1,7 +1,7 @@
 package tech.powerjob.worker.container;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.net.URL;

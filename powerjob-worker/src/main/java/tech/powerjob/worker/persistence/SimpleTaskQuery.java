@@ -1,7 +1,7 @@
 package tech.powerjob.worker.persistence;
 
 import lombok.Data;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 简单查询直接类，只支持 select * from task_info where xxx = xxx and xxx = xxx 的查询

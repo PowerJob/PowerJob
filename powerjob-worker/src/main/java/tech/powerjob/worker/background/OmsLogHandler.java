@@ -9,7 +9,7 @@ import tech.powerjob.worker.common.utils.AkkaUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

@@ -1,17 +1,16 @@
 package tech.powerjob.server.core.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -25,19 +24,23 @@ import java.util.Optional;
 @Service
 public class CacheService {
 
-    @Resource
-    private JobInfoRepository jobInfoRepository;
-    @Resource
-    private WorkflowInfoRepository workflowInfoRepository;
-    @Resource
-    private InstanceInfoRepository instanceInfoRepository;
+    private final JobInfoRepository jobInfoRepository;
+
+    private final WorkflowInfoRepository workflowInfoRepository;
+
+    private final InstanceInfoRepository instanceInfoRepository;
 
     private final Cache<Long, String> jobId2JobNameCache;
     private final Cache<Long, String> workflowId2WorkflowNameCache;
     private final Cache<Long, Long> instanceId2AppId;
     private final Cache<Long, Long> jobId2AppId;
 
-    public CacheService() {
+    public CacheService(JobInfoRepository jobInfoRepository, WorkflowInfoRepository workflowInfoRepository, InstanceInfoRepository instanceInfoRepository) {
+
+        this.jobInfoRepository = jobInfoRepository;
+        this.workflowInfoRepository = workflowInfoRepository;
+        this.instanceInfoRepository = instanceInfoRepository;
+
         jobId2JobNameCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(1))
                 .maximumSize(512)

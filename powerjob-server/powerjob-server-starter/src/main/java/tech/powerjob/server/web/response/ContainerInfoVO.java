@@ -17,18 +17,25 @@ public class ContainerInfoVO {
 
     private String containerName;
 
-    // 容器类型，枚举值为 ContainerSourceType
+    /**
+     * 容器类型，枚举值为 ContainerSourceType
+     */
     private String sourceType;
-    // 由 sourceType 决定，JarFile -> String，存储文件名称；Git -> JSON，包括 URL，branch，username，password
+    /**
+     * 由 sourceType 决定，JarFile -> String，存储文件名称；Git -> JSON，包括 URL，branch，username，password
+     */
     private String sourceInfo;
-
-    // 版本 （Jar包使用md5，Git使用commitId，前者32位，后者40位，不会产生碰撞）
+    /**
+     * 版本 （Jar包使用md5，Git使用commitId，前者32位，后者40位，不会产生碰撞）
+     */
     private String version;
-
-    // 状态，枚举值为 ContainerStatus
+    /**
+     * 状态，枚举值为 ContainerStatus
+     */
     private String status;
-
-    // 上一次部署时间
+    /**
+     * 上一次部署时间
+     */
     private String lastDeployTime;
 
     private Date gmtCreate;

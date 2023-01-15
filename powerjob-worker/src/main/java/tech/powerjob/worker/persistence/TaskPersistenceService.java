@@ -29,8 +29,11 @@ public class TaskPersistenceService {
 
     private final StoreStrategy strategy;
 
-    // 默认重试参数
+    /**
+     * 默认重试次数
+     */
     private static final int RETRY_TIMES = 3;
+
     private static final long RETRY_INTERVAL_MS = 100;
 
     private TaskDAO taskDAO;

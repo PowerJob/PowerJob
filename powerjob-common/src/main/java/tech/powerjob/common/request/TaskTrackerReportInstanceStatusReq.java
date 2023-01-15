@@ -46,6 +46,8 @@ public class TaskTrackerReportInstanceStatusReq implements PowerSerializable {
 
     private long startTime;
 
+    private Long endTime;
+
     private long reportTime;
 
     private String sourceAddress;

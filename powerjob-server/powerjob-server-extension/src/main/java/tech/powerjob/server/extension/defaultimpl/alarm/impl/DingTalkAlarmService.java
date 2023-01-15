@@ -1,5 +1,6 @@
 package tech.powerjob.server.extension.defaultimpl.alarm.impl;
 
+import lombok.RequiredArgsConstructor;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.NetUtils;
@@ -30,17 +31,19 @@ import java.util.Set;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class DingTalkAlarmService implements Alarmable {
 
-    @Resource
-    private Environment environment;
+    private final Environment environment;
 
     private Long agentId;
     private DingTalkUtils dingTalkUtils;
     private Cache<String, String> mobile2UserIdCache;
 
     private static final int CACHE_SIZE = 8192;
-    // 防止缓存击穿
+    /**
+     * 防止缓存击穿
+     */
     private static final String EMPTY_TAG = "EMPTY";
 
     @Override

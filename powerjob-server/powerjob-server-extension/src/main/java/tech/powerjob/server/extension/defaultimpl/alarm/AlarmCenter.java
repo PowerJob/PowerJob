@@ -24,9 +24,9 @@ import java.util.concurrent.*;
 public class AlarmCenter {
 
     private final ExecutorService POOL;
+
     private final List<Alarmable> BEANS = Lists.newLinkedList();
 
-    @Autowired
     public AlarmCenter(List<Alarmable> alarmables) {
         int cores = Runtime.getRuntime().availableProcessors();
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("AlarmPool-%d").build();
