@@ -1,5 +1,7 @@
 package tech.powerjob.worker.extension.processor;
 
+import java.util.Set;
+
 /**
  * 处理器工厂
  * 考虑到当前是一个百花齐放的生态，各种 IOC 框架层出不穷。PowerJob 决定在 4.3.0 剥离对 Spring 的强依赖，并允许开发者自定义 Bean 的初始化逻辑
@@ -8,6 +10,12 @@ package tech.powerjob.worker.extension.processor;
  * @since 2023/1/17
  */
 public interface ProcessorFactory {
+
+    /**
+     * 支持的处理器类型，类型不匹配则跳过该 ProcessorFactory 的加载逻辑
+     * @return 支持的处理器类型
+     */
+    Set<String> supportTypes();
 
     /**
      * 根据处理器定义构建处理器对象

@@ -29,13 +29,17 @@ public class SpringUtils {
         return context.getBean(clz);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T getBean(String className) throws Exception {
 
+    public static <T> T getBean(String className) throws Exception {
+        return getBean(className, context);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getBean(String className, ApplicationContext ctx) throws Exception {
         // 1. ClassLoader 存在，则直接使用 clz 加载
-        ClassLoader classLoader = context.getClassLoader();
+        ClassLoader classLoader = ctx.getClassLoader();
         if (classLoader != null) {
-            return (T) context.getBean(classLoader.loadClass(className));
+            return (T) ctx.getBean(classLoader.loadClass(className));
         }
         // 2. ClassLoader 不存在(系统类加载器不可见)，尝试用类名称小写加载
         String[] split = className.split("\\.");
@@ -45,7 +49,7 @@ public class SpringUtils {
         cs[0] += 32;
         String beanName0 = String.valueOf(cs);
         log.warn("[SpringUtils] can't get ClassLoader from context[{}], try to load by beanName:{}", context, beanName0);
-        return (T) context.getBean(beanName0);
+        return (T) ctx.getBean(beanName0);
     }
 
 }
