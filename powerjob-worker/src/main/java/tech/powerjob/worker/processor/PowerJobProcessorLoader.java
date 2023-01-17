@@ -7,8 +7,10 @@ import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.extension.processor.ProcessorDefinition;
 import tech.powerjob.worker.extension.processor.ProcessorFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * PowerJobProcessorLoader
@@ -29,6 +31,10 @@ public class PowerJobProcessorLoader {
     public ProcessorBean load(ProcessorDefinition definition) {
         return def2Bean.computeIfAbsent(definition, ignore -> {
             for (ProcessorFactory pf : processorFactoryList) {
+
+                if (!Optional.ofNullable(pf.supportTypes()).orElse(Collections.emptySet()).contains(definition.getProcessorType())) {
+                    continue;
+                }
                 try {
                     ProcessorBean processorBean = pf.build(definition);
                     if (processorBean != null) {
