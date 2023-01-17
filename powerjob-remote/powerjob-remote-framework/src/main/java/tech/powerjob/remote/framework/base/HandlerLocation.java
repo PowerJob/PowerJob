@@ -15,6 +15,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
+@ToString
 @Accessors(chain = true)
 public class HandlerLocation implements Serializable {
     /**
@@ -25,13 +26,12 @@ public class HandlerLocation implements Serializable {
      * 方法路径
      */
     private String methodPath;
+    /**
+     * 是否在本集群内（用于兼容 AKKA 等除了IP还需要指定 system 访问的情况）
+     */
+    private boolean insideCluster;
 
     public String toPath() {
         return String.format("/%s/%s", rootPath, methodPath);
-    }
-
-    @Override
-    public String toString() {
-        return toPath();
     }
 }

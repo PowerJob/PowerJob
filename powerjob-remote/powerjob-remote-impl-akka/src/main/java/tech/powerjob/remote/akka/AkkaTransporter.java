@@ -8,6 +8,7 @@ import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.remote.framework.base.HandlerLocation;
 import tech.powerjob.remote.framework.base.RemotingException;
 import tech.powerjob.remote.framework.base.ServerType;
 import tech.powerjob.remote.framework.base.URL;
@@ -27,9 +28,9 @@ import java.util.concurrent.ExecutorService;
  */
 public class AkkaTransporter implements Transporter {
 
+    private final ServerType serverType;
     private final ActorSystem actorSystem;
 
-    private final String targetActorSystemName;
 
     /**
      * akka://<actor system>@<hostname>:<port>/<actor path>
@@ -38,7 +39,7 @@ public class AkkaTransporter implements Transporter {
 
     public AkkaTransporter(ServerType serverType, ActorSystem actorSystem) {
         this.actorSystem = actorSystem;
-        this.targetActorSystemName = AkkaConstant.fetchActorSystemName(serverType, false);
+        this.serverType = serverType;
     }
 
     @Override
@@ -61,9 +62,12 @@ public class AkkaTransporter implements Transporter {
 
     private ActorSelection fetchActorSelection(URL url) {
 
-        String targetActorName = AkkaMappingService.parseActorName(url.getLocation().getRootPath()).getActorName();
+        HandlerLocation location = url.getLocation();
+        String targetActorSystemName = AkkaConstant.fetchActorSystemName(serverType, location.isInsideCluster());
 
-        CommonUtils.requireNonNull(targetActorName, "can't find actor by URL: " + url.getLocation());
+        String targetActorName = AkkaMappingService.parseActorName(location.getRootPath()).getActorName();
+
+        CommonUtils.requireNonNull(targetActorName, "can't find actor by URL: " + location);
 
         String address = url.getAddress().toFullAddress();
 
