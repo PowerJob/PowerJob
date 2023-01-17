@@ -8,8 +8,8 @@ import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
 /**
  * 处理器对象
  *
- * @author tjq
- * @since 2023/1/17
+ * @author Echo009
+ * @since 2022/9/23
  */
 @Getter
 @Setter
