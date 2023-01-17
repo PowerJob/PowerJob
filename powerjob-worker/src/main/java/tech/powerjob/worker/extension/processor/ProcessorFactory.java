@@ -13,7 +13,7 @@ public interface ProcessorFactory {
      * 根据处理器定义构建处理器对象
      * 注意：Processor 为单例对象，即 PowerJob 对每一个 ProcessorBean 只调用一次 build 方法
      * @param processorDefinition 处理器定义
-     * @return ProcessorBean
+     * @return null or ProcessorBean
      */
     ProcessorBean build(ProcessorDefinition processorDefinition);
 }
