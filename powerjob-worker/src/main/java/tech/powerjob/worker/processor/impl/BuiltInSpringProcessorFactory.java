@@ -55,13 +55,10 @@ public class BuiltInSpringProcessorFactory implements ProcessorFactory {
     }
 
     private boolean checkCanLoad() {
-        try {
-            ApplicationContext.class.getClassLoader();
-        } catch (NoClassDefFoundError ndf) {
-            return false;
+        if (SpringUtils.inSpringEnv()) {
+            return applicationContext != null;
         }
-
-        return applicationContext != null;
+        return false;
     }
 
 }

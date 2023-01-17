@@ -52,4 +52,18 @@ public class SpringUtils {
         return (T) ctx.getBean(beanName0);
     }
 
+    /**
+     * 判断是否处在 Spring 环境中
+     * @return true or false
+     */
+    public static boolean inSpringEnv() {
+        try {
+            ApplicationContext.class.getClassLoader();
+            return true;
+        } catch (Throwable ignore) {
+        }
+
+        return false;
+    }
+
 }
