@@ -1,4 +1,4 @@
-package tech.powerjob.worker.processor;
+package tech.powerjob.worker.processor.impl;
 
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
