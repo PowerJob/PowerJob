@@ -52,10 +52,6 @@ public class TaskTrackerActor {
         int taskStatus = req.getStatus();
         // 只有重量级任务才会有两级任务状态上报的机制
         HeavyTaskTracker taskTracker = HeavyTaskTrackerManager.getTaskTracker(req.getInstanceId());
-        // 结束状态需要回复接受成功
-        if (TaskStatus.FINISHED_STATUS.contains(taskStatus)) {
-            return AskResponse.succeed(null);
-        }
 
         // 手动停止 TaskTracker 的情况下会出现这种情况
         if (taskTracker == null) {
@@ -71,6 +67,11 @@ public class TaskTrackerActor {
 
         // 更新工作流上下文
         taskTracker.updateAppendedWfContext(req.getAppendedWfContext());
+
+        // 结束状态需要回复接受成功
+        if (TaskStatus.FINISHED_STATUS.contains(taskStatus)) {
+            return AskResponse.succeed(null);
+        }
 
         return null;
     }
