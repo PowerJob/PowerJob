@@ -57,8 +57,7 @@ public class MainApplication implements Runnable {
             cfg.setMaxResultLength(length);
             cfg.setTag(tag);
 
-            PowerJobWorker worker = new PowerJobWorker();
-            worker.setConfig(cfg);
+            PowerJobWorker worker = new PowerJobWorker(cfg);
 
             worker.init();
         }catch (Exception e) {

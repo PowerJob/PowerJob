@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.worker.PowerJobSpringWorker;
 import tech.powerjob.worker.PowerJobWorker;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 
@@ -83,9 +84,7 @@ public class PowerJobAutoConfiguration {
         /*
          * Create OhMyWorker object and set properties.
          */
-        PowerJobWorker ohMyWorker = new PowerJobWorker();
-        ohMyWorker.setConfig(config);
-        return ohMyWorker;
+        return new PowerJobSpringWorker(config);
     }
 
 }

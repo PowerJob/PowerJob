@@ -2,8 +2,8 @@ package tech.powerjob.worker.core.processor.sdk;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.exception.PowerJobCheckedException;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.worker.common.ThreadLocalStore;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;

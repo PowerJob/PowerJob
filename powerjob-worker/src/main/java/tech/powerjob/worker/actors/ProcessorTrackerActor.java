@@ -1,8 +1,8 @@
 package tech.powerjob.worker.actors;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.actor.Handler;
 import tech.powerjob.remote.framework.actor.ProcessType;

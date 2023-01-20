@@ -12,28 +12,6 @@ import org.springframework.context.ApplicationContext;
 @Slf4j
 public class SpringUtils {
 
-    private static boolean supportSpringBean = false;
-
-    private static ApplicationContext context;
-
-    public static void inject(ApplicationContext ctx) {
-        context = ctx;
-        supportSpringBean = true;
-    }
-
-    public static boolean supportSpringBean() {
-        return supportSpringBean;
-    }
-
-    public static <T> T getBean(Class<T> clz) {
-        return context.getBean(clz);
-    }
-
-
-    public static <T> T getBean(String className) throws Exception {
-        return getBean(className, context);
-    }
-
     @SuppressWarnings("unchecked")
     public static <T> T getBean(String className, ApplicationContext ctx) throws Exception {
         // 1. ClassLoader 存在，则直接使用 clz 加载
@@ -48,7 +26,7 @@ public class SpringUtils {
         char[] cs = beanName.toCharArray();
         cs[0] += 32;
         String beanName0 = String.valueOf(cs);
-        log.warn("[SpringUtils] can't get ClassLoader from context[{}], try to load by beanName:{}", context, beanName0);
+        log.warn("[SpringUtils] can't get ClassLoader from context[{}], try to load by beanName:{}", ctx, beanName0);
         return (T) ctx.getBean(beanName0);
     }
 

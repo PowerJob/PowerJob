@@ -3,11 +3,6 @@ package tech.powerjob.worker;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -29,7 +24,6 @@ import tech.powerjob.worker.background.WorkerHealthReporter;
 import tech.powerjob.worker.common.PowerBannerPrinter;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.common.utils.SpringUtils;
 import tech.powerjob.worker.core.executor.ExecutorManager;
 import tech.powerjob.worker.extension.processor.ProcessorFactory;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
@@ -52,21 +46,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 2020/3/16
  */
 @Slf4j
-public class PowerJobWorker implements ApplicationContextAware, InitializingBean, DisposableBean {
+public class PowerJobWorker {
+    private final RemoteEngine remoteEngine;
+    protected final WorkerRuntime workerRuntime;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private final WorkerRuntime workerRuntime = new WorkerRuntime();
-
-    private final RemoteEngine remoteEngine = new PowerJobRemoteEngine();
-    private final AtomicBoolean initialized = new AtomicBoolean();
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        SpringUtils.inject(applicationContext);
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        init();
+    public PowerJobWorker(PowerJobWorkerConfig config) {
+        this.workerRuntime = new WorkerRuntime();
+        this.remoteEngine = new PowerJobRemoteEngine();
+        workerRuntime.setWorkerConfig(config);
     }
 
     public void init() throws Exception {
@@ -152,10 +140,6 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
         }
     }
 
-    public void setConfig(PowerJobWorkerConfig config) {
-        workerRuntime.setWorkerConfig(config);
-    }
-
     @SuppressWarnings("rawtypes")
     private void assertAppName() {
 
@@ -199,7 +183,6 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
         return new PowerJobProcessorLoader(finalPF);
     }
 
-    @Override
     public void destroy() throws Exception {
         workerRuntime.getExecutorManager().shutdown();
         remoteEngine.close();

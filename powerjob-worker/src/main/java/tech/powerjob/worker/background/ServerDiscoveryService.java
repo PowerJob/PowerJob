@@ -3,15 +3,15 @@ package tech.powerjob.worker.background;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.HttpUtils;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
-import tech.powerjob.worker.core.tracker.task.heavy.HeavyTaskTracker;
 import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
+import tech.powerjob.worker.core.tracker.task.heavy.HeavyTaskTracker;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class ServerDiscoveryService {
 
     public void start(ScheduledExecutorService timingPool) {
         this.currentServerAddress = discovery();
-        if (org.springframework.util.StringUtils.isEmpty(this.currentServerAddress) && !config.isEnableTestMode()) {
+        if (StringUtils.isEmpty(this.currentServerAddress) && !config.isEnableTestMode()) {
             throw new PowerJobException("can't find any available server, this worker has been quarantined.");
         }
         // 这里必须保证成功

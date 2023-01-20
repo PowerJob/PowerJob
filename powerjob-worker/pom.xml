@@ -28,11 +28,12 @@
 
     <dependencies>
 
-        <!-- Spring 依赖 -->
+        <!-- Spring 依赖（非强依赖） -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- PowerJob 通讯框架 -->
