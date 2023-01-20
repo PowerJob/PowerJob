@@ -18,17 +18,12 @@ public class AkkaConstant {
     /**
      * 获取 actorSystem 名称
      * @param serverType 当前服务器类型，powerjob-server 为 server，powerjob-worker 为 worker
-     * @param mine 是否输出当前服务器对应的 actorSystemName，mine = false 后倒置为目标服务器的 actorSystemName
      * @return actorSystemName
      */
-    public static String fetchActorSystemName(ServerType serverType, boolean mine) {
+    public static String fetchActorSystemName(ServerType serverType) {
 
-        boolean outputServer = serverType == ServerType.SERVER;
-        if (!mine) {
-            outputServer = !outputServer;
-        }
 
-        return outputServer ? SERVER_ACTOR_SYSTEM_NAME : WORKER_ACTOR_SYSTEM_NAME;
+        return serverType == ServerType.SERVER ? SERVER_ACTOR_SYSTEM_NAME : WORKER_ACTOR_SYSTEM_NAME;
     }
 
 }

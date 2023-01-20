@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutorService;
  */
 public class AkkaTransporter implements Transporter {
 
-    private final ServerType serverType;
     private final ActorSystem actorSystem;
 
 
@@ -37,9 +36,8 @@ public class AkkaTransporter implements Transporter {
      */
     private static final String AKKA_NODE_PATH = "akka://%s@%s/user/%s";
 
-    public AkkaTransporter(ServerType serverType, ActorSystem actorSystem) {
+    public AkkaTransporter(ActorSystem actorSystem) {
         this.actorSystem = actorSystem;
-        this.serverType = serverType;
     }
 
     @Override
@@ -63,7 +61,7 @@ public class AkkaTransporter implements Transporter {
     private ActorSelection fetchActorSelection(URL url) {
 
         HandlerLocation location = url.getLocation();
-        String targetActorSystemName = AkkaConstant.fetchActorSystemName(serverType, location.isInsideCluster());
+        String targetActorSystemName = AkkaConstant.fetchActorSystemName(location.getServerType());
 
         String targetActorName = AkkaMappingService.parseActorName(location.getRootPath()).getActorName();
 
