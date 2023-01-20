@@ -58,6 +58,7 @@ public class PowerJobAutoConfiguration {
          */
         config.setAppName(worker.getAppName());
         config.setServerAddress(serverAddress);
+        config.setProtocol(worker.getProtocol());
         /*
          * For non-Map/MapReduce tasks, {@code memory} is recommended for speeding up calculation.
          * Map/MapReduce tasks may produce batches of subtasks, which could lead to OutOfMemory
@@ -82,7 +83,7 @@ public class PowerJobAutoConfiguration {
 
         config.setHealthReportInterval(worker.getHealthReportInterval());
         /*
-         * Create OhMyWorker object and set properties.
+         * Create PowerJobSpringWorker object and set properties.
          */
         return new PowerJobSpringWorker(config);
     }

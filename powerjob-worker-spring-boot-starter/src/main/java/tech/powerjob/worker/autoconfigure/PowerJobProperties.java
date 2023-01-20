@@ -1,6 +1,7 @@
 package tech.powerjob.worker.autoconfigure;
 
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.WorkflowContext;
@@ -125,6 +126,10 @@ public class PowerJobProperties {
          * </p>
          */
         private String serverAddress;
+        /**
+         * Protocol for communication between WORKER and server
+         */
+        private Protocol protocol = Protocol.AKKA;
         /**
          * Local store strategy for H2 database. {@code disk} or {@code memory}.
          */

@@ -38,7 +38,7 @@ public class OmsJarContainer implements OmsContainer {
     private OhMyClassLoader containerClassLoader;
     private ClassPathXmlApplicationContext container;
 
-    private Map<String, BasicProcessor> processorCache = Maps.newConcurrentMap();
+    private final Map<String, BasicProcessor> processorCache = Maps.newConcurrentMap();
 
     public OmsJarContainer(Long containerId, String name, String version, File localJarFile) {
         this.containerId = containerId;
