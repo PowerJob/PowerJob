@@ -27,13 +27,11 @@ public class BuiltInDefaultProcessorFactory implements ProcessorFactory {
     @Override
     public ProcessorBean build(ProcessorDefinition processorDefinition) {
 
-        log.info("[ProcessorFactory] use 'BuiltInDefaultProcessorFactory' to load, processorDefinition is: {}", processorDefinition);
         String className = processorDefinition.getProcessorInfo();
 
         try {
             Class<?> clz = Class.forName(className);
             BasicProcessor basicProcessor = (BasicProcessor) clz.getDeclaredConstructor().newInstance();
-            log.info("[ProcessorFactory] use 'BuiltInDefaultProcessorFactory' load processor successfully: {}", processorDefinition);
             return new ProcessorBean()
                     .setProcessor(basicProcessor)
                     .setClassLoader(basicProcessor.getClass().getClassLoader());

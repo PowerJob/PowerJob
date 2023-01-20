@@ -31,9 +31,17 @@ import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.utils.SpringUtils;
 import tech.powerjob.worker.core.executor.ExecutorManager;
+import tech.powerjob.worker.extension.processor.ProcessorFactory;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.processor.PowerJobProcessorLoader;
+import tech.powerjob.worker.processor.ProcessorLoader;
+import tech.powerjob.worker.processor.impl.BuiltInDefaultProcessorFactory;
+import tech.powerjob.worker.processor.impl.JarContainerProcessorFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -94,6 +102,10 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             // 初始化 线程池
             final ExecutorManager executorManager = new ExecutorManager(workerRuntime.getWorkerConfig());
             workerRuntime.setExecutorManager(executorManager);
+
+            // 初始化 ProcessorLoader
+            ProcessorLoader processorLoader = buildProcessorLoader(workerRuntime);
+            workerRuntime.setProcessorLoader(processorLoader);
 
             // 初始化 actor
             TaskTrackerActor taskTrackerActor = new TaskTrackerActor(workerRuntime);
@@ -174,6 +186,17 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
         }
         log.error("[PowerJobWorker] no available server in {}.", config.getServerAddress());
         throw new PowerJobException("no server available!");
+    }
+
+    private ProcessorLoader buildProcessorLoader(WorkerRuntime runtime) {
+        List<ProcessorFactory> customPF = Optional.ofNullable(runtime.getWorkerConfig().getProcessorFactoryList()).orElse(Collections.emptyList());
+        List<ProcessorFactory> finalPF = Lists.newArrayList(customPF);
+
+        // 后置添加2个系统 ProcessorLoader
+        finalPF.add(new JarContainerProcessorFactory(runtime));
+        finalPF.add(new BuiltInDefaultProcessorFactory());
+
+        return new PowerJobProcessorLoader(finalPF);
     }
 
     @Override

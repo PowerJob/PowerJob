@@ -34,7 +34,6 @@ public class JarContainerProcessorFactory implements ProcessorFactory {
 
     @Override
     public ProcessorBean build(ProcessorDefinition processorDefinition) {
-        log.info("[ProcessorFactory] use 'JarContainerProcessorFactory' to load, processorDefinition is: {}", processorDefinition);
 
         String processorInfo = processorDefinition.getProcessorInfo();
         String[] split = processorInfo.split("#");

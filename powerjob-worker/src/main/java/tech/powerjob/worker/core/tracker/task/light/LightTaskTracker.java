@@ -16,6 +16,8 @@ import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.core.processor.*;
 import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
+import tech.powerjob.worker.extension.processor.ProcessorBean;
+import tech.powerjob.worker.extension.processor.ProcessorDefinition;
 import tech.powerjob.worker.log.OmsLoggerFactory;
 
 import java.util.concurrent.Future;
@@ -49,7 +51,7 @@ public class LightTaskTracker extends TaskTracker {
     /**
      * 处理器信息
      */
-    private final ProcessorInfo processorInfo;
+    private final ProcessorBean processorBean;
     /**
      * 上下文
      */
@@ -85,7 +87,7 @@ public class LightTaskTracker extends TaskTracker {
             // 等待处理
             status = TaskStatus.WORKER_RECEIVED;
             // 加载 Processor
-            processorInfo = ProcessorLoader.loadProcessor(workerRuntime, req.getProcessorType(), req.getProcessorInfo());
+            processorBean = workerRuntime.getProcessorLoader().load(new ProcessorDefinition().setProcessorType(req.getProcessorType()).setProcessorInfo(req.getProcessorInfo()));
             executeThread = new AtomicReference<>();
             long delay = Integer.parseInt(System.getProperty(PowerJobDKey.WORKER_STATUS_CHECK_PERIOD, "15")) * 1000L;
             // 初始延迟加入随机值，避免在高并发场景下所有请求集中在一个时间段
@@ -199,14 +201,14 @@ public class LightTaskTracker extends TaskTracker {
         // 开始执行时，提交任务判断是否超时
         ProcessResult res = null;
         do {
-            Thread.currentThread().setContextClassLoader(processorInfo.getClassLoader());
+            Thread.currentThread().setContextClassLoader(processorBean.getClassLoader());
             if (res != null && !res.isSuccess()) {
                 // 重试
                 taskContext.setCurrentRetryTimes(taskContext.getCurrentRetryTimes() + 1);
                 log.warn("[TaskTracker-{}] process failed, TaskTracker will have a retry,current retryTimes : {}", instanceId, taskContext.getCurrentRetryTimes());
             }
             try {
-                res = processorInfo.getBasicProcessor().process(taskContext);
+                res = processorBean.getProcessor().process(taskContext);
             } catch (InterruptedException e) {
                 log.warn("[TaskTracker-{}] task has been interrupted !", instanceId, e);
                 Thread.currentThread().interrupt();

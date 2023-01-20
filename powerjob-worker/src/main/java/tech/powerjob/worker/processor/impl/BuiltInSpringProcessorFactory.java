@@ -35,7 +35,6 @@ public class BuiltInSpringProcessorFactory implements ProcessorFactory {
     @Override
     public ProcessorBean build(ProcessorDefinition processorDefinition) {
 
-        log.info("[ProcessorFactory] use 'BuiltInSpringProcessorFactory' to load, processorDefinition is: {}", processorDefinition);
         try {
             boolean canLoad = checkCanLoad();
             if (!canLoad) {
