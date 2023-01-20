@@ -1,11 +1,9 @@
 package tech.powerjob.worker.processor.impl;
 
-import akka.actor.ActorSelection;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.worker.container.OmsContainer;
 import tech.powerjob.worker.container.OmsContainerFactory;
 import tech.powerjob.worker.extension.processor.ProcessorBean;
@@ -45,9 +43,7 @@ public class JarContainerProcessorFactory implements ProcessorFactory {
 
         log.info("[ProcessorFactory] try to load processor({}) in container({})", className, containerName);
 
-        String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-        ActorSelection actorSelection = workerRuntime.getActorSystem().actorSelection(serverPath);
-        OmsContainer omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(containerName), actorSelection);
+        OmsContainer omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(containerName), workerRuntime);
         if (omsContainer != null) {
             return new ProcessorBean()
                     .setProcessor(omsContainer.getProcessor(className))

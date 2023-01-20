@@ -1,12 +1,10 @@
 package tech.powerjob.worker.core.processor;
 
-import akka.actor.ActorSelection;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.worker.common.utils.SpringUtils;
 import tech.powerjob.worker.container.OmsContainer;
 import tech.powerjob.worker.container.OmsContainerFactory;
@@ -62,9 +60,7 @@ public class ProcessorLoader {
                 String[] split = processorInfo.split("#");
                 log.info("[ProcessorLoader] try to load processor({}) in container({})", split[1], split[0]);
 
-                String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-                ActorSelection actorSelection = workerRuntime.getActorSystem().actorSelection(serverPath);
-                OmsContainer omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), actorSelection);
+                OmsContainer omsContainer = OmsContainerFactory.fetchContainer(Long.valueOf(split[0]), workerRuntime);
                 if (omsContainer != null) {
                     processorInfoHolder = ProcessorInfo.of(omsContainer.getProcessor(split[1]), omsContainer.getContainerClassLoader());
                 } else {

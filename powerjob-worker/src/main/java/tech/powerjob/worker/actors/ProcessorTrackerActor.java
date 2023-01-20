@@ -1,20 +1,17 @@
 package tech.powerjob.worker.actors;
 
-import akka.actor.AbstractActor;
-import akka.actor.Props;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.actor.Handler;
 import tech.powerjob.remote.framework.actor.ProcessType;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.core.tracker.processor.ProcessorTracker;
 import tech.powerjob.worker.core.tracker.manager.ProcessorTrackerManager;
+import tech.powerjob.worker.core.tracker.processor.ProcessorTracker;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStopInstanceReq;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 

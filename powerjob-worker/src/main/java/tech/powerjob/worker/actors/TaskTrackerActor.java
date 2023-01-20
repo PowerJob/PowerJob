@@ -1,11 +1,7 @@
 package tech.powerjob.worker.actors;
 
-import akka.actor.AbstractActor;
-import akka.actor.Props;
 import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.InstanceDetail;

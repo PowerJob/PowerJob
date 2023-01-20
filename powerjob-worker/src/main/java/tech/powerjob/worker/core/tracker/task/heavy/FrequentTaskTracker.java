@@ -1,6 +1,5 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
-import akka.actor.ActorSelection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -22,8 +21,8 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.worker.common.utils.LRUCache;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.persistence.TaskDO;
 
 import java.util.*;
@@ -358,13 +357,8 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
                 log.warn("[FQTaskTracker-{}] report alert req,time:{}", instanceId, req.getReportTime());
             }
 
-            String serverPath = AkkaUtils.getServerActorPath(currentServerAddress);
-            if (StringUtils.isEmpty(serverPath)) {
-                return;
-            }
             // 非可靠通知，Server挂掉后任务的kill工作交由其他线程去做
-            ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
-            serverActor.tell(req, null);
+            TransportUtils.ttReportInstanceStatus(req, currentServerAddress, workerRuntime.getTransporter());
         }
 
         /**

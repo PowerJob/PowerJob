@@ -1,15 +1,13 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
-import akka.actor.ActorSelection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.enums.ExecuteType;
-import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
-import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.request.WorkerQueryExecutorClusterReq;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.utils.CommonUtils;
@@ -18,7 +16,7 @@ import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.worker.common.utils.AkkaUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.ha.ProcessorTrackerStatusHolder;
 import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
@@ -32,15 +30,10 @@ import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -365,11 +358,9 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         // 1. 通知 ProcessorTracker 释放资源
         TaskTrackerStopInstanceReq stopRequest = new TaskTrackerStopInstanceReq();
         stopRequest.setInstanceId(instanceId);
-        ptStatusHolder.getAllProcessorTrackers().forEach(ptIP -> {
-            String ptPath = AkkaUtils.getAkkaWorkerPath(ptIP, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-            ActorSelection ptActor = workerRuntime.getActorSystem().actorSelection(ptPath);
+        ptStatusHolder.getAllProcessorTrackers().forEach(ptAddress -> {
             // 不可靠通知，ProcessorTracker 也可以靠自己的定时任务/问询等方式关闭
-            ptActor.tell(stopRequest, null);
+            TransportUtils.ttStopPtInstance(stopRequest, ptAddress, workerRuntime.getTransporter());
         });
 
         // 2. 删除所有数据库数据
@@ -425,9 +416,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
 
         // 4. 任务派发
         TaskTrackerStartTaskReq startTaskReq = new TaskTrackerStartTaskReq(instanceInfo, task, workerRuntime.getWorkerAddress());
-        String ptActorPath = AkkaUtils.getAkkaWorkerPath(processorTrackerAddress, RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-        ActorSelection ptActor = workerRuntime.getActorSystem().actorSelection(ptActorPath);
-        ptActor.tell(startTaskReq, null);
+        TransportUtils.ttStartPtTask(startTaskReq, processorTrackerAddress, workerRuntime.getTransporter());
 
         log.debug("[TaskTracker-{}] dispatch task(taskId={},taskName={}) successfully.", instanceId, task.getTaskId(), task.getTaskName());
     }
@@ -524,18 +513,20 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                 return;
             }
 
-            String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-            if (StringUtils.isEmpty(serverPath)) {
+            final String currentServerAddress = workerRuntime.getServerDiscoveryService().getCurrentServerAddress();
+            if (StringUtils.isEmpty(currentServerAddress)) {
                 log.warn("[TaskTracker-{}] no server available, won't start worker detective!", instanceId);
                 return;
             }
-            WorkerQueryExecutorClusterReq req = new WorkerQueryExecutorClusterReq(workerRuntime.getAppId(), instanceInfo.getJobId());
-            AskResponse response = AkkaUtils.easyAsk(workerRuntime.getActorSystem().actorSelection(serverPath), req);
-            if (!response.isSuccess()) {
-                log.warn("[TaskTracker-{}] detective failed due to ask failed, message is {}", instanceId, response.getMessage());
-                return;
-            }
+
             try {
+                WorkerQueryExecutorClusterReq req = new WorkerQueryExecutorClusterReq(workerRuntime.getAppId(), instanceInfo.getJobId());
+                AskResponse response = TransportUtils.reliableQueryJobCluster(req, currentServerAddress, workerRuntime.getTransporter());
+                if (!response.isSuccess()) {
+                    log.warn("[TaskTracker-{}] detective failed due to ask failed, message is {}", instanceId, response.getMessage());
+                    return;
+                }
+
                 List<String> workerList = JsonUtils.parseObject(response.getData(), new TypeReference<List<String>>() {});
                 ptStatusHolder.register(workerList);
             } catch (Exception e) {

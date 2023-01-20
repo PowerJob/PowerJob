@@ -1,7 +1,5 @@
 package tech.powerjob.worker.core.tracker.task;
 
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -9,16 +7,12 @@ import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
-import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.common.utils.AkkaUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -107,18 +101,15 @@ public abstract class TaskTracker {
         response.setStartTime(System.currentTimeMillis());
         response.setSourceAddress(workerRuntime.getWorkerAddress());
 
-        String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-        ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
-        serverActor.tell(response, null);
+        TransportUtils.ttReportInstanceStatus(response, workerRuntime.getServerDiscoveryService().getCurrentServerAddress(), workerRuntime.getTransporter());
     }
 
-    protected void reportFinalStatusThenDestroy(ActorSelection serverActor, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
+    protected void reportFinalStatusThenDestroy(WorkerRuntime workerRuntime, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
+        String currentServerAddress = workerRuntime.getServerDiscoveryService().getCurrentServerAddress();
         // 最终状态需要可靠上报
-        CompletionStage<Object> ask = Patterns.ask(serverActor, reportInstanceStatusReq, Duration.ofSeconds(15));
         boolean serverAccepted = false;
         try {
-            AskResponse askResponse = (AskResponse) ask.toCompletableFuture().get(15, TimeUnit.SECONDS);
-            serverAccepted = askResponse.isSuccess();
+            serverAccepted = TransportUtils.reliableTtReportInstanceStatus(reportInstanceStatusReq, currentServerAddress, workerRuntime.getTransporter());
         } catch (Exception e) {
             log.warn("[TaskTracker-{}] report finished status failed, req={}.", instanceId, reportInstanceStatusReq, e);
         }

@@ -36,7 +36,29 @@ public class RemoteConstant {
 
     /* ************************ SERVER ************************ */
     public static final String SERVER_PATH = "server";
+    /**
+     * server 处理在线日志
+     */
     public static final String SERVER_HANDLER_REPORT_LOG = "reportLog";
+    /**
+     * server 处理 worker 心跳
+     */
+    public static final String SERVER_HANDLER_WORKER_HEARTBEAT = "workerHeartbeat";
+
+    /**
+     * server 处理 TaskTracker 上报的任务实例状态
+     */
+    public static final String SERVER_HANDLER_REPORT_INSTANCE_STATUS = "reportInstanceStatus";
+
+    /**
+     * server 查询任务的可执行集群
+     */
+    public static final String SERVER_HANDLER_QUERY_JOB_CLUSTER = "queryJobCluster";
+
+    /**
+     * server 处理 worker 请求部署容器命令
+     */
+    public static final String SERVER_HANDLER_WORKER_NEED_DEPLOY_CONTAINER = "container";
 
     /* ************************ Worker-TaskTracker ************************ */
     public static final String WTT_PATH = "taskTracker";

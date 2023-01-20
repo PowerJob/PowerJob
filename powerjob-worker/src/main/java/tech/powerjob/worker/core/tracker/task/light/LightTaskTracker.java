@@ -1,6 +1,5 @@
 package tech.powerjob.worker.core.tracker.task.light;
 
-import akka.actor.ActorSelection;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +12,7 @@ import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.worker.common.utils.AkkaUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.core.processor.*;
 import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
@@ -249,8 +248,6 @@ public class LightTaskTracker extends TaskTracker {
             log.info("[TaskTracker-{}] has been destroyed,final status is {},needn't to report status!", instanceId, status);
             return;
         }
-        String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-        ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
         TaskTrackerReportInstanceStatusReq reportInstanceStatusReq = new TaskTrackerReportInstanceStatusReq();
         reportInstanceStatusReq.setAppId(workerRuntime.getAppId());
         reportInstanceStatusReq.setJobId(instanceInfo.getJobId());
@@ -303,13 +300,13 @@ public class LightTaskTracker extends TaskTracker {
             reportInstanceStatusReq.setEndTime(taskEndTime);
             // 微操一下，上报最终状态时重新设置下时间，并且增加一小段偏移，保证在并发上报运行中状态以及最终状态时，最终状态的上报时间晚于运行中的状态
             reportInstanceStatusReq.setReportTime(System.currentTimeMillis() + 1);
-            reportFinalStatusThenDestroy(serverActor, reportInstanceStatusReq);
+            reportFinalStatusThenDestroy(workerRuntime, reportInstanceStatusReq);
             return;
         }
         // 未完成的任务，只需要上报状态
         reportInstanceStatusReq.setInstanceStatus(InstanceStatus.RUNNING.getV());
         log.info("[TaskTracker-{}] report status({}) success,real status is {}", instanceId, reportInstanceStatusReq, status);
-        serverActor.tell(reportInstanceStatusReq, null);
+        TransportUtils.ttReportInstanceStatus(reportInstanceStatusReq, workerRuntime.getServerDiscoveryService().getCurrentServerAddress(), workerRuntime.getTransporter());
     }
 
     private void timeoutCheck() {
