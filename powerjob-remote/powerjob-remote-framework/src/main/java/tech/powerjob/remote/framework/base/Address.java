@@ -32,9 +32,6 @@ public class Address implements Serializable {
 
     @Override
     public String toString() {
-        return "Address{" +
-                "host='" + host + '\'' +
-                ", port=" + port +
-                '}';
+        return toFullAddress();
     }
 }

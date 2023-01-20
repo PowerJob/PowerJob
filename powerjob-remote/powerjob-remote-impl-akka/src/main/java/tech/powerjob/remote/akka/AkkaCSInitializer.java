@@ -9,12 +9,9 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.extern.slf4j.Slf4j;
-import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.remote.framework.actor.ActorInfo;
-import tech.powerjob.remote.framework.actor.HandlerInfo;
 import tech.powerjob.remote.framework.base.Address;
-import tech.powerjob.remote.framework.base.ServerType;
 import tech.powerjob.remote.framework.cs.CSInitializer;
 import tech.powerjob.remote.framework.cs.CSInitializerConfig;
 import tech.powerjob.remote.framework.transporter.Transporter;
@@ -46,6 +43,7 @@ public class AkkaCSInitializer implements CSInitializer {
         this.config = config;
 
         Address bindAddress = config.getBindAddress();
+        log.info("[PowerJob-AKKA] bindAddress: {}", bindAddress);
 
         // 初始化 ActorSystem（macOS上 new ServerSocket 检测端口占用的方法并不生效，可能是AKKA是Scala写的缘故？没办法...只能靠异常重试了）
         Map<String, Object> overrideConfig = Maps.newHashMap();

@@ -193,8 +193,8 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
         List<ProcessorFactory> finalPF = Lists.newArrayList(customPF);
 
         // 后置添加2个系统 ProcessorLoader
-        finalPF.add(new JarContainerProcessorFactory(runtime));
         finalPF.add(new BuiltInDefaultProcessorFactory());
+        finalPF.add(new JarContainerProcessorFactory(runtime));
 
         return new PowerJobProcessorLoader(finalPF);
     }
