@@ -1,12 +1,13 @@
 package tech.powerjob.worker.actors;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import tech.powerjob.worker.container.OmsContainerFactory;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.request.*;
+import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.remote.framework.actor.Actor;
+import tech.powerjob.remote.framework.actor.Handler;
+import tech.powerjob.worker.container.OmsContainerFactory;
+
+import static tech.powerjob.common.RemoteConstant.*;
 
 /**
  * Worker节点Actor，接受服务器请求
@@ -15,36 +16,35 @@ import tech.powerjob.common.request.*;
  * @since 2020/3/24
  */
 @Slf4j
-@AllArgsConstructor
-public class WorkerActor extends AbstractActor {
+@Actor(path = WORKER_PATH)
+public class WorkerActor {
 
-    private final ActorRef taskTrackerActorRef;
+    private final TaskTrackerActor taskTrackerActor;
 
-    public static Props props(ActorRef taskTrackerActorRef) {
-        return Props.create(WorkerActor.class, () -> new WorkerActor(taskTrackerActorRef));
+    public WorkerActor(TaskTrackerActor taskTrackerActor) {
+        this.taskTrackerActor = taskTrackerActor;
     }
 
-    @Override
-    public Receive createReceive() {
-        return receiveBuilder()
-                .match(ServerDeployContainerRequest.class, this::onReceiveServerDeployContainerRequest)
-                .match(ServerDestroyContainerRequest.class, this::onReceiveServerDestroyContainerRequest)
-                .match(ServerScheduleJobReq.class, this::forward2TaskTracker)
-                .match(ServerStopInstanceReq.class, this::forward2TaskTracker)
-                .match(ServerQueryInstanceStatusReq.class, this::forward2TaskTracker)
-                .matchAny(obj -> log.warn("[WorkerActor] receive unknown request: {}.", obj))
-                .build();
-    }
-
-    private void onReceiveServerDeployContainerRequest(ServerDeployContainerRequest request) {
+    @Handler(path = WORKER_HANDLER_DEPLOY_CONTAINER)
+    public void onReceiveServerDeployContainerRequest(ServerDeployContainerRequest request) {
         OmsContainerFactory.deployContainer(request);
     }
 
-    private void onReceiveServerDestroyContainerRequest(ServerDestroyContainerRequest request) {
+    @Handler(path = WORKER_HANDLER_DESTROY_CONTAINER)
+    public void onReceiveServerDestroyContainerRequest(ServerDestroyContainerRequest request) {
         OmsContainerFactory.destroyContainer(request.getContainerId());
     }
 
-    private void forward2TaskTracker(Object obj) {
-        taskTrackerActorRef.forward(obj, getContext());
+    @Handler(path = WTT_HANDLER_RUN_JOB)
+    public void onReceiveServerScheduleJobReq(ServerScheduleJobReq req) {
+        taskTrackerActor.onReceiveServerScheduleJobReq(req);
+    }
+    @Handler(path = WTT_HANDLER_STOP_INSTANCE)
+    public void onReceiveServerStopInstanceReq(ServerStopInstanceReq req) {
+        taskTrackerActor.onReceiveServerStopInstanceReq(req);
+    }
+    @Handler(path = WTT_HANDLER_QUERY_INSTANCE_STATUS)
+    public AskResponse onReceiveServerQueryInstanceStatusReq(ServerQueryInstanceStatusReq req) {
+        return taskTrackerActor.onReceiveServerQueryInstanceStatusReq(req);
     }
 }

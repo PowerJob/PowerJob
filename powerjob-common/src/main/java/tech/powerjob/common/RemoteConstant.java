@@ -98,4 +98,12 @@ public class RemoteConstant {
 
     public static final String WPT_HANDLER_STOP_INSTANCE = "stopInstance";
 
+    /* ************************ Worker-NORMAL ************************ */
+
+    public static final String WORKER_PATH = "worker";
+
+    public static final String WORKER_HANDLER_DEPLOY_CONTAINER = "deployContainer";
+
+    public static final String WORKER_HANDLER_DESTROY_CONTAINER = "destroyContainer";
+
 }
