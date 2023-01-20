@@ -15,12 +15,12 @@
 
     <properties>
         <spring.version>5.3.23</spring.version>
-        <powerjob.common.version>4.2.1</powerjob.common.version>
         <h2.db.version>2.1.214</h2.db.version>
         <hikaricp.version>4.0.3</hikaricp.version>
         <junit.version>5.9.1</junit.version>
 
         <logback.version>1.2.9</logback.version>
+        <powerjob-remote-framework.version>4.2.1</powerjob-remote-framework.version>
     </properties>
 
     <dependencies>
@@ -35,8 +35,8 @@
         <!-- oms-common -->
         <dependency>
             <groupId>tech.powerjob</groupId>
-            <artifactId>powerjob-common</artifactId>
-            <version>${powerjob.common.version}</version>
+            <artifactId>powerjob-remote-framework</artifactId>
+            <version>${powerjob-remote-framework.version}</version>
         </dependency>
 
         <!-- h2 database -->

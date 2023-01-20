@@ -51,4 +51,9 @@ public class PowerJobRemoteEngine implements RemoteEngine {
 
         return engineOutput;
     }
+
+    @Override
+    public void close() {
+
+    }
 }

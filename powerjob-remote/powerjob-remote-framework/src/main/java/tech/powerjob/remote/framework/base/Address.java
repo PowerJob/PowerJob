@@ -22,4 +22,19 @@ public class Address implements Serializable {
     public String toFullAddress() {
         return String.format("%s:%d", host, port);
     }
+
+    public static Address fromIpv4(String ipv4) {
+        String[] split = ipv4.split(":");
+        return new Address()
+                .setHost(split[0])
+                .setPort(Integer.parseInt(split[1]));
+    }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                '}';
+    }
 }

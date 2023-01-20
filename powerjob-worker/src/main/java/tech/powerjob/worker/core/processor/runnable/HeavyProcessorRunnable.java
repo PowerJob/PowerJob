@@ -1,6 +1,5 @@
 package tech.powerjob.worker.core.processor.runnable;
 
-import akka.actor.ActorSelection;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.ThreadLocalStore;
@@ -8,6 +7,7 @@ import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.common.serialize.SerializerUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
@@ -45,7 +45,7 @@ public class HeavyProcessorRunnable implements Runnable {
 
 
     private final InstanceInfo instanceInfo;
-    private final ActorSelection taskTrackerActor;
+    private final String taskTrackerAddress;
     private final TaskDO task;
     private final BasicProcessor processor;
     private final OmsLogger omsLogger;
@@ -222,14 +222,14 @@ public class HeavyProcessorRunnable implements Runnable {
 
         // 最终结束状态要求可靠发送
         if (TaskStatus.FINISHED_STATUS.contains(status.getValue())) {
-            boolean success = AkkaUtils.reliableTransmit(taskTrackerActor, req);
+            boolean success = TransportUtils.reliablePtReportTask(req, taskTrackerAddress, workerRuntime);
             if (!success) {
                 // 插入重试队列，等待重试
                 statusReportRetryQueue.add(req);
                 log.warn("[ProcessorRunnable-{}] report task(id={},status={},result={}) failed, will retry later", task.getInstanceId(), task.getTaskId(), status, result);
             }
         } else {
-            taskTrackerActor.tell(req, null);
+            TransportUtils.ptReportTask(req, taskTrackerAddress, workerRuntime);
         }
     }
 

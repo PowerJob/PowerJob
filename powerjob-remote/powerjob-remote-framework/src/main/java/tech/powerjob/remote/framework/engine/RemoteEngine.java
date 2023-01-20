@@ -9,4 +9,6 @@ package tech.powerjob.remote.framework.engine;
 public interface RemoteEngine {
 
     EngineOutput start(EngineConfig engineConfig);
+
+    void close();
 }

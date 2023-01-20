@@ -6,6 +6,7 @@ import akka.actor.DeadLetter;
 import akka.actor.Props;
 import akka.routing.RoundRobinPool;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -22,9 +23,14 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.HttpUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.remote.framework.base.Address;
+import tech.powerjob.remote.framework.base.ServerType;
+import tech.powerjob.remote.framework.engine.EngineConfig;
+import tech.powerjob.remote.framework.engine.EngineOutput;
+import tech.powerjob.remote.framework.engine.RemoteEngine;
+import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;
 import tech.powerjob.worker.actors.ProcessorTrackerActor;
 import tech.powerjob.worker.actors.TaskTrackerActor;
-import tech.powerjob.worker.actors.TroubleshootingActor;
 import tech.powerjob.worker.actors.WorkerActor;
 import tech.powerjob.worker.background.OmsLogHandler;
 import tech.powerjob.worker.background.ServerDiscoveryService;
@@ -52,6 +58,7 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
 
     private final WorkerRuntime workerRuntime = new WorkerRuntime();
 
+    private RemoteEngine remoteEngine;
     private final AtomicBoolean initialized = new AtomicBoolean();
 
     @Override
@@ -99,16 +106,15 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             workerRuntime.setExecutorManager(executorManager);
 
             // 初始化 ActorSystem（macOS上 new ServerSocket 检测端口占用的方法并不生效，可能是AKKA是Scala写的缘故？没办法...只能靠异常重试了）
-            Map<String, Object> overrideConfig = Maps.newHashMap();
-            overrideConfig.put("akka.remote.artery.canonical.hostname", NetUtils.getLocalHost());
-            overrideConfig.put("akka.remote.artery.canonical.port", config.getPort());
+            EngineConfig engineConfig = new EngineConfig()
+                    .setType("")
+                    .setServerType(ServerType.WORKER)
+                    .setBindAddress(new Address().setHost(NetUtils.getLocalHost()).setPort(config.getPort()))
+                    .setActorList(Lists.newArrayList());
 
-            Config akkaBasicConfig = ConfigFactory.load(RemoteConstant.WORKER_AKKA_CONFIG_NAME);
-            Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
-
-            int cores = Runtime.getRuntime().availableProcessors();
-            ActorSystem actorSystem = ActorSystem.create(RemoteConstant.WORKER_ACTOR_SYSTEM_NAME, akkaFinalConfig);
-            workerRuntime.setActorSystem(actorSystem);
+            remoteEngine = new PowerJobRemoteEngine();
+            EngineOutput engineOutput = remoteEngine.start(engineConfig);
+            workerRuntime.setTransporter(engineOutput.getTransporter());
 
             // 连接 server
             ServerDiscoveryService serverDiscoveryService = new ServerDiscoveryService(workerRuntime.getAppId(), workerRuntime.getWorkerConfig());
@@ -116,25 +122,10 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             serverDiscoveryService.start(workerRuntime.getExecutorManager().getCoreExecutor());
             workerRuntime.setServerDiscoveryService(serverDiscoveryService);
 
-            ActorRef taskTrackerActorRef = actorSystem.actorOf(TaskTrackerActor.props(workerRuntime)
-                    .withDispatcher("akka.task-tracker-dispatcher")
-                    .withRouter(new RoundRobinPool(cores * 2)), RemoteConstant.TASK_TRACKER_ACTOR_NAME);
-            actorSystem.actorOf(ProcessorTrackerActor.props(workerRuntime)
-                    .withDispatcher("akka.processor-tracker-dispatcher")
-                    .withRouter(new RoundRobinPool(cores)), RemoteConstant.PROCESSOR_TRACKER_ACTOR_NAME);
-            actorSystem.actorOf(WorkerActor.props(taskTrackerActorRef)
-                    .withDispatcher("akka.worker-common-dispatcher")
-                    .withRouter(new RoundRobinPool(cores)), RemoteConstant.WORKER_ACTOR_NAME);
-
-            // 处理系统中产生的异常情况
-            ActorRef troubleshootingActor = actorSystem.actorOf(Props.create(TroubleshootingActor.class), RemoteConstant.TROUBLESHOOTING_ACTOR_NAME);
-            actorSystem.eventStream().subscribe(troubleshootingActor, DeadLetter.class);
-
-            log.info("[PowerJobWorker] akka-remote listening address: {}", workerAddress);
-            log.info("[PowerJobWorker] akka ActorSystem({}) initialized successfully.", actorSystem);
+            log.info("[PowerJobWorker] PowerJobRemoteEngine initialized successfully.");
 
             // 初始化日志系统
-            OmsLogHandler omsLogHandler = new OmsLogHandler(workerAddress, actorSystem, serverDiscoveryService);
+            OmsLogHandler omsLogHandler = new OmsLogHandler(workerAddress, workerRuntime.getTransporter(), serverDiscoveryService);
             workerRuntime.setOmsLogHandler(omsLogHandler);
 
             // 初始化存储
@@ -194,6 +185,6 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
     @Override
     public void destroy() throws Exception {
         workerRuntime.getExecutorManager().shutdown();
-        workerRuntime.getActorSystem().terminate();
+        remoteEngine.close();
     }
 }

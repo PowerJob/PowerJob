@@ -33,4 +33,47 @@ public class RemoteConstant {
     /* ************************ OTHERS ************************ */
     public static final String EMPTY_ADDRESS = "N/A";
     public static final long DEFAULT_TIMEOUT_MS = 5000;
+
+    /* ************************ SERVER ************************ */
+    public static final String SERVER_PATH = "server";
+    public static final String SERVER_HANDLER_REPORT_LOG = "reportLog";
+
+    /* ************************ Worker-TaskTracker ************************ */
+    public static final String WTT_PATH = "taskTracker";
+
+    /**
+     * server 任务执行命令
+     */
+    public static final String WTT_HANDLER_RUN_JOB = "runJob";
+    /**
+     * server 停止任务实例命令
+     */
+    public static final String WTT_HANDLER_STOP_INSTANCE = "stopInstance";
+
+    /**
+     * sever 查询任务状态
+     */
+    public static final String WTT_HANDLER_QUERY_INSTANCE_STATUS = "queryInstanceStatus";
+
+    /**
+     * PT 上报任务状态，包含执行结果
+     */
+    public static final String WTT_HANDLER_REPORT_TASK_STATUS = "reportTaskStatus";
+    /**
+     * PT 上报自身状态
+     */
+    public static final String WTT_HANDLER_REPORT_PROCESSOR_TRACKER_STATUS = "reportProcessorTrackerStatus";
+
+    /**
+     * Map 任务
+     */
+    public static final String WTT_HANDLER_MAP_TASK = "mapTask";
+
+    /* ************************ Worker-ProcessorTracker ************************ */
+    public static final String WPT_PATH = "processorTracker";
+
+    public static final String WPT_HANDLER_START_TASK = "startTask";
+
+    public static final String WPT_HANDLER_STOP_INSTANCE = "stopInstance";
+
 }

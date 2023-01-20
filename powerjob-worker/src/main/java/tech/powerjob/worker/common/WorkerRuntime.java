@@ -1,6 +1,6 @@
 package tech.powerjob.worker.common;
 
-import akka.actor.ActorSystem;
+import tech.powerjob.remote.framework.transporter.Transporter;
 import tech.powerjob.worker.background.OmsLogHandler;
 import tech.powerjob.worker.background.ServerDiscoveryService;
 import tech.powerjob.worker.background.WorkerHealthReporter;
@@ -23,7 +23,7 @@ public class WorkerRuntime {
 
     private PowerJobWorkerConfig workerConfig;
 
-    private ActorSystem actorSystem;
+    private Transporter transporter;
 
     private WorkerHealthReporter healthReporter;
 
