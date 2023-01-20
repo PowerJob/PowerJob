@@ -26,10 +26,6 @@ public class HandlerLocation implements Serializable {
      * 方法路径
      */
     private String methodPath;
-    /**
-     * 调用的集群类型（用于兼容 AKKA 等除了IP还需要指定 system 访问的情况）
-     */
-    private ServerType serverType;
 
     public String toPath() {
         return String.format("/%s/%s", rootPath, methodPath);

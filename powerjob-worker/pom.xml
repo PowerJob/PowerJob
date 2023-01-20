@@ -20,7 +20,10 @@
         <junit.version>5.9.1</junit.version>
 
         <logback.version>1.2.9</logback.version>
+
         <powerjob-remote-framework.version>4.2.1</powerjob-remote-framework.version>
+        <powerjob-remote-impl-akka.version>4.2.1</powerjob-remote-impl-akka.version>
+        <powerjob-remote-impl-http.version>4.2.1</powerjob-remote-impl-http.version>
     </properties>
 
     <dependencies>
@@ -32,11 +35,25 @@
             <version>${spring.version}</version>
         </dependency>
 
-        <!-- oms-common -->
+        <!-- PowerJob 通讯框架 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-framework</artifactId>
             <version>${powerjob-remote-framework.version}</version>
+        </dependency>
+
+        <!-- PowerJob 通讯层具体实现，按需选择自己需要的通讯器即可。如果包冲突可尝试更换通讯器实现。 -->
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-akka</artifactId>
+            <version>${powerjob-remote-impl-akka.version}</version>
+        </dependency>
+        <!-- 4.3.x 版本考虑到兼容性，官方默认实现仍为 akka，如需使用 HTTP 请仔细引入依赖 -->
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-http</artifactId>
+            <version>${powerjob-remote-impl-http.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- h2 database -->

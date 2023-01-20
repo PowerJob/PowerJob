@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import tech.powerjob.common.RemoteConstant;
 
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class AkkaMappingService {
     private static final Map<String, ActorConfig> RP_2_ACTOR_CFG = Maps.newHashMap();
 
     static {
-        // TODO: 迁移时写入规则
+        addMappingRule(RemoteConstant.SERVER_PATH, "server_actor", null);
     }
 
     private static final String DEFAULT_DISPATCH_NAME = "common-dispatcher";
@@ -45,5 +46,12 @@ public class AkkaMappingService {
     public static class ActorConfig {
         private String actorName;
         private String dispatcherName;
+    }
+
+    private static void addMappingRule(String newActorPath, String oldActorName, String dispatchName) {
+        ActorConfig actorConfig = new ActorConfig()
+                .setActorName(oldActorName)
+                .setDispatcherName(dispatchName == null ? DEFAULT_DISPATCH_NAME : dispatchName);
+        RP_2_ACTOR_CFG.put(newActorPath, actorConfig);
     }
 }

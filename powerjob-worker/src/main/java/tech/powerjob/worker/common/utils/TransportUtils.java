@@ -106,10 +106,10 @@ public class TransportUtils {
 
     public static URL easyBuildUrl(ServerType serverType, String rootPath, String handlerPath, String address) {
         HandlerLocation handlerLocation = new HandlerLocation()
-                .setServerType(serverType)
                 .setRootPath(rootPath)
                 .setMethodPath(handlerPath);
         return new URL()
+                .setServerType(serverType)
                 .setAddress(Address.fromIpv4(address))
                 .setLocation(handlerLocation);
     }

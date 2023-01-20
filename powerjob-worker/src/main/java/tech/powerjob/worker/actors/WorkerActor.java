@@ -5,6 +5,7 @@ import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.actor.Handler;
+import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.container.OmsContainerFactory;
 
 import static tech.powerjob.common.RemoteConstant.*;
@@ -19,9 +20,12 @@ import static tech.powerjob.common.RemoteConstant.*;
 @Actor(path = WORKER_PATH)
 public class WorkerActor {
 
+    private final WorkerRuntime workerRuntime;
     private final TaskTrackerActor taskTrackerActor;
 
-    public WorkerActor(TaskTrackerActor taskTrackerActor) {
+
+    public WorkerActor(WorkerRuntime workerRuntime, TaskTrackerActor taskTrackerActor) {
+        this.workerRuntime = workerRuntime;
         this.taskTrackerActor = taskTrackerActor;
     }
 

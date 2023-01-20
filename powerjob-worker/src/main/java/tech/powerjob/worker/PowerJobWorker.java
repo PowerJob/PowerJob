@@ -33,7 +33,6 @@ import tech.powerjob.worker.common.utils.SpringUtils;
 import tech.powerjob.worker.core.executor.ExecutorManager;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,7 +48,7 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
 
     private final WorkerRuntime workerRuntime = new WorkerRuntime();
 
-    private RemoteEngine remoteEngine;
+    private final RemoteEngine remoteEngine = new PowerJobRemoteEngine();
     private final AtomicBoolean initialized = new AtomicBoolean();
 
     @Override
@@ -96,14 +95,18 @@ public class PowerJobWorker implements ApplicationContextAware, InitializingBean
             final ExecutorManager executorManager = new ExecutorManager(workerRuntime.getWorkerConfig());
             workerRuntime.setExecutorManager(executorManager);
 
-            // 初始化 ActorSystem（macOS上 new ServerSocket 检测端口占用的方法并不生效，可能是AKKA是Scala写的缘故？没办法...只能靠异常重试了）
+            // 初始化 actor
+            TaskTrackerActor taskTrackerActor = new TaskTrackerActor(workerRuntime);
+            ProcessorTrackerActor processorTrackerActor = new ProcessorTrackerActor(workerRuntime);
+            WorkerActor workerActor = new WorkerActor(workerRuntime, taskTrackerActor);
+
+            // 初始化通讯引擎
             EngineConfig engineConfig = new EngineConfig()
-                    .setType("")
+                    .setType(config.getProtocol().name())
                     .setServerType(ServerType.WORKER)
                     .setBindAddress(new Address().setHost(NetUtils.getLocalHost()).setPort(config.getPort()))
-                    .setActorList(Lists.newArrayList());
+                    .setActorList(Lists.newArrayList(taskTrackerActor, processorTrackerActor, workerActor));
 
-            remoteEngine = new PowerJobRemoteEngine();
             EngineOutput engineOutput = remoteEngine.start(engineConfig);
             workerRuntime.setTransporter(engineOutput.getTransporter());
 

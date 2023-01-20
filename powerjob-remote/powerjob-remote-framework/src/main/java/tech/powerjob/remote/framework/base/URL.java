@@ -14,6 +14,12 @@ import java.io.Serializable;
 @Data
 @Accessors(chain = true)
 public class URL implements Serializable {
+
+    /**
+     * 调用的集群类型（用于兼容 AKKA 等除了IP还需要指定 system 访问的情况）
+     */
+    private ServerType serverType;
+
     /**
      * remote address
      */

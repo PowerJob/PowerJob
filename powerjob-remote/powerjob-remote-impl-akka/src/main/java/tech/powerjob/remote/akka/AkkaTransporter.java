@@ -3,22 +3,17 @@ package tech.powerjob.remote.akka;
 import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
-import com.google.common.collect.Maps;
 import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.common.RemoteConstant;
-import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.remote.framework.base.HandlerLocation;
 import tech.powerjob.remote.framework.base.RemotingException;
-import tech.powerjob.remote.framework.base.ServerType;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.remote.framework.transporter.Protocol;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
 
 /**
  * AkkaTransporter
@@ -61,7 +56,7 @@ public class AkkaTransporter implements Transporter {
     private ActorSelection fetchActorSelection(URL url) {
 
         HandlerLocation location = url.getLocation();
-        String targetActorSystemName = AkkaConstant.fetchActorSystemName(location.getServerType());
+        String targetActorSystemName = AkkaConstant.fetchActorSystemName(url.getServerType());
 
         String targetActorName = AkkaMappingService.parseActorName(location.getRootPath()).getActorName();
 
