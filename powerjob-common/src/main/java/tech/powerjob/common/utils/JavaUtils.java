@@ -44,7 +44,7 @@ public class JavaUtils {
             }
             final File file = new File(codeSourceLocation.toURI());
             // idea 场景，查找版本失败
-            if (file.isDirectory()) {
+            if (!file.exists() || file.isDirectory()) {
                 return "UNKNOWN";
             }
             try (JarFile jarFile = new JarFile(file)) {
