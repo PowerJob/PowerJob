@@ -42,7 +42,12 @@ public class JavaUtils {
             if (connection instanceof JarURLConnection) {
                 return getImplementationVersion(((JarURLConnection) connection).getJarFile());
             }
-            try (JarFile jarFile = new JarFile(new File(codeSourceLocation.toURI()))) {
+            final File file = new File(codeSourceLocation.toURI());
+            // idea 场景，查找版本失败
+            if (file.isDirectory()) {
+                return "UNKNOWN";
+            }
+            try (JarFile jarFile = new JarFile(file)) {
                 return getImplementationVersion(jarFile);
             }
         }
