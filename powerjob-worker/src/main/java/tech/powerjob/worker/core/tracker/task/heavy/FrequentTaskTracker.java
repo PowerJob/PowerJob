@@ -8,7 +8,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -135,10 +134,14 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
         List<InstanceDetail.SubInstanceDetail> history = Lists.newLinkedList();
         recentSubInstanceInfo.forEach((subId, subInstanceInfo) -> {
             InstanceDetail.SubInstanceDetail subDetail = new InstanceDetail.SubInstanceDetail();
-            BeanUtils.copyProperties(subInstanceInfo, subDetail);
+
+            subDetail.setSubInstanceId(subId);
+            subDetail.setStartTime(subInstanceInfo.getStartTime());
+            subDetail.setFinishedTime(subInstanceInfo.getFinishedTime());
+            subDetail.setResult(subInstanceInfo.getResult());
+
             InstanceStatus status = InstanceStatus.of(subInstanceInfo.status);
             subDetail.setStatus(status.getV());
-            subDetail.setSubInstanceId(subId);
 
             history.add(subDetail);
         });

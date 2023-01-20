@@ -1,11 +1,15 @@
 package tech.powerjob.worker.core.processor.runnable;
 
+import com.google.common.base.Stopwatch;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.enums.ExecuteType;
-import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.common.serialize.SerializerUtils;
 import tech.powerjob.worker.common.ThreadLocalStore;
+import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.common.serialize.SerializerUtils;
 import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
@@ -20,11 +24,6 @@ import tech.powerjob.worker.log.OmsLogger;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 import tech.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
-import com.google.common.base.Stopwatch;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -105,8 +104,11 @@ public class HeavyProcessorRunnable implements Runnable {
 
     private TaskContext constructTaskContext() {
         TaskContext taskContext = new TaskContext();
-        BeanUtils.copyProperties(task, taskContext);
         taskContext.setJobId(instanceInfo.getJobId());
+        taskContext.setInstanceId(task.getInstanceId());
+        taskContext.setSubInstanceId(task.getSubInstanceId());
+        taskContext.setTaskId(task.getTaskId());
+        taskContext.setTaskName(task.getTaskName());
         taskContext.setMaxRetryTimes(instanceInfo.getTaskRetryNum());
         taskContext.setCurrentRetryTimes(task.getFailedCnt());
         taskContext.setJobParams(instanceInfo.getJobParams());
@@ -120,7 +122,7 @@ public class HeavyProcessorRunnable implements Runnable {
     }
 
     private WorkflowContext constructWorkflowContext() {
-        return new WorkflowContext(instanceInfo.getWfInstanceId(),instanceInfo.getInstanceParams());
+        return new WorkflowContext(instanceInfo.getWfInstanceId(), instanceInfo.getInstanceParams());
     }
 
     /**
