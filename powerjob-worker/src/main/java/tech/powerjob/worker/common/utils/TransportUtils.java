@@ -97,7 +97,7 @@ public class TransportUtils {
     }
 
     private static AskResponse reliableAsk(ServerType t, String rootPath, String handlerPath, String address, PowerSerializable req, Transporter transporter) throws Exception {
-        final URL url = easyBuildUrl(ServerType.WORKER, WTT_PATH, WTT_HANDLER_MAP_TASK, address);
+        final URL url = easyBuildUrl(t, rootPath, handlerPath, address);
         final CompletionStage<AskResponse> completionStage = transporter.ask(url, req, AskResponse.class);
         return completionStage
                 .toCompletableFuture()

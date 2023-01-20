@@ -530,7 +530,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                 List<String> workerList = JsonUtils.parseObject(response.getData(), new TypeReference<List<String>>() {});
                 ptStatusHolder.register(workerList);
             } catch (Exception e) {
-                log.warn("[TaskTracker-{}] detective failed!", instanceId, e);
+                log.warn("[TaskTracker-{}] detective failed, currentServer: {}", instanceId, currentServerAddress, e);
             }
         }
     }
