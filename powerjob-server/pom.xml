@@ -49,6 +49,8 @@
 
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.1.6</cron-utils.version>
+
+        <powerjob-common.version>4.2.1</powerjob-common.version>
         <powerjob-remote-impl-http.version>4.2.1</powerjob-remote-impl-http.version>
         <powerjob-remote-impl-akka.version>4.2.1</powerjob-remote-impl-akka.version>
     </properties>
@@ -101,6 +103,11 @@
     <dependencies>
 
         <!-- 网络层 -->
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-common</artifactId>
+            <version>${powerjob-common.version}</version>
+        </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-http</artifactId>

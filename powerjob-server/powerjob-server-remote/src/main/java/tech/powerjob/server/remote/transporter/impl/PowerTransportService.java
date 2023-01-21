@@ -5,14 +5,19 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.RemotingException;
 import tech.powerjob.remote.framework.base.ServerType;
@@ -21,7 +26,6 @@ import tech.powerjob.remote.framework.engine.EngineConfig;
 import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;
-import tech.powerjob.server.remote.actoes.ServerActor;
 import tech.powerjob.server.remote.transporter.ProtocolInfo;
 import tech.powerjob.server.remote.transporter.TransportService;
 
@@ -37,20 +41,22 @@ import java.util.concurrent.CompletionStage;
  */
 @Slf4j
 @Service
-public class PowerTransportService implements TransportService, InitializingBean {
+public class PowerTransportService implements TransportService, InitializingBean, DisposableBean, ApplicationContextAware {
 
     @Value("${oms.transporter.active.protocols}")
     private String activeProtocols;
     private static final String PROTOCOL_PORT_CONFIG = "oms.%s.port";
 
     private final Environment environment;
-    private final List<ServerActor> serverActors;
 
     private ProtocolInfo defaultProtocol;
     private final Map<String, ProtocolInfo> protocol2Transporter = Maps.newHashMap();
 
-    public PowerTransportService(List<ServerActor> serverActors, Environment environment) {
-        this.serverActors = serverActors;
+    private final List<RemoteEngine> engines = Lists.newArrayList();
+
+    private ApplicationContext applicationContext;
+
+    public PowerTransportService(Environment environment) {
         this.environment = environment;
     }
 
@@ -80,6 +86,11 @@ public class PowerTransportService implements TransportService, InitializingBean
     }
 
     private void initRemoteFrameWork(String protocol, int port) {
+
+        // 从构造器注入改为从 applicationContext 获取来避免循环依赖
+        final Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(Actor.class);
+        log.info("[PowerTransportService] find Actor num={},names={}", beansWithAnnotation.size(), beansWithAnnotation.keySet());
+
         Address address = new Address()
                 .setHost(NetUtils.getLocalHost())
                 .setPort(port);
@@ -87,12 +98,13 @@ public class PowerTransportService implements TransportService, InitializingBean
                 .setServerType(ServerType.SERVER)
                 .setType(protocol.toUpperCase())
                 .setBindAddress(address)
-                .setActorList(Lists.newArrayList(serverActors));
+                .setActorList(Lists.newArrayList(beansWithAnnotation.values()));
         log.info("[PowerTransportService] start to initialize RemoteEngine[type={},address={}]", protocol, address);
         RemoteEngine re = new PowerJobRemoteEngine();
         final EngineOutput engineOutput = re.start(engineConfig);
         log.info("[PowerTransportService] start RemoteEngine[type={},address={}] successfully", protocol, address);
 
+        this.engines.add(re);
         this.protocol2Transporter.put(protocol, new ProtocolInfo(protocol, address.toFullAddress(), engineOutput.getTransporter()));
     }
 
@@ -167,5 +179,20 @@ public class PowerTransportService implements TransportService, InitializingBean
         if (this.defaultProtocol == null) {
             throw new IllegalArgumentException("can't find default protocol, please check your config!");
         }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        engines.forEach(e -> {
+            try {
+                e.close();
+            } catch (Exception ignore) {
+            }
+        });
     }
 }

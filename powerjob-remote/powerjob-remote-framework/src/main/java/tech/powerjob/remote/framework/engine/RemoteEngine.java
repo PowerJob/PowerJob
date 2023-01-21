@@ -1,5 +1,7 @@
 package tech.powerjob.remote.framework.engine;
 
+import java.io.IOException;
+
 /**
  * RemoteEngine
  *
@@ -10,5 +12,5 @@ public interface RemoteEngine {
 
     EngineOutput start(EngineConfig engineConfig);
 
-    void close();
+    void close() throws IOException;
 }

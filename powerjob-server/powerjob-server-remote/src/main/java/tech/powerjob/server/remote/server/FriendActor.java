@@ -5,9 +5,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.actor.Handler;
 import tech.powerjob.remote.framework.actor.ProcessType;
-import tech.powerjob.server.remote.actoes.ServerActor;
 import tech.powerjob.server.remote.server.election.Ping;
 import tech.powerjob.server.remote.server.redirector.RemoteProcessReq;
 import tech.powerjob.server.remote.server.redirector.RemoteRequestProcessor;
@@ -22,8 +22,8 @@ import static tech.powerjob.common.RemoteConstant.*;
  */
 @Slf4j
 @Component
-@Handler(path = S4S_PATH)
-public class FriendActor implements ServerActor {
+@Actor(path = S4S_PATH)
+public class FriendActor {
 
     private static final String SK = "dGVuZ2ppcWlAZ21haWwuY29tIA==";
 

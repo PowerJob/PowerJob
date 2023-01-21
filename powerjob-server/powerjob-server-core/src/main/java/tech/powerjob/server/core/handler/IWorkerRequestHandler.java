@@ -4,7 +4,6 @@ import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.remote.framework.actor.Handler;
 import tech.powerjob.remote.framework.actor.ProcessType;
-import tech.powerjob.server.remote.actoes.ServerActor;
 
 import java.util.Optional;
 
@@ -16,7 +15,7 @@ import static tech.powerjob.common.RemoteConstant.*;
  * @author tjq
  * @since 2022/9/10
  */
-public interface IWorkerRequestHandler extends ServerActor {
+public interface IWorkerRequestHandler {
 
     /**
      * 处理 worker 上报的心跳信息

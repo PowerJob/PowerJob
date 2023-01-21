@@ -10,6 +10,7 @@ import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -21,6 +22,8 @@ import java.util.List;
 @Slf4j
 public class PowerJobRemoteEngine implements RemoteEngine {
 
+    private CSInitializer csInitializer;
+
     @Override
     public EngineOutput start(EngineConfig engineConfig) {
 
@@ -28,7 +31,7 @@ public class PowerJobRemoteEngine implements RemoteEngine {
         log.info("[PowerJobRemoteEngine] start remote engine with config: {}", engineConfig);
 
         List<ActorInfo> actorInfos = ActorFactory.load(engineConfig.getActorList());
-        CSInitializer csInitializer = CSInitializerFactory.build(engineConfig.getType());
+        csInitializer = CSInitializerFactory.build(engineConfig.getType());
 
         String type = csInitializer.type();
 
@@ -53,7 +56,7 @@ public class PowerJobRemoteEngine implements RemoteEngine {
     }
 
     @Override
-    public void close() {
-
+    public void close() throws IOException {
+        csInitializer.close();
     }
 }
