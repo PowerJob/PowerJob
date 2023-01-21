@@ -20,7 +20,7 @@ import java.io.IOException;
 @Slf4j
 public class JsonUtils {
 
-    private static final JsonMapper OBJECT_MAPPER = JsonMapper.builder()
+    private static final JsonMapper JSON_MAPPER = JsonMapper.builder()
             .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
             .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
             .configure(JsonParser.Feature.IGNORE_UNDEFINED, true)
@@ -32,7 +32,7 @@ public class JsonUtils {
 
     public static String toJSONString(Object obj) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(obj);
+            return JSON_MAPPER.writeValueAsString(obj);
         }catch (Exception e) {
             log.error("[PowerJob] toJSONString failed", e);
         }
@@ -41,7 +41,7 @@ public class JsonUtils {
 
     public static String toJSONStringUnsafe(Object obj) {
         try {
-            return OBJECT_MAPPER.writeValueAsString(obj);
+            return JSON_MAPPER.writeValueAsString(obj);
         }catch (Exception e) {
             throw new PowerJobException(e);
         }
@@ -49,7 +49,7 @@ public class JsonUtils {
 
     public static byte[] toBytes(Object obj) {
         try {
-            return OBJECT_MAPPER.writeValueAsBytes(obj);
+            return JSON_MAPPER.writeValueAsBytes(obj);
         }catch (Exception e) {
             log.error("[PowerJob] serialize failed", e);
         }
@@ -57,24 +57,24 @@ public class JsonUtils {
     }
 
     public static <T> T parseObject(String json, Class<T> clz) throws JsonProcessingException {
-        return OBJECT_MAPPER.readValue(json, clz);
+        return JSON_MAPPER.readValue(json, clz);
     }
 
     public static <T> T parseObject(byte[] b, Class<T> clz) throws IOException {
-        return OBJECT_MAPPER.readValue(b, clz);
+        return JSON_MAPPER.readValue(b, clz);
     }
 
     public static <T> T parseObject(byte[] b, TypeReference<T> typeReference) throws IOException {
-        return OBJECT_MAPPER.readValue(b, typeReference);
+        return JSON_MAPPER.readValue(b, typeReference);
     }
 
     public static <T> T parseObject(String json, TypeReference<T> typeReference) throws IOException {
-        return OBJECT_MAPPER.readValue(json, typeReference);
+        return JSON_MAPPER.readValue(json, typeReference);
     }
 
     public static <T> T parseObjectIgnoreException(String json, Class<T> clz) {
         try {
-            return OBJECT_MAPPER.readValue(json, clz);
+            return JSON_MAPPER.readValue(json, clz);
         }catch (Exception e) {
             log.error("unable to parse json string to object,current string:{}",json,e);
             return null;
@@ -84,7 +84,7 @@ public class JsonUtils {
 
     public static <T> T parseObjectUnsafe(String json, Class<T> clz) {
         try {
-            return OBJECT_MAPPER.readValue(json, clz);
+            return JSON_MAPPER.readValue(json, clz);
         }catch (Exception e) {
             ExceptionUtils.rethrow(e);
         }

@@ -37,8 +37,7 @@ public class FriendActor {
      */
     @Handler(path = S4S_HANDLER_PING, processType = ProcessType.NO_BLOCKING)
     public AskResponse onReceivePing(Ping ping) {
-        final AskResponse response = AskResponse.succeed(transportService.allProtocols());
-        return response;
+        return AskResponse.succeed(transportService.allProtocols());
     }
 
     @Handler(path = S4S_HANDLER_PROCESS, processType = ProcessType.BLOCKING)
