@@ -100,7 +100,7 @@ public class HttpVertxCSInitializer implements CSInitializer {
                 .toCompletableFuture()
                 .get(1, TimeUnit.MINUTES);
 
-        log.info("[PowerJob] startup vertx HttpServer successfully!");
+        log.info("[PowerJobRemoteEngine] startup vertx HttpServer successfully!");
     }
 
     private Handler<RoutingContext> buildRequestHandler(ActorInfo actorInfo, HandlerInfo handlerInfo) {
