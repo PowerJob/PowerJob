@@ -10,6 +10,8 @@ import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.remote.framework.actor.Handler;
+import tech.powerjob.remote.framework.actor.ProcessType;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.utils.SpringUtils;
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
+
+import static tech.powerjob.common.RemoteConstant.*;
 
 /**
  * wrapper monitor for IWorkerRequestHandler
@@ -55,6 +59,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
 
 
     @Override
+    @Handler(path = S4W_HANDLER_WORKER_HEARTBEAT, processType = ProcessType.NO_BLOCKING)
     public void processWorkerHeartbeat(WorkerHeartbeat heartbeat) {
         long startMs = System.currentTimeMillis();
         WorkerHeartbeatEvent event = new WorkerHeartbeatEvent()
@@ -71,6 +76,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     }
 
     @Override
+    @Handler(path = S4W_HANDLER_REPORT_INSTANCE_STATUS, processType = ProcessType.BLOCKING)
     public Optional<AskResponse> processTaskTrackerReportInstanceStatus(TaskTrackerReportInstanceStatusReq req) {
         long startMs = System.currentTimeMillis();
         TtReportInstanceStatusEvent event = new TtReportInstanceStatusEvent()
@@ -94,6 +100,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     }
 
     @Override
+    @Handler(path = S4W_HANDLER_REPORT_LOG, processType = ProcessType.NO_BLOCKING)
     public void processWorkerLogReport(WorkerLogReportReq req) {
 
         WorkerLogReportEvent event = new WorkerLogReportEvent()
@@ -113,6 +120,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     }
 
     @Override
+    @Handler(path = S4W_HANDLER_QUERY_JOB_CLUSTER, processType = ProcessType.BLOCKING)
     public AskResponse processWorkerQueryExecutorCluster(WorkerQueryExecutorClusterReq req) {
         AskResponse askResponse;
 
@@ -137,6 +145,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
     }
 
     @Override
+    @Handler(path = S4W_HANDLER_WORKER_NEED_DEPLOY_CONTAINER, processType = ProcessType.BLOCKING)
     public AskResponse processWorkerNeedDeployContainer(WorkerNeedDeployContainerRequest req) {
         String port = environment.getProperty("local.server.port");
 

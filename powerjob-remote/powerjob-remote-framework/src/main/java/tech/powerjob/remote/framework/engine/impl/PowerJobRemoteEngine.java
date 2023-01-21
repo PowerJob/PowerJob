@@ -27,16 +27,17 @@ public class PowerJobRemoteEngine implements RemoteEngine {
     @Override
     public EngineOutput start(EngineConfig engineConfig) {
 
+        final String engineType = engineConfig.getType();
         EngineOutput engineOutput = new EngineOutput();
-        log.info("[PowerJobRemoteEngine] start remote engine with config: {}", engineConfig);
+        log.info("[PowerJobRemoteEngine] [{}] start remote engine with config: {}", engineType, engineConfig);
 
         List<ActorInfo> actorInfos = ActorFactory.load(engineConfig.getActorList());
-        csInitializer = CSInitializerFactory.build(engineConfig.getType());
+        csInitializer = CSInitializerFactory.build(engineType);
 
         String type = csInitializer.type();
 
         Stopwatch sw = Stopwatch.createStarted();
-        log.info("[PowerJobRemoteEngine] try to startup CSInitializer[type={}]", type);
+        log.info("[PowerJobRemoteEngine] [{}] try to startup CSInitializer[type={}]", engineType, type);
 
         csInitializer.init(new CSInitializerConfig()
                 .setBindAddress(engineConfig.getBindAddress())
@@ -47,10 +48,13 @@ public class PowerJobRemoteEngine implements RemoteEngine {
         Transporter transporter = csInitializer.buildTransporter();
         engineOutput.setTransporter(transporter);
 
+        log.info("[PowerJobRemoteEngine] [{}] start to bind Handler", engineType);
+        actorInfos.forEach(actor -> actor.getHandlerInfos().forEach(handlerInfo -> log.info("[PowerJobRemoteEngine] [{}] PATH={}, handler={}", engineType, handlerInfo.getLocation().toPath(), handlerInfo.getMethod())));
+
         // 绑定 handler
         csInitializer.bindHandlers(actorInfos);
 
-        log.info("[PowerJobRemoteEngine] startup CSInitializer[type={}] successfully, cost: {}", type, sw);
+        log.info("[PowerJobRemoteEngine] [{}] startup successfully, cost: {}", engineType, sw);
 
         return engineOutput;
     }

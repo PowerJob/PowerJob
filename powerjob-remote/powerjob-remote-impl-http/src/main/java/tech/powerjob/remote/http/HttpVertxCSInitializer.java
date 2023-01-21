@@ -75,12 +75,9 @@ public class HttpVertxCSInitializer implements CSInitializer {
         // 处理请求响应
         router.route().handler(BodyHandler.create());
         actorInfos.forEach(actorInfo -> {
-            log.info("[PowerJob-Vertx] start to bind Actor[{}]'s handler!", actorInfo.getAnno().path());
             Optional.ofNullable(actorInfo.getHandlerInfos()).orElse(Collections.emptyList()).forEach(handlerInfo -> {
-                Method method = handlerInfo.getMethod();
                 String handlerHttpPath = handlerInfo.getLocation().toPath();
                 ProcessType processType = handlerInfo.getAnno().processType();
-                log.info("[PowerJob-Vertx] start to register Handler with[path={},methodName={},processType={}]", handlerHttpPath, method.getName(), processType);
 
                 Handler<RoutingContext> routingContextHandler = buildRequestHandler(actorInfo, handlerInfo);
                 Route route = router.post(handlerHttpPath);
@@ -89,7 +86,6 @@ public class HttpVertxCSInitializer implements CSInitializer {
                 } else {
                     route.handler(routingContextHandler);
                 }
-                log.info("[PowerJob-Vertx] register Handler[path={},methodName={}] successfully!", handlerHttpPath, method.getName());
             });
         });
 

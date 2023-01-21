@@ -2,18 +2,15 @@ package tech.powerjob.remote.framework.engine.impl;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.reflections.ReflectionUtils;
-import org.reflections.Reflections;
-import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.remote.framework.actor.*;
+import tech.powerjob.remote.framework.actor.Actor;
+import tech.powerjob.remote.framework.actor.ActorInfo;
+import tech.powerjob.remote.framework.actor.Handler;
+import tech.powerjob.remote.framework.actor.HandlerInfo;
 import tech.powerjob.remote.framework.base.HandlerLocation;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Set;
 
 /**
  * load all Actor
@@ -53,7 +50,12 @@ class ActorFactory {
         String rootPath = anno.path();
         Object actor = actorInfo.getActor();
 
-        Method[] declaredMethods = actor.getClass().getDeclaredMethods();
+        findHandlerMethod(rootPath, actor.getClass(), ret);
+        return ret;
+    }
+
+    private static void findHandlerMethod(String rootPath, Class<?> clz, List<HandlerInfo> result) {
+        Method[] declaredMethods = clz.getDeclaredMethods();
         for (Method handlerMethod: declaredMethods) {
             Handler handlerMethodAnnotation = handlerMethod.getAnnotation(Handler.class);
             if (handlerMethodAnnotation == null) {
@@ -68,9 +70,14 @@ class ActorFactory {
                     .setAnno(handlerMethodAnnotation)
                     .setMethod(handlerMethod)
                     .setLocation(handlerLocation);
-            ret.add(handlerInfo);
+            result.add(handlerInfo);
         }
-        return ret;
+
+        // 递归处理父类
+        final Class<?> superclass = clz.getSuperclass();
+        if (superclass != null) {
+            findHandlerMethod(rootPath, superclass, result);
+        }
     }
 
     static String suitPath(String path) {

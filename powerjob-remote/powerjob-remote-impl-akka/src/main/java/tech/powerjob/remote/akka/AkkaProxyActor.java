@@ -41,7 +41,6 @@ public class AkkaProxyActor extends AbstractActor {
             }
             final Class<?> bindClz = powerSerializeClz.get();
             receiveBuilder.match(bindClz, req -> onReceiveProcessorReportTaskStatusReq(req, handlerInfo));
-            log.info("[PowerJob-AKKA] bind handler[{}] to [{}]", location, bindClz);
         });
         this.receive = receiveBuilder.build();
     }

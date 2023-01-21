@@ -36,7 +36,7 @@ public class FriendActor {
     }
 
     @Handler(path = S4S_HANDLER_PROCESS, processType = ProcessType.BLOCKING)
-    private AskResponse onReceiveRemoteProcessReq(RemoteProcessReq req) {
+    public AskResponse onReceiveRemoteProcessReq(RemoteProcessReq req) {
 
         AskResponse response = new AskResponse();
         response.setSuccess(true);
