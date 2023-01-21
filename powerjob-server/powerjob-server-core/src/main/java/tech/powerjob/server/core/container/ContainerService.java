@@ -1,25 +1,5 @@
 package tech.powerjob.server.core.container;
 
-import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.enums.Protocol;
-import tech.powerjob.common.model.DeployedContainerInfo;
-import tech.powerjob.common.model.GitRepoInfo;
-import tech.powerjob.common.request.ServerDeployContainerRequest;
-import tech.powerjob.common.request.ServerDestroyContainerRequest;
-import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.serialize.JsonUtils;
-import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.common.utils.SegmentLock;
-import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.common.utils.OmsFileUtils;
-import tech.powerjob.server.extension.LockService;
-import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
-import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
-import tech.powerjob.server.persistence.mongodb.GridFsManager;
-import tech.powerjob.server.remote.transport.TransportService;
-import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
-import tech.powerjob.server.common.module.WorkerInfo;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -28,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
@@ -43,8 +24,29 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.model.DeployedContainerInfo;
+import tech.powerjob.common.model.GitRepoInfo;
+import tech.powerjob.common.request.ServerDeployContainerRequest;
+import tech.powerjob.common.request.ServerDestroyContainerRequest;
+import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.utils.SegmentLock;
+import tech.powerjob.remote.framework.base.URL;
+import tech.powerjob.server.common.constants.ContainerSourceType;
+import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.module.WorkerInfo;
+import tech.powerjob.server.common.utils.OmsFileUtils;
+import tech.powerjob.server.extension.LockService;
+import tech.powerjob.server.persistence.mongodb.GridFsManager;
+import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
+import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
+import tech.powerjob.server.remote.server.redirector.DesignateServer;
+import tech.powerjob.server.remote.tp.ServerURLFactory;
+import tech.powerjob.server.remote.tp.TransportService;
+import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import javax.annotation.Resource;
 import javax.websocket.RemoteEndpoint;
@@ -128,7 +130,8 @@ public class ContainerService {
 
         ServerDestroyContainerRequest destroyRequest = new ServerDestroyContainerRequest(container.getId());
         workerClusterQueryService.getAllAliveWorkers(container.getAppId()).forEach(workerInfo -> {
-            transportService.tell(Protocol.AKKA, workerInfo.getAddress(), destroyRequest);
+            final URL url = ServerURLFactory.destroyContainer2Worker(workerInfo.getAddress());
+            transportService.tell(workerInfo.getProtocol(), url, destroyRequest);
         });
 
         log.info("[ContainerService] delete container: {}.", container);
@@ -247,11 +250,8 @@ public class ContainerService {
             containerInfoRepository.saveAndFlush(container);
 
             // 开始部署（需要分批进行）
-            Set<String> workerAddressList = workerClusterQueryService.getAllAliveWorkers(container.getAppId())
-                    .stream()
-                    .map(WorkerInfo::getAddress)
-                    .collect(Collectors.toSet());
-            if (workerAddressList.isEmpty()) {
+            final List<WorkerInfo> allAliveWorkers = workerClusterQueryService.getAllAliveWorkers(container.getAppId());
+            if (allAliveWorkers.isEmpty()) {
                 remote.sendText("SYSTEM: there is no worker available now, deploy failed!");
                 return;
             }
@@ -262,10 +262,12 @@ public class ContainerService {
             long sleepTime = calculateSleepTime(jarFile.length());
 
             AtomicInteger count = new AtomicInteger();
-            workerAddressList.forEach(akkaAddress -> {
-                transportService.tell(Protocol.AKKA, akkaAddress, req);
+            allAliveWorkers.forEach(workerInfo -> {
 
-                remote.sendText("SYSTEM: send deploy request to " + akkaAddress);
+                final URL url = ServerURLFactory.deployContainer2Worker(workerInfo.getAddress());
+                transportService.tell(workerInfo.getProtocol(), url, req);
+
+                remote.sendText("SYSTEM: send deploy request to " + url.getAddress());
 
                 if (count.incrementAndGet() % DEPLOY_BATCH_NUM == 0) {
                     CommonUtils.executeIgnoreException(() -> Thread.sleep(sleepTime));
@@ -285,6 +287,7 @@ public class ContainerService {
      * @param containerId 容器ID
      * @return 拼接好的可阅读字符串
      */
+    @DesignateServer
     public String fetchDeployedInfo(Long appId, Long containerId) {
         List<DeployedContainerInfo> infoList = workerClusterQueryService.getDeployedContainerInfos(appId, containerId);
 

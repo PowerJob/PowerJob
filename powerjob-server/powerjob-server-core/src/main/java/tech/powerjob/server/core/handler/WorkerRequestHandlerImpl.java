@@ -4,11 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.request.WorkerHeartbeat;
 import tech.powerjob.common.request.WorkerLogReportReq;
 import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.server.core.instance.InstanceLogService;
 import tech.powerjob.server.core.instance.InstanceManager;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
@@ -30,6 +32,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
+@Actor(path = RemoteConstant.S4W_PATH)
 public class WorkerRequestHandlerImpl extends AbWorkerRequestHandler {
 
     private final InstanceManager instanceManager;

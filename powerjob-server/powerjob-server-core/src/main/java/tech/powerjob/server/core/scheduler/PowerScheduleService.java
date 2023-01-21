@@ -23,10 +23,9 @@ import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
+import tech.powerjob.server.remote.tp.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 
-import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -47,6 +46,7 @@ public class PowerScheduleService {
      */
     private static final int MAX_APP_NUM = 10;
 
+    private final TransportService transportService;
     private final DispatchService dispatchService;
 
     private final InstanceService instanceService;
@@ -72,7 +72,7 @@ public class PowerScheduleService {
         long start = System.currentTimeMillis();
         // 调度 CRON 表达式 JOB
         try {
-            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
             if (CollectionUtils.isEmpty(allAppIds)) {
                 log.info("[CronJobSchedule] current server has no app's job to schedule.");
                 return;
@@ -92,7 +92,7 @@ public class PowerScheduleService {
         long start = System.currentTimeMillis();
         // 调度 CRON 表达式 WORKFLOW
         try {
-            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
             if (CollectionUtils.isEmpty(allAppIds)) {
                 log.info("[CronWorkflowSchedule] current server has no app's workflow to schedule.");
                 return;
@@ -113,7 +113,7 @@ public class PowerScheduleService {
         long start = System.currentTimeMillis();
         // 调度 FIX_RATE/FIX_DELAY 表达式 JOB
         try {
-            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
             if (CollectionUtils.isEmpty(allAppIds)) {
                 log.info("[FrequentJobSchedule] current server has no app's job to schedule.");
                 return;
@@ -132,7 +132,7 @@ public class PowerScheduleService {
 
     public void cleanData() {
         try {
-            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+            final List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
             if (allAppIds.isEmpty()) {
                 return;
             }

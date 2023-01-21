@@ -22,7 +22,8 @@ public class AkkaMappingService {
     private static final Map<String, ActorConfig> RP_2_ACTOR_CFG = Maps.newHashMap();
 
     static {
-        addMappingRule(RemoteConstant.SERVER_PATH, "server_actor", null);
+        addMappingRule(RemoteConstant.S4W_PATH, "server_actor", "w-r-c-d");
+        addMappingRule(RemoteConstant.S4S_PATH, "friend_actor", "friend-request-actor-dispatcher");
     }
 
     private static final String DEFAULT_DISPATCH_NAME = "common-dispatcher";

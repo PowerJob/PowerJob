@@ -30,7 +30,7 @@ import static tech.powerjob.common.RemoteConstant.*;
 public class TransportUtils {
 
     public static void ttReportInstanceStatus(TaskTrackerReportInstanceStatusReq req, String address, Transporter transporter) {
-        final URL url = easyBuildUrl(ServerType.SERVER, SERVER_PATH, SERVER_HANDLER_REPORT_INSTANCE_STATUS, address);
+        final URL url = easyBuildUrl(ServerType.SERVER, S4W_PATH, S4W_HANDLER_REPORT_INSTANCE_STATUS, address);
         transporter.tell(url, req);
     }
 
@@ -55,12 +55,12 @@ public class TransportUtils {
     }
 
     public static void reportLogs(WorkerLogReportReq req, String address, Transporter transporter) {
-        final URL url = easyBuildUrl(ServerType.SERVER, SERVER_PATH, SERVER_HANDLER_REPORT_LOG, address);
+        final URL url = easyBuildUrl(ServerType.SERVER, S4W_PATH, S4W_HANDLER_REPORT_LOG, address);
         transporter.tell(url, req);
     }
 
     public static void reportWorkerHeartbeat(WorkerHeartbeat req, String address, Transporter transporter) {
-        final URL url = easyBuildUrl(ServerType.SERVER, SERVER_PATH, SERVER_HANDLER_WORKER_HEARTBEAT, address);
+        final URL url = easyBuildUrl(ServerType.SERVER, S4W_PATH, S4W_HANDLER_WORKER_HEARTBEAT, address);
         transporter.tell(url, req);
     }
 
@@ -83,17 +83,17 @@ public class TransportUtils {
 
     @SneakyThrows
     public static boolean reliableTtReportInstanceStatus(TaskTrackerReportInstanceStatusReq req, String address, Transporter transporter) {
-        return reliableAsk(ServerType.SERVER, SERVER_PATH, SERVER_HANDLER_REPORT_INSTANCE_STATUS, address, req, transporter).isSuccess();
+        return reliableAsk(ServerType.SERVER, S4W_PATH, S4W_HANDLER_REPORT_INSTANCE_STATUS, address, req, transporter).isSuccess();
     }
 
     @SneakyThrows
     public static AskResponse reliableQueryJobCluster(WorkerQueryExecutorClusterReq req, String address, Transporter transporter) {
-        return reliableAsk(ServerType.SERVER, SERVER_PATH, SERVER_HANDLER_QUERY_JOB_CLUSTER, address, req, transporter);
+        return reliableAsk(ServerType.SERVER, S4W_PATH, S4W_HANDLER_QUERY_JOB_CLUSTER, address, req, transporter);
     }
 
     @SneakyThrows
     public static AskResponse reliableQueryContainerInfo(WorkerNeedDeployContainerRequest req, String address, Transporter transporter) {
-        return reliableAsk(ServerType.SERVER, SERVER_PATH, SERVER_HANDLER_WORKER_NEED_DEPLOY_CONTAINER, address, req, transporter);
+        return reliableAsk(ServerType.SERVER, S4W_PATH, S4W_HANDLER_WORKER_NEED_DEPLOY_CONTAINER, address, req, transporter);
     }
 
     private static AskResponse reliableAsk(ServerType t, String rootPath, String handlerPath, String address, PowerSerializable req, Transporter transporter) throws Exception {

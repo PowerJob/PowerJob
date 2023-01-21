@@ -1,8 +1,6 @@
 package tech.powerjob.server;
 
 import tech.powerjob.server.common.utils.PropertyUtils;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
-import tech.powerjob.server.remote.transport.starter.VertXStarter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,9 +27,6 @@ public class PowerJobServerApplication {
     public static void main(String[] args) {
 
         pre();
-
-        AkkaStarter.init();
-        VertXStarter.init();
 
         // Start SpringBoot application.
         try {

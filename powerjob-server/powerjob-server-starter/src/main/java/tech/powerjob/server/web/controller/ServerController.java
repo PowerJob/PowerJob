@@ -13,7 +13,7 @@ import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.server.election.ServerElectionService;
-import tech.powerjob.server.remote.transport.TransportService;
+import tech.powerjob.server.remote.tp.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import java.util.Optional;
@@ -55,7 +55,7 @@ public class ServerController {
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
         res.put("localHost", NetUtils.getLocalHost());
-        res.put("communicationSystemInfo", transportService.getProtocol2Transporter());
+        res.put("defaultAddress", transportService.defaultProtocol());
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
         res.put("appIds", workerClusterQueryService.getAppId2ClusterStatus().keySet());

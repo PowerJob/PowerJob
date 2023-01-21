@@ -29,31 +29,43 @@ public class RemoteConstant {
     public static final String EMPTY_ADDRESS = "N/A";
     public static final long DEFAULT_TIMEOUT_MS = 5000;
 
-    /* ************************ SERVER ************************ */
-    public static final String SERVER_PATH = "server";
+    /* ************************ SERVER-self_side (s4s == server for server side) ************************ */
+    public static final String S4S_PATH = "friend";
+
+    /**
+     * server 集群间的心跳处理
+     */
+    public static final String S4S_HANDLER_PING = "ping";
+    /**
+     * 处理其他 server 的执行请求
+     */
+    public static final String S4S_HANDLER_PROCESS = "process";
+
+    /* ************************ SERVER-worker_side（s4w == server for worker side） ************************ */
+    public static final String S4W_PATH = "server";
     /**
      * server 处理在线日志
      */
-    public static final String SERVER_HANDLER_REPORT_LOG = "reportLog";
+    public static final String S4W_HANDLER_REPORT_LOG = "reportLog";
     /**
      * server 处理 worker 心跳
      */
-    public static final String SERVER_HANDLER_WORKER_HEARTBEAT = "workerHeartbeat";
+    public static final String S4W_HANDLER_WORKER_HEARTBEAT = "workerHeartbeat";
 
     /**
      * server 处理 TaskTracker 上报的任务实例状态
      */
-    public static final String SERVER_HANDLER_REPORT_INSTANCE_STATUS = "reportInstanceStatus";
+    public static final String S4W_HANDLER_REPORT_INSTANCE_STATUS = "reportInstanceStatus";
 
     /**
      * server 查询任务的可执行集群
      */
-    public static final String SERVER_HANDLER_QUERY_JOB_CLUSTER = "queryJobCluster";
+    public static final String S4W_HANDLER_QUERY_JOB_CLUSTER = "queryJobCluster";
 
     /**
      * server 处理 worker 请求部署容器命令
      */
-    public static final String SERVER_HANDLER_WORKER_NEED_DEPLOY_CONTAINER = "container";
+    public static final String S4W_HANDLER_WORKER_NEED_DEPLOY_CONTAINER = "queryContainer";
 
     /* ************************ Worker-TaskTracker ************************ */
     public static final String WTT_PATH = "taskTracker";

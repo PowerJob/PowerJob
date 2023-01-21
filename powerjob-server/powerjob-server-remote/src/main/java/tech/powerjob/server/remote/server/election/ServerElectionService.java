@@ -1,29 +1,23 @@
 package tech.powerjob.server.remote.server.election;
 
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
-import com.alibaba.fastjson.JSONObject;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.enums.Protocol;
-import tech.powerjob.common.response.AskResponse;
-import tech.powerjob.common.serialize.JsonUtils;
-import tech.powerjob.server.extension.LockService;
-import tech.powerjob.server.persistence.remote.model.AppInfoDO;
-import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.remote.transport.TransportService;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.remote.framework.base.URL;
+import tech.powerjob.server.extension.LockService;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.remote.tp.ServerURLFactory;
+import tech.powerjob.server.remote.tp.TransportService;
 
-import javax.annotation.Resource;
-import java.time.Duration;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -59,7 +53,7 @@ public class ServerElectionService {
     public String elect(Long appId, String protocol, String currentServer) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
-            if (getProtocolServerAddress(protocol).equals(currentServer)) {
+            if (transportService.defaultProtocol().getAddress().equals(currentServer)) {
                 return currentServer;
             }
         }
@@ -104,13 +98,14 @@ public class ServerElectionService {
                 }
 
                 // 篡位，本机作为Server
-                // 注意，写入 AppInfoDO#currentServer 的永远是 ActorSystem 的地址，仅在返回的时候特殊处理
-                appInfo.setCurrentServer(transportService.getTransporter(Protocol.AKKA).getAddress());
+                // 注意，写入 AppInfoDO#currentServer 的永远是 ActorSystem 的地址，仅在返回的时候特殊处理 (4.3.0 更改为 HTTP)
+                final String selfDefaultAddress = transportService.defaultProtocol().getAddress();
+                appInfo.setCurrentServer(selfDefaultAddress);
                 appInfo.setGmtModified(new Date());
 
                 appInfoRepository.saveAndFlush(appInfo);
                 log.info("[ServerElection] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
-                return getProtocolServerAddress(protocol);
+                return selfDefaultAddress;
             }catch (Exception e) {
                 log.error("[ServerElection] write new server to db failed for app {}.", appName, e);
             }finally {
@@ -139,16 +134,18 @@ public class ServerElectionService {
         Ping ping = new Ping();
         ping.setCurrentTime(System.currentTimeMillis());
 
-        ActorSelection serverActor = AkkaStarter.getFriendActor(serverAddress);
+        URL targetUrl = ServerURLFactory.ping2Friend(serverAddress);
         try {
-            CompletionStage<Object> askCS = Patterns.ask(serverActor, ping, Duration.ofMillis(PING_TIMEOUT_MS));
-            AskResponse response = (AskResponse) askCS.toCompletableFuture().get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-            downServerCache.remove(serverAddress);
+            AskResponse response = transportService.ask(Protocol.HTTP.name(), targetUrl, ping, AskResponse.class)
+                    .toCompletableFuture()
+                    .get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             if (response.isSuccess()) {
-                return JsonUtils.parseObject(response.getData(), JSONObject.class).getString(protocol);
+                log.info("[ServerElection] server[{}] is active, it will be the master.", serverAddress);
+                downServerCache.remove(serverAddress);
+                return serverAddress;
             }
         }catch (Exception e) {
-            log.warn("[ServerElection] server({}) was down.", serverAddress);
+            log.warn("[ServerElection] server[{}] was down.", serverAddress);
         }
         downServerCache.add(serverAddress);
         return null;
@@ -156,10 +153,5 @@ public class ServerElectionService {
 
     private boolean accurate() {
         return ThreadLocalRandom.current().nextInt(100) < accurateSelectServerPercentage;
-    }
-
-    private String getProtocolServerAddress(String protocol) {
-        Protocol pt = Protocol.of(protocol);
-        return TransportService.getAllAddress().get(pt);
     }
 }

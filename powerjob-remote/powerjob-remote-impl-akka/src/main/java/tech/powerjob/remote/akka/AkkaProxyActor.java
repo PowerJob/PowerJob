@@ -55,9 +55,15 @@ public class AkkaProxyActor extends AbstractActor {
 
         try {
             final Object ret = handlerInfo.getMethod().invoke(actorInfo.getActor(), req);
-            if (ret != null) {
-                getSender().tell(ret, getSelf());
+            if (ret == null) {
+                return;
             }
+            if (ret instanceof Optional) {
+                if (!((Optional<?>) ret).isPresent()) {
+                    return;
+                }
+            }
+            getSender().tell(ret, getSelf());
         } catch (Exception e) {
             log.error("[PowerJob-AKKA] process failed!", e);
         }

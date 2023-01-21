@@ -28,7 +28,7 @@
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.7.4</springboot.version>
-        <powerjob.common.version>4.2.1</powerjob.common.version>
+
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
         <mysql.version>8.0.30</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
@@ -50,6 +50,8 @@
 
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.1.6</cron-utils.version>
+        <powerjob-remote-impl-http.version>4.2.1</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>4.2.1</powerjob-remote-impl-akka.version>
     </properties>
 
     <dependencyManagement>
@@ -99,11 +101,16 @@
 
     <dependencies>
 
-        <!-- oms-common -->
+        <!-- 网络层 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
-            <artifactId>powerjob-common</artifactId>
-            <version>${powerjob.common.version}</version>
+            <artifactId>powerjob-remote-impl-http</artifactId>
+            <version>${powerjob-remote-impl-http.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-akka</artifactId>
+            <version>${powerjob-remote-impl-akka.version}</version>
         </dependency>
 
         <!-- mysql -->
@@ -267,6 +274,12 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
             <version>${swagger.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- swagger2 ui -->
         <dependency>

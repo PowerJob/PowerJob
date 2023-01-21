@@ -5,15 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerStopInstanceReq;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.response.InstanceInfoDTO;
+import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.constants.InstanceType;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.timewheel.TimerFuture;
@@ -26,12 +27,14 @@ import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.remote.transport.TransportService;
+import tech.powerjob.server.remote.tp.ServerURLFactory;
+import tech.powerjob.server.remote.tp.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static tech.powerjob.common.enums.InstanceStatus.RUNNING;
@@ -136,7 +139,7 @@ public class InstanceService {
             if (workerInfoOpt.isPresent()) {
                 ServerStopInstanceReq req = new ServerStopInstanceReq(instanceId);
                 WorkerInfo workerInfo = workerInfoOpt.get();
-                transportService.tell(Protocol.of(workerInfo.getProtocol()), workerInfo.getAddress(), req);
+                transportService.tell(workerInfo.getProtocol(), ServerURLFactory.stopInstance2Worker(workerInfo.getAddress()), req);
                 log.info("[Instance-{}] update instanceInfo and send 'stopInstance' request succeed.", instanceId);
             } else {
                 log.warn("[Instance-{}] update instanceInfo successfully but can't find TaskTracker to stop instance", instanceId);
@@ -280,7 +283,10 @@ public class InstanceService {
             WorkerInfo workerInfo = workerInfoOpt.get();
             ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);
             try {
-                AskResponse askResponse = transportService.ask(Protocol.of(workerInfo.getProtocol()), workerInfo.getAddress(), req);
+                final URL url = ServerURLFactory.queryInstance2Worker(workerInfo.getAddress());
+                AskResponse askResponse = transportService.ask(workerInfo.getProtocol(), url, req, AskResponse.class)
+                        .toCompletableFuture()
+                        .get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 if (askResponse.isSuccess()) {
                     InstanceDetail instanceDetail = askResponse.getData(InstanceDetail.class);
                     instanceDetail.setRunningTimes(instanceInfoDO.getRunningTimes());

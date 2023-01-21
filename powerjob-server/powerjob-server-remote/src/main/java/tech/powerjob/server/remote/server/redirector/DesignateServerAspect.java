@@ -1,17 +1,9 @@
 package tech.powerjob.server.remote.server.redirector;
 
-import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.RequiredArgsConstructor;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.RemoteConstant;
-import tech.powerjob.common.response.AskResponse;
-import org.springframework.core.annotation.Order;
-import tech.powerjob.server.persistence.remote.model.AppInfoDO;
-import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,16 +11,25 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.remote.framework.base.URL;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.remote.tp.ServerURLFactory;
+import tech.powerjob.server.remote.tp.TransportService;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 指定服务器运行切面
@@ -43,6 +44,7 @@ import java.util.concurrent.CompletionStage;
 @RequiredArgsConstructor
 public class DesignateServerAspect {
 
+    private final TransportService transportService;
     private final AppInfoRepository appInfoRepository;
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -84,7 +86,7 @@ public class DesignateServerAspect {
         }
 
         // 目标IP与本地符合则本地执行
-        if (Objects.equals(targetServer, AkkaStarter.getActorSystemAddress())) {
+        if (Objects.equals(targetServer, transportService.defaultProtocol())) {
             return point.proceed();
         }
 
@@ -96,8 +98,10 @@ public class DesignateServerAspect {
                 .setParameterTypes(parameterTypes)
                 .setArgs(args);
 
-        CompletionStage<Object> askCS = Patterns.ask(AkkaStarter.getFriendActor(targetServer), remoteProcessReq, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-        AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get();
+        final URL friendUrl = ServerURLFactory.process2Friend(targetServer);
+
+        CompletionStage<AskResponse> askCS = transportService.ask(Protocol.HTTP.name(), friendUrl, remoteProcessReq, AskResponse.class);
+        AskResponse askResponse = askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
         if (!askResponse.isSuccess()) {
             throw new PowerJobException("remote process failed: " + askResponse.getMessage());
