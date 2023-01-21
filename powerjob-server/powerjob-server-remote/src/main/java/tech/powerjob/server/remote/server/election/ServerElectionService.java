@@ -1,5 +1,6 @@
 package tech.powerjob.server.remote.server.election;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -7,11 +8,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.remote.transporter.ProtocolInfo;
 import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.transporter.TransportService;
 
@@ -50,18 +54,21 @@ public class ServerElectionService {
         this.accurateSelectServerPercentage = accurateSelectServerPercentage;
     }
 
-    public String elect(Long appId, String protocol, String currentServer) {
+    public String elect(ServerDiscoveryRequest request) {
         if (!accurate()) {
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
-            if (transportService.defaultProtocol().getAddress().equals(currentServer)) {
-                return currentServer;
+            Optional<ProtocolInfo> localProtocolInfoOpt = Optional.ofNullable(transportService.allProtocols().get(request.getProtocol()));
+            if (localProtocolInfoOpt.isPresent() && localProtocolInfoOpt.get().getAddress().equals(request.getCurrentServer())) {
+                return request.getCurrentServer();
             }
         }
-        return getServer0(appId, protocol);
+        return getServer0(request);
     }
 
-    private String getServer0(Long appId, String protocol) {
+    private String getServer0(ServerDiscoveryRequest discoveryRequest) {
 
+        final Long appId = discoveryRequest.getAppId();
+        final String protocol = discoveryRequest.getProtocol();
         Set<String> downServerCache = Sets.newHashSet();
 
         for (int i = 0; i < RETRY_TIMES; i++) {
@@ -97,15 +104,17 @@ public class ServerElectionService {
                     return address;
                 }
 
-                // 篡位，本机作为Server
-                // 注意，写入 AppInfoDO#currentServer 的永远是 ActorSystem 的地址，仅在返回的时候特殊处理 (4.3.0 更改为 HTTP)
-                final String selfDefaultAddress = transportService.defaultProtocol().getAddress();
-                appInfo.setCurrentServer(selfDefaultAddress);
-                appInfo.setGmtModified(new Date());
+                // 篡位，如果本机存在协议，则作为Server调度该 worker
+                final ProtocolInfo targetProtocolInfo = transportService.allProtocols().get(protocol);
+                if (targetProtocolInfo != null) {
+                    // 注意，写入 AppInfoDO#currentServer 的永远是 default 的地址，仅在返回的时候特殊处理为协议地址
+                    appInfo.setCurrentServer(transportService.defaultProtocol().getAddress());
+                    appInfo.setGmtModified(new Date());
 
-                appInfoRepository.saveAndFlush(appInfo);
-                log.info("[ServerElection] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
-                return selfDefaultAddress;
+                    appInfoRepository.saveAndFlush(appInfo);
+                    log.info("[ServerElection] this server({}) become the new server for app(appId={}).", appInfo.getCurrentServer(), appId);
+                    return targetProtocolInfo.getAddress();
+                }
             }catch (Exception e) {
                 log.error("[ServerElection] write new server to db failed for app {}.", appName, e);
             }finally {
@@ -142,10 +151,14 @@ public class ServerElectionService {
             if (response.isSuccess()) {
                 log.info("[ServerElection] server[{}] is active, it will be the master.", serverAddress);
                 downServerCache.remove(serverAddress);
-                return serverAddress;
+                // 检测通过的是远程 server 的暴露地址，需要返回 worker 需要的协议地址
+                final JSONObject protocolInfo = JsonUtils.parseObject(response.getData(), JSONObject.class).getJSONObject(protocol);
+                if (protocolInfo != null) {
+                    return protocolInfo.toJavaObject(ProtocolInfo.class).getAddress();
+                }
             }
         }catch (Exception e) {
-            log.warn("[ServerElection] server[{}] was down.", serverAddress);
+            log.warn("[ServerElection] server[{}] was down.", serverAddress, e);
         }
         downServerCache.add(serverAddress);
         return null;

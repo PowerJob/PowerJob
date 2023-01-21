@@ -1,9 +1,12 @@
 package tech.powerjob.worker.background;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CollectionUtils;
@@ -37,7 +40,7 @@ public class ServerDiscoveryService {
     /**
      *  服务发现地址
      */
-    private static final String DISCOVERY_URL = "http://%s/server/acquire?appId=%d&currentServer=%s&protocol=AKKA";
+    private static final String DISCOVERY_URL = "http://%s/server/acquire?%s";
     /**
      * 失败次数
      */
@@ -131,7 +134,7 @@ public class ServerDiscoveryService {
     @SuppressWarnings("rawtypes")
     private String acquire(String httpServerAddress) {
         String result = null;
-        String url = String.format(DISCOVERY_URL, httpServerAddress, appId, currentServerAddress);
+        String url = buildServerDiscoveryUrl(httpServerAddress);
         try {
             result = CommonUtils.executeWithRetry0(() -> HttpUtils.get(url));
         }catch (Exception ignore) {
@@ -146,5 +149,16 @@ public class ServerDiscoveryService {
             }
         }
         return null;
+    }
+
+    private String buildServerDiscoveryUrl(String address) {
+
+        ServerDiscoveryRequest serverDiscoveryRequest = new ServerDiscoveryRequest()
+                .setAppId(appId)
+                .setCurrentServer(currentServerAddress)
+                .setProtocol(config.getProtocol().name().toUpperCase());
+
+        String query = Joiner.on(OmsConstant.AND).withKeyValueSeparator(OmsConstant.EQUAL).join(serverDiscoveryRequest.toMap());
+        return String.format(DISCOVERY_URL, address, query);
     }
 }

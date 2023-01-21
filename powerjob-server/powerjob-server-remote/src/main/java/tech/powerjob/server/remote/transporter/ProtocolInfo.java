@@ -1,6 +1,7 @@
 package tech.powerjob.server.remote.transporter;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
@@ -11,14 +12,15 @@ import tech.powerjob.remote.framework.transporter.Transporter;
  * @since 2023/1/21
  */
 @Getter
+@Setter
 @ToString
 public class ProtocolInfo {
 
-    private final String protocol;
+    private String protocol;
 
-    private final String address;
+    private String address;
 
-    private final transient Transporter transporter;
+    private transient Transporter transporter;
 
     public ProtocolInfo(String protocol, String address, Transporter transporter) {
         this.protocol = protocol;

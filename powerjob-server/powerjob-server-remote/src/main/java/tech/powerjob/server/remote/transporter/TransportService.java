@@ -4,6 +4,7 @@ import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.remote.framework.base.RemotingException;
 import tech.powerjob.remote.framework.base.URL;
 
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -21,6 +22,12 @@ public interface TransportService {
      * @return 自用地址
      */
     ProtocolInfo defaultProtocol();
+
+    /**
+     * 当前支持的全部协议
+     * @return allProtocols
+     */
+    Map<String, ProtocolInfo> allProtocols();
 
     void tell(String protocol, URL url, PowerSerializable request);
 

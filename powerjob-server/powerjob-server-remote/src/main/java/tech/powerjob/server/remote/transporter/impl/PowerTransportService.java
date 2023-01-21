@@ -50,7 +50,7 @@ public class PowerTransportService implements TransportService, InitializingBean
     private final Environment environment;
 
     private ProtocolInfo defaultProtocol;
-    private final Map<String, ProtocolInfo> protocol2Transporter = Maps.newHashMap();
+    private final Map<String, ProtocolInfo> protocolName2Info = Maps.newHashMap();
 
     private final List<RemoteEngine> engines = Lists.newArrayList();
 
@@ -65,10 +65,15 @@ public class PowerTransportService implements TransportService, InitializingBean
         return defaultProtocol;
     }
 
+    @Override
+    public Map<String, ProtocolInfo> allProtocols() {
+        return protocolName2Info;
+    }
+
     private ProtocolInfo fetchProtocolInfo(String protocol) {
         // 兼容老版 worker 未上报 protocol 的情况
         protocol = compatibleProtocol(protocol);
-        final ProtocolInfo protocolInfo = protocol2Transporter.get(protocol);
+        final ProtocolInfo protocolInfo = protocolName2Info.get(protocol);
         if (protocolInfo == null) {
             throw new IllegalArgumentException("can't find Transporter by protocol :" + protocol);
         }
@@ -105,7 +110,7 @@ public class PowerTransportService implements TransportService, InitializingBean
         log.info("[PowerTransportService] start RemoteEngine[type={},address={}] successfully", protocol, address);
 
         this.engines.add(re);
-        this.protocol2Transporter.put(protocol, new ProtocolInfo(protocol, address.toFullAddress(), engineOutput.getTransporter()));
+        this.protocolName2Info.put(protocol, new ProtocolInfo(protocol, address.toFullAddress(), engineOutput.getTransporter()));
     }
 
     @Override
@@ -131,7 +136,7 @@ public class PowerTransportService implements TransportService, InitializingBean
         choseDefault();
 
         log.info("[PowerTransportService] initialize successfully!");
-        log.info("[PowerTransportService] ALL_PROTOCOLS: {}", protocol2Transporter);
+        log.info("[PowerTransportService] ALL_PROTOCOLS: {}", protocolName2Info);
     }
 
     /**
@@ -165,7 +170,7 @@ public class PowerTransportService implements TransportService, InitializingBean
      * HTTP 优先，否则默认取第一个协议
      */
     private void choseDefault() {
-        ProtocolInfo httpP = protocol2Transporter.get(Protocol.HTTP.name());
+        ProtocolInfo httpP = protocolName2Info.get(Protocol.HTTP.name());
         if (httpP != null) {
             log.info("[PowerTransportService] exist HTTP protocol, chose this as the default protocol!");
             this.defaultProtocol = httpP;
@@ -173,7 +178,7 @@ public class PowerTransportService implements TransportService, InitializingBean
         }
 
         String firstProtocol = activeProtocols.split(OmsConstant.COMMA)[0];
-        this.defaultProtocol = this.protocol2Transporter.get(firstProtocol);
+        this.defaultProtocol = this.protocolName2Info.get(firstProtocol);
         log.info("[PowerTransportService] chose [{}] as the default protocol!", firstProtocol);
 
         if (this.defaultProtocol == null) {

@@ -86,7 +86,7 @@ public class DesignateServerAspect {
         }
 
         // 目标IP与本地符合则本地执行
-        if (Objects.equals(targetServer, transportService.defaultProtocol())) {
+        if (Objects.equals(targetServer, transportService.defaultProtocol().getAddress())) {
             return point.proceed();
         }
 

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
@@ -47,8 +48,8 @@ public class ServerController {
     }
 
     @GetMapping("/acquire")
-    public ResultDTO<String> acquireServer(Long appId, String protocol, String currentServer) {
-        return ResultDTO.success(serverElectionService.elect(appId, protocol, currentServer));
+    public ResultDTO<String> acquireServer(ServerDiscoveryRequest request) {
+        return ResultDTO.success(serverElectionService.elect(request));
     }
 
     @GetMapping("/hello")

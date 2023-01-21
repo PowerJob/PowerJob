@@ -11,6 +11,7 @@ import tech.powerjob.remote.framework.actor.ProcessType;
 import tech.powerjob.server.remote.server.election.Ping;
 import tech.powerjob.server.remote.server.redirector.RemoteProcessReq;
 import tech.powerjob.server.remote.server.redirector.RemoteRequestProcessor;
+import tech.powerjob.server.remote.transporter.TransportService;
 
 import static tech.powerjob.common.RemoteConstant.*;
 
@@ -25,14 +26,19 @@ import static tech.powerjob.common.RemoteConstant.*;
 @Actor(path = S4S_PATH)
 public class FriendActor {
 
-    private static final String SK = "dGVuZ2ppcWlAZ21haWwuY29tIA==";
+    private final TransportService transportService;
+
+    public FriendActor(TransportService transportService) {
+        this.transportService = transportService;
+    }
 
     /**
      * 处理存活检测的请求
      */
     @Handler(path = S4S_HANDLER_PING, processType = ProcessType.NO_BLOCKING)
     public AskResponse onReceivePing(Ping ping) {
-        return AskResponse.succeed(SK);
+        final AskResponse response = AskResponse.succeed(transportService.allProtocols());
+        return response;
     }
 
     @Handler(path = S4S_HANDLER_PROCESS, processType = ProcessType.BLOCKING)
