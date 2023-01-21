@@ -1,4 +1,4 @@
-package tech.powerjob.server.remote.tp;
+package tech.powerjob.server.remote.transporter.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -22,6 +22,8 @@ import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;
 import tech.powerjob.server.remote.actoes.ServerActor;
+import tech.powerjob.server.remote.transporter.ProtocolInfo;
+import tech.powerjob.server.remote.transporter.TransportService;
 
 import java.util.List;
 import java.util.Map;

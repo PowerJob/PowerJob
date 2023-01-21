@@ -13,7 +13,7 @@ import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.server.election.ServerElectionService;
-import tech.powerjob.server.remote.tp.TransportService;
+import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import java.util.Optional;

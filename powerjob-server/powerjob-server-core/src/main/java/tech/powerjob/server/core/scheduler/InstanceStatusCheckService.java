@@ -22,7 +22,7 @@ import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.brief.BriefInstanceInfo;
 import tech.powerjob.server.persistence.remote.repository.*;
-import tech.powerjob.server.remote.tp.TransportService;
+import tech.powerjob.server.remote.transporter.TransportService;
 
 import java.util.*;
 import java.util.stream.Collectors;

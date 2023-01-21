@@ -23,7 +23,7 @@ import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
-import tech.powerjob.server.remote.tp.TransportService;
+import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 
 import java.util.*;

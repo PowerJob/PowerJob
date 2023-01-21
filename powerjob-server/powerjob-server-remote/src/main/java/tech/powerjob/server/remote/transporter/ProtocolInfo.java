@@ -1,4 +1,4 @@
-package tech.powerjob.server.remote.tp;
+package tech.powerjob.server.remote.transporter;
 
 import lombok.Getter;
 import lombok.ToString;

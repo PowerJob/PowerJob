@@ -20,8 +20,8 @@ import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.remote.tp.ServerURLFactory;
-import tech.powerjob.server.remote.tp.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
+import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import java.util.ArrayList;

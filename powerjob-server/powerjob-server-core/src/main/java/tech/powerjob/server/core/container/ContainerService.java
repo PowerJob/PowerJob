@@ -44,8 +44,8 @@ import tech.powerjob.server.persistence.mongodb.GridFsManager;
 import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
-import tech.powerjob.server.remote.tp.ServerURLFactory;
-import tech.powerjob.server.remote.tp.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
+import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import javax.annotation.Resource;

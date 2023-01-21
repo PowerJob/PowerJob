@@ -12,8 +12,8 @@ import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.remote.tp.ServerURLFactory;
-import tech.powerjob.server.remote.tp.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
+import tech.powerjob.server.remote.transporter.TransportService;
 
 import java.util.Date;
 import java.util.Optional;
