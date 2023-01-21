@@ -12,18 +12,6 @@ public class RemoteConstant {
     /* ************************ AKKA WORKER ************************ */
     public static final int DEFAULT_WORKER_PORT = 27777;
 
-    public static final String WORKER_ACTOR_SYSTEM_NAME = "oms";
-
-    public static final String WORKER_ACTOR_NAME = "worker";
-
-
-    /* ************************ AKKA SERVER ************************ */
-    public static final String SERVER_ACTOR_SYSTEM_NAME = "oms-server";
-
-    public static final String SERVER_ACTOR_NAME = "server_actor";
-    public static final String SERVER_FRIEND_ACTOR_NAME = "friend_actor";
-    public static final String SERVER_AKKA_CONFIG_NAME = "oms-server.akka.conf";
-
 
     /* ************************ OTHERS ************************ */
     public static final String EMPTY_ADDRESS = "N/A";

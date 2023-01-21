@@ -1,10 +1,9 @@
 package tech.powerjob.common.request;
 
-import tech.powerjob.common.PowerSerializable;
-import tech.powerjob.common.ProtocolConstant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tech.powerjob.common.PowerSerializable;
 
 
 /**
@@ -18,9 +17,4 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ServerStopInstanceReq implements PowerSerializable {
     private Long instanceId;
-
-    @Override
-    public String path() {
-        return ProtocolConstant.WORKER_PATH_STOP_INSTANCE;
-    }
 }
