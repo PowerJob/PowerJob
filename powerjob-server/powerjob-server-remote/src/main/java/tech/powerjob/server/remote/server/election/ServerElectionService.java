@@ -117,7 +117,7 @@ public class ServerElectionService {
                 }
             }catch (Exception e) {
                 log.error("[ServerElection] write new server to db failed for app {}.", appName, e);
-            }finally {
+            } finally {
                 lockService.unlock(lockName);
             }
         }
@@ -150,10 +150,10 @@ public class ServerElectionService {
                     .get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             if (response.isSuccess()) {
                 log.info("[ServerElection] server[{}] is active, it will be the master.", serverAddress);
-                downServerCache.remove(serverAddress);
                 // 检测通过的是远程 server 的暴露地址，需要返回 worker 需要的协议地址
                 final JSONObject protocolInfo = JsonUtils.parseObject(response.getData(), JSONObject.class).getJSONObject(protocol);
                 if (protocolInfo != null) {
+                    downServerCache.remove(serverAddress);
                     return protocolInfo.toJavaObject(ProtocolInfo.class).getAddress();
                 }
             }
