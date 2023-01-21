@@ -1,6 +1,7 @@
-package tech.powerjob.common.serialize;
+package tech.powerjob.remote.akka;
 
 import akka.serialization.JSerializer;
+import tech.powerjob.common.serialize.SerializerUtils;
 
 /**
  * Using custom serializers for akka-remote
@@ -31,3 +32,4 @@ public class PowerAkkaSerializer extends JSerializer {
         return false;
     }
 }
+

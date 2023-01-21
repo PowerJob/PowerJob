@@ -9,12 +9,4 @@ import java.io.Serializable;
  * @since 2020/4/16
  */
 public interface PowerSerializable extends Serializable {
-
-    /**
-     * request path for http or other protocol, like '/worker/stopInstance'
-     * @return null for non-http request object or no-null path for http request needed object
-     */
-    default String path() {
-        return null;
-    }
 }
