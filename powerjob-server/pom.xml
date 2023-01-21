@@ -43,7 +43,6 @@
         <commons.net.version>3.8.0</commons.net.version>
         <fastjson.version>1.2.83</fastjson.version>
         <dingding.version>1.0.1</dingding.version>
-        <vertx-web.version>4.0.2</vertx-web.version>
 
         <!-- skip this module when deploying. -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -250,17 +249,6 @@
                     <artifactId>log4j</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web</artifactId>
-            <version>${vertx-web.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-client</artifactId>
-            <version>${vertx-web.version}</version>
         </dependency>
 
         <dependency>
