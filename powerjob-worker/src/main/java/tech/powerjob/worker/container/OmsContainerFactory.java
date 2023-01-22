@@ -10,6 +10,7 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.worker.common.utils.PowerFileUtils;
 import tech.powerjob.worker.common.utils.TransportUtils;
 
 import java.io.File;
@@ -26,13 +27,13 @@ import java.util.Map;
 @Slf4j
 public class OmsContainerFactory {
 
-    private static final String CONTAINER_DIR = System.getProperty("user.home") + "/powerjob/worker/container/";
+    private static final String CONTAINER_DIR = PowerFileUtils.workspace() + "/container/";
     private static final Map<Long, OmsContainer> CARGO = Maps.newConcurrentMap();
 
     /**
      * 获取容器
      * @param containerId 容器ID
-     * @param serverActor 当容器不存在且 serverActor 非空时，尝试从服务端重新拉取容器
+     * @param workerRuntime 当容器不存在且 serverActor 非空时，尝试从服务端重新拉取容器
      * @return 容器示例，可能为 null
      */
     public static OmsContainer fetchContainer(Long containerId, WorkerRuntime workerRuntime) {

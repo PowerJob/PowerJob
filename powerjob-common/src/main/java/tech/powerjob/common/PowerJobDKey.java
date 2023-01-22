@@ -41,6 +41,8 @@ public class PowerJobDKey {
      * <a href="https://stackoverflow.com/questions/16504140/thread-stop-deprecated">It's VERY dangerous</a>
      */
     public static final String WORKER_ALLOWED_FORCE_STOP_THREAD = "powerjob.worker.allowed-force-stop-thread";
+
+    public static final String WORKER_WORK_SPACE = "powerjob.worker.workspace";
     /**
      * ms
      */
