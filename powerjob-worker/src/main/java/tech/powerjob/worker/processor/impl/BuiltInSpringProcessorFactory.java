@@ -46,7 +46,7 @@ public class BuiltInSpringProcessorFactory implements ProcessorFactory {
                     .setProcessor(basicProcessor)
                     .setClassLoader(basicProcessor.getClass().getClassLoader());
         } catch (Throwable t) {
-            log.warn("[ProcessorFactory] load by BuiltInSpringProcessorFactory failed!", t);
+            log.warn("[ProcessorFactory] load by BuiltInSpringProcessorFactory failed. If you are using Spring, make sure this bean was managed by Spring", t);
         }
 
         return null;

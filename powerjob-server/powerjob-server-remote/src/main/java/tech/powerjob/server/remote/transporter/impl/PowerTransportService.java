@@ -45,6 +45,13 @@ public class PowerTransportService implements TransportService, InitializingBean
 
     @Value("${oms.transporter.active.protocols}")
     private String activeProtocols;
+
+    /**
+     * 主要通讯协议，用于 server 与 server 之间的通讯，用户必须保证该协议可用！
+     */
+    @Value("${oms.transporter.main.protocol}")
+    private String mainProtocol;
+
     private static final String PROTOCOL_PORT_CONFIG = "oms.%s.port";
 
     private final Environment environment;
@@ -170,16 +177,10 @@ public class PowerTransportService implements TransportService, InitializingBean
      * HTTP 优先，否则默认取第一个协议
      */
     private void choseDefault() {
-        ProtocolInfo httpP = protocolName2Info.get(Protocol.HTTP.name());
-        if (httpP != null) {
-            log.info("[PowerTransportService] exist HTTP protocol, chose this as the default protocol!");
-            this.defaultProtocol = httpP;
-            return;
-        }
 
-        String firstProtocol = activeProtocols.split(OmsConstant.COMMA)[0];
-        this.defaultProtocol = this.protocolName2Info.get(firstProtocol);
-        log.info("[PowerTransportService] chose [{}] as the default protocol!", firstProtocol);
+
+        this.defaultProtocol = this.protocolName2Info.get(mainProtocol);
+        log.info("[PowerTransportService] chose [{}] as the default protocol, make sure this protocol can work!", mainProtocol);
 
         if (this.defaultProtocol == null) {
             throw new IllegalArgumentException("can't find default protocol, please check your config!");

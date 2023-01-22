@@ -53,7 +53,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
 
     protected abstract void processWorkerHeartbeat0(WorkerHeartbeat heartbeat, WorkerHeartbeatEvent event);
 
-    protected abstract Optional<AskResponse> processTaskTrackerReportInstanceStatus0(TaskTrackerReportInstanceStatusReq req, TtReportInstanceStatusEvent event) throws Exception;
+    protected abstract AskResponse processTaskTrackerReportInstanceStatus0(TaskTrackerReportInstanceStatusReq req, TtReportInstanceStatusEvent event) throws Exception;
 
     protected abstract void processWorkerLogReport0(WorkerLogReportReq req, WorkerLogReportEvent event);
 
@@ -77,7 +77,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
 
     @Override
     @Handler(path = S4W_HANDLER_REPORT_INSTANCE_STATUS, processType = ProcessType.BLOCKING)
-    public Optional<AskResponse> processTaskTrackerReportInstanceStatus(TaskTrackerReportInstanceStatusReq req) {
+    public AskResponse processTaskTrackerReportInstanceStatus(TaskTrackerReportInstanceStatusReq req) {
         long startMs = System.currentTimeMillis();
         TtReportInstanceStatusEvent event = new TtReportInstanceStatusEvent()
                 .setAppId(req.getAppId())
@@ -92,7 +92,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
         } catch (Exception e) {
             event.setServerProcessStatus(TtReportInstanceStatusEvent.Status.FAILED);
             log.error("[WorkerRequestHandler] processTaskTrackerReportInstanceStatus failed for request: {}", req, e);
-            return Optional.of(AskResponse.failed(ExceptionUtils.getMessage(e)));
+            return AskResponse.failed(ExceptionUtils.getMessage(e));
         } finally {
             event.setServerProcessCost(System.currentTimeMillis() - startMs);
             monitorService.monitor(event);

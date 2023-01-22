@@ -3,8 +3,6 @@ package tech.powerjob.server.core.handler;
 import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 
-import java.util.Optional;
-
 /**
  * 定义 server 与 worker 之间需要处理的协议
  *
@@ -24,7 +22,7 @@ public interface IWorkerRequestHandler {
      * @param req 上报请求
      * @return 响应信息
      */
-    Optional<AskResponse> processTaskTrackerReportInstanceStatus(TaskTrackerReportInstanceStatusReq req);
+    AskResponse processTaskTrackerReportInstanceStatus(TaskTrackerReportInstanceStatusReq req);
 
     /**
      * 处理 worker 查询执行器集群
