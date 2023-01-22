@@ -46,11 +46,15 @@ public class PowerJobAutoConfiguration {
         /*
          * Configuration of worker port. Random port is enabled when port is set with non-positive number.
          */
-        int port = worker.getAkkaPort();
-        if (port <= 0) {
-            port = NetUtils.getRandomPort();
+        if (worker.getPort() != null) {
+            config.setPort(worker.getPort());
+        } else {
+            int port = worker.getAkkaPort();
+            if (port <= 0) {
+                port = NetUtils.getRandomPort();
+            }
+            config.setPort(port);
         }
-        config.setPort(port);
         /*
          * appName, name of the application. Applications should be registered in advance to prevent
          * error. This property should be the same with what you entered for appName when getting

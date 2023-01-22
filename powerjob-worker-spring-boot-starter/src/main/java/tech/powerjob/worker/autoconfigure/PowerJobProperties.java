@@ -112,8 +112,14 @@ public class PowerJobProperties {
         /**
          * Akka port of Powerjob-worker, optional value. Default value of this property is 27777.
          * If multiple PowerJob-worker nodes were deployed, different, unique ports should be assigned.
+         * Deprecated, please use 'port'
          */
+        @Deprecated
         private int akkaPort = RemoteConstant.DEFAULT_WORKER_PORT;
+        /**
+         * port
+         */
+        private Integer port;
         /**
          * Address(es) of Powerjob-server node(s). Ip:port or domain.
          * Example of single Powerjob-server node:
