@@ -21,6 +21,7 @@
 
         <logback.version>1.2.9</logback.version>
 
+        <powerjob-common.version>4.2.1</powerjob-common.version>
         <powerjob-remote-framework.version>4.2.1</powerjob-remote-framework.version>
         <powerjob-remote-impl-akka.version>4.2.1</powerjob-remote-impl-akka.version>
         <powerjob-remote-impl-http.version>4.2.1</powerjob-remote-impl-http.version>
@@ -28,12 +29,11 @@
 
     <dependencies>
 
-        <!-- Spring 依赖（非强依赖） -->
+        <!-- 仍然手动引入 common 依赖并置顶，保证依赖仲裁时占据上风 -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-            <scope>provided</scope>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-common</artifactId>
+            <version>${powerjob-common.version}</version>
         </dependency>
 
         <!-- PowerJob 通讯框架 -->
@@ -44,12 +44,13 @@
         </dependency>
 
         <!-- PowerJob 通讯层具体实现，按需选择自己需要的通讯器即可。如果包冲突可尝试更换通讯器实现。 -->
+        <!-- 4.3.x 版本前 AKKA 都是 PowerJob 通讯层的唯一实现，考虑到兼容性 4.3.x 默认仍为 AKKA，但由于 AKKA 后续收费，最终会废弃该模块 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-akka</artifactId>
             <version>${powerjob-remote-impl-akka.version}</version>
         </dependency>
-        <!-- 4.3.x 版本考虑到兼容性，官方默认实现仍为 akka，如需使用 HTTP 请仔细引入依赖 -->
+        <!-- 4.3.x 版本考虑到兼容性，官方默认实现仍为 akka，如需使用 HTTP 请自行引入依赖并修改 worker 启动配置 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-http</artifactId>
@@ -68,6 +69,14 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikaricp.version}</version>
+        </dependency>
+
+        <!-- Spring 依赖（非强依赖） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Junit 测试 -->
