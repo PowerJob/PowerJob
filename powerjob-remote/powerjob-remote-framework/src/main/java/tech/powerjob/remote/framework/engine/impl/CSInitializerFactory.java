@@ -39,6 +39,6 @@ class CSInitializerFactory {
             }
         }
 
-        throw new PowerJobException(String.format("can't load CSInitializer[%s], ensure your package name start with 'tech.powerjob'!", targetType));
+        throw new PowerJobException(String.format("can't load CSInitializer[%s], ensure your package name start with 'tech.powerjob' and import the dependencies!", targetType));
     }
 }

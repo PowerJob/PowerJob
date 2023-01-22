@@ -43,19 +43,17 @@
             <version>${powerjob-remote-framework.version}</version>
         </dependency>
 
-        <!-- PowerJob 通讯层具体实现，按需选择自己需要的通讯器即可。如果包冲突可尝试更换通讯器实现。 -->
-        <!-- 4.3.x 版本前 AKKA 都是 PowerJob 通讯层的唯一实现，考虑到兼容性 4.3.x 默认仍为 AKKA，但由于 AKKA 后续收费，最终会废弃该模块 -->
+        <!-- PowerJob 通讯层具体实现，按需选择自己需要的通讯器即可。如果包冲突可尝试更换通讯器实现，并排除未使用的通讯器包 -->
+        <!-- 4.3.x 版本前 AKKA 都是 PowerJob 通讯层的唯一实现，考虑到兼容性 4.3.x 默认仍为 AKKA，但由于 AKKA 后续收费，最终会废弃该模块，扶正太子（HTTP）上位 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-akka</artifactId>
             <version>${powerjob-remote-impl-akka.version}</version>
         </dependency>
-        <!-- 4.3.x 版本考虑到兼容性，官方默认实现仍为 akka，如需使用 HTTP 请自行引入依赖并修改 worker 启动配置 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-http</artifactId>
             <version>${powerjob-remote-impl-http.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- h2 database -->
