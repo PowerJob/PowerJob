@@ -56,10 +56,12 @@ public class ServerElectionService {
 
     public String elect(ServerDiscoveryRequest request) {
         if (!accurate()) {
+            final String currentServer = request.getCurrentServer();
             // 如果是本机，就不需要查数据库那么复杂的操作了，直接返回成功
             Optional<ProtocolInfo> localProtocolInfoOpt = Optional.ofNullable(transportService.allProtocols().get(request.getProtocol()));
-            if (localProtocolInfoOpt.isPresent() && localProtocolInfoOpt.get().getAddress().equals(request.getCurrentServer())) {
-                return request.getCurrentServer();
+            if (localProtocolInfoOpt.isPresent() && localProtocolInfoOpt.get().getAddress().equals(currentServer)) {
+                log.debug("[ServerElectionService] this server[{}] is worker's current server, skip check", currentServer);
+                return currentServer;
             }
         }
         return getServer0(request);
@@ -149,12 +151,15 @@ public class ServerElectionService {
                     .toCompletableFuture()
                     .get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             if (response.isSuccess()) {
-                log.info("[ServerElection] server[{}] is active, it will be the master.", serverAddress);
                 // 检测通过的是远程 server 的暴露地址，需要返回 worker 需要的协议地址
                 final JSONObject protocolInfo = JsonUtils.parseObject(response.getData(), JSONObject.class).getJSONObject(protocol);
                 if (protocolInfo != null) {
                     downServerCache.remove(serverAddress);
-                    return protocolInfo.toJavaObject(ProtocolInfo.class).getAddress();
+                    final String protocolAddress = protocolInfo.toJavaObject(ProtocolInfo.class).getAddress();
+                    log.info("[ServerElection] server[{}] is active, it will be the master, final protocol address={}", serverAddress, protocolAddress);
+                    return protocolAddress;
+                } else {
+                    log.warn("[ServerElection] server[{}] is active but don't have target protocol", serverAddress);
                 }
             }
         }catch (Exception e) {
