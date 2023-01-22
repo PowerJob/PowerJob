@@ -24,6 +24,9 @@ public class AkkaMappingService {
     static {
         addMappingRule(RemoteConstant.S4W_PATH, "server_actor", "w-r-c-d");
         addMappingRule(RemoteConstant.S4S_PATH, "friend_actor", "friend-request-actor-dispatcher");
+
+        addMappingRule(RemoteConstant.WTT_PATH, "task_tracker", "task-tracker-dispatcher");
+        addMappingRule(RemoteConstant.WPT_PATH, "processor_tracker", "processor-tracker-dispatcher");
     }
 
     private static final String DEFAULT_DISPATCH_NAME = "common-dispatcher";
