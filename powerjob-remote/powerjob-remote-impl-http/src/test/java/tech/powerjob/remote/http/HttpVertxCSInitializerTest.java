@@ -1,7 +1,6 @@
 package tech.powerjob.remote.http;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.common.enums.Protocol;
@@ -10,8 +9,6 @@ import tech.powerjob.remote.framework.BenchmarkActor;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.HandlerLocation;
 import tech.powerjob.remote.framework.base.URL;
-import tech.powerjob.remote.framework.cs.CSInitializer;
-import tech.powerjob.remote.framework.cs.CSInitializerConfig;
 import tech.powerjob.remote.framework.engine.EngineConfig;
 import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
@@ -20,8 +17,6 @@ import tech.powerjob.remote.framework.transporter.Transporter;
 
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * HttpVertxCSInitializerTest
@@ -47,19 +42,36 @@ class HttpVertxCSInitializerTest {
         log.info("[HttpVertxCSInitializerTest] engine start up successfully!");
         Transporter transporter = engineOutput.getTransporter();
 
-        URL url = new URL()
-                .setAddress(address)
-                .setLocation(new HandlerLocation().setMethodPath("standard").setRootPath("benchmark"));
-
         BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest()
                 .setContent("request from test")
                 .setBlockingMills(100)
                 .setResponseSize(10240);
 
+        log.info("[HttpVertxCSInitializerTest] test empty request!");
+        URL emptyURL = new URL()
+                .setAddress(address)
+                .setLocation(new HandlerLocation().setMethodPath("emptyReturn").setRootPath("benchmark"));
+        transporter.tell(emptyURL, request);
+
+        log.info("[HttpVertxCSInitializerTest] test string request!");
+        URL stringURL = new URL()
+                .setAddress(address)
+                .setLocation(new HandlerLocation().setMethodPath("stringReturn").setRootPath("benchmark"));
+        final String strResponse = transporter.ask(stringURL, request, String.class).toCompletableFuture().get();
+        log.info("[HttpVertxCSInitializerTest] strResponse: {}", strResponse);
+
+        log.info("[HttpVertxCSInitializerTest] test normal request!");
+        URL url = new URL()
+                .setAddress(address)
+                .setLocation(new HandlerLocation().setMethodPath("standard").setRootPath("benchmark"));
+
         final CompletionStage<BenchmarkActor.BenchmarkResponse> benchmarkResponseCompletionStage = transporter.ask(url, request, BenchmarkActor.BenchmarkResponse.class);
         final BenchmarkActor.BenchmarkResponse response = benchmarkResponseCompletionStage.toCompletableFuture().get(10, TimeUnit.SECONDS);
         log.info("[HttpVertxCSInitializerTest] response: {}", response);
 
-        CommonUtils.easySleep(1000000000);
+
+
+
+        CommonUtils.easySleep(10000);
     }
 }

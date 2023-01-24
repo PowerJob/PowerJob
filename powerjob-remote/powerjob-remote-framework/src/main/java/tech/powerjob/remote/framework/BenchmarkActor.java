@@ -9,6 +9,8 @@ import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.actor.Handler;
 
+import java.util.Optional;
+
 /**
  * 基准测试
  *
@@ -20,9 +22,9 @@ import tech.powerjob.remote.framework.actor.Handler;
 public class BenchmarkActor {
 
     @Handler(path = "standard")
-    public BenchmarkResponse processStandardRequest(BenchmarkRequest request) {
+    public BenchmarkResponse standardRequest(BenchmarkRequest request) {
         long startTs = System.currentTimeMillis();
-        log.info("[BenchmarkActor] receive request: {}", request);
+        log.info("[BenchmarkActor] [standardRequest] receive request: {}", request);
         BenchmarkResponse response = new BenchmarkResponse()
                 .setSuccess(true)
                 .setContent(request.getContent())
@@ -31,11 +33,28 @@ public class BenchmarkActor {
         if (request.getResponseSize() != null && request.getResponseSize() > 0) {
             response.setExtra(RandomStringUtils.randomPrint(request.getResponseSize()));
         }
+        executeSleep(request);
+        response.setServerCost(System.currentTimeMillis() - startTs);
+        return response;
+    }
+
+    @Handler(path = "emptyReturn")
+    public void emptyReturn(BenchmarkRequest request) {
+        log.info("[BenchmarkActor] [emptyReturn] receive request: {}", request);
+        executeSleep(request);
+    }
+
+    @Handler(path = "stringReturn")
+    public String stringReturn(BenchmarkRequest request) {
+        log.info("[BenchmarkActor] [stringReturn] receive request: {}", request);
+        executeSleep(request);
+        return RandomStringUtils.randomPrint(Optional.ofNullable(request.getResponseSize()).orElse(100));
+    }
+
+    private static void executeSleep(BenchmarkRequest request) {
         if (request.getBlockingMills() != null && request.getBlockingMills() > 0) {
             CommonUtils.easySleep(request.getBlockingMills());
         }
-        response.setServerCost(System.currentTimeMillis() - startTs);
-        return response;
     }
 
 

@@ -2,14 +2,9 @@ package tech.powerjob.remote.http.vertx;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.*;
 import io.vertx.core.json.JsonObject;
-import lombok.SneakyThrows;
 import tech.powerjob.common.PowerSerializable;
-import tech.powerjob.common.request.ServerScheduleJobReq;
-import tech.powerjob.remote.framework.base.Address;
-import tech.powerjob.remote.framework.base.HandlerLocation;
 import tech.powerjob.remote.framework.base.RemotingException;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.remote.framework.transporter.Protocol;
@@ -49,6 +44,7 @@ public class VertxTransporter implements Transporter {
         return post(url, request, clz);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> CompletionStage<T> post(URL url, PowerSerializable request, Class<T> clz) {
         final String host = url.getAddress().getHost();
         final int port = url.getAddress().getPort();
@@ -72,9 +68,18 @@ public class VertxTransporter implements Transporter {
                         ));
             }
 
-            // TODO: 验证无响应的情况
+            return httpClientResponse.body().compose(x -> {
 
-            return httpClientResponse.body().compose(x -> Future.succeededFuture(x.toJsonObject().mapTo(clz)));
+                if (clz == null) {
+                    return Future.succeededFuture(null);
+                }
+
+                if (clz.equals(String.class)) {
+                    return Future.succeededFuture((T) x.toString());
+                }
+
+                return Future.succeededFuture(x.toJsonObject().mapTo(clz));
+            });
         }).toCompletionStage();
     }
 }
