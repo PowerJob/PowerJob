@@ -5,17 +5,17 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>3.0.0</version>
+        <version>4.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-agent</artifactId>
-    <version>4.2.1</version>
+    <version>4.3.0</version>
     <packaging>jar</packaging>
 
 
     <properties>
-        <powerjob.worker.version>4.2.1</powerjob.worker.version>
+        <powerjob.worker.version>4.3.0</powerjob.worker.version>
         <logback.version>1.2.9</logback.version>
         <picocli.version>4.3.2</picocli.version>
         <spring.version>5.3.23</spring.version>
