@@ -24,6 +24,7 @@
         <spring.jdbc.version>5.2.9.RELEASE</spring.jdbc.version>
         <h2.db.version>2.1.214</h2.db.version>
         <mysql.version>8.0.28</mysql.version>
+        <spring.version>5.3.23</spring.version>
 
         <!-- 全部 shade 化，避免依赖冲突 -->
         <fastjson.version>1.2.83</fastjson.version>
@@ -75,6 +76,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Spring 依赖（非强依赖） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>

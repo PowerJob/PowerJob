@@ -3,13 +3,13 @@ package tech.powerjob.official.processors.impl.sql;
 import tech.powerjob.worker.core.processor.TaskContext;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.Assert;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 简单 Spring SQL 处理器，目前只能用 Spring Bean 的方式加载
@@ -75,8 +75,8 @@ public class SpringDatasourceSqlProcessor extends AbstractSqlProcessor {
      * @param dataSource     数据源
      */
     public void registerDataSource(String dataSourceName, DataSource dataSource) {
-        Assert.notNull(dataSourceName, "DataSource name must not be null");
-        Assert.notNull(dataSource, "DataSource must not be null");
+        Objects.requireNonNull(dataSourceName, "DataSource name must not be null");
+        Objects.requireNonNull(dataSource, "DataSource must not be null");
         dataSourceMap.put(dataSourceName, dataSource);
         log.info("register data source({})' successfully.", dataSourceName);
     }
