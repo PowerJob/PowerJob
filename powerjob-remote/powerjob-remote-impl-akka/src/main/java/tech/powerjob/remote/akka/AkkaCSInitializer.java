@@ -53,7 +53,7 @@ public class AkkaCSInitializer implements CSInitializer {
         Config akkaBasicConfig = ConfigFactory.load(AkkaConstant.AKKA_CONFIG);
         Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);
 
-        log.info("[PowerJob-AKKA] try to start AKKA System by config: {}", akkaFinalConfig);
+        log.info("[PowerJob-AKKA] try to start AKKA System.");
 
         // 启动时绑定当前的 actorSystemName
         String actorSystemName = AkkaConstant.fetchActorSystemName(config.getServerType());

@@ -13,7 +13,10 @@ RUN apt-get update && \
     && apt-get clean \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
-
+# 安装 wait-for-it 脚本
+RUN curl -o wait-for-it.sh https://gitee.com/KFCFans/wait-for-it/raw/master/wait-for-it.sh
+RUN chmod +x wait-for-it.sh
+# 拷贝主文件
 COPY powerjob-agent.jar /powerjob-agent.jar
 # 暴露端口（AKKA-Client）
 EXPOSE 27777
