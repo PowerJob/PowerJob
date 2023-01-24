@@ -26,16 +26,22 @@ public class VertxInitializer {
      */
     private static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 75;
 
-    private static final int CONNECTION_TIMEOUT_MS = 2000;
+    private static final int CONNECTION_TIMEOUT_MS = 3000;
+
+    private static final int SERVER_IDLE_TIMEOUT_S = 300;
 
     public static Vertx buildVertx() {
-        VertxOptions options = new VertxOptions();
+        final int cpuCores = Runtime.getRuntime().availableProcessors();
+        VertxOptions options = new VertxOptions()
+                .setWorkerPoolSize(Math.max(16, 2 * cpuCores))
+                .setInternalBlockingPoolSize(Math.max(32, 4 * cpuCores));
         log.info("[PowerJob-Vertx] use vertx options: {}", options);
         return Vertx.vertx(options);
     }
 
     public static HttpServer buildHttpServer(Vertx vertx) {
-        HttpServerOptions httpServerOptions = new HttpServerOptions();
+        HttpServerOptions httpServerOptions = new HttpServerOptions()
+                .setIdleTimeout(SERVER_IDLE_TIMEOUT_S);
         tryEnableCompression(httpServerOptions);
         log.info("[PowerJob-Vertx] use HttpServerOptions: {}", httpServerOptions.toJson());
         return vertx.createHttpServer(httpServerOptions);
