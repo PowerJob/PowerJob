@@ -60,6 +60,8 @@ public class ContainerController {
         File file = containerService.fetchContainerJarFile(version);
         if (file.exists()) {
             OmsFileUtils.file2HttpResponse(file, response);
+        } else {
+            log.error("[Container] can't find container by version[{}], please deploy first!", version);
         }
     }
 
