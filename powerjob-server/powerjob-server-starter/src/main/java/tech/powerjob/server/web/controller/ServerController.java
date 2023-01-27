@@ -11,6 +11,8 @@ import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.server.common.aware.ServerInfoAware;
+import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.server.election.ServerElectionService;
@@ -30,8 +32,9 @@ import java.util.TimeZone;
 @RestController
 @RequestMapping("/server")
 @RequiredArgsConstructor
-public class ServerController {
+public class ServerController implements ServerInfoAware {
 
+    private ServerInfo serverInfo;
     private final TransportService transportService;
 
     private final ServerElectionService serverElectionService;
@@ -56,15 +59,25 @@ public class ServerController {
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
         res.put("localHost", NetUtils.getLocalHost());
-        res.put("defaultAddress", transportService.defaultProtocol());
+        res.put("serverInfo", serverInfo);
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
+        res.put("serverTimeTs", System.currentTimeMillis());
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
         res.put("appIds", workerClusterQueryService.getAppId2ClusterStatus().keySet());
         if (debug) {
             res.put("appId2ClusterInfo", JSON.parseObject(JSON.toJSONString(workerClusterQueryService.getAppId2ClusterStatus())));
-
         }
+
+        try {
+            res.put("defaultAddress", JSONObject.toJSON(transportService.defaultProtocol()));
+        } catch (Exception ignore) {
+        }
+
         return ResultDTO.success(res);
     }
 
+    @Override
+    public void setServerInfo(ServerInfo serverInfo) {
+        this.serverInfo = serverInfo;
+    }
 }

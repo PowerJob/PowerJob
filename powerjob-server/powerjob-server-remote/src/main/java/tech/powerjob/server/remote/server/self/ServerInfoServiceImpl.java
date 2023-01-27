@@ -1,22 +1,20 @@
 package tech.powerjob.server.remote.server.self;
 
+import com.google.common.base.Stopwatch;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.ServerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ServerInfoRepository;
-import com.google.common.base.Stopwatch;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
@@ -50,6 +48,7 @@ public class ServerInfoServiceImpl implements ServerInfoService {
 
         String ip = NetUtils.getLocalHost();
         serverInfo.setIp(ip);
+        serverInfo.setBornTime(System.currentTimeMillis());
         this.serverInfoRepository = serverInfoRepository;
 
         Stopwatch sw = Stopwatch.createStarted();
