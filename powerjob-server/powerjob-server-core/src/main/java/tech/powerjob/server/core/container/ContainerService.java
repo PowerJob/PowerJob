@@ -248,6 +248,7 @@ public class ContainerService {
             container.setGmtModified(now);
             container.setLastDeployTime(now);
             containerInfoRepository.saveAndFlush(container);
+            remote.sendText(String.format("SYSTEM: update current container version=%s successfully!", container.getVersion()));
 
             // 开始部署（需要分批进行）
             final List<WorkerInfo> allAliveWorkers = workerClusterQueryService.getAllAliveWorkers(container.getAppId());
@@ -420,7 +421,10 @@ public class ContainerService {
                 FileUtils.copyFile(jarWithDependency, localFile);
 
                 return localFile;
-            }finally {
+            } catch (Throwable  t) {
+                log.error("[ContainerService] prepareJarFile failed for container: {}", container, t);
+                remote.sendText("SYSTEM: [ERROR] prepare jar file failed: " + ExceptionUtils.getStackTrace(t));
+            } finally {
                 // 删除工作区数据
                 FileUtils.forceDelete(workerDir);
             }
