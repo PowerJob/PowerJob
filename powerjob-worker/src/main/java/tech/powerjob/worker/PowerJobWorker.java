@@ -68,11 +68,7 @@ public class PowerJobWorker {
         log.info("[PowerJobWorker] start to initialize PowerJobWorker...");
 
         PowerJobWorkerConfig config = workerRuntime.getWorkerConfig();
-
-        // 打印 worker 配置
-        log.info("[PowerJobWorker] worker config: {}", JsonUtils.toJSONString(config));
-
-        CommonUtils.requireNonNull(config, "can't find OhMyConfig, please set OhMyConfig first");
+        CommonUtils.requireNonNull(config, "can't find PowerJobWorkerConfig, please set PowerJobWorkerConfig first");
 
         try {
             PowerBannerPrinter.print();

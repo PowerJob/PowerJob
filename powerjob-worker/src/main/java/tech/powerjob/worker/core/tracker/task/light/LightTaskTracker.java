@@ -108,7 +108,7 @@ public class LightTaskTracker extends TaskTracker {
             // 提交任务到线程池
             processFuture = workerRuntime.getExecutorManager().getLightweightTaskExecutorService().submit(this::processTask);
         } catch (Exception e) {
-            log.warn("[TaskTracker-{}] fail to create TaskTracker for req:{} ", instanceId, req);
+            log.error("[TaskTracker-{}] fail to create TaskTracker for req:{} ", instanceId, req);
             destroy();
             throw e;
         }
