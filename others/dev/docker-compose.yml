@@ -14,7 +14,7 @@ services:
     ports:
       - "3309:3306"
     volumes:
-      - ./powerjob-data/powerjob-mysql:/var/lib/mysql
+      - ~/powerjob-data/powerjob-mysql:/var/lib/mysql
     command: --lower_case_table_names=1
 
   powerjob-server:
@@ -32,7 +32,7 @@ services:
       - "10086:10086"
       - "10010:10010"
     volumes:
-      - ./powerjob-data/powerjob-server:/root/powerjob/server/
+      - ~/powerjob-data/powerjob-server:/root/powerjob/server/
 
   powerjob-worker-agent:
     build:
@@ -48,7 +48,7 @@ services:
       - "10002:10000"
       - "27777:27777"
     volumes:
-      - ./powerjob-data/powerjob-worker-agent:/root
+      - ~/powerjob-data/powerjob-worker-agent:/root
     entrypoint:
       - "sh"
       - "-c"
@@ -66,7 +66,7 @@ services:
       - "10003:10000"
       - "27778:27777"
     volumes:
-      - ./powerjob-data/powerjob-worker-agent2:/root
+      - ~/powerjob-data/powerjob-worker-agent2:/root
     entrypoint:
       - "sh"
       - "-c"
