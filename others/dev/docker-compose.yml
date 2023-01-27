@@ -26,7 +26,8 @@ services:
     depends_on:
       - powerjob-mysql
     environment:
-      PARAMS: "--oms.mongodb.enable=false --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+      PARAMS: "--spring.profiles.active=product --oms.mongodb.enable=false --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+      JVMOPTIONS: "-Xmx1024m"
     ports:
       - "7700:7700"
       - "10086:10086"
@@ -52,7 +53,7 @@ services:
     entrypoint:
       - "sh"
       - "-c"
-      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx768m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
 
   powerjob-worker-agent2:
     container_name: powerjob-worker-agent2
@@ -70,5 +71,5 @@ services:
     entrypoint:
       - "sh"
       - "-c"
-      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx768m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
 
