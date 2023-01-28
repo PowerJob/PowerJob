@@ -33,11 +33,19 @@ read -r -p "是否重新构建镜像（y/n）:" rebuild
 if [ "$rebuild" = "y" ] || [  "$rebuild" = "Y" ]; then
   echo "================== 删除旧镜像 =================="
   docker rmi -f tjqq/powerjob-server:$version
+  docker rmi -f powerjob/powerjob-server:$version
   docker rmi -f tjqq/powerjob-agent:$version
+  docker rmi -f powerjob/powerjob-agent:$version
+  docker rmi -f powerjob/powerjob-mysql:$version
+  docker rmi -f powerjob/powerjob-worker-samples:$version
   echo "================== 构建 powerjob-server 镜像 =================="
   docker build -t tjqq/powerjob-server:$version powerjob-server/docker/. || exit
   echo "================== 构建 powerjob-agent 镜像 =================="
   docker build -t tjqq/powerjob-agent:$version powerjob-worker-agent/. || exit
+  echo "================== 构建 powerjob-mysql 镜像 =================="
+  docker build -t powerjob/powerjob-mysql:$version others/. || exit
+  echo "================== 构建 powerjob-worker-samples 镜像 =================="
+  docker build -t powerjob/powerjob-worker-samples:$version powerjob-worker-samples/. || exit
 
   read -r -p "是否正式发布该镜像（y/n）:" needrelease
   if [ "$needrelease" = "y" ] || [  "$needrelease" = "Y" ]; then
@@ -47,6 +55,25 @@ if [ "$rebuild" = "y" ] || [  "$rebuild" = "Y" ]; then
       docker push tjqq/powerjob-server:$version
       echo "================== 正在推送 agent 镜像到中央仓库 =================="
       docker push tjqq/powerjob-agent:$version
+      echo "================== 正在推送 powerjob-mysql 镜像到中央仓库 =================="
+      docker push powerjob/powerjob-mysql:$version
+      echo "================== 正在推送 samples 镜像到中央仓库 =================="
+      docker push powerjob/powerjob-worker-samples:$version
+      echo "================== 双写推送 =================="
+      docker tag tjqq/powerjob-server:$version powerjob/powerjob-server:$version
+      docker push powerjob/powerjob-server:$version
+      docker tag tjqq/powerjob-agent:$version powerjob/powerjob-agent:$version
+      docker push powerjob/powerjob-agent:$version
+      echo "================== 更新 LATEST 版本 =================="
+      docker tag powerjob/powerjob-server:$version powerjob/powerjob-server:latest
+      docker push powerjob/powerjob-server:latest
+      docker tag powerjob/powerjob-agent:$version powerjob/powerjob-agent:latest
+      docker push powerjob/powerjob-agent:latest
+      docker tag powerjob/powerjob-mysql:$version powerjob/powerjob-mysql:latest
+      docker push powerjob/powerjob-mysql:latest
+      docker tag powerjob/powerjob-worker-samples:$version powerjob/powerjob-worker-samples:latest
+      docker push powerjob/powerjob-worker-samples:latest
+      echo "================== Docker 推送完毕 =================="
     fi
   fi
 fi
