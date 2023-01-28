@@ -22,9 +22,8 @@ import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.brief.BriefInstanceInfo;
 import tech.powerjob.server.persistence.remote.repository.*;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
+import tech.powerjob.server.remote.transporter.TransportService;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +48,8 @@ public class InstanceStatusCheckService {
 
     public static final long CHECK_INTERVAL = 10000;
 
+    private final TransportService transportService;
+
     private final DispatchService dispatchService;
 
     private final InstanceManager instanceManager;
@@ -61,7 +62,6 @@ public class InstanceStatusCheckService {
 
     private final InstanceInfoRepository instanceInfoRepository;
 
-
     private final WorkflowInfoRepository workflowInfoRepository;
 
     private final WorkflowInstanceInfoRepository workflowInstanceInfoRepository;
@@ -69,7 +69,7 @@ public class InstanceStatusCheckService {
     public void checkWorkflowInstance() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         // 查询 DB 获取该 Server 需要负责的 AppGroup
-        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
         if (CollectionUtils.isEmpty(allAppIds)) {
             log.info("[InstanceStatusChecker] current server has no app's job to check");
             return;
@@ -89,7 +89,7 @@ public class InstanceStatusCheckService {
     public void checkWaitingDispatchInstance() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         // 查询 DB 获取该 Server 需要负责的 AppGroup
-        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
         if (CollectionUtils.isEmpty(allAppIds)) {
             log.info("[InstanceStatusChecker] current server has no app's job to check");
             return;
@@ -110,7 +110,7 @@ public class InstanceStatusCheckService {
     public void checkWaitingWorkerReceiveInstance() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         // 查询 DB 获取该 Server 需要负责的 AppGroup
-        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
         if (CollectionUtils.isEmpty(allAppIds)) {
             log.info("[InstanceStatusChecker] current server has no app's job to check");
             return;
@@ -131,7 +131,7 @@ public class InstanceStatusCheckService {
     public void checkRunningInstance() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         // 查询 DB 获取该 Server 需要负责的 AppGroup
-        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(AkkaStarter.getActorSystemAddress());
+        List<Long> allAppIds = appInfoRepository.listAppIdByCurrentServer(transportService.defaultProtocol().getAddress());
         if (CollectionUtils.isEmpty(allAppIds)) {
             log.info("[InstanceStatusChecker] current server has no app's job to check");
             return;

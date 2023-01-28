@@ -1,12 +1,9 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.SystemInstanceResult;
@@ -16,17 +13,15 @@ import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
-import tech.powerjob.common.response.AskResponse;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.worker.common.utils.AkkaUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.persistence.TaskDO;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -178,7 +173,6 @@ public class CommonTaskTracker extends HeavyTaskTracker {
                             finished.set(true);
                             List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
                             if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
-                                success = false;
                                 result = SystemInstanceResult.UNKNOWN_BUG;
                                 log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
                             } else {
@@ -229,22 +223,19 @@ public class CommonTaskTracker extends HeavyTaskTracker {
                 result = SystemInstanceResult.INSTANCE_EXECUTE_TIMEOUT;
             }
 
-            String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-            ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
-
             // 4. 执行完毕，报告服务器
             if (finished.get()) {
                 req.setResult(result);
                 // 上报追加的工作流上下文信息
                 req.setAppendedWfContext(appendedWfContext);
                 req.setInstanceStatus(success ? InstanceStatus.SUCCEED.getV() : InstanceStatus.FAILED.getV());
-                reportFinalStatusThenDestroy(serverActor,req);
+                reportFinalStatusThenDestroy(workerRuntime, req);
                 return;
             }
 
             // 5. 未完成，上报状态
             req.setInstanceStatus(InstanceStatus.RUNNING.getV());
-            serverActor.tell(req, null);
+            TransportUtils.ttReportInstanceStatus(req, workerRuntime.getServerDiscoveryService().getCurrentServerAddress(), workerRuntime.getTransporter());
 
             // 6.1 定期检查 -> 重试派发后未确认的任务
             long currentMS = System.currentTimeMillis();

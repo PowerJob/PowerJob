@@ -1,6 +1,5 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
-import akka.actor.ActorSelection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
@@ -9,7 +8,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -22,8 +20,8 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.worker.common.utils.LRUCache;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.persistence.TaskDO;
 
 import java.util.*;
@@ -136,10 +134,14 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
         List<InstanceDetail.SubInstanceDetail> history = Lists.newLinkedList();
         recentSubInstanceInfo.forEach((subId, subInstanceInfo) -> {
             InstanceDetail.SubInstanceDetail subDetail = new InstanceDetail.SubInstanceDetail();
-            BeanUtils.copyProperties(subInstanceInfo, subDetail);
+
+            subDetail.setSubInstanceId(subId);
+            subDetail.setStartTime(subInstanceInfo.getStartTime());
+            subDetail.setFinishedTime(subInstanceInfo.getFinishedTime());
+            subDetail.setResult(subInstanceInfo.getResult());
+
             InstanceStatus status = InstanceStatus.of(subInstanceInfo.status);
             subDetail.setStatus(status.getV());
-            subDetail.setSubInstanceId(subId);
 
             history.add(subDetail);
         });
@@ -358,13 +360,8 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
                 log.warn("[FQTaskTracker-{}] report alert req,time:{}", instanceId, req.getReportTime());
             }
 
-            String serverPath = AkkaUtils.getServerActorPath(currentServerAddress);
-            if (StringUtils.isEmpty(serverPath)) {
-                return;
-            }
             // 非可靠通知，Server挂掉后任务的kill工作交由其他线程去做
-            ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
-            serverActor.tell(req, null);
+            TransportUtils.ttReportInstanceStatus(req, currentServerAddress, workerRuntime.getTransporter());
         }
 
         /**

@@ -5,16 +5,16 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>3.0.0</version>
+        <version>4.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-worker-samples</artifactId>
-    <version>4.2.1</version>
+    <version>4.3.0</version>
 
     <properties>
         <springboot.version>2.7.4</springboot.version>
-        <powerjob.worker.starter.version>4.2.1</powerjob.worker.starter.version>
+        <powerjob.worker.starter.version>4.3.0</powerjob.worker.starter.version>
         <fastjson.version>1.2.83</fastjson.version>
         <powerjob.official.processors.version>1.2.1</powerjob.official.processors.version>
 
@@ -57,6 +57,13 @@
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-official-processors</artifactId>
             <version>${powerjob.official.processors.version}</version>
+        </dependency>
+
+        <!-- 高版本 JDK 移除了 JavaEE 的包，需要手动引入 -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
         </dependency>
 
 

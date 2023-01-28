@@ -1,17 +1,17 @@
 package tech.powerjob.worker.persistence;
 
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.SupplierPlus;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.core.processor.TaskResult;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;

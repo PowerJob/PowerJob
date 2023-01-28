@@ -1,6 +1,7 @@
 package tech.powerjob.worker.autoconfigure;
 
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.WorkflowContext;
@@ -111,8 +112,14 @@ public class PowerJobProperties {
         /**
          * Akka port of Powerjob-worker, optional value. Default value of this property is 27777.
          * If multiple PowerJob-worker nodes were deployed, different, unique ports should be assigned.
+         * Deprecated, please use 'port'
          */
+        @Deprecated
         private int akkaPort = RemoteConstant.DEFAULT_WORKER_PORT;
+        /**
+         * port
+         */
+        private Integer port;
         /**
          * Address(es) of Powerjob-server node(s). Ip:port or domain.
          * Example of single Powerjob-server node:
@@ -125,6 +132,10 @@ public class PowerJobProperties {
          * </p>
          */
         private String serverAddress;
+        /**
+         * Protocol for communication between WORKER and server
+         */
+        private Protocol protocol = Protocol.AKKA;
         /**
          * Local store strategy for H2 database. {@code disk} or {@code memory}.
          */

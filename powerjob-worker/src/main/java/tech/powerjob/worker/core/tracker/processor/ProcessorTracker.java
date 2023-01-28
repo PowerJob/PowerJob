@@ -1,28 +1,23 @@
 package tech.powerjob.worker.core.tracker.processor;
 
-import akka.actor.ActorSelection;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.util.CollectionUtils;
-import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
-import tech.powerjob.common.model.LogConfig;
-import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.worker.common.utils.AkkaUtils;
-import tech.powerjob.worker.core.processor.ProcessorInfo;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.core.processor.runnable.HeavyProcessorRunnable;
-import tech.powerjob.worker.core.processor.ProcessorLoader;
 import tech.powerjob.worker.core.tracker.manager.ProcessorTrackerManager;
+import tech.powerjob.worker.extension.processor.ProcessorBean;
+import tech.powerjob.worker.extension.processor.ProcessorDefinition;
 import tech.powerjob.worker.log.OmsLogger;
 import tech.powerjob.worker.log.OmsLoggerFactory;
-import tech.powerjob.worker.log.impl.OmsServerLogger;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 import tech.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
@@ -56,7 +51,7 @@ public class ProcessorTracker {
      */
     private Long instanceId;
 
-    private ProcessorInfo processorInfo;
+    private ProcessorBean processorBean;
     /**
      * 在线日志
      */
@@ -75,8 +70,6 @@ public class ProcessorTracker {
     private long lastCompletedTaskCount;
 
     private String taskTrackerAddress;
-
-    private ActorSelection taskTrackerActorRef;
 
     private ThreadPoolExecutor threadPool;
 
@@ -107,9 +100,6 @@ public class ProcessorTracker {
             this.instanceId = request.getInstanceInfo().getInstanceId();
             this.taskTrackerAddress = request.getTaskTrackerAddress();
 
-            String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(taskTrackerAddress, RemoteConstant.TASK_TRACKER_ACTOR_NAME);
-            this.taskTrackerActorRef = workerRuntime.getActorSystem().actorSelection(akkaRemotePath);
-
             this.omsLogger = OmsLoggerFactory.build(instanceId, request.getLogConfig(), workerRuntime);
             this.statusReportRetryQueue = Queues.newLinkedBlockingQueue();
             this.lastIdleTime = -1L;
@@ -120,7 +110,7 @@ public class ProcessorTracker {
             // 初始化定时任务
             initTimingJob();
             // 初始化 Processor
-            processorInfo = ProcessorLoader.loadProcessor(workerRuntime, instanceInfo.getProcessorType(), instanceInfo.getProcessorInfo());
+            processorBean = workerRuntime.getProcessorLoader().load(new ProcessorDefinition().setProcessorType(instanceInfo.getProcessorType()).setProcessorInfo(instanceInfo.getProcessorInfo()));
             log.info("[ProcessorTracker-{}] ProcessorTracker was successfully created!", instanceId);
         } catch (Throwable t) {
             log.warn("[ProcessorTracker-{}] create ProcessorTracker failed, all tasks submitted here will fail.", instanceId, t);
@@ -152,7 +142,7 @@ public class ProcessorTracker {
                     .setResult(lethalReason)
                     .setReportTime(System.currentTimeMillis());
 
-            taskTrackerActorRef.tell(report, null);
+            TransportUtils.ptReportTask(report, taskTrackerAddress, workerRuntime);
             return;
         }
 
@@ -161,8 +151,7 @@ public class ProcessorTracker {
         newTask.setInstanceId(instanceInfo.getInstanceId());
         newTask.setAddress(taskTrackerAddress);
 
-        ClassLoader classLoader = processorInfo.getClassLoader();
-        HeavyProcessorRunnable heavyProcessorRunnable = new HeavyProcessorRunnable(instanceInfo, taskTrackerActorRef, newTask, processorInfo.getBasicProcessor(), omsLogger, classLoader, statusReportRetryQueue, workerRuntime);
+        HeavyProcessorRunnable heavyProcessorRunnable = new HeavyProcessorRunnable(instanceInfo, taskTrackerAddress, newTask, processorBean, omsLogger, statusReportRetryQueue, workerRuntime);
         try {
             threadPool.submit(heavyProcessorRunnable);
             success = true;
@@ -182,7 +171,7 @@ public class ProcessorTracker {
             reportReq.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             reportReq.setReportTime(System.currentTimeMillis());
 
-            taskTrackerActorRef.tell(reportReq, null);
+            TransportUtils.ptReportTask(reportReq, taskTrackerAddress, workerRuntime);
 
             log.debug("[ProcessorTracker-{}] submit task(taskId={}, taskName={}) success, current queue size: {}.",
                     instanceId, newTask.getTaskId(), newTask.getTaskName(), threadPool.getQueue().size());
@@ -203,7 +192,6 @@ public class ProcessorTracker {
         });
 
         // 2. 去除顶层引用，送入GC世界
-        taskTrackerActorRef = null;
         statusReportRetryQueue.clear();
         ProcessorTrackerManager.removeProcessorTracker(instanceId);
 
@@ -281,7 +269,7 @@ public class ProcessorTracker {
                         // 不可靠通知，如果该请求失败，则整个任务处理集群缺失一个 ProcessorTracker，影响可接受
                         ProcessorTrackerStatusReportReq statusReportReq = ProcessorTrackerStatusReportReq.buildIdleReport(instanceId);
                         statusReportReq.setAddress(workerRuntime.getWorkerAddress());
-                        taskTrackerActorRef.tell(statusReportReq, null);
+                        TransportUtils.ptReportSelfStatus(statusReportReq, taskTrackerAddress, workerRuntime);
                         destroy();
                         return;
                     }
@@ -293,7 +281,7 @@ public class ProcessorTracker {
                 ProcessorReportTaskStatusReq req = statusReportRetryQueue.poll();
                 if (req != null) {
                     req.setReportTime(System.currentTimeMillis());
-                    if (!AkkaUtils.reliableTransmit(taskTrackerActorRef, req)) {
+                    if (!TransportUtils.reliablePtReportTask(req, taskTrackerAddress, workerRuntime)) {
                         statusReportRetryQueue.add(req);
                         log.warn("[ProcessorRunnable-{}] retry report finished task status failed: {}", instanceId, req);
                         return;
@@ -305,7 +293,7 @@ public class ProcessorTracker {
             long waitingNum = threadPool.getQueue().size();
             ProcessorTrackerStatusReportReq statusReportReq = ProcessorTrackerStatusReportReq.buildLoadReport(instanceId, waitingNum);
             statusReportReq.setAddress(workerRuntime.getWorkerAddress());
-            taskTrackerActorRef.tell(statusReportReq, null);
+            TransportUtils.ptReportSelfStatus(statusReportReq, taskTrackerAddress, workerRuntime);
             log.debug("[ProcessorTracker-{}] send heartbeat to TaskTracker, current waiting task num is {}.", instanceId, waitingNum);
         }
 

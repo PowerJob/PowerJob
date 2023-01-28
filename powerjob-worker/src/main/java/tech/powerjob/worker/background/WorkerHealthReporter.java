@@ -1,17 +1,15 @@
 package tech.powerjob.worker.background;
 
-import akka.actor.ActorSelection;
 import lombok.RequiredArgsConstructor;
-import tech.powerjob.common.enums.Protocol;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.common.request.WorkerHeartbeat;
 import tech.powerjob.worker.common.PowerJobWorkerVersion;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.common.utils.AkkaUtils;
 import tech.powerjob.worker.common.utils.SystemInfoUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.container.OmsContainerFactory;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
 
@@ -54,8 +52,8 @@ public class WorkerHealthReporter implements Runnable {
         heartbeat.setAppId(workerRuntime.getAppId());
         heartbeat.setHeartbeatTime(System.currentTimeMillis());
         heartbeat.setVersion(PowerJobWorkerVersion.getVersion());
-        heartbeat.setProtocol(Protocol.AKKA.name());
-        heartbeat.setClient("Atlantis");
+        heartbeat.setProtocol(workerRuntime.getWorkerConfig().getProtocol().name());
+        heartbeat.setClient("KingPenguin");
         heartbeat.setTag(workerRuntime.getWorkerConfig().getTag());
 
         // 上报 Tracker 数量
@@ -68,8 +66,7 @@ public class WorkerHealthReporter implements Runnable {
         // 获取当前加载的容器列表
         heartbeat.setContainerInfos(OmsContainerFactory.getDeployedContainerInfos());
         // 发送请求
-        String serverPath = AkkaUtils.getServerActorPath(currentServer);
-        if (StringUtils.isEmpty(serverPath)) {
+        if (StringUtils.isEmpty(currentServer)) {
             return;
         }
         // log
@@ -82,7 +79,7 @@ public class WorkerHealthReporter implements Runnable {
                 workerRuntime.getWorkerConfig().getMaxHeavyweightTaskNum(),
                 heartbeat.getHeavyTaskTrackerNum()
         );
-        ActorSelection actorSelection = workerRuntime.getActorSystem().actorSelection(serverPath);
-        actorSelection.tell(heartbeat, null);
+
+        TransportUtils.reportWorkerHeartbeat(heartbeat, currentServer, workerRuntime.getTransporter());
     }
 }

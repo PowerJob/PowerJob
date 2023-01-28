@@ -5,38 +5,55 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>3.0.0</version>
+        <version>4.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker</artifactId>
-    <version>4.2.1</version>
+    <version>4.3.0</version>
     <packaging>jar</packaging>
 
     <properties>
         <spring.version>5.3.23</spring.version>
-        <powerjob.common.version>4.2.1</powerjob.common.version>
         <h2.db.version>2.1.214</h2.db.version>
         <hikaricp.version>4.0.3</hikaricp.version>
         <junit.version>5.9.1</junit.version>
 
         <logback.version>1.2.9</logback.version>
+
+        <powerjob-common.version>4.3.0</powerjob-common.version>
+        <powerjob-remote-framework.version>4.3.0</powerjob-remote-framework.version>
+        <powerjob-remote-impl-akka.version>4.3.0</powerjob-remote-impl-akka.version>
+        <powerjob-remote-impl-http.version>4.3.0</powerjob-remote-impl-http.version>
     </properties>
 
     <dependencies>
 
-        <!-- Spring 依赖 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <!-- oms-common -->
+        <!-- 仍然手动引入 common 依赖并置顶，保证依赖仲裁时占据上风 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
-            <version>${powerjob.common.version}</version>
+            <version>${powerjob-common.version}</version>
+        </dependency>
+
+        <!-- PowerJob 通讯框架 -->
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-framework</artifactId>
+            <version>${powerjob-remote-framework.version}</version>
+        </dependency>
+
+        <!-- PowerJob 通讯层具体实现，按需选择自己需要的通讯器即可。如果包冲突可尝试更换通讯器实现，并排除未使用的通讯器包 -->
+        <!-- 4.3.x 版本前 AKKA 都是 PowerJob 通讯层的唯一实现，考虑到兼容性 4.3.x 默认仍为 AKKA，但由于 AKKA 后续收费，最终会废弃该模块，扶正太子（HTTP）上位 -->
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-akka</artifactId>
+            <version>${powerjob-remote-impl-akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-http</artifactId>
+            <version>${powerjob-remote-impl-http.version}</version>
         </dependency>
 
         <!-- h2 database -->
@@ -50,6 +67,14 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikaricp.version}</version>
+        </dependency>
+
+        <!-- Spring 依赖（非强依赖） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Junit 测试 -->

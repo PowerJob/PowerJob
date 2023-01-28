@@ -2,13 +2,12 @@ package tech.powerjob.worker.core.processor.sdk;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.exception.PowerJobCheckedException;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.worker.common.ThreadLocalStore;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
-import tech.powerjob.worker.common.utils.AkkaUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.request.ProcessorMapTaskRequest;
 
@@ -55,8 +54,7 @@ public interface MapProcessor extends BasicProcessor {
         ProcessorMapTaskRequest req = new ProcessorMapTaskRequest(task, taskList, taskName);
 
         // 2. 可靠发送请求（任务不允许丢失，需要使用 ask 方法，失败抛异常）
-        String akkaRemotePath = AkkaUtils.getAkkaWorkerPath(task.getAddress(), RemoteConstant.TASK_TRACKER_ACTOR_NAME);
-        boolean requestSucceed = AkkaUtils.reliableTransmit(workerRuntime.getActorSystem().actorSelection(akkaRemotePath), req);
+        boolean requestSucceed = TransportUtils.reliableMapTask(req, task.getAddress(), workerRuntime);
 
         if (requestSucceed) {
             log.info("[Map-{}] map task[name={},num={}] successfully!", task.getInstanceId(), taskName, taskList.size());

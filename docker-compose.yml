@@ -5,14 +5,12 @@
 version: '3'
 services:
   powerjob-mysql:
-    build:
-      context: ./others
     environment:
       MYSQL_ROOT_HOST: "%"
       MYSQL_ROOT_PASSWORD: No1Bug2Please3!
     restart: always
     container_name: powerjob-mysql
-    image: powerjob/powerjob-mysql:4.1.1
+    image: powerjob/powerjob-mysql:latest
     ports:
       - "3307:3306"
     volumes:
@@ -21,7 +19,7 @@ services:
 
   powerjob-server:
     container_name: powerjob-server
-    image: tjqq/powerjob-server:latest
+    image: powerjob/powerjob-server:latest
     restart: always
     depends_on:
       - powerjob-mysql
@@ -36,7 +34,7 @@ services:
 
   powerjob-worker-samples:
     container_name: powerjob-worker-samples
-    image: tjqq/powerjob-worker-samples:latest
+    image: powerjob/powerjob-worker-samples:latest
     restart: always
     depends_on:
       - powerjob-mysql

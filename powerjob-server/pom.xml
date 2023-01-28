@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>3.0.0</version>
+        <version>4.0.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.2.1</version>
+    <version>4.3.0</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -28,7 +28,7 @@
     <properties>
         <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.7.4</springboot.version>
-        <powerjob.common.version>4.2.1</powerjob.common.version>
+
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
         <mysql.version>8.0.30</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
@@ -43,13 +43,16 @@
         <commons.net.version>3.8.0</commons.net.version>
         <fastjson.version>1.2.83</fastjson.version>
         <dingding.version>1.0.1</dingding.version>
-        <vertx-web.version>4.0.2</vertx-web.version>
 
         <!-- skip this module when deploying. -->
         <maven.deploy.skip>true</maven.deploy.skip>
 
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.1.6</cron-utils.version>
+
+        <powerjob-common.version>4.3.0</powerjob-common.version>
+        <powerjob-remote-impl-http.version>4.3.0</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>4.3.0</powerjob-remote-impl-akka.version>
     </properties>
 
     <dependencyManagement>
@@ -99,11 +102,21 @@
 
     <dependencies>
 
-        <!-- oms-common -->
+        <!-- 网络层 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
-            <version>${powerjob.common.version}</version>
+            <version>${powerjob-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-http</artifactId>
+            <version>${powerjob-remote-impl-http.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-akka</artifactId>
+            <version>${powerjob-remote-impl-akka.version}</version>
         </dependency>
 
         <!-- mysql -->
@@ -246,17 +259,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web</artifactId>
-            <version>${vertx-web.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-client</artifactId>
-            <version>${vertx-web.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.cronutils</groupId>
             <artifactId>cron-utils</artifactId>
             <version>${cron-utils.version}</version>
@@ -267,6 +269,12 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
             <version>${swagger.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- swagger2 ui -->
         <dependency>

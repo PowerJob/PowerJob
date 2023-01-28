@@ -1,6 +1,10 @@
 # [English](./README.md) | 简体中文
 
 <p align="center">
+祝大家兔年吉祥，新的一年身体健康，万事如意，阖家欢乐，幸福安康！
+</p>
+
+<p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
 </p>
 
@@ -34,8 +38,7 @@ PowerJob（原OhMyScheduler）是全新一代分布式调度与计算框架，�
 PowerJob 的设计目标为企业级的分布式任务调度平台，即成为公司内部的**任务调度中间件**。整个公司统一部署调度中心 powerjob-server，旗下所有业务线应用只需要依赖 `powerjob-worker` 即可接入调度中心获取任务调度与分布式计算能力。
 
 ### 在线试用
-* 试用地址：[try.powerjob.tech](http://try.powerjob.tech/#/welcome?appName=powerjob-agent-test&password=123)
-* [建议先阅读使用教程了解 PowerJob 的概念和基本用法](https://www.yuque.com/powerjob/guidence/trial)
+* [点击查看试用说明和教程](https://www.yuque.com/powerjob/guidence/trial)
 
 ### 同类产品对比
 |                | QuartZ                   | xxl-job                                  | SchedulerX 2.0                                    | PowerJob                                                |

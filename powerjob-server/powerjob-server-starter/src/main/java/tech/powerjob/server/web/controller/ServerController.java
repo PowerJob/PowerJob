@@ -7,13 +7,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.server.common.aware.ServerInfoAware;
+import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.server.election.ServerElectionService;
-import tech.powerjob.server.remote.transport.TransportService;
+import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import java.util.Optional;
@@ -29,8 +32,9 @@ import java.util.TimeZone;
 @RestController
 @RequestMapping("/server")
 @RequiredArgsConstructor
-public class ServerController {
+public class ServerController implements ServerInfoAware {
 
+    private ServerInfo serverInfo;
     private final TransportService transportService;
 
     private final ServerElectionService serverElectionService;
@@ -47,23 +51,33 @@ public class ServerController {
     }
 
     @GetMapping("/acquire")
-    public ResultDTO<String> acquireServer(Long appId, String protocol, String currentServer) {
-        return ResultDTO.success(serverElectionService.elect(appId, protocol, currentServer));
+    public ResultDTO<String> acquireServer(ServerDiscoveryRequest request) {
+        return ResultDTO.success(serverElectionService.elect(request));
     }
 
     @GetMapping("/hello")
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
         res.put("localHost", NetUtils.getLocalHost());
-        res.put("communicationSystemInfo", transportService.getProtocol2Transporter());
+        res.put("serverInfo", serverInfo);
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
+        res.put("serverTimeTs", System.currentTimeMillis());
         res.put("serverTimeZone", TimeZone.getDefault().getDisplayName());
         res.put("appIds", workerClusterQueryService.getAppId2ClusterStatus().keySet());
         if (debug) {
             res.put("appId2ClusterInfo", JSON.parseObject(JSON.toJSONString(workerClusterQueryService.getAppId2ClusterStatus())));
-
         }
+
+        try {
+            res.put("defaultAddress", JSONObject.toJSON(transportService.defaultProtocol()));
+        } catch (Exception ignore) {
+        }
+
         return ResultDTO.success(res);
     }
 
+    @Override
+    public void setServerInfo(ServerInfo serverInfo) {
+        this.serverInfo = serverInfo;
+    }
 }

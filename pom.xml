@@ -6,7 +6,7 @@
 
     <groupId>tech.powerjob</groupId>
     <artifactId>powerjob</artifactId>
-    <version>3.0.0</version>
+    <version>4.0.0</version>
     <packaging>pom</packaging>
     <name>powerjob</name>
     <url>http://www.powerjob.tech</url>
@@ -44,6 +44,7 @@
         <module>powerjob-worker-spring-boot-starter</module>
         <module>powerjob-worker-samples</module>
         <module>powerjob-official-processors</module>
+        <module>powerjob-remote</module>
     </modules>
 
     <properties>

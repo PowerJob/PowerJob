@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.worker.PowerJobSpringWorker;
 import tech.powerjob.worker.PowerJobWorker;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 
@@ -45,11 +46,15 @@ public class PowerJobAutoConfiguration {
         /*
          * Configuration of worker port. Random port is enabled when port is set with non-positive number.
          */
-        int port = worker.getAkkaPort();
-        if (port <= 0) {
-            port = NetUtils.getRandomPort();
+        if (worker.getPort() != null) {
+            config.setPort(worker.getPort());
+        } else {
+            int port = worker.getAkkaPort();
+            if (port <= 0) {
+                port = NetUtils.getRandomPort();
+            }
+            config.setPort(port);
         }
-        config.setPort(port);
         /*
          * appName, name of the application. Applications should be registered in advance to prevent
          * error. This property should be the same with what you entered for appName when getting
@@ -57,6 +62,7 @@ public class PowerJobAutoConfiguration {
          */
         config.setAppName(worker.getAppName());
         config.setServerAddress(serverAddress);
+        config.setProtocol(worker.getProtocol());
         /*
          * For non-Map/MapReduce tasks, {@code memory} is recommended for speeding up calculation.
          * Map/MapReduce tasks may produce batches of subtasks, which could lead to OutOfMemory
@@ -81,11 +87,9 @@ public class PowerJobAutoConfiguration {
 
         config.setHealthReportInterval(worker.getHealthReportInterval());
         /*
-         * Create OhMyWorker object and set properties.
+         * Create PowerJobSpringWorker object and set properties.
          */
-        PowerJobWorker ohMyWorker = new PowerJobWorker();
-        ohMyWorker.setConfig(config);
-        return ohMyWorker;
+        return new PowerJobSpringWorker(config);
     }
 
 }

@@ -1,0 +1,75 @@
+# 构建 PowerJob 测试环境
+
+version: '3'
+services:
+  powerjob-mysql:
+    build:
+      context: ../
+    environment:
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_ROOT_PASSWORD: No1Bug2Please3!
+    restart: always
+    container_name: powerjob-mysql
+    image: powerjob/powerjob-mysql:test_env
+    ports:
+      - "3309:3306"
+    volumes:
+      - ~/powerjob-data/powerjob-mysql:/var/lib/mysql
+    command: --lower_case_table_names=1
+
+  powerjob-server:
+    build:
+      context: ../../powerjob-server/docker
+    container_name: powerjob-server
+    image: powerjob/powerjob-server:test_env
+    restart: always
+    depends_on:
+      - powerjob-mysql
+    environment:
+      PARAMS: "--spring.profiles.active=product --oms.mongodb.enable=false --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+      JVMOPTIONS: "-Xmx1024m"
+    ports:
+      - "7700:7700"
+      - "10086:10086"
+      - "10010:10010"
+    volumes:
+      - ~/powerjob-data/powerjob-server:/root/powerjob/server/
+
+  powerjob-worker-agent:
+    build:
+      context: ../../powerjob-worker-agent
+    container_name: powerjob-worker-agent
+    image: powerjob/powerjob-worker-agent:test_env
+    restart: always
+    depends_on:
+      - powerjob-mysql
+      - powerjob-server
+    ports:
+      - "5002:5005"
+      - "10002:10000"
+      - "27777:27777"
+    volumes:
+      - ~/powerjob-data/powerjob-worker-agent:/root
+    entrypoint:
+      - "sh"
+      - "-c"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx768m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+
+  powerjob-worker-agent2:
+    container_name: powerjob-worker-agent2
+    image: powerjob/powerjob-worker-agent:test_env
+    restart: always
+    depends_on:
+      - powerjob-mysql
+      - powerjob-server
+    ports:
+      - "5003:5005"
+      - "10003:10000"
+      - "27778:27777"
+    volumes:
+      - ~/powerjob-data/powerjob-worker-agent2:/root
+    entrypoint:
+      - "sh"
+      - "-c"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx768m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+

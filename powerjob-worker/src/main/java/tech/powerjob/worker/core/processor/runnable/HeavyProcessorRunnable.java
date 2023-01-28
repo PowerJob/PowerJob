@@ -1,13 +1,16 @@
 package tech.powerjob.worker.core.processor.runnable;
 
-import akka.actor.ActorSelection;
+import com.google.common.base.Stopwatch;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.enums.ExecuteType;
-import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.common.serialize.SerializerUtils;
 import tech.powerjob.worker.common.ThreadLocalStore;
+import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
-import tech.powerjob.worker.common.utils.AkkaUtils;
-import tech.powerjob.common.serialize.SerializerUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
@@ -16,15 +19,11 @@ import tech.powerjob.worker.core.processor.WorkflowContext;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
 import tech.powerjob.worker.core.processor.sdk.BroadcastProcessor;
 import tech.powerjob.worker.core.processor.sdk.MapReduceProcessor;
+import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.log.OmsLogger;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 import tech.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
-import com.google.common.base.Stopwatch;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,14 +44,10 @@ public class HeavyProcessorRunnable implements Runnable {
 
 
     private final InstanceInfo instanceInfo;
-    private final ActorSelection taskTrackerActor;
+    private final String taskTrackerAddress;
     private final TaskDO task;
-    private final BasicProcessor processor;
+    private final ProcessorBean processorBean;
     private final OmsLogger omsLogger;
-    /**
-     * 类加载器
-     */
-    private final ClassLoader classLoader;
     /**
      * 重试队列，ProcessorTracker 将会定期重新上报处理结果
      */
@@ -60,6 +55,8 @@ public class HeavyProcessorRunnable implements Runnable {
     private final WorkerRuntime workerRuntime;
 
     public void innerRun() throws InterruptedException {
+
+        final BasicProcessor processor = processorBean.getProcessor();
 
         String taskId = task.getTaskId();
         Long instanceId = task.getInstanceId();
@@ -107,8 +104,11 @@ public class HeavyProcessorRunnable implements Runnable {
 
     private TaskContext constructTaskContext() {
         TaskContext taskContext = new TaskContext();
-        BeanUtils.copyProperties(task, taskContext);
         taskContext.setJobId(instanceInfo.getJobId());
+        taskContext.setInstanceId(task.getInstanceId());
+        taskContext.setSubInstanceId(task.getSubInstanceId());
+        taskContext.setTaskId(task.getTaskId());
+        taskContext.setTaskName(task.getTaskName());
         taskContext.setMaxRetryTimes(instanceInfo.getTaskRetryNum());
         taskContext.setCurrentRetryTimes(task.getFailedCnt());
         taskContext.setJobParams(instanceInfo.getJobParams());
@@ -122,7 +122,7 @@ public class HeavyProcessorRunnable implements Runnable {
     }
 
     private WorkflowContext constructWorkflowContext() {
-        return new WorkflowContext(instanceInfo.getWfInstanceId(),instanceInfo.getInstanceParams());
+        return new WorkflowContext(instanceInfo.getWfInstanceId(), instanceInfo.getInstanceParams());
     }
 
     /**
@@ -131,6 +131,7 @@ public class HeavyProcessorRunnable implements Runnable {
      * MAP_REDUCE => {@link MapReduceProcessor#reduce}
      */
     private void handleLastTask(String taskId, Long instanceId, TaskContext taskContext, ExecuteType executeType) {
+        final BasicProcessor processor = processorBean.getProcessor();
         ProcessResult processResult;
         Stopwatch stopwatch = Stopwatch.createStarted();
         log.debug("[ProcessorRunnable-{}] the last task(taskId={}) start to process.", instanceId, taskId);
@@ -175,6 +176,7 @@ public class HeavyProcessorRunnable implements Runnable {
      * 即执行 {@link BroadcastProcessor#preProcess}，并通知 TaskerTracker 创建广播子任务
      */
     private void handleBroadcastRootTask(Long instanceId, TaskContext taskContext) {
+        BasicProcessor processor = processorBean.getProcessor();
         ProcessResult processResult;
         // 广播执行的第一个 task 只执行 preProcess 部分
         if (processor instanceof BroadcastProcessor) {
@@ -222,14 +224,14 @@ public class HeavyProcessorRunnable implements Runnable {
 
         // 最终结束状态要求可靠发送
         if (TaskStatus.FINISHED_STATUS.contains(status.getValue())) {
-            boolean success = AkkaUtils.reliableTransmit(taskTrackerActor, req);
+            boolean success = TransportUtils.reliablePtReportTask(req, taskTrackerAddress, workerRuntime);
             if (!success) {
                 // 插入重试队列，等待重试
                 statusReportRetryQueue.add(req);
                 log.warn("[ProcessorRunnable-{}] report task(id={},status={},result={}) failed, will retry later", task.getInstanceId(), task.getTaskId(), status, result);
             }
         } else {
-            taskTrackerActor.tell(req, null);
+            TransportUtils.ptReportTask(req, taskTrackerAddress, workerRuntime);
         }
     }
 
@@ -237,7 +239,7 @@ public class HeavyProcessorRunnable implements Runnable {
     @SuppressWarnings("squid:S2142")
     public void run() {
         // 切换线程上下文类加载器（否则用的是 Worker 类加载器，不存在容器类，在序列化/反序列化时会报 ClassNotFoundException）
-        Thread.currentThread().setContextClassLoader(classLoader);
+        Thread.currentThread().setContextClassLoader(processorBean.getClassLoader());
         try {
             innerRun();
         } catch (InterruptedException ignore) {

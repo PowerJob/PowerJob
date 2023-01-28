@@ -1,20 +1,5 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.remote.transport.starter.AkkaStarter;
-import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
-import tech.powerjob.server.core.container.ContainerTemplateGenerator;
-import tech.powerjob.server.common.utils.OmsFileUtils;
-import tech.powerjob.server.persistence.remote.model.AppInfoDO;
-import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
-import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
-import tech.powerjob.server.core.container.ContainerService;
-import tech.powerjob.server.web.request.GenerateContainerTemplateRequest;
-import tech.powerjob.server.web.request.SaveContainerInfoRequest;
-import tech.powerjob.server.web.response.ContainerInfoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -22,8 +7,21 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.common.constants.ContainerSourceType;
+import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.server.common.utils.OmsFileUtils;
+import tech.powerjob.server.core.container.ContainerService;
+import tech.powerjob.server.core.container.ContainerTemplateGenerator;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
+import tech.powerjob.server.web.request.GenerateContainerTemplateRequest;
+import tech.powerjob.server.web.request.SaveContainerInfoRequest;
+import tech.powerjob.server.web.response.ContainerInfoVO;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +60,8 @@ public class ContainerController {
         File file = containerService.fetchContainerJarFile(version);
         if (file.exists()) {
             OmsFileUtils.file2HttpResponse(file, response);
+        } else {
+            log.error("[Container] can't find container by version[{}], please deploy first!", version);
         }
     }
 
@@ -114,17 +114,6 @@ public class ContainerController {
             return ResultDTO.failed("No workers have even registered！");
         }
 
-        // 转发 HTTP 请求
-        if (!AkkaStarter.getActorSystemAddress().equals(targetServer)) {
-            String targetIp = targetServer.split(":")[0];
-            String url = String.format("http://%s:%d/container/listDeployedWorker?appId=%d&containerId=%d", targetIp, port, appId, containerId);
-            try {
-                response.sendRedirect(url);
-                return ResultDTO.success(null);
-            }catch (Exception e) {
-                return ResultDTO.failed(e);
-            }
-        }
         return ResultDTO.success(containerService.fetchDeployedInfo(appId, containerId));
     }
 

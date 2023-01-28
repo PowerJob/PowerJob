@@ -1,5 +1,6 @@
 package tech.powerjob.official.processors.impl.script;
 
+import tech.powerjob.worker.common.utils.PowerFileUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.log.OmsLogger;
@@ -34,7 +35,7 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
     protected static final String SH_SHELL = "/bin/sh";
     protected static final String CMD_SHELL = "cmd.exe";
 
-    private static final String WORKER_DIR = System.getProperty("user.home") + "/powerjob/worker/official_script_processor/";
+    private static final String WORKER_DIR = PowerFileUtils.workspace() + "/official_script_processor/";
 
     @Override
     protected ProcessResult process0(TaskContext context) throws Exception {

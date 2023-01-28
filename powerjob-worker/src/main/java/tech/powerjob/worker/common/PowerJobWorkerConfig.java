@@ -4,10 +4,12 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.WorkflowContext;
 import tech.powerjob.worker.extension.SystemMetricsCollector;
+import tech.powerjob.worker.extension.processor.ProcessorFactory;
 
 import java.util.List;
 
@@ -36,6 +38,10 @@ public class PowerJobWorkerConfig {
      */
     private List<String> serverAddress = Lists.newArrayList();
     /**
+     * Protocol for communication between WORKER and server
+     */
+    private Protocol protocol = Protocol.AKKA;
+    /**
      * Max length of response result. Result that is longer than the value will be truncated.
      * {@link ProcessResult} max length for #msg
      */
@@ -60,9 +66,14 @@ public class PowerJobWorkerConfig {
      * {@link WorkflowContext} max length for #appendedContextData
      */
     private int maxAppendedWfContextLength = 8192;
-
-
+    /**
+     * user-customized system metrics collector
+     */
     private SystemMetricsCollector systemMetricsCollector;
+    /**
+     * Processor factory for custom logic, generally used for IOC framework processor bean injection that is not officially supported by PowerJob
+     */
+    private List<ProcessorFactory> processorFactoryList;
 
     private String tag;
     /**

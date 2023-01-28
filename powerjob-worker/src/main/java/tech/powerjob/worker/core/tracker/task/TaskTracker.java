@@ -1,24 +1,17 @@
 package tech.powerjob.worker.core.tracker.task;
 
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
-import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.common.utils.AkkaUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -67,7 +60,20 @@ public abstract class TaskTracker {
         this.instanceId = req.getInstanceId();
 
         this.instanceInfo = new InstanceInfo();
-        BeanUtils.copyProperties(req, instanceInfo);
+
+        // PowerJob 值拷贝场景不多，引入三方值拷贝类库可能引入类冲突等问题，综合评估手写 ROI 最高
+        instanceInfo.setJobId(req.getJobId());
+        instanceInfo.setInstanceId(req.getInstanceId());
+        instanceInfo.setWfInstanceId(req.getWfInstanceId());
+        instanceInfo.setExecuteType(req.getExecuteType());
+        instanceInfo.setProcessorType(req.getProcessorType());
+        instanceInfo.setProcessorInfo(req.getProcessorInfo());
+        instanceInfo.setJobParams(req.getJobParams());
+        instanceInfo.setInstanceParams(req.getInstanceParams());
+        instanceInfo.setThreadConcurrency(req.getThreadConcurrency());
+        instanceInfo.setTaskRetryNum(req.getTaskRetryNum());
+        instanceInfo.setLogConfig(req.getLogConfig());
+
         // 特殊处理超时时间
         if (instanceInfo.getInstanceTimeoutMS() <= 0) {
             instanceInfo.setInstanceTimeoutMS(Integer.MAX_VALUE);
@@ -100,25 +106,27 @@ public abstract class TaskTracker {
         log.warn("[TaskTracker-{}] create TaskTracker from request({}) failed.", req.getInstanceId(), req, e);
         // 直接发送失败请求
         TaskTrackerReportInstanceStatusReq response = new TaskTrackerReportInstanceStatusReq();
-        BeanUtils.copyProperties(req, response);
+
+        response.setAppId(workerRuntime.getAppId());
+        response.setJobId(req.getJobId());
+        response.setInstanceId(req.getInstanceId());
+        response.setWfInstanceId(req.getWfInstanceId());
+
         response.setInstanceStatus(InstanceStatus.FAILED.getV());
         response.setResult(String.format("init TaskTracker failed, reason: %s", e.toString()));
         response.setReportTime(System.currentTimeMillis());
         response.setStartTime(System.currentTimeMillis());
         response.setSourceAddress(workerRuntime.getWorkerAddress());
 
-        String serverPath = AkkaUtils.getServerActorPath(workerRuntime.getServerDiscoveryService().getCurrentServerAddress());
-        ActorSelection serverActor = workerRuntime.getActorSystem().actorSelection(serverPath);
-        serverActor.tell(response, null);
+        TransportUtils.ttReportInstanceStatus(response, workerRuntime.getServerDiscoveryService().getCurrentServerAddress(), workerRuntime.getTransporter());
     }
 
-    protected void reportFinalStatusThenDestroy(ActorSelection serverActor, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
+    protected void reportFinalStatusThenDestroy(WorkerRuntime workerRuntime, TaskTrackerReportInstanceStatusReq reportInstanceStatusReq) {
+        String currentServerAddress = workerRuntime.getServerDiscoveryService().getCurrentServerAddress();
         // 最终状态需要可靠上报
-        CompletionStage<Object> ask = Patterns.ask(serverActor, reportInstanceStatusReq, Duration.ofSeconds(15));
         boolean serverAccepted = false;
         try {
-            AskResponse askResponse = (AskResponse) ask.toCompletableFuture().get(15, TimeUnit.SECONDS);
-            serverAccepted = askResponse.isSuccess();
+            serverAccepted = TransportUtils.reliableTtReportInstanceStatus(reportInstanceStatusReq, currentServerAddress, workerRuntime.getTransporter());
         } catch (Exception e) {
             log.warn("[TaskTracker-{}] report finished status failed, req={}.", instanceId, reportInstanceStatusReq, e);
         }

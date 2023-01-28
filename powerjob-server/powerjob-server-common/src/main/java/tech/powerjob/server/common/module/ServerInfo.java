@@ -15,5 +15,7 @@ public class ServerInfo {
 
     private String ip;
 
+    private long bornTime;
+
     private String version = "UNKNOWN";
 }

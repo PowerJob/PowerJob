@@ -42,14 +42,20 @@ public class JavaUtils {
             if (connection instanceof JarURLConnection) {
                 return getImplementationVersion(((JarURLConnection) connection).getJarFile());
             }
-            try (JarFile jarFile = new JarFile(new File(codeSourceLocation.toURI()))) {
+            final File file = new File(codeSourceLocation.toURI());
+            // idea 场景，查找版本失败
+            if (!file.exists() || file.isDirectory()) {
+                return "UNKNOWN";
+            }
+            try (JarFile jarFile = new JarFile(file)) {
                 return getImplementationVersion(jarFile);
             }
         }
         catch (Throwable t) {
             log.warn("[JavaUtils] determinePackageVersion for clz[{}] failed, msg: {}", clz.getSimpleName(), t.toString());
+            // windows 下无权限访问会一直报错一直重试，需要在此兼容
+            return "UNKNOWN";
         }
-        return null;
     }
     private static String getImplementationVersion(JarFile jarFile) throws IOException {
         return jarFile.getManifest().getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);

@@ -2,15 +2,15 @@ package tech.powerjob.server.core.instance;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.request.ServerStopInstanceReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
+import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.timewheel.holder.HashedWheelTimerHolder;
 import tech.powerjob.server.common.utils.SpringUtils;
@@ -22,10 +22,10 @@ import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.remote.transport.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
+import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -176,7 +176,8 @@ public class InstanceManager {
         if (workerInfoOpt.isPresent()) {
             ServerStopInstanceReq stopInstanceReq = new ServerStopInstanceReq(instanceId);
             WorkerInfo workerInfo = workerInfoOpt.get();
-            transportService.tell(Protocol.of(workerInfo.getProtocol()), workerInfo.getAddress(), stopInstanceReq);
+            final URL url = ServerURLFactory.stopInstance2Worker(workerInfo.getAddress());
+            transportService.tell(workerInfo.getProtocol(), url, stopInstanceReq);
         }
     }
 

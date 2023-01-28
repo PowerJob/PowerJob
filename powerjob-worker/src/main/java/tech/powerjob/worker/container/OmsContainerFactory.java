@@ -1,8 +1,5 @@
 package tech.powerjob.worker.container;
 
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
-import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.request.ServerDeployContainerRequest;
 import tech.powerjob.common.request.WorkerNeedDeployContainerRequest;
@@ -12,14 +9,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.worker.common.utils.PowerFileUtils;
+import tech.powerjob.worker.common.utils.TransportUtils;
 
 import java.io.File;
 import java.net.URL;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 容器工厂
@@ -30,25 +27,23 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class OmsContainerFactory {
 
-    private static final String CONTAINER_DIR = System.getProperty("user.home") + "/powerjob/worker/container/";
+    private static final String CONTAINER_DIR = PowerFileUtils.workspace() + "/container/";
     private static final Map<Long, OmsContainer> CARGO = Maps.newConcurrentMap();
 
     /**
      * 获取容器
      * @param containerId 容器ID
-     * @param serverActor 当容器不存在且 serverActor 非空时，尝试从服务端重新拉取容器
+     * @param workerRuntime 当容器不存在且 serverActor 非空时，尝试从服务端重新拉取容器
      * @return 容器示例，可能为 null
      */
-    public static OmsContainer fetchContainer(Long containerId, ActorSelection serverActor) {
+    public static OmsContainer fetchContainer(Long containerId, WorkerRuntime workerRuntime) {
 
         OmsContainer omsContainer = CARGO.get(containerId);
         if (omsContainer != null) {
             return omsContainer;
         }
 
-        if (serverActor == null) {
-            return null;
-        }
+        final String currentServerAddress = workerRuntime.getServerDiscoveryService().getCurrentServerAddress();
 
         // 尝试从 server 加载
         log.info("[OmsContainer-{}] can't find the container in factory, try to deploy from server.", containerId);
@@ -56,8 +51,7 @@ public class OmsContainerFactory {
 
         try {
 
-            CompletionStage<Object> askCS = Patterns.ask(serverActor, request, Duration.ofMillis(RemoteConstant.DEFAULT_TIMEOUT_MS));
-            AskResponse askResponse = (AskResponse) askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            AskResponse askResponse = TransportUtils.reliableQueryContainerInfo(request, currentServerAddress, workerRuntime.getTransporter());
 
             if (askResponse.isSuccess()) {
                 ServerDeployContainerRequest deployRequest = askResponse.getData(ServerDeployContainerRequest.class);

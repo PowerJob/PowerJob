@@ -8,6 +8,11 @@ package tech.powerjob.common;
  */
 public class OmsConstant {
 
+    /**
+     * package name
+     */
+    public static final String PACKAGE = "tech.powerjob";
+
     public static final int SERVER_DEFAULT_AKKA_PORT = 10086;
     public static final int SERVER_DEFAULT_HTTP_PORT = 10010;
 
@@ -17,6 +22,10 @@ public class OmsConstant {
     public static final String NONE = "N/A";
 
     public static final String COMMA = ",";
+
+    public static final String AND = "&";
+
+    public static final String EQUAL = "=";
     public static final String LINE_SEPARATOR = "\r\n";
 
     public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";

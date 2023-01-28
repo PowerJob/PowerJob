@@ -3,14 +3,18 @@ package tech.powerjob.server.core;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.SystemInstanceResult;
-import tech.powerjob.common.enums.*;
+import tech.powerjob.common.enums.ExecuteType;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.ProcessorType;
+import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.ServerScheduleJobReq;
+import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.Holder;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.core.instance.InstanceManager;
@@ -19,7 +23,8 @@ import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.remote.transport.TransportService;
+import tech.powerjob.server.remote.transporter.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
 import java.util.ArrayList;
@@ -165,7 +170,8 @@ public class DispatchService {
         WorkerInfo taskTracker = suitableWorkers.get(0);
         String taskTrackerAddress = taskTracker.getAddress();
 
-        transportService.tell(Protocol.of(taskTracker.getProtocol()), taskTrackerAddress, req);
+        URL workerUrl = ServerURLFactory.dispatchJob2Worker(taskTrackerAddress);
+        transportService.tell(taskTracker.getProtocol(), workerUrl, req);
         log.info("[Dispatcher-{}|{}] send schedule request to TaskTracker[protocol:{},address:{}] successfully: {}.", jobId, instanceId, taskTracker.getProtocol(), taskTrackerAddress, req);
 
         // 修改状态
