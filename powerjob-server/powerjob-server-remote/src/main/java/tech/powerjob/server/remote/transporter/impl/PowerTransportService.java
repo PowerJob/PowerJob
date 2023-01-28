@@ -43,11 +43,14 @@ import java.util.concurrent.CompletionStage;
 @Service
 public class PowerTransportService implements TransportService, InitializingBean, DisposableBean, ApplicationContextAware {
 
+    /**
+     * server 需要激活的通讯协议，建议激活全部支持的协议
+     */
     @Value("${oms.transporter.active.protocols}")
     private String activeProtocols;
 
     /**
-     * 主要通讯协议，用于 server 与 server 之间的通讯，用户必须保证该协议可用！
+     * 主要通讯协议，用于 server 与 server 之间的通讯，用户必须保证该协议可用（端口开放）！
      */
     @Value("${oms.transporter.main.protocol}")
     private String mainProtocol;
