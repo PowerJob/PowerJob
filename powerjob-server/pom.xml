@@ -37,7 +37,7 @@
         <postgresql.version>42.2.14</postgresql.version>
         <h2.db.version>2.1.214</h2.db.version>
 
-        <zip4j.version>2.11.2</zip4j.version>
+        <zip4j.version>2.11.3</zip4j.version>
         <jgit.version>5.7.0.202003110725-r</jgit.version>
         <mvn.invoker.version>3.0.1</mvn.invoker.version>
         <commons.net.version>3.8.0</commons.net.version>
