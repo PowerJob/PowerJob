@@ -34,6 +34,7 @@ services:
       - "10010:10010"
     volumes:
       - ~/powerjob-data/powerjob-server:/root/powerjob/server/
+      - ~/.m2:/root/.m2
 
   powerjob-worker-agent:
     build:
