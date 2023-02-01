@@ -54,7 +54,7 @@ services:
     entrypoint:
       - "sh"
       - "-c"
-      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx768m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
 
   powerjob-worker-agent2:
     container_name: powerjob-worker-agent2
@@ -72,5 +72,5 @@ services:
     entrypoint:
       - "sh"
       - "-c"
-      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx768m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx512m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
 
