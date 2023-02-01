@@ -21,16 +21,22 @@ import java.util.Optional;
  * @author tjq
  * @since 2023/1/20
  */
-public class PowerJobSpringWorker extends PowerJobWorker implements ApplicationContextAware, InitializingBean, DisposableBean {
+public class PowerJobSpringWorker implements ApplicationContextAware, InitializingBean, DisposableBean {
 
+    /**
+     * 组合优于继承，持有 PowerJobWorker，内部重新设置 ProcessorFactory 更优雅
+     */
+    private PowerJobWorker powerJobWorker;
+    private final PowerJobWorkerConfig config;
 
     public PowerJobSpringWorker(PowerJobWorkerConfig config) {
-        super(config);
+        this.config = config;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        init();
+        powerJobWorker = new PowerJobWorker(config);
+        powerJobWorker.init();
     }
 
     @Override
@@ -38,12 +44,16 @@ public class PowerJobSpringWorker extends PowerJobWorker implements ApplicationC
         BuiltInSpringProcessorFactory springProcessorFactory = new BuiltInSpringProcessorFactory(applicationContext);
 
         // append BuiltInSpringProcessorFactory
-        PowerJobWorkerConfig workerConfig = workerRuntime.getWorkerConfig();
+
         List<ProcessorFactory> processorFactories = Lists.newArrayList(
-                Optional.ofNullable(workerConfig.getProcessorFactoryList())
+                Optional.ofNullable(config.getProcessorFactoryList())
                         .orElse(Collections.emptyList()));
         processorFactories.add(springProcessorFactory);
-        workerConfig.setProcessorFactoryList(processorFactories);
+        config.setProcessorFactoryList(processorFactories);
     }
 
+    @Override
+    public void destroy() throws Exception {
+        powerJobWorker.destroy();
+    }
 }
