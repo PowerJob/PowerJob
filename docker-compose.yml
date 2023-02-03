@@ -1,6 +1,6 @@
-# 使用说明 V4.1.1
+# 使用说明 V4.3.1
 # 1. PowerJob 根目录执行：docker-compose up
-# 2. 静静等待服务启动。刚开始启动时，powerjob-worker-samples会启动失败，等powerjob-server启动成功后，powerjob-worker-samples才会启动成功。
+# 2. 静静等待服务启动。
 
 version: '3'
 services:
@@ -24,6 +24,7 @@ services:
     depends_on:
       - powerjob-mysql
     environment:
+      JVMOPTIONS: "-Xmx512m"
       PARAMS: "--oms.mongodb.enable=false --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
     ports:
       - "7700:7700"
@@ -39,10 +40,15 @@ services:
     depends_on:
       - powerjob-mysql
       - powerjob-server
-    environment:
-      PARAMS: "--powerjob.worker.server-address=powerjob-server:7700"
+#    environment:
+#      PARAMS: "--powerjob.worker.server-address=powerjob-server:7700"
     ports:
       - "8081:8081"
       - "27777:27777"
     volumes:
       - ./powerjob-data/powerjob-worker-samples:/root/powerjob/worker
+      - ./others/script/wait-for-it.sh:/wait-for-it.sh
+    entrypoint:
+      - "sh"
+      - "-c"
+      - "chmod +x wait-for-it.sh && ./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx512m -jar /powerjob-worker-samples.jar --powerjob.worker.server-address=powerjob-server:7700"
