@@ -64,6 +64,16 @@ public class BuiltInSpringProcessorFactory implements ProcessorFactory {
 
     @SuppressWarnings("unchecked")
     private static <T> T getBean(String className, ApplicationContext ctx) throws Exception {
+
+        // 0. 尝试直接用 Bean 名称加载
+        try {
+            final Object bean = ctx.getBean(className);
+            if (bean != null) {
+                return (T) bean;
+            }
+        } catch (Exception ignore) {
+        }
+
         // 1. ClassLoader 存在，则直接使用 clz 加载
         ClassLoader classLoader = ctx.getClassLoader();
         if (classLoader != null) {
