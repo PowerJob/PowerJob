@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Default server election policy, first-come, first-served, no load balancing capability
@@ -162,8 +163,10 @@ public class ServerElectionService {
                     log.warn("[ServerElection] server[{}] is active but don't have target protocol", serverAddress);
                 }
             }
-        }catch (Exception e) {
-            log.warn("[ServerElection] server[{}] was down.", serverAddress, e);
+        } catch (TimeoutException te) {
+            log.warn("[ServerElection] server[{}] was down due to ping timeout!", serverAddress);
+        } catch (Exception e) {
+            log.warn("[ServerElection] server[{}] was down with unknown case!", serverAddress, e);
         }
         downServerCache.add(serverAddress);
         return null;
