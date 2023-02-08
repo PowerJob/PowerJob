@@ -2,6 +2,7 @@ package tech.powerjob.worker.processor.impl;
 
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
@@ -45,6 +46,8 @@ public class BuiltInSpringProcessorFactory implements ProcessorFactory {
             return new ProcessorBean()
                     .setProcessor(basicProcessor)
                     .setClassLoader(basicProcessor.getClass().getClassLoader());
+        } catch (NoSuchBeanDefinitionException ignore) {
+            log.warn("[ProcessorFactory] can't find the processor in SPRING");
         } catch (Throwable t) {
             log.warn("[ProcessorFactory] load by BuiltInSpringProcessorFactory failed. If you are using Spring, make sure this bean was managed by Spring", t);
         }
