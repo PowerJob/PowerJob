@@ -5,10 +5,7 @@ import tech.powerjob.common.enums.LogType;
 import tech.powerjob.common.model.LogConfig;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
-import tech.powerjob.worker.log.impl.OmsLocalLogger;
-import tech.powerjob.worker.log.impl.OmsNullLogger;
-import tech.powerjob.worker.log.impl.OmsServerLogger;
-import tech.powerjob.worker.log.impl.OmsStdOutLogger;
+import tech.powerjob.worker.log.impl.*;
 
 /**
  * OmsLoggerFactory
@@ -37,6 +34,8 @@ public class OmsLoggerFactory {
                 return new OmsStdOutLogger(cfg);
             case NULL:
                 return new OmsNullLogger();
+            case LOCAL_AND_ONLINE:
+                return new OmsServerAndLocalLogger(cfg, instanceId, workerRuntime.getOmsLogHandler());
             default:
                 return new OmsServerLogger(cfg, instanceId, workerRuntime.getOmsLogHandler());
         }
