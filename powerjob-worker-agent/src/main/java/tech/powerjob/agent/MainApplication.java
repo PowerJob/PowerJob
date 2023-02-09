@@ -1,6 +1,7 @@
 package tech.powerjob.agent;
 
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.worker.PowerJobWorker;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.constants.StoreStrategy;
@@ -18,14 +19,17 @@ import picocli.CommandLine.Option;
  * @since 2020/5/20
  */
 @Slf4j
-@Command(name = "PowerJobAgent", mixinStandardHelpOptions = true, version = "4.0.0", description = "powerjob-worker agent")
+@Command(name = "PowerJobAgent", mixinStandardHelpOptions = true, version = "4.3.0", description = "powerjob-worker agent")
 public class MainApplication implements Runnable {
 
     @Option(names = {"-a", "--app"}, description = "worker-agent's name", required = true)
     private String appName;
 
-    @Option(names = {"-p", "--port"}, description = "akka ActorSystem working port, not recommended to change")
+    @Option(names = {"-p", "--port"}, description = "transporter working port, not recommended to change")
     private Integer port = RemoteConstant.DEFAULT_WORKER_PORT;
+
+    @Option(names = {"-o", "--protocol"}, description = "transporter protocol, AKKA or HTTP")
+    private String protocol = Protocol.AKKA.name();
 
     @Option(names = {"-e", "--persistence"}, description = "storage strategy, DISK or MEMORY")
     private String storeStrategy = "DISK";
@@ -56,6 +60,7 @@ public class MainApplication implements Runnable {
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);
             cfg.setTag(tag);
+            cfg.setProtocol(Protocol.of(protocol));
 
             PowerJobWorker worker = new PowerJobWorker(cfg);
 
