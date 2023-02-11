@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.stereotype.Component;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CollectionUtils;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * @author 550w
  * @date 2027/02/15
  */
+@Component
 public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
 
     /**
@@ -47,6 +49,7 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
 
         TimeOfDay startTime = TimeOfDay.from(ep.startTimeOfDay);
         TimeOfDay endTime = TimeOfDay.from(ep.endTimeOfDay);
+
         if (endTime.before(startTime)) {
             throw new IllegalArgumentException("endTime should after startTime!");
         }
@@ -96,7 +99,7 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
         // 判断是否符合"日"的执行条件
         int week = TimeUtils.calculateWeek(year, month, day);
         Set<Integer> targetDays = CollectionUtils.isEmpty(ep.daysOfWeek) ? ALL_DAY : ep.daysOfWeek;
-        // 未包含情况下，将时间改写为符合条件日的 00:00 分，重新开始 loop（这部分应该有性能更优的写法，不过这个调度模式应该很难触发瓶颈，先简单好用的实现）
+        // 未包含情况下，将时间改写为符合条件日的 00:00 分，重新开始递归（这部分应该有性能更优的写法，不过这个调度模式应该很难触发瓶颈，先简单好用的实现）
         if (!targetDays.contains(week)) {
             simpleSetCalendar(calendar, 0, 0, 0);
             Date tomorrowZero = DateUtils.addDays(calendar.getTime(), 1);
@@ -108,14 +111,14 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
         simpleSetCalendar(calendar, rangeStartTime.getHour(), rangeStartTime.getMinute(), rangeStartTime.getSecond());
         long todayStartTs = calendar.getTimeInMillis();
 
-        TimeOfDay rangeEndTime = TimeOfDay.from(ep.endTimeOfDay);
-        simpleSetCalendar(calendar, rangeEndTime.getHour(), rangeEndTime.getMinute(), rangeEndTime.getSecond());
-        long todayEndTs = calendar.getTimeInMillis();
-
         // 未开始
         if (time < todayStartTs) {
             return todayStartTs;
         }
+
+        TimeOfDay rangeEndTime = TimeOfDay.from(ep.endTimeOfDay);
+        simpleSetCalendar(calendar, rangeEndTime.getHour(), rangeEndTime.getMinute(), rangeEndTime.getSecond());
+        long todayEndTs = calendar.getTimeInMillis();
 
         // 范围之间
         if (time <= todayEndTs) {
