@@ -23,7 +23,9 @@ public enum TimeExpressionType {
     CRON(2),
     FIXED_RATE(3),
     FIXED_DELAY(4),
-    WORKFLOW(5);
+    WORKFLOW(5),
+
+    DAILY_TIME_INTERVAL(11);
 
     private final int v;
 
@@ -31,7 +33,7 @@ public enum TimeExpressionType {
     /**
      * 首次计算触发时间时必须计算出一个有效值
      */
-    public static final List<Integer> INSPECT_TYPES =  Collections.unmodifiableList(Lists.newArrayList(CRON.v));
+    public static final List<Integer> INSPECT_TYPES =  Collections.unmodifiableList(Lists.newArrayList(CRON.v, DAILY_TIME_INTERVAL.v));
 
     public static TimeExpressionType of(int v) {
         for (TimeExpressionType type : values()) {
