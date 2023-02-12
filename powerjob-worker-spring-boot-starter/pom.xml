@@ -24,6 +24,21 @@
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-worker</artifactId>
             <version>${powerjob.worker.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>tech.powerjob</groupId>
+                    <artifactId>powerjob-remote-impl-http</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tech.powerjob</groupId>
+                    <artifactId>powerjob-remote-impl-akka</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-remote-impl-http-spring</artifactId>
+            <version>${powerjob.worker.version}</version>
         </dependency>
 
         <dependency>

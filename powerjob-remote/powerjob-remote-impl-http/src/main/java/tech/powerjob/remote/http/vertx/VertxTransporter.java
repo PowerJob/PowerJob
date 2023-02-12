@@ -57,7 +57,11 @@ public class VertxTransporter implements Transporter {
         // 获取远程服务器的HTTP连接
         Future<HttpClientRequest> httpClientRequestFuture = httpClient.request(requestOptions);
         // 转换 -> 发送请求获取响应
-        Future<HttpClientResponse> responseFuture = httpClientRequestFuture.compose(httpClientRequest -> httpClientRequest.send(JsonObject.mapFrom(request).toBuffer()));
+        Future<HttpClientResponse> responseFuture = httpClientRequestFuture.compose(httpClientRequest ->
+            httpClientRequest
+                .putHeader("content-type", "application/json")
+                .send(JsonObject.mapFrom(request).toBuffer())
+            );
         return responseFuture.compose(httpClientResponse -> {
             // throw exception
             final int statusCode = httpClientResponse.statusCode();

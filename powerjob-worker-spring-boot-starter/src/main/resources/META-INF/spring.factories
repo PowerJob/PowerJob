@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  tech.powerjob.worker.autoconfigure.PowerJobAutoConfiguration
+  tech.powerjob.worker.autoconfigure.PowerJobAutoConfiguration,\
+  tech.powerjob.worker.autoconfigure.PowerJobRemoteAutoConfiguration

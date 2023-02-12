@@ -14,6 +14,7 @@
         <module>powerjob-remote-benchmark</module>
         <module>powerjob-remote-impl-http</module>
         <module>powerjob-remote-impl-akka</module>
+        <module>powerjob-remote-impl-http-spring</module>
     </modules>
 
     <artifactId>powerjob-remote</artifactId>
