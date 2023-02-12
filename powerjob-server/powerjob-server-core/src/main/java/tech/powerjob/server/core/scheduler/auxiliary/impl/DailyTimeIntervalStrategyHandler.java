@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
 
     /**
-     * 使用中国人的星期！！！
+     * 使用中国星期！！！
      */
     private static final Set<Integer> ALL_DAY = Sets.newHashSet(1, 2, 3, 4, 5, 6, 7);
 
