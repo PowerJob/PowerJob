@@ -76,6 +76,7 @@ public class WorkerClusterQueryService {
      * @param appId appId
      * @return alive workers
      */
+    @DesignateServer
     public List<WorkerInfo> getAllAliveWorkers(Long appId) {
         List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(appId).values());
         workers.removeIf(WorkerInfo::timeout);
