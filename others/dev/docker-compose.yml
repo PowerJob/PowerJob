@@ -35,7 +35,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./testenv/init_mongodb.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - ./testenv/init_mongodb.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - ~/powerjob-data/powerjob-mongodb:/data/db
   powerjob-server:
     build:
