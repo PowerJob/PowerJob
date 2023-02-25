@@ -74,7 +74,7 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
         long interval = timeUnit.toMillis(ep.interval);
 
         Long ret = calculateInRangeTime(preTriggerTime + interval, ep);
-        if (ret == null || ret <= endTime) {
+        if (ret == null || ret <= Optional.ofNullable(endTime).orElse(Long.MAX_VALUE)) {
             return ret;
         }
         return null;
