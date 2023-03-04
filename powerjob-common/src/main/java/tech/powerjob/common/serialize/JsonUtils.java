@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.powerjob.common.exception.PowerJobException;
 
@@ -73,6 +74,9 @@ public class JsonUtils {
     }
 
     public static <T> T parseObjectIgnoreException(String json, Class<T> clz) {
+        if (StringUtils.isEmpty(json)) {
+            return null;
+        }
         try {
             return JSON_MAPPER.readValue(json, clz);
         }catch (Exception e) {

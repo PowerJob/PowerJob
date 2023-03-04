@@ -49,6 +49,10 @@ public class JobController {
         return ResultDTO.success(JobInfoVO.from(jobService.copyJob(Long.valueOf(jobId))));
     }
 
+    @GetMapping("/export")
+    public ResultDTO<SaveJobInfoRequest> exportJob(String jobId) {
+        return ResultDTO.success(jobService.exportJob(Long.valueOf(jobId)));
+    }
 
     @GetMapping("/disable")
     public ResultDTO<Void> disableJob(String jobId) {
