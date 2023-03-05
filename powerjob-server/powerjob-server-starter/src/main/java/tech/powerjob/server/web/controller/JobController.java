@@ -88,6 +88,9 @@ public class JobController {
         if (request.getJobId() != null) {
 
             Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(request.getJobId());
+            if (!jobInfoOpt.get().getAppId().equals(request.getAppId())){
+                return ResultDTO.failed("请输入该app下的jobId");
+            }
             PageResult<JobInfoVO> result = new PageResult<>();
             result.setIndex(0);
             result.setPageSize(request.getPageSize());
