@@ -221,6 +221,7 @@ public class JobServiceImpl implements JobService {
         final JobInfoDO jobInfoDO = jobInfoOpt.get();
         final SaveJobInfoRequest saveJobInfoRequest = JobConverter.convertJobInfoDO2SaveJobInfoRequest(jobInfoDO);
         saveJobInfoRequest.setId(null);
+        saveJobInfoRequest.setJobName(saveJobInfoRequest.getJobName() + "_EXPORT_" + System.currentTimeMillis());
         log.info("[Job-{}] [exportJob] jobInfoDO: {}, saveJobInfoRequest: {}", jobId, JsonUtils.toJSONString(jobInfoDO), JsonUtils.toJSONString(saveJobInfoRequest));
         return saveJobInfoRequest;
     }

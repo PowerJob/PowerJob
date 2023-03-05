@@ -1,7 +1,7 @@
 package tech.powerjob.server.config;
 
-import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import lombok.RequiredArgsConstructor;
@@ -32,15 +32,18 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI springShopOpenAPI() {
+        final Contact contact = new Contact();
+        contact.setName("Team PowerJob");
+        contact.setUrl("http://www.powerjob.tech");
+        contact.setEmail("tengjiqi@gmail.com");
+
         // apiInfo()用来创建该Api的基本信息（这些基本信息会展现在文档页面中
         return new OpenAPI()
                 .info(new Info().title("PowerJob")
                         .description("Distributed scheduling and computing framework.")
                         .version(serverInfoService.fetchServiceInfo().getVersion())
-                        .license(new License().name("Apache License 2.0").url("https://github.com/PowerJob/PowerJob/blob/master/LICENSE")))
-                .externalDocs(new ExternalDocumentation()
-                        .description("Distributed scheduling and computing framework.")
-                        .url("http://www.powerjob.tech/"));
+                        .contact(contact)
+                        .license(new License().name("Apache License 2.0").url("https://github.com/PowerJob/PowerJob/blob/master/LICENSE")));
     }
 
     @Bean
