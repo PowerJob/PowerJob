@@ -33,7 +33,7 @@ import static tech.powerjob.client.TypeStore.*;
  * @since 2020/4/15
  */
 @Slf4j
-public class PowerJobClient {
+public class PowerJobClient implements IPowerJobClient {
 
     private Long appId;
     private String currentAddress;
@@ -114,6 +114,7 @@ public class PowerJobClient {
      * @param request Job meta info
      * @return jobId
      */
+    @Override
     public ResultDTO<Long> saveJob(SaveJobInfoRequest request) {
 
         request.setAppId(appId);
@@ -130,6 +131,7 @@ public class PowerJobClient {
      * @param jobId Job id
      * @return Id of job copy
      */
+    @Override
     public ResultDTO<Long> copyJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
@@ -139,12 +141,23 @@ public class PowerJobClient {
         return JSON.parseObject(post, LONG_RESULT_TYPE);
     }
 
+    @Override
+    public ResultDTO<SaveJobInfoRequest> exportJob(Long jobId) {
+        RequestBody body = new FormBody.Builder()
+                .add("jobId", jobId.toString())
+                .add("appId", appId.toString())
+                .build();
+        String post = postHA(OpenAPIConstant.EXPORT_JOB, body);
+        return JSON.parseObject(post, SAVE_JOB_INFO_REQUEST_RESULT_TYPE);
+    }
+
     /**
      * Query JobInfo by jobId
      *
      * @param jobId jobId
      * @return Job meta info
      */
+    @Override
     public ResultDTO<JobInfoDTO> fetchJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
@@ -159,6 +172,7 @@ public class PowerJobClient {
      *
      * @return All JobInfo
      */
+    @Override
     public ResultDTO<List<JobInfoDTO>> fetchAllJob() {
         RequestBody body = new FormBody.Builder()
                 .add("appId", appId.toString())
@@ -173,6 +187,7 @@ public class PowerJobClient {
      * @param powerQuery JobQuery
      * @return JobInfo
      */
+    @Override
     public ResultDTO<List<JobInfoDTO>> queryJob(JobInfoQuery powerQuery) {
         powerQuery.setAppIdEq(appId);
         MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
@@ -187,6 +202,7 @@ public class PowerJobClient {
      * @param jobId jobId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> disableJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
@@ -202,6 +218,7 @@ public class PowerJobClient {
      * @param jobId jobId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> enableJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
@@ -217,6 +234,7 @@ public class PowerJobClient {
      * @param jobId jobId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> deleteJob(Long jobId) {
         RequestBody body = new FormBody.Builder()
                 .add("jobId", jobId.toString())
@@ -234,6 +252,7 @@ public class PowerJobClient {
      * @param delayMS        Delay time（Milliseconds）
      * @return instanceId
      */
+    @Override
     public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("jobId", jobId.toString())
@@ -259,6 +278,7 @@ public class PowerJobClient {
      * @param instanceId instanceId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> stopInstance(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
@@ -275,6 +295,7 @@ public class PowerJobClient {
      * @param instanceId instanceId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> cancelInstance(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
@@ -291,6 +312,7 @@ public class PowerJobClient {
      * @param instanceId instanceId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> retryInstance(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
@@ -306,6 +328,7 @@ public class PowerJobClient {
      * @param instanceId instanceId
      * @return {@link InstanceStatus}
      */
+    @Override
     public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
@@ -320,6 +343,7 @@ public class PowerJobClient {
      * @param instanceId instanceId
      * @return instance detail
      */
+    @Override
     public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("instanceId", instanceId.toString())
@@ -337,6 +361,7 @@ public class PowerJobClient {
      * @param request Workflow meta info
      * @return workflowId
      */
+    @Override
     public ResultDTO<Long> saveWorkflow(SaveWorkflowRequest request) {
         request.setAppId(appId);
         MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
@@ -352,6 +377,7 @@ public class PowerJobClient {
      * @param workflowId Workflow id
      * @return Id of workflow copy
      */
+    @Override
     public ResultDTO<Long> copyWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
@@ -368,6 +394,7 @@ public class PowerJobClient {
      * @param requestList Node info list of Workflow
      * @return Standard return object
      */
+    @Override
     public ResultDTO<List<WorkflowNodeInfoDTO>> saveWorkflowNode(List<SaveWorkflowNodeRequest> requestList) {
         for (SaveWorkflowNodeRequest saveWorkflowNodeRequest : requestList) {
             saveWorkflowNodeRequest.setAppId(appId);
@@ -386,6 +413,7 @@ public class PowerJobClient {
      * @param workflowId workflowId
      * @return Workflow meta info
      */
+    @Override
     public ResultDTO<WorkflowInfoDTO> fetchWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
@@ -401,6 +429,7 @@ public class PowerJobClient {
      * @param workflowId workflowId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> disableWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
@@ -416,6 +445,7 @@ public class PowerJobClient {
      * @param workflowId workflowId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> enableWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
@@ -431,6 +461,7 @@ public class PowerJobClient {
      * @param workflowId workflowId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> deleteWorkflow(Long workflowId) {
         RequestBody body = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
@@ -448,6 +479,7 @@ public class PowerJobClient {
      * @param delayMS    Delay time（Milliseconds）
      * @return workflow instanceId
      */
+    @Override
     public ResultDTO<Long> runWorkflow(Long workflowId, String initParams, long delayMS) {
         FormBody.Builder builder = new FormBody.Builder()
                 .add("workflowId", workflowId.toString())
@@ -472,6 +504,7 @@ public class PowerJobClient {
      * @param wfInstanceId workflow instanceId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
@@ -487,6 +520,7 @@ public class PowerJobClient {
      * @param wfInstanceId workflow instanceId
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> retryWorkflowInstance(Long wfInstanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
@@ -503,6 +537,7 @@ public class PowerJobClient {
      * @param nodeId       node id
      * @return Standard return object
      */
+    @Override
     public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId, Long nodeId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())
@@ -519,6 +554,7 @@ public class PowerJobClient {
      * @param wfInstanceId workflow instanceId
      * @return detail about a workflow
      */
+    @Override
     public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId) {
         RequestBody body = new FormBody.Builder()
                 .add("wfInstanceId", wfInstanceId.toString())

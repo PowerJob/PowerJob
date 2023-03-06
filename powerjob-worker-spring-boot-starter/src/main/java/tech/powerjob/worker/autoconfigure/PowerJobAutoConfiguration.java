@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.worker.PowerJobSpringWorker;
-import tech.powerjob.worker.PowerJobWorker;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 
 import java.util.Arrays;
@@ -27,7 +26,7 @@ public class PowerJobAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public PowerJobWorker initPowerJob(PowerJobProperties properties) {
+    public PowerJobSpringWorker initPowerJob(PowerJobProperties properties) {
 
         PowerJobProperties.Worker worker = properties.getWorker();
 

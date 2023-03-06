@@ -16,6 +16,8 @@ public enum LogType {
     LOCAL(2),
     STDOUT(3),
 
+    LOCAL_AND_ONLINE(4),
+
     NULL(999);
     private final Integer v;
 

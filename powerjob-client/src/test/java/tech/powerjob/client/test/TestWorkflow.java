@@ -149,7 +149,7 @@ class TestWorkflow extends ClientInitializer {
 
     @Test
     void testRunWorkflow() {
-        ResultDTO<Long> res = powerJobClient.runWorkflow(WF_ID);
+        ResultDTO<Long> res = powerJobClient.runWorkflow(WF_ID, null, 0);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }

@@ -8,6 +8,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.remote.framework.actor.Actor;
 import tech.powerjob.remote.framework.actor.Handler;
 import tech.powerjob.remote.framework.actor.ProcessType;
+import tech.powerjob.server.remote.aware.TransportServiceAware;
 import tech.powerjob.server.remote.server.election.Ping;
 import tech.powerjob.server.remote.server.redirector.RemoteProcessReq;
 import tech.powerjob.server.remote.server.redirector.RemoteRequestProcessor;
@@ -24,13 +25,9 @@ import static tech.powerjob.common.RemoteConstant.*;
 @Slf4j
 @Component
 @Actor(path = S4S_PATH)
-public class FriendActor {
+public class FriendActor implements TransportServiceAware {
 
-    private final TransportService transportService;
-
-    public FriendActor(TransportService transportService) {
-        this.transportService = transportService;
-    }
+    private TransportService transportService;
 
     /**
      * 处理存活检测的请求
@@ -53,5 +50,10 @@ public class FriendActor {
             response.setMessage(ExceptionUtils.getMessage(t));
         }
         return response;
+    }
+
+    @Override
+    public void setTransportService(TransportService transportService) {
+        this.transportService = transportService;
     }
 }

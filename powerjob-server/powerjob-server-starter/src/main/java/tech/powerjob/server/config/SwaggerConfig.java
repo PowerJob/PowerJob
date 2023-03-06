@@ -1,55 +1,61 @@
 package tech.powerjob.server.config;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.remote.server.self.ServerInfoService;
 
-import javax.annotation.Resource;
-
-import static springfox.documentation.builders.PathSelectors.any;
-
 /**
  * Configuration class for Swagger UI.
+ * migrate to <a href="https://springdoc.org/">springdoc</a> from v4.3.1
+ * <a href="http://localhost:7700/swagger-ui/index.html#/">api address</a>
  *
  * @author tjq
  * @author Jiang Jining
  * @since 2020/3/29
  */
+@Slf4j
 @Configuration
-@EnableSwagger2
 @ConditionalOnProperty(name = PowerJobServerConfigKey.SWAGGER_UI_ENABLE, havingValue = "true")
 @RequiredArgsConstructor
 public class SwaggerConfig {
     
     private final ServerInfoService serverInfoService;
-    
+
     @Bean
-    public Docket createRestApi() {
+    public OpenAPI springShopOpenAPI() {
+        final Contact contact = new Contact();
+        contact.setName("Team PowerJob");
+        contact.setUrl("http://www.powerjob.tech");
+        contact.setEmail("tengjiqi@gmail.com");
 
         // apiInfo()用来创建该Api的基本信息（这些基本信息会展现在文档页面中
-        ApiInfo apiInfo = new ApiInfoBuilder()
-                .title("PowerJob")
-                .description("Distributed scheduling and computing framework.")
-                .license("Apache Licence 2")
-                .termsOfServiceUrl("https://github.com/PowerJob/PowerJob")
-                .version(serverInfoService.fetchServiceInfo().getVersion())
+        return new OpenAPI()
+                .info(new Info().title("PowerJob")
+                        .description("Distributed scheduling and computing framework.")
+                        .version(serverInfoService.fetchServiceInfo().getVersion())
+                        .contact(contact)
+                        .license(new License().name("Apache License 2.0").url("https://github.com/PowerJob/PowerJob/blob/master/LICENSE")));
+    }
+
+    @Bean
+    public GroupedOpenApi createRestApi() {
+
+        log.warn("[OpenAPI] openapi has been activated, make sure you want to enable it!");
+
+        return GroupedOpenApi.builder()
+                .group("PowerJob-ALL")
+                .pathsToMatch("/**")
                 .build();
-        
-        return new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(apiInfo)
-                // select()函数返回一个ApiSelectorBuilder实例
-                .select()
-                // 决定了暴露哪些接口给 Swagger
-                .paths(any())
-                .build();
+
     }
     
 }

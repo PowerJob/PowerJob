@@ -41,6 +41,12 @@
             <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
+    <appender name="ASYNC_ERROR_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="ERROR_APPENDER"/>
+    </appender>
     <!-- 系统所有异常日志（ERROR）双写 end -->
 
 
@@ -57,12 +63,18 @@
         </encoder>
         <append>true</append>
     </appender>
+    <appender name="ASYNC_DEFAULT_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="DEFAULT_APPENDER"/>
+    </appender>
     <!-- 系统主日志 日志 end -->
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ERROR_APPENDER"/>
-        <appender-ref ref="DEFAULT_APPENDER"/>
+        <appender-ref ref="ASYNC_ERROR_APPENDER"/>
+        <appender-ref ref="ASYNC_DEFAULT_APPENDER"/>
     </root>
 
 </configuration>

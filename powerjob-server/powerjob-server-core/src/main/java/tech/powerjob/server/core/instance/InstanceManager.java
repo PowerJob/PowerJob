@@ -22,6 +22,7 @@ import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.remote.aware.TransportServiceAware;
 import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
@@ -41,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class InstanceManager {
+public class InstanceManager implements TransportServiceAware {
 
     private final AlarmCenter alarmCenter;
 
@@ -53,9 +54,12 @@ public class InstanceManager {
 
     private final WorkflowInstanceManager workflowInstanceManager;
 
-    private final TransportService transportService;
-
     private final WorkerClusterQueryService workerClusterQueryService;
+
+    /**
+     * 基础组件通过 aware 注入，避免循环依赖
+     */
+    private TransportService transportService;
 
     /**
      * 更新任务状态
@@ -229,4 +233,8 @@ public class InstanceManager {
         alarmCenter.alarmFailed(content, userList);
     }
 
+    @Override
+    public void setTransportService(TransportService transportService) {
+        this.transportService = transportService;
+    }
 }

@@ -49,6 +49,10 @@ public class JobController {
         return ResultDTO.success(JobInfoVO.from(jobService.copyJob(Long.valueOf(jobId))));
     }
 
+    @GetMapping("/export")
+    public ResultDTO<SaveJobInfoRequest> exportJob(String jobId) {
+        return ResultDTO.success(jobService.exportJob(Long.valueOf(jobId)));
+    }
 
     @GetMapping("/disable")
     public ResultDTO<Void> disableJob(String jobId) {
@@ -84,19 +88,26 @@ public class JobController {
         if (request.getJobId() != null) {
 
             Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(request.getJobId());
-            PageResult<JobInfoVO> result = new PageResult<>();
-            result.setIndex(0);
-            result.setPageSize(request.getPageSize());
 
-            if (jobInfoOpt.isPresent()) {
-                result.setTotalItems(1);
-                result.setTotalPages(1);
-                result.setData(Lists.newArrayList(JobInfoVO.from(jobInfoOpt.get())));
-            } else {
+            PageResult<JobInfoVO> result = new PageResult<>();
+
+            if (!jobInfoOpt.isPresent()) {
                 result.setTotalPages(0);
                 result.setTotalItems(0);
                 result.setData(Lists.newLinkedList());
+                return ResultDTO.success(result);
             }
+
+            if (!jobInfoOpt.get().getAppId().equals(request.getAppId())){
+                return ResultDTO.failed("请输入该app下的jobId");
+            }
+
+            result.setIndex(0);
+            result.setPageSize(request.getPageSize());
+
+            result.setTotalItems(1);
+            result.setTotalPages(1);
+            result.setData(Lists.newArrayList(JobInfoVO.from(jobInfoOpt.get())));
 
             return ResultDTO.success(result);
         }

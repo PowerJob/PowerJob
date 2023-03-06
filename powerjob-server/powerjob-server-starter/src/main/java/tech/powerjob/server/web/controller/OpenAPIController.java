@@ -69,6 +69,12 @@ public class OpenAPIController {
         return ResultDTO.success(jobService.copyJob(jobId).getId());
     }
 
+    @PostMapping(OpenAPIConstant.EXPORT_JOB)
+    public ResultDTO<SaveJobInfoRequest> exportJob(Long jobId, Long appId) {
+        checkJobIdValid(jobId, appId);
+        return ResultDTO.success(jobService.exportJob(jobId));
+    }
+
     @PostMapping(OpenAPIConstant.FETCH_JOB)
     public ResultDTO<JobInfoDTO> fetchJob(Long jobId, Long appId) {
         checkJobIdValid(jobId, appId);

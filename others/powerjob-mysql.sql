@@ -69,7 +69,7 @@ CREATE TABLE `instance_info`
     `gmt_create`            datetime not NULL COMMENT '创建时间',
     `gmt_modified`          datetime not NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx01_instance_info` (`job_id`, 'status'),
+    KEY `idx01_instance_info` (`job_id`, `status`),
     KEY `idx02_instance_info` (`app_id`, `status`),
     KEY `idx03_instance_info` (`instance_id`, `status`)
 ) ENGINE = InnoDB

@@ -1,6 +1,7 @@
 package tech.powerjob.client;
 
 import com.alibaba.fastjson.TypeReference;
+import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.*;
 
 import java.util.List;
@@ -20,6 +21,8 @@ public class TypeStore {
     public static final TypeReference<ResultDTO<Long>> LONG_RESULT_TYPE = new TypeReference<ResultDTO<Long>>(){};
 
     public static final TypeReference<ResultDTO<JobInfoDTO>> JOB_RESULT_TYPE = new TypeReference<ResultDTO<JobInfoDTO>>(){};
+
+    public static final TypeReference<ResultDTO<SaveJobInfoRequest>> SAVE_JOB_INFO_REQUEST_RESULT_TYPE = new TypeReference<ResultDTO<SaveJobInfoRequest>>(){};
 
     public static final TypeReference<ResultDTO<List<JobInfoDTO>>> LIST_JOB_RESULT_TYPE = new TypeReference<ResultDTO<List<JobInfoDTO>>>(){};
 

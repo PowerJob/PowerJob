@@ -58,6 +58,12 @@ class TestClient extends ClientInitializer {
     }
 
     @Test
+    void testExportJob() {
+        ResultDTO<SaveJobInfoRequest> exportJobRes = powerJobClient.exportJob(JOB_ID);
+        System.out.println(JSONObject.toJSONString(exportJobRes));
+    }
+
+    @Test
     void testFetchJob() {
         ResultDTO<JobInfoDTO> fetchJob = powerJobClient.fetchJob(JOB_ID);
         System.out.println(JSONObject.toJSONString(fetchJob));
@@ -87,7 +93,7 @@ class TestClient extends ClientInitializer {
 
     @Test
     void testRun() {
-        ResultDTO<Long> res = powerJobClient.runJob(JOB_ID);
+        ResultDTO<Long> res = powerJobClient.runJob(JOB_ID, null, 0);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }

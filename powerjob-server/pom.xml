@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.0.0</version>
+        <version>4.3.1</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -26,7 +26,6 @@
 
 
     <properties>
-        <swagger.version>2.9.2</swagger.version>
         <springboot.version>2.7.4</springboot.version>
 
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
@@ -50,9 +49,10 @@
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.1.6</cron-utils.version>
 
-        <powerjob-common.version>4.3.0</powerjob-common.version>
-        <powerjob-remote-impl-http.version>4.3.0</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>4.3.0</powerjob-remote-impl-akka.version>
+        <powerjob-common.version>4.3.1</powerjob-common.version>
+        <powerjob-remote-impl-http.version>4.3.1</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>4.3.1</powerjob-remote-impl-akka.version>
+        <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
     </properties>
 
     <dependencyManagement>
@@ -264,24 +264,13 @@
             <version>${cron-utils.version}</version>
         </dependency>
 
-        <!-- swagger2 -->
+        <!-- OPEN API -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${swagger.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>guava</artifactId>
-                    <groupId>com.google.guava</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-openapi-ui.version}</version>
         </dependency>
-        <!-- swagger2 ui -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-jsr223 -->
         <dependency>
@@ -297,5 +286,17 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

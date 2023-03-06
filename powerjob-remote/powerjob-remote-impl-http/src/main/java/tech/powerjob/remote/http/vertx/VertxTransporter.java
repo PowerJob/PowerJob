@@ -1,8 +1,14 @@
 package tech.powerjob.remote.http.vertx;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import io.vertx.core.http.*;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.core.json.JsonObject;
 import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.remote.framework.base.RemotingException;
@@ -57,7 +63,11 @@ public class VertxTransporter implements Transporter {
         // 获取远程服务器的HTTP连接
         Future<HttpClientRequest> httpClientRequestFuture = httpClient.request(requestOptions);
         // 转换 -> 发送请求获取响应
-        Future<HttpClientResponse> responseFuture = httpClientRequestFuture.compose(httpClientRequest -> httpClientRequest.send(JsonObject.mapFrom(request).toBuffer()));
+        Future<HttpClientResponse> responseFuture = httpClientRequestFuture.compose(httpClientRequest ->
+            httpClientRequest
+                .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+                .send(JsonObject.mapFrom(request).toBuffer())
+        );
         return responseFuture.compose(httpClientResponse -> {
             // throw exception
             final int statusCode = httpClientResponse.statusCode();

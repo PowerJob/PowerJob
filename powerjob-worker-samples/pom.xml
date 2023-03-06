@@ -5,18 +5,18 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.0.0</version>
+        <version>4.3.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-worker-samples</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
 
     <properties>
         <springboot.version>2.7.4</springboot.version>
-        <powerjob.worker.starter.version>4.3.0</powerjob.worker.starter.version>
+        <powerjob.worker.starter.version>4.3.1</powerjob.worker.starter.version>
         <fastjson.version>1.2.83</fastjson.version>
-        <powerjob.official.processors.version>1.2.1</powerjob.official.processors.version>
+        <powerjob.official.processors.version>4.3.1</powerjob.official.processors.version>
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -86,6 +86,13 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -1,10 +1,6 @@
 # [English](./README.md) | 简体中文
 
 <p align="center">
-祝大家兔年吉祥，新的一年身体健康，万事如意，阖家欢乐，幸福安康！
-</p>
-
-<p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
 </p>
 
