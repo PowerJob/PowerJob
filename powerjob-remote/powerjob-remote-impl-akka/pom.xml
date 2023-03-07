@@ -19,7 +19,7 @@
 
         <powerjob-remote-framework.version>4.3.1</powerjob-remote-framework.version>
 
-        <akka.version>2.6.20</akka.version>
+        <akka.version>2.6.13</akka.version>
     </properties>
 
     <dependencies>
