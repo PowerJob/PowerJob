@@ -62,7 +62,9 @@ public class MainApplication implements Runnable {
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);
             cfg.setTag(tag);
-            cfg.setFeatures(Splitter.on(",").splitToList(features));
+            if(features!=null){
+                cfg.setFeatures(Splitter.on(",").splitToList(features));
+            }
             cfg.setProtocol(Protocol.of(protocol));
 
             PowerJobWorker worker = new PowerJobWorker(cfg);
