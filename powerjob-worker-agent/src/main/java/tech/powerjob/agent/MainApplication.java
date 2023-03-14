@@ -43,6 +43,8 @@ public class MainApplication implements Runnable {
     @Option(names = {"-t", "--tag"}, description = "worker-agent's tag")
     private String tag;
 
+    @Option(names = {"-f", "--features"}, description = "worker-agent's features")
+    private String features;
     public static void main(String[] args) {
         CommandLine commandLine = new CommandLine(new MainApplication());
         commandLine.execute(args);
@@ -60,6 +62,7 @@ public class MainApplication implements Runnable {
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);
             cfg.setTag(tag);
+            cfg.setFeatures(Splitter.on(",").splitToList(features));
             cfg.setProtocol(Protocol.of(protocol));
 
             PowerJobWorker worker = new PowerJobWorker(cfg);

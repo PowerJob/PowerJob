@@ -50,6 +50,10 @@ public class WorkerHeartbeat implements PowerSerializable {
      */
     private String tag;
     /**
+     * worker 特征表
+     */
+    private List<String> features;
+    /**
      * 客户端名称
      */
     private String client;

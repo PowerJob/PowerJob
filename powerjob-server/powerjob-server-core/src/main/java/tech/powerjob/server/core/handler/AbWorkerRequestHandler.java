@@ -68,6 +68,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
                 .setVersion(heartbeat.getVersion())
                 .setProtocol(heartbeat.getProtocol())
                 .setTag(heartbeat.getTag())
+                .setFeatures(heartbeat.getFeatures())
                 .setWorkerAddress(heartbeat.getWorkerAddress())
                 .setDelayMs(startMs - heartbeat.getHeartbeatTime())
                 .setScore(heartbeat.getSystemMetrics().getScore());

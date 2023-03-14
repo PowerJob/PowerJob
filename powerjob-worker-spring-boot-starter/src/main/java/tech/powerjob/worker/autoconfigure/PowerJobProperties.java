@@ -157,6 +157,7 @@ public class PowerJobProperties {
         private int maxAppendedWfContextLength = 8192;
 
         private String tag;
+        private String features;
         /**
          * Max numbers of LightTaskTacker
          */

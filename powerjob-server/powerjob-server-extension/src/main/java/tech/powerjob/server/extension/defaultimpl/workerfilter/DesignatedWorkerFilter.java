@@ -9,6 +9,7 @@ import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.extension.WorkerFilter;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,6 +38,19 @@ public class DesignatedWorkerFilter implements WorkerFilter {
             if (tagOrAddress.equals(workerInfo.getTag()) || tagOrAddress.equals(workerInfo.getAddress())) {
                 return false;
             }
+        }
+        //支持工作节点特征匹配 允许工作节点支持多特征，比如工作节点支持datax和支持shell
+        List<String> features = workerInfo.getFeatures();
+        if (features != null) {
+            //工作节点 满足所有特征
+            boolean hashAllFeature = true;
+            for (String tagOrAddress : designatedWorkersSet) {
+                if (!features.contains(tagOrAddress)) {
+                    hashAllFeature = false;
+                    break;
+                }
+            }
+            return !hashAllFeature;
         }
 
         return true;

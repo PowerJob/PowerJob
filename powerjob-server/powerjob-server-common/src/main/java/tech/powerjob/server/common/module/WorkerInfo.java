@@ -28,6 +28,8 @@ public class WorkerInfo {
 
     private String tag;
 
+    private List<String> features;
+
     private int lightTaskTrackerNum;
 
     private int heavyTaskTrackerNum;
@@ -48,6 +50,7 @@ public class WorkerInfo {
         protocol = workerHeartbeat.getProtocol();
         client = workerHeartbeat.getClient();
         tag = workerHeartbeat.getTag();
+        features = workerHeartbeat.getFeatures();
         systemMetrics = workerHeartbeat.getSystemMetrics();
         containerInfos = workerHeartbeat.getContainerInfos();
 

@@ -5,6 +5,8 @@ import lombok.experimental.Accessors;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.monitor.Event;
 
+import java.util.List;
+
 /**
  * worker 心跳事件监控
  *
@@ -25,6 +27,7 @@ public class WorkerHeartbeatEvent implements Event {
     private String protocol;
 
     private String tag;
+    private List<String> features;
     private String workerAddress;
     /**
      * worker 上报时间与 server 之间的延迟
@@ -39,6 +42,6 @@ public class WorkerHeartbeatEvent implements Event {
 
     @Override
     public String message() {
-        return SJ.MONITOR_JOINER.join(appName, appId, version, protocol, tag, workerAddress, delayMs, score);
+        return SJ.MONITOR_JOINER.join(appName, appId, version, protocol, tag, features,workerAddress, delayMs, score);
     }
 }

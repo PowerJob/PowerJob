@@ -77,6 +77,10 @@ public class PowerJobWorkerConfig {
 
     private String tag;
     /**
+     * worker features
+     */
+    private List<String> features;
+    /**
      * Max numbers of LightTaskTacker
      */
     private Integer maxLightweightTaskNum = 1024;

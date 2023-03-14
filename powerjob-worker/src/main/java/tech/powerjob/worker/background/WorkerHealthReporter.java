@@ -55,6 +55,7 @@ public class WorkerHealthReporter implements Runnable {
         heartbeat.setProtocol(workerRuntime.getWorkerConfig().getProtocol().name());
         heartbeat.setClient("KingPenguin");
         heartbeat.setTag(workerRuntime.getWorkerConfig().getTag());
+        heartbeat.setFeatures(workerRuntime.getWorkerConfig().getFeatures());
 
         // 上报 Tracker 数量
         heartbeat.setLightTaskTrackerNum(LightTaskTrackerManager.currentTaskTrackerSize());

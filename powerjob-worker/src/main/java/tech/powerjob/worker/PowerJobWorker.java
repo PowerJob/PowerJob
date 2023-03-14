@@ -78,6 +78,7 @@ public class PowerJobWorker {
             } else {
                 log.warn("[PowerJobWorker] using TestMode now, it's dangerous if this is production env.");
             }
+            log.debug("config.getFeatures()："+config.getFeatures());
 
             // 初始化元数据
             String workerAddress = NetUtils.getLocalHost() + ":" + config.getPort();
@@ -128,6 +129,7 @@ public class PowerJobWorker {
             // 初始化定时任务
             workerRuntime.getExecutorManager().getCoreExecutor().scheduleAtFixedRate(new WorkerHealthReporter(workerRuntime), 0, config.getHealthReportInterval(), TimeUnit.SECONDS);
             workerRuntime.getExecutorManager().getCoreExecutor().scheduleWithFixedDelay(omsLogHandler.logSubmitter, 0, 5, TimeUnit.SECONDS);
+
 
             log.info("[PowerJobWorker] PowerJobWorker initialized successfully, using time: {}, congratulations!", stopwatch);
         }catch (Exception e) {
