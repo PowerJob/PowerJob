@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.1-bugfix</version>
+        <version>4.3.2</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker</artifactId>
-    <version>4.3.1-bugfix</version>
+    <version>4.3.2</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -21,10 +21,10 @@
 
         <logback.version>1.2.9</logback.version>
 
-        <powerjob-common.version>4.3.1-bugfix</powerjob-common.version>
-        <powerjob-remote-framework.version>4.3.1-bugfix</powerjob-remote-framework.version>
-        <powerjob-remote-impl-akka.version>4.3.1-bugfix</powerjob-remote-impl-akka.version>
-        <powerjob-remote-impl-http.version>4.3.1-bugfix</powerjob-remote-impl-http.version>
+        <powerjob-common.version>4.3.2</powerjob-common.version>
+        <powerjob-remote-framework.version>4.3.2</powerjob-remote-framework.version>
+        <powerjob-remote-impl-akka.version>4.3.2</powerjob-remote-impl-akka.version>
+        <powerjob-remote-impl-http.version>4.3.2</powerjob-remote-impl-http.version>
     </properties>
 
     <dependencies>
