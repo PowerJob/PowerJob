@@ -39,7 +39,7 @@ public class PowerJobPhysicalNamingStrategy extends SpringPhysicalNamingStrategy
 
         String text = name.getText();
         String noDOText = StringUtils.endsWithIgnoreCase(text, "do") ? text.substring(0, text.length() - 2) : text;
-        String newText = StringUtils.isEmpty(tablePrefix) ? tablePrefix + noDOText : noDOText;
+        String newText = StringUtils.isNotEmpty(tablePrefix) ? tablePrefix + noDOText : noDOText;
         return super.toPhysicalTableName(new Identifier(newText, name.isQuoted()), jdbcEnvironment);
     }
 

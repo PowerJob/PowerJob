@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.1-bugfix</version>
+        <version>4.3.2</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.3.1-bugfix</version>
+    <version>4.3.2</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -49,9 +49,9 @@
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.1.6</cron-utils.version>
 
-        <powerjob-common.version>4.3.1-bugfix</powerjob-common.version>
-        <powerjob-remote-impl-http.version>4.3.1-bugfix</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>4.3.1-bugfix</powerjob-remote-impl-akka.version>
+        <powerjob-common.version>4.3.2</powerjob-common.version>
+        <powerjob-remote-impl-http.version>4.3.2</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>4.3.2</powerjob-remote-impl-akka.version>
         <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
     </properties>
 
