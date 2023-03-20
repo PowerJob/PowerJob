@@ -2,9 +2,9 @@ package tech.powerjob.server.auth.login.biz.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.login.LoginContext;
-import tech.powerjob.server.auth.login.biz.LoginService;
+import tech.powerjob.server.auth.login.biz.BizLoginService;
+import tech.powerjob.server.auth.login.biz.BizUser;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
 import javax.annotation.Resource;
@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-public class DefaultLoginService implements LoginService {
+public class DefaultBizLoginService implements BizLoginService {
 
     @Resource
     private UserInfoRepository userInfoRepository;
@@ -31,7 +31,8 @@ public class DefaultLoginService implements LoginService {
     }
 
     @Override
-    public Optional<PowerJobUser> login(LoginContext loginContext) {
+    public Optional<BizUser> login(LoginContext loginContext) {
+
         return Optional.empty();
     }
 }

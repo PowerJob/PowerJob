@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * PowerJob 的 登陆用户
@@ -22,12 +21,22 @@ public class PowerJobUser implements Serializable {
 
     private String username;
 
+    /**
+     * 手机号
+     */
+    private String phone;
+    /**
+     * 邮箱地址
+     */
+    private String email;
+    /**
+     * webHook
+     */
+    private String webHook;
+    /**
+     * 扩展字段
+     */
     private String extra;
 
     /* ************** 以上为数据库字段 ************** */
-
-    /**
-     * 拥有的权限
-     */
-    private Set<Role> roles;
 }

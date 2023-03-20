@@ -14,8 +14,10 @@ import java.util.Date;
  */
 @Data
 @Entity
-@Table(indexes = {
-        @Index(name = "uidx01_user_info", columnList = "username"),
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "uidx01_user_name", columnNames = {"username"})
+},
+        indexes = {
         @Index(name = "uidx02_user_info", columnList = "email")
 })
 public class UserInfoDO {
