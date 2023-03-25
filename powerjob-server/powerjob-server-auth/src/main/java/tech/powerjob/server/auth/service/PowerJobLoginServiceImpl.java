@@ -13,6 +13,7 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.anno.ApiPermission;
+import tech.powerjob.server.auth.jwt.JwtService;
 import tech.powerjob.server.auth.login.BizLoginService;
 import tech.powerjob.server.auth.login.BizUser;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
@@ -20,6 +21,7 @@ import tech.powerjob.server.persistence.remote.model.UserRoleDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.UserRoleRepository;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
@@ -32,14 +34,18 @@ import java.util.*;
 @Service
 public class PowerJobLoginServiceImpl implements PowerJobAuthService {
 
+    private final JwtService jwtService;
     private final UserInfoRepository userInfoRepository;
     private final UserRoleRepository userRoleRepository;
     private final Map<String, BizLoginService> type2LoginService = Maps.newHashMap();
 
-    private static final String TOKEN_HEADER_NAME = "power_token";
+    private static final String JWT_NAME = "powerjob_token";
+
+    private static final String KEY_USERID = "userId";
 
     @Autowired
-    public PowerJobLoginServiceImpl(List<BizLoginService> loginServices, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
+    public PowerJobLoginServiceImpl(List<BizLoginService> loginServices, JwtService jwtService, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
+        this.jwtService = jwtService;
         this.userInfoRepository = userInfoRepository;
         this.userRoleRepository = userRoleRepository;
         loginServices.forEach(k -> type2LoginService.put(k.type(), k));
@@ -84,15 +90,12 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
     @Override
     public Optional<PowerJobUser> parse(HttpServletRequest httpServletRequest) {
 
-        final Optional<String> usernameOpt = parseUsername(httpServletRequest);
-        if (!usernameOpt.isPresent()) {
-            return Optional.empty();
-        }
-        return userInfoRepository.findByUsername(usernameOpt.get()).map(userInfoDO -> {
+        final Optional<Long> userIdOpt = parseUserId(httpServletRequest);
+        return userIdOpt.flatMap(aLong -> userInfoRepository.findById(aLong).map(userInfoDO -> {
             PowerJobUser powerJobUser = new PowerJobUser();
-            BeanUtils.copyProperties(usernameOpt, powerJobUser);
+            BeanUtils.copyProperties(userInfoDO, powerJobUser);
             return powerJobUser;
-        });
+        }));
     }
 
     @Override
@@ -131,13 +134,26 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
         return false;
     }
 
-    private Optional<String> parseUsername(HttpServletRequest httpServletRequest) {
-        final String tokenHeader = httpServletRequest.getHeader(TOKEN_HEADER_NAME);
-        if (StringUtils.isEmpty(tokenHeader)) {
+    private Optional<Long> parseUserId(HttpServletRequest httpServletRequest) {
+        // header、cookie 都能获取
+        String jwtStr = httpServletRequest.getHeader(JWT_NAME);
+        if (StringUtils.isEmpty(jwtStr)) {
+            for (Cookie cookie : httpServletRequest.getCookies()) {
+                if (cookie.getName().equals(JWT_NAME)) {
+                    jwtStr = cookie.getValue();
+                }
+            }
+        }
+        if (StringUtils.isEmpty(jwtStr)) {
+            return Optional.empty();
+        }
+        final Map<String, Object> jwtBodyMap = jwtService.parse(jwtStr);
+        final Object userId = jwtBodyMap.get(KEY_USERID);
+
+        if (userId == null) {
             return Optional.empty();
         }
 
-        // TODO: 从 jwt token 解析 username
-        return Optional.empty();
+        return Optional.of(Long.parseLong(String.valueOf(userId)));
     }
 }
