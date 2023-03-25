@@ -23,19 +23,19 @@ public enum Role {
     /**
      * 观察者，默认只读权限
      */
-    OBSERVER(1, Sets.newHashSet(READ)),
+    OBSERVER(10, Sets.newHashSet(READ)),
     /**
      * 技术质量，读 + 操作权限
      */
-    QA(2, Sets.newHashSet(READ, OPS)),
+    QA(20, Sets.newHashSet(READ, OPS)),
     /**
      * 开发者，读 + 编辑 + 操作权限
      */
-    DEVELOPER(3, Sets.newHashSet(READ, WRITE, OPS)),
+    DEVELOPER(30, Sets.newHashSet(READ, WRITE, OPS)),
     /**
      * 项目的超级管理员
      */
-    ADMIN(10, Sets.newHashSet(READ, WRITE, OPS, SU)),
+    ADMIN(40, Sets.newHashSet(READ, WRITE, OPS, SU)),
     /**
      * 全局超级管理员
      */
