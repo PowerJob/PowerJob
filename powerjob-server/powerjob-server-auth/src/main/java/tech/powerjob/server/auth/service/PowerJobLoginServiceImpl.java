@@ -1,14 +1,16 @@
-package tech.powerjob.server.auth.login;
+package tech.powerjob.server.auth.service;
 
 import com.google.common.collect.Maps;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.Loggers;
+import tech.powerjob.server.auth.LoginContext;
 import tech.powerjob.server.auth.PowerJobUser;
-import tech.powerjob.server.auth.login.biz.BizLoginService;
-import tech.powerjob.server.auth.login.biz.BizUser;
+import tech.powerjob.server.auth.anno.ApiPermission;
+import tech.powerjob.server.auth.login.BizLoginService;
+import tech.powerjob.server.auth.login.BizUser;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
@@ -23,9 +25,8 @@ import java.util.Optional;
  * @author tjq
  * @since 2023/3/21
  */
-@Slf4j
 @Service
-public class PowerJobLoginServiceImpl implements PowerJobLoginService {
+public class PowerJobLoginServiceImpl implements PowerJobAuthService {
 
     private final UserInfoRepository userInfoRepository;
     private final Map<String, BizLoginService> type2LoginService = Maps.newHashMap();
@@ -67,7 +68,7 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         // 同步在 PowerJob 用户库创建该用户
         UserInfoDO newUser = new UserInfoDO();
         newUser.setUsername(dbUserName);
-        log.info("[PowerJobLoginService] sync user to PowerJobUserSystem: {}", dbUserName);
+        Loggers.WEB.info("[PowerJobLoginService] sync user to PowerJobUserSystem: {}", dbUserName);
         userInfoRepository.saveAndFlush(newUser);
         ret.setUsername(dbUserName);
 
@@ -75,9 +76,9 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     }
 
     @Override
-    public Optional<PowerJobUser> parse(LoginContext loginContext) {
+    public Optional<PowerJobUser> parse(HttpServletRequest httpServletRequest) {
 
-        final Optional<String> usernameOpt = parseUsername(loginContext);
+        final Optional<String> usernameOpt = parseUsername(httpServletRequest);
         if (!usernameOpt.isPresent()) {
             return Optional.empty();
         }
@@ -88,8 +89,12 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         });
     }
 
-    private Optional<String> parseUsername(LoginContext loginContext) {
-        final HttpServletRequest httpServletRequest = loginContext.getHttpServletRequest();
+    @Override
+    public boolean hasPermission(PowerJobUser user, ApiPermission apiPermission) {
+        return false;
+    }
+
+    private Optional<String> parseUsername(HttpServletRequest httpServletRequest) {
         final String tokenHeader = httpServletRequest.getHeader(TOKEN_HEADER_NAME);
         if (StringUtils.isEmpty(tokenHeader)) {
             return Optional.empty();

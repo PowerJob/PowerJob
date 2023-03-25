@@ -1,6 +1,6 @@
-package tech.powerjob.server.auth.login.biz;
+package tech.powerjob.server.auth.login;
 
-import tech.powerjob.server.auth.login.LoginContext;
+import tech.powerjob.server.auth.LoginContext;
 
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.login.biz;
+package tech.powerjob.server.auth.login;
 
 import lombok.Getter;
 import lombok.Setter;

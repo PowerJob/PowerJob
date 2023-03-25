@@ -1,12 +1,12 @@
-package tech.powerjob.server.auth.login.biz.impl;
+package tech.powerjob.server.auth.login.impl;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.Loggers;
 import tech.powerjob.common.utils.DigestUtils;
-import tech.powerjob.server.auth.login.LoginContext;
-import tech.powerjob.server.auth.login.biz.BizLoginService;
-import tech.powerjob.server.auth.login.biz.BizUser;
+import tech.powerjob.server.auth.LoginContext;
+import tech.powerjob.server.auth.login.BizLoginService;
+import tech.powerjob.server.auth.login.BizUser;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
@@ -21,7 +21,6 @@ import java.util.Optional;
  * @author tjq
  * @since 2023/3/20
  */
-@Slf4j
 @Service
 public class DefaultBizLoginService implements BizLoginService {
 
@@ -51,13 +50,13 @@ public class DefaultBizLoginService implements BizLoginService {
         final String password = loginInfoMap.get(KEY_PASSWORD);
 
         if (StringUtils.isAnyEmpty(username, password)) {
-            log.debug("[DefaultBizLoginService] username or password is empty, login failed!");
+            Loggers.WEB.debug("[DefaultBizLoginService] username or password is empty, login failed!");
             return Optional.empty();
         }
 
         final Optional<UserInfoDO> userInfoOpt = userInfoRepository.findByUsername(username);
         if (!userInfoOpt.isPresent()) {
-            log.debug("[DefaultBizLoginService] can't find user by username: {}", username);
+            Loggers.WEB.debug("[DefaultBizLoginService] can't find user by username: {}", username);
             return Optional.empty();
         }
 
@@ -69,7 +68,7 @@ public class DefaultBizLoginService implements BizLoginService {
             return Optional.of(bizUser);
         }
 
-        log.debug("[DefaultBizLoginService] user[{}]'s password is not correct, login failed!", username);
+        Loggers.WEB.debug("[DefaultBizLoginService] user[{}]'s password is not correct, login failed!", username);
         return Optional.empty();
     }
 

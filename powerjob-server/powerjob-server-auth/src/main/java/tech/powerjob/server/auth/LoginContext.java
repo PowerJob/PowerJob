@@ -1,7 +1,8 @@
-package tech.powerjob.server.auth.login;
+package tech.powerjob.server.auth;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Getter
 @Setter
+@Accessors(chain = true)
 public class LoginContext {
 
     private HttpServletRequest httpServletRequest;
