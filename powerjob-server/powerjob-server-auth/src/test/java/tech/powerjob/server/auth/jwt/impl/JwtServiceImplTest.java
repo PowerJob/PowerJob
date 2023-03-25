@@ -1,9 +1,8 @@
-package tech.powerjob.server.auth.jwt;
+package tech.powerjob.server.auth.jwt.impl;
 
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import tech.powerjob.server.auth.jwt.impl.JwtServiceImpl;
 
 import java.util.Map;
 
