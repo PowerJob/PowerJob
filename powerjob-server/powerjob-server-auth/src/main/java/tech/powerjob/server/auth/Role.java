@@ -42,7 +42,16 @@ public enum Role {
     GOD(100, Sets.newHashSet(READ, WRITE, OPS, SU, GLOBAL_SU))
     ;
 
-    private int v;
+    private final int v;
 
-    private Set<Permission> permissions;
+    private final Set<Permission> permissions;
+
+    public static Role of(int vv) {
+        for (Role role : values()) {
+            if (vv == role.v) {
+                return role;
+            }
+        }
+        throw new IllegalArgumentException("unknown role: " + vv);
+    }
 }

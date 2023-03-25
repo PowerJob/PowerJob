@@ -29,5 +29,12 @@ public interface PowerJobAuthService {
      */
     Optional<PowerJobUser> parse(HttpServletRequest httpServletRequest);
 
-    boolean hasPermission(PowerJobUser user, ApiPermission apiPermission);
+    /**
+     * 判断用户是否有访问权限
+     * @param request 上下文请求
+     * @param user 用户
+     * @param apiPermission 权限描述
+     * @return true or false
+     */
+    boolean hasPermission(HttpServletRequest request, PowerJobUser user, ApiPermission apiPermission);
 }

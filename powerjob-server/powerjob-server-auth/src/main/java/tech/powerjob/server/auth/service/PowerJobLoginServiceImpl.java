@@ -1,23 +1,27 @@
 package tech.powerjob.server.auth.service;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.Loggers;
 import tech.powerjob.server.auth.LoginContext;
+import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.PowerJobUser;
+import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.anno.ApiPermission;
 import tech.powerjob.server.auth.login.BizLoginService;
 import tech.powerjob.server.auth.login.BizUser;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.model.UserRoleDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.UserRoleRepository;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * PowerJobLoginService
@@ -29,13 +33,15 @@ import java.util.Optional;
 public class PowerJobLoginServiceImpl implements PowerJobAuthService {
 
     private final UserInfoRepository userInfoRepository;
+    private final UserRoleRepository userRoleRepository;
     private final Map<String, BizLoginService> type2LoginService = Maps.newHashMap();
 
     private static final String TOKEN_HEADER_NAME = "power_token";
 
     @Autowired
-    public PowerJobLoginServiceImpl(List<BizLoginService> loginServices, UserInfoRepository userInfoRepository) {
+    public PowerJobLoginServiceImpl(List<BizLoginService> loginServices, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
         this.userInfoRepository = userInfoRepository;
+        this.userRoleRepository = userRoleRepository;
         loginServices.forEach(k -> type2LoginService.put(k.type(), k));
     }
 
@@ -90,7 +96,38 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
     }
 
     @Override
-    public boolean hasPermission(PowerJobUser user, ApiPermission apiPermission) {
+    public boolean hasPermission(HttpServletRequest request, PowerJobUser user, ApiPermission apiPermission) {
+
+        final List<UserRoleDO> userRoleList = Optional.ofNullable(userRoleRepository.findAllByUserId(user.getId())).orElse(Collections.emptyList());
+
+        Multimap<String, Role> appId2Role = ArrayListMultimap.create();
+
+        for (UserRoleDO userRole : userRoleList) {
+            if (userRole.getRole().equalsIgnoreCase(String.valueOf(Role.GOD.getV()))) {
+                return true;
+            }
+
+            // 除了上帝角色，其他任何角色都是 roleId_appId 的形式
+            final String[] split = userRole.getRole().split("_");
+            final Role role = Role.of(Integer.parseInt(split[0]));
+            appId2Role.put(split[1], role);
+        }
+
+        // 无超级管理员权限，校验普通权限
+        final String appId = request.getHeader("appId");
+        if (StringUtils.isEmpty(appId)) {
+            throw new IllegalArgumentException("can't find appId in header, please login again!");
+        }
+
+        final Permission requiredPermission = apiPermission.requiredPermission();
+
+        final Collection<Role> roleCollection = appId2Role.get(appId);
+        for (Role role : roleCollection) {
+            if (role.getPermissions().contains(requiredPermission)) {
+                return true;
+            }
+        }
+
         return false;
     }
 

@@ -25,7 +25,6 @@ import java.util.Optional;
  */
 @Component
 public class PowerJobAuthInterceptor implements HandlerInterceptor {
-
     @Resource
     private PowerJobAuthService powerJobAuthService;
 
@@ -55,7 +54,7 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
 
         // 登陆用户进行权限校验
         final PowerJobUser powerJobUser = loginUserOpt.get();
-        final boolean hasPermission = powerJobAuthService.hasPermission(powerJobUser, apiPermissionAnno);
+        final boolean hasPermission = powerJobAuthService.hasPermission(request, powerJobUser, apiPermissionAnno);
         if (hasPermission) {
             return true;
         }
