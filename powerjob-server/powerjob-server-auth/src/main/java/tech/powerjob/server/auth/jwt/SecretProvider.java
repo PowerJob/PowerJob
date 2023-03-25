@@ -7,7 +7,7 @@ package tech.powerjob.server.auth.jwt;
  * @author tjq
  * @since 2023/3/20
  */
-public interface TokenProvider {
+public interface SecretProvider {
 
-    String fetchToken();
+    String fetchSecretKey();
 }

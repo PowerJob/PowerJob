@@ -1,6 +1,6 @@
 package tech.powerjob.server.auth.jwt;
 
-import tech.powerjob.server.auth.PowerJobUser;
+import java.util.Map;
 
 /**
  * JWT 服务
@@ -10,5 +10,7 @@ import tech.powerjob.server.auth.PowerJobUser;
  */
 public interface JwtService {
 
-    String generateToken(PowerJobUser user);
+    String build(Map<String, Object> body);
+
+    Map<String, Object> parse(String jwt);
 }
