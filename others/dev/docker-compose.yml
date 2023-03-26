@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 640M
+          memory: 768M
     restart: always
     container_name: powerjob-mysql
     image: powerjob/powerjob-mysql:test_env
@@ -43,7 +43,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 1024M
     container_name: powerjob-server
     image: powerjob/powerjob-server:test_env
     restart: always
@@ -67,7 +67,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
     container_name: powerjob-worker-agent
     image: powerjob/powerjob-worker-agent:test_env
     restart: always
@@ -89,7 +89,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
     container_name: powerjob-worker-agent2
     image: powerjob/powerjob-worker-agent:test_env
     restart: always

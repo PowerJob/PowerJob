@@ -21,10 +21,11 @@ public interface PowerJobAuthService {
      * @return PowerJob 用户
      */
     Optional<PowerJobUser> login(LoginContext loginContext);
+    
 
     /**
      * 从 JWT 信息中解析用户
-     * @param loginContext 登录上下文
+     * @param httpServletRequest httpServletRequest
      * @return PowerJob 用户
      */
     Optional<PowerJobUser> parse(HttpServletRequest httpServletRequest);
