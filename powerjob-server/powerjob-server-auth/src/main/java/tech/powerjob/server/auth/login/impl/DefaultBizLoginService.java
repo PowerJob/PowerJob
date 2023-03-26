@@ -38,6 +38,12 @@ public class DefaultBizLoginService implements BizLoginService {
     }
 
     @Override
+    public String loginUrl() {
+        // 默认登陆方式不需要重定向
+        return null;
+    }
+
+    @Override
     public Optional<BizUser> login(LoginContext loginContext) {
 
         final String loginInfo = loginContext.getLoginInfo();

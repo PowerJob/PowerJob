@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,17 @@ public class UserInfoController {
     private UserService userService;
     @Resource
     private UserInfoRepository userInfoRepository;
+
+    @GetMapping("/loginCallback")
+    public ResultDTO<Void> loginCallback(HttpServletRequest httpServletRequest) {
+        // 钉钉回调
+        final String state = httpServletRequest.getParameter("state");
+        if ("DingTalk".equalsIgnoreCase(state)) {
+            // TODO: 钉钉服务
+        }
+        // TODO: 承接登录回调功能
+        return null;
+    }
 
     @PostMapping("save")
     public ResultDTO<Void> save(@RequestBody ModifyUserInfoRequest request) {

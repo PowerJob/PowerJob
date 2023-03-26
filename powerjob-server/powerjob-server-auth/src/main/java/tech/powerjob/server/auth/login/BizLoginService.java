@@ -19,6 +19,12 @@ public interface BizLoginService {
     String type();
 
     /**
+     * 登陆的重定向 URL
+     * @return 重定向地址
+     */
+    String loginUrl();
+
+    /**
      * 执行登陆
      * @param loginContext 登陆上下文
      * @return PowerJob 用户
