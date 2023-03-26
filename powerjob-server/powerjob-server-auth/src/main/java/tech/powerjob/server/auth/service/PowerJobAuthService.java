@@ -28,7 +28,7 @@ public interface PowerJobAuthService {
      * @param httpServletRequest httpServletRequest
      * @return PowerJob 用户
      */
-    Optional<PowerJobUser> parse(HttpServletRequest httpServletRequest);
+    Optional<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest);
 
     /**
      * 判断用户是否有访问权限

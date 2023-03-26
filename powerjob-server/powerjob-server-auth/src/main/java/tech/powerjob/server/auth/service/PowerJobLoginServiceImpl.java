@@ -88,7 +88,7 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
     }
 
     @Override
-    public Optional<PowerJobUser> parse(HttpServletRequest httpServletRequest) {
+    public Optional<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest) {
 
         final Optional<Long> userIdOpt = parseUserId(httpServletRequest);
         return userIdOpt.flatMap(aLong -> userInfoRepository.findById(aLong).map(userInfoDO -> {

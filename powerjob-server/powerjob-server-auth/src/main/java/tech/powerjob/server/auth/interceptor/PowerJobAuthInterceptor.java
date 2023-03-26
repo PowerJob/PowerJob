@@ -43,7 +43,7 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
         }
 
         // 尝试直接解析登陆
-        final Optional<PowerJobUser> loginUserOpt = powerJobAuthService.parse(request);
+        final Optional<PowerJobUser> loginUserOpt = powerJobAuthService.ifLogin(request);
 
         // 未登录前先使用302重定向到登录页面
         if (!loginUserOpt.isPresent()) {
