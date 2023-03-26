@@ -97,6 +97,9 @@ public class DingTalkBizLoginService implements BizLoginService {
             if (dingUser != null) {
                 BizUser bizUser = new BizUser();
                 bizUser.setUsername(dingUser.getUnionId());
+                bizUser.setNick(dingUser.getNick());
+                bizUser.setPhone(dingUser.getMobile());
+                bizUser.setEmail(dingUser.getEmail());
                 return Optional.of(bizUser);
             }
         } catch (Exception e) {
