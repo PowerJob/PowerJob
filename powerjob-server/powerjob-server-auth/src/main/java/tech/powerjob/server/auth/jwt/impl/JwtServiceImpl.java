@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import tech.powerjob.server.auth.jwt.JwtService;
 import tech.powerjob.server.auth.jwt.SecretProvider;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
  * @author tjq
  * @since 2023/3/20
  */
-@Server
+@Service
 public class JwtServiceImpl implements JwtService {
 
     @Resource

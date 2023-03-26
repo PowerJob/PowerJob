@@ -16,11 +16,18 @@ import java.util.Optional;
 public interface PowerJobAuthService {
 
     /**
+     * 开始登陆
+     * @param loginContext 请求
+     * @return 转发 or 重定向到真正的登陆页
+     */
+    String startLogin(LoginContext loginContext);
+
+    /**
      * 执行真正的登陆操作
      * @param loginContext 登录上下文
      * @return PowerJob 用户
      */
-    Optional<PowerJobUser> login(LoginContext loginContext);
+    PowerJobUser tryLogin(LoginContext loginContext);
     
 
     /**

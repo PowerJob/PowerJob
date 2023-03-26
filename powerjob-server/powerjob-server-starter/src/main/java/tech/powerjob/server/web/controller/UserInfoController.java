@@ -1,21 +1,28 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.response.ResultDTO;
-import org.springframework.beans.BeanUtils;
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
-import tech.powerjob.server.core.service.UserService;
-import tech.powerjob.server.web.request.ModifyUserInfoRequest;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.util.CollectionUtils;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.auth.LoginContext;
+import tech.powerjob.server.auth.PowerJobUser;
+import tech.powerjob.server.auth.service.PowerJobAuthService;
+import tech.powerjob.server.core.service.UserService;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
+import tech.powerjob.server.web.request.ModifyUserInfoRequest;
+import tech.powerjob.server.web.request.UserLoginRequest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,21 +35,49 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/user")
 public class UserInfoController {
-
     @Resource
     private UserService userService;
     @Resource
     private UserInfoRepository userInfoRepository;
+    @Resource
+    private PowerJobAuthService powerJobAuthService;
 
-    @GetMapping("/loginCallback")
-    public ResultDTO<Void> loginCallback(HttpServletRequest httpServletRequest) {
+
+    @SneakyThrows
+    @GetMapping("/startLogin")
+    public String tryLogin(UserLoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
+
+        LoginContext loginContext = new LoginContext()
+                .setLoginType(loginRequest.getType())
+                .setLoginInfo(loginRequest.getLoginInfo())
+                .setHttpServletRequest(request);
+
+        final String realLoginUrl = powerJobAuthService.startLogin(loginContext);
+        // 统一重定向
+        response.sendRedirect(realLoginUrl);
+        return null;
+    }
+
+    @RequestMapping(value = "/loginCallback", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResultDTO<PowerJobUser> loginCallback(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        LoginContext loginContext = new LoginContext()
+                .setHttpServletRequest(httpServletRequest);
+
+        // 尝试读取 body
+        if (RequestMethod.POST.name().equalsIgnoreCase(httpServletRequest.getMethod())) {
+            // TODO: 从 post 读取 body
+        }
+
         // 钉钉回调
         final String state = httpServletRequest.getParameter("state");
         if ("DingTalk".equalsIgnoreCase(state)) {
-            // TODO: 钉钉服务
+            loginContext.setLoginType("DingTalk");
         }
-        // TODO: 承接登录回调功能
-        return null;
+
+        final PowerJobUser powerJobUser = powerJobAuthService.tryLogin(loginContext);
+
+        httpServletResponse.addCookie(new Cookie("powerjob_token", powerJobUser.getJwtToken()));
+        return ResultDTO.success(powerJobUser);
     }
 
     @PostMapping("save")

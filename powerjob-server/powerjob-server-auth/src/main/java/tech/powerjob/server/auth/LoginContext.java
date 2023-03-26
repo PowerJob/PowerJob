@@ -16,8 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 @Setter
 @Accessors(chain = true)
 public class LoginContext {
-
-    private HttpServletRequest httpServletRequest;
     /**
      * 登陆类型
      */
@@ -26,4 +24,6 @@ public class LoginContext {
      * 登陆信息，取决于登陆类型，比如 PowerJob 自带的账号密码为 uid:xxx;pwd:yyy
      */
     private String loginInfo;
+
+    private transient HttpServletRequest httpServletRequest;
 }

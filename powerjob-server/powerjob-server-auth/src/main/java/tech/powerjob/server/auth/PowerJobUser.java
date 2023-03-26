@@ -39,4 +39,6 @@ public class PowerJobUser implements Serializable {
     private String extra;
 
     /* ************** 以上为数据库字段 ************** */
+
+    private String jwtToken;
 }

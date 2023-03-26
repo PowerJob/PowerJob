@@ -32,7 +32,7 @@ import java.util.*;
  * @since 2023/3/21
  */
 @Service
-public class PowerJobLoginServiceImpl implements PowerJobAuthService {
+public class PowerJobAuthServiceImpl implements PowerJobAuthService {
 
     private final JwtService jwtService;
     private final UserInfoRepository userInfoRepository;
@@ -44,7 +44,7 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
     private static final String KEY_USERID = "userId";
 
     @Autowired
-    public PowerJobLoginServiceImpl(List<BizLoginService> loginServices, JwtService jwtService, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
+    public PowerJobAuthServiceImpl(List<BizLoginService> loginServices, JwtService jwtService, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
         this.jwtService = jwtService;
         this.userInfoRepository = userInfoRepository;
         this.userRoleRepository = userRoleRepository;
@@ -53,17 +53,16 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
 
 
     @Override
-    public Optional<PowerJobUser> login(LoginContext loginContext) {
+    public String startLogin(LoginContext loginContext) {
+        final BizLoginService loginService = fetchBizLoginService(loginContext);
+        return loginService.loginUrl();
+    }
+
+    @Override
+    public PowerJobUser tryLogin(LoginContext loginContext) {
         final String loginType = loginContext.getLoginType();
-        final BizLoginService loginService = type2LoginService.get(loginType);
-        if (loginService == null) {
-            throw new IllegalArgumentException("can't find LoginService by type: " + loginType);
-        }
-        final Optional<BizUser> bizUserOpt = loginService.login(loginContext);
-        if (!bizUserOpt.isPresent()) {
-            return Optional.empty();
-        }
-        final BizUser bizUser = bizUserOpt.get();
+        final BizLoginService loginService = fetchBizLoginService(loginContext);
+        final BizUser bizUser = loginService.login(loginContext);
 
         String dbUserName = String.format("%s_%s", loginType, bizUser.getUsername());
         final Optional<UserInfoDO> powerJobUserOpt = userInfoRepository.findByUsername(dbUserName);
@@ -74,7 +73,7 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
             final UserInfoDO dbUser = powerJobUserOpt.get();
             BeanUtils.copyProperties(dbUser, ret);
             ret.setUsername(dbUserName);
-            return Optional.of(ret);
+            return ret;
         }
 
         // 同步在 PowerJob 用户库创建该用户
@@ -84,7 +83,7 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
         userInfoRepository.saveAndFlush(newUser);
         ret.setUsername(dbUserName);
 
-        return Optional.of(ret);
+        return ret;
     }
 
     @Override
@@ -155,5 +154,14 @@ public class PowerJobLoginServiceImpl implements PowerJobAuthService {
         }
 
         return Optional.of(Long.parseLong(String.valueOf(userId)));
+    }
+
+    private BizLoginService fetchBizLoginService(LoginContext loginContext) {
+        final String loginType = loginContext.getLoginType();
+        final BizLoginService loginService = type2LoginService.get(loginType);
+        if (loginService == null) {
+            throw new IllegalArgumentException("can't find LoginService by type: " + loginType);
+        }
+        return loginService;
     }
 }

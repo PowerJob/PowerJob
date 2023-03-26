@@ -3,6 +3,7 @@ package tech.powerjob.server.auth.login.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.Loggers;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.DigestUtils;
 import tech.powerjob.server.auth.LoginContext;
 import tech.powerjob.server.auth.login.BizLoginService;
@@ -39,16 +40,15 @@ public class DefaultBizLoginService implements BizLoginService {
 
     @Override
     public String loginUrl() {
-        // 默认登陆方式不需要重定向
-        return null;
+        return "forward:/user/loginCallback";
     }
 
     @Override
-    public Optional<BizUser> login(LoginContext loginContext) {
+    public BizUser login(LoginContext loginContext) {
 
         final String loginInfo = loginContext.getLoginInfo();
         if (StringUtils.isEmpty(loginInfo)) {
-            return Optional.empty();
+            throw new IllegalArgumentException("can't find login Info");
         }
 
         final Map<String, String> loginInfoMap = SJ.splitKvString(loginInfo);
@@ -57,13 +57,13 @@ public class DefaultBizLoginService implements BizLoginService {
 
         if (StringUtils.isAnyEmpty(username, password)) {
             Loggers.WEB.debug("[DefaultBizLoginService] username or password is empty, login failed!");
-            return Optional.empty();
+            throw new IllegalArgumentException("username or password is empty!");
         }
 
         final Optional<UserInfoDO> userInfoOpt = userInfoRepository.findByUsername(username);
         if (!userInfoOpt.isPresent()) {
             Loggers.WEB.debug("[DefaultBizLoginService] can't find user by username: {}", username);
-            return Optional.empty();
+            throw new PowerJobException("can't find user by username: " + username);
         }
 
         final UserInfoDO dbUser = userInfoOpt.get();
@@ -71,11 +71,11 @@ public class DefaultBizLoginService implements BizLoginService {
         if (s(username, password).equals(dbUser.getPassword())) {
             BizUser bizUser = new BizUser();
             bizUser.setUsername(username);
-            return Optional.of(bizUser);
+            return bizUser;
         }
 
-        Loggers.WEB.debug("[DefaultBizLoginService] user[{}]'s password is not correct, login failed!", username);
-        return Optional.empty();
+        Loggers.WEB.debug("[DefaultBizLoginService] user[{}]'s password is incorrect, login failed!", username);
+        throw new PowerJobException("password is incorrect");
     }
 
     private static String s(String username, String password) {

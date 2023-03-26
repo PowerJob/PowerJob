@@ -11,13 +11,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.Loggers;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.auth.LoginContext;
 import tech.powerjob.server.auth.login.BizLoginService;
 import tech.powerjob.server.auth.login.BizUser;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 /**
  * <a href="https://open.dingtalk.com/document/orgapp/tutorial-obtaining-user-personal-information">钉钉账号体系登录第三方网站</a>
@@ -78,7 +78,8 @@ public class DingTalkBizLoginService implements BizLoginService {
     }
 
     @Override
-    public Optional<BizUser> login(LoginContext loginContext) {
+    @SneakyThrows
+    public BizUser login(LoginContext loginContext) {
         try {
             com.aliyun.dingtalkoauth2_1_0.Client client = authClient();
             GetUserTokenRequest getUserTokenRequest = new GetUserTokenRequest()
@@ -100,12 +101,13 @@ public class DingTalkBizLoginService implements BizLoginService {
                 bizUser.setNick(dingUser.getNick());
                 bizUser.setPhone(dingUser.getMobile());
                 bizUser.setEmail(dingUser.getEmail());
-                return Optional.of(bizUser);
+                return bizUser;
             }
         } catch (Exception e) {
             Loggers.WEB.error("[DingTalkBizLoginService] login by dingTalk failed!", e);
+            throw e;
         }
-        return Optional.empty();
+        throw new PowerJobException("login from dingTalk failed!");
     }
 
     /* 以下代码均拷自钉钉官网示例 */

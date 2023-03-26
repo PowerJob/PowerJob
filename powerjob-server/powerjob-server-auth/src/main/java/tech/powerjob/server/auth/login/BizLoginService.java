@@ -2,8 +2,6 @@ package tech.powerjob.server.auth.login;
 
 import tech.powerjob.server.auth.LoginContext;
 
-import java.util.Optional;
-
 /**
  * 用户登陆服务
  *
@@ -29,5 +27,5 @@ public interface BizLoginService {
      * @param loginContext 登陆上下文
      * @return PowerJob 用户
      */
-    Optional<BizUser> login(LoginContext loginContext);
+    BizUser login(LoginContext loginContext);
 }
