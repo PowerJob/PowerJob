@@ -41,8 +41,12 @@ public class BuiltInSpringProcessorFactory implements ProcessorFactory {
                 log.info("[ProcessorFactory] can't find Spring env, this processor can't load by 'BuiltInSpringProcessorFactory'");
                 return null;
             }
-
-            BasicProcessor basicProcessor = getBean(processorDefinition.getProcessorInfo(), applicationContext);
+            String processorInfo = processorDefinition.getProcessorInfo();
+            //用于区分方法级别的参数
+            if (processorInfo.contains("#")) {
+                return null;
+            }
+            BasicProcessor basicProcessor = getBean(processorInfo, applicationContext);
             return new ProcessorBean()
                     .setProcessor(basicProcessor)
                     .setClassLoader(basicProcessor.getClass().getClassLoader());
