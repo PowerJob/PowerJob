@@ -68,7 +68,7 @@ public class PowerJobSelfLoginService implements BizLoginService {
 
         final UserInfoDO dbUser = userInfoOpt.get();
 
-        if (s(username, password).equals(dbUser.getPassword())) {
+        if (DigestUtils.rePassword(password, username).equals(dbUser.getPassword())) {
             BizUser bizUser = new BizUser();
             bizUser.setUsername(username);
             return bizUser;
@@ -76,10 +76,5 @@ public class PowerJobSelfLoginService implements BizLoginService {
 
         Loggers.WEB.debug("[DefaultBizLoginService] user[{}]'s password is incorrect, login failed!", username);
         throw new PowerJobException("password is incorrect");
-    }
-
-    private static String s(String username, String password) {
-        String f1 = String.format("%s_%s_z", username, password);
-        return String.format("%s_%s_b", username, DigestUtils.md5(f1));
     }
 }

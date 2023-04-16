@@ -33,4 +33,9 @@ public class DigestUtils {
         }
         return result.toString();
     }
+
+    public static String rePassword(String password, String salt) {
+        String f1 = String.format("%s_%s_z", salt, password);
+        return String.format("%s_%s_b", salt, md5(f1));
+    }
 }
