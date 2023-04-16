@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.auth.jwt.JwtService;
@@ -44,9 +45,9 @@ public class JwtServiceImpl implements JwtService {
             ;
 
     @Override
-    public String build(Map<String, Object> body) {
+    public String build(Map<String, Object> body, String extraSk) {
 
-        final String secret = secretProvider.fetchSecretKey();
+        final String secret = fetchSk(extraSk);
         return innerBuild(secret, jwtExpireTime, body);
     }
 
@@ -62,8 +63,15 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public Map<String, Object> parse(String jwt) {
-        return innerParse(secretProvider.fetchSecretKey(), jwt);
+    public Map<String, Object> parse(String jwt, String extraSk) {
+        return innerParse(fetchSk(extraSk), jwt);
+    }
+
+    private String fetchSk(String extraSk) {
+        if (StringUtils.isEmpty(extraSk)) {
+            return secretProvider.fetchSecretKey();
+        }
+        return secretProvider.fetchSecretKey().concat(extraSk);
     }
 
     static Map<String, Object> innerParse(String secret, String jwtStr) {

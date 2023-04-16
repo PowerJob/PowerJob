@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public interface JwtService {
 
-    String build(Map<String, Object> body);
+    String build(Map<String, Object> body, String extraSk);
 
-    Map<String, Object> parse(String jwt);
+    Map<String, Object> parse(String jwt, String extraSk);
 }

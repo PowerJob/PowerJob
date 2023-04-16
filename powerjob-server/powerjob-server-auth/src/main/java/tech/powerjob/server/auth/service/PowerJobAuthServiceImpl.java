@@ -42,7 +42,7 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
 
     private static final String JWT_NAME = "power_jwt";
 
-    private static final String KEY_USERID = "userId";
+    private static final String KEY_USERNAME = "userName";
 
     @Autowired
     public PowerJobAuthServiceImpl(List<BizLoginService> loginServices, JwtService jwtService, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
@@ -100,8 +100,8 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
     @Override
     public Optional<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest) {
 
-        final Optional<Long> userIdOpt = parseUserId(httpServletRequest);
-        return userIdOpt.flatMap(aLong -> userInfoRepository.findById(aLong).map(userInfoDO -> {
+        final Optional<String> userNameOpt = parseUserName(httpServletRequest);
+        return userNameOpt.flatMap(uname -> userInfoRepository.findByUsername(uname).map(userInfoDO -> {
             PowerJobUser powerJobUser = new PowerJobUser();
             BeanUtils.copyProperties(userInfoDO, powerJobUser);
             return powerJobUser;
@@ -144,7 +144,7 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
         return false;
     }
 
-    private Optional<Long> parseUserId(HttpServletRequest httpServletRequest) {
+    private Optional<String> parseUserName(HttpServletRequest httpServletRequest) {
         // header、cookie 都能获取
         String jwtStr = httpServletRequest.getHeader(JWT_NAME);
         if (StringUtils.isEmpty(jwtStr)) {
@@ -157,14 +157,14 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
         if (StringUtils.isEmpty(jwtStr)) {
             return Optional.empty();
         }
-        final Map<String, Object> jwtBodyMap = jwtService.parse(jwtStr);
-        final Object userId = jwtBodyMap.get(KEY_USERID);
+        final Map<String, Object> jwtBodyMap = jwtService.parse(jwtStr, null);
+        final Object userName = jwtBodyMap.get(KEY_USERNAME);
 
-        if (userId == null) {
+        if (userName == null) {
             return Optional.empty();
         }
 
-        return Optional.of(Long.parseLong(String.valueOf(userId)));
+        return Optional.of(String.valueOf(userName));
     }
 
     private BizLoginService fetchBizLoginService(LoginContext loginContext) {
@@ -179,8 +179,9 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
     private void fillJwt(PowerJobUser powerJobUser) {
         Map<String, Object> jwtMap = Maps.newHashMap();
 
-        jwtMap.put(KEY_USERID, powerJobUser.getId());
+        // 不能下发 userId，容易被轮询爆破
+        jwtMap.put(KEY_USERNAME, powerJobUser.getUsername());
 
-        powerJobUser.setJwtToken(jwtService.build(jwtMap));
+        powerJobUser.setJwtToken(jwtService.build(jwtMap, null));
     }
 }

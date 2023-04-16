@@ -20,6 +20,7 @@ class JwtServiceImplTest {
         Map<String, Object> body = Maps.newHashMap();
         body.put("userId", 277);
         body.put("name", "tjq");
+        body.put("language", "简体中文");
 
         final String jwtToken = JwtServiceImpl.innerBuild("tjq", 2, body);
         log.info("[JWT] token: {}", jwtToken);
