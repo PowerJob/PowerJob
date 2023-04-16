@@ -7,6 +7,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import tech.powerjob.common.Loggers;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.anno.ApiPermission;
 import tech.powerjob.server.auth.service.PowerJobAuthService;
@@ -54,6 +55,10 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
 
         // 登陆用户进行权限校验
         final PowerJobUser powerJobUser = loginUserOpt.get();
+
+        // 写入上下文
+        LoginUserHolder.set(powerJobUser);
+
         final boolean hasPermission = powerJobAuthService.hasPermission(request, powerJobUser, apiPermissionAnno);
         if (hasPermission) {
             return true;
@@ -63,6 +68,11 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
         Loggers.WEB.info("[PowerJobAuthInterceptor] user[{}] has no permission to access: {}", powerJobUser.getUsername(), resourceName);
 
         throw new PowerJobException("Permission denied!");
+    }
+
+    @Override
+    public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler, Exception ex) throws Exception {
+        LoginUserHolder.clean();
     }
 
     private static String parseResourceName(ApiPermission apiPermission, HandlerMethod handlerMethod) {

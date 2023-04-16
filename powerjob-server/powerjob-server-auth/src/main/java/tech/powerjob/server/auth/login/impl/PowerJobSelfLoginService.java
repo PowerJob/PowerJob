@@ -23,7 +23,7 @@ import java.util.Optional;
  * @since 2023/3/20
  */
 @Service
-public class DefaultBizLoginService implements BizLoginService {
+public class PowerJobSelfLoginService implements BizLoginService {
 
     @Resource
     private UserInfoRepository userInfoRepository;
@@ -40,7 +40,7 @@ public class DefaultBizLoginService implements BizLoginService {
 
     @Override
     public String loginUrl() {
-        return "forward:/user/loginCallback";
+        return null;
     }
 
     @Override

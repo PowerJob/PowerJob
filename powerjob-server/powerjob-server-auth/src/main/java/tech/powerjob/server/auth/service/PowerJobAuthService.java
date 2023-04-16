@@ -5,6 +5,7 @@ import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.anno.ApiPermission;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,6 +15,8 @@ import java.util.Optional;
  * @since 2023/3/21
  */
 public interface PowerJobAuthService {
+
+    List<String> supportTypes();
 
     /**
      * 开始登陆

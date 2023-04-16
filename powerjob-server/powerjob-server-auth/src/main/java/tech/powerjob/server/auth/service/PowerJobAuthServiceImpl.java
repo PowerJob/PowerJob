@@ -1,6 +1,7 @@
 package tech.powerjob.server.auth.service;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +40,7 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
     private final UserRoleRepository userRoleRepository;
     private final Map<String, BizLoginService> type2LoginService = Maps.newHashMap();
 
-    private static final String JWT_NAME = "powerjob_token";
+    private static final String JWT_NAME = "power_jwt";
 
     private static final String KEY_USERID = "userId";
 
@@ -51,6 +52,11 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
         loginServices.forEach(k -> type2LoginService.put(k.type(), k));
     }
 
+
+    @Override
+    public List<String> supportTypes() {
+        return Lists.newArrayList(type2LoginService.keySet());
+    }
 
     @Override
     public String startLogin(LoginContext loginContext) {
@@ -68,20 +74,20 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
         final Optional<UserInfoDO> powerJobUserOpt = userInfoRepository.findByUsername(dbUserName);
 
         PowerJobUser ret = new PowerJobUser();
-        // 存在则响应 PowerJob 用户
+        // 存在则响应 PowerJob 用户，否则同步在 PowerJob 用户库创建该用户
         if (powerJobUserOpt.isPresent()) {
             final UserInfoDO dbUser = powerJobUserOpt.get();
             BeanUtils.copyProperties(dbUser, ret);
             ret.setUsername(dbUserName);
-            return ret;
+        } else {
+            UserInfoDO newUser = new UserInfoDO();
+            newUser.setUsername(dbUserName);
+            Loggers.WEB.info("[PowerJobLoginService] sync user to PowerJobUserSystem: {}", dbUserName);
+            userInfoRepository.saveAndFlush(newUser);
+            ret.setUsername(dbUserName);
         }
 
-        // 同步在 PowerJob 用户库创建该用户
-        UserInfoDO newUser = new UserInfoDO();
-        newUser.setUsername(dbUserName);
-        Loggers.WEB.info("[PowerJobLoginService] sync user to PowerJobUserSystem: {}", dbUserName);
-        userInfoRepository.saveAndFlush(newUser);
-        ret.setUsername(dbUserName);
+        fillJwt(ret);
 
         return ret;
     }
@@ -163,5 +169,13 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
             throw new IllegalArgumentException("can't find LoginService by type: " + loginType);
         }
         return loginService;
+    }
+
+    private void fillJwt(PowerJobUser powerJobUser) {
+        Map<String, Object> jwtMap = Maps.newHashMap();
+
+        jwtMap.put(KEY_USERID, powerJobUser.getId());
+
+        powerJobUser.setJwtToken(jwtService.build(jwtMap));
     }
 }

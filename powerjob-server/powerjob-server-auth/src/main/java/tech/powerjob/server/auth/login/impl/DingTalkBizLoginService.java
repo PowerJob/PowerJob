@@ -50,11 +50,11 @@ public class DingTalkBizLoginService implements BizLoginService {
     @Value("${oms.auth.dingtalk.callbackUrl}")
     private String dingTalkCallbackUrl;
 
-    private static final String DEFAULT_LOGIN_SERVICE = "DingTalk";
+    private static final String DING_TALK = "DingTalk";
 
     @Override
     public String type() {
-        return DEFAULT_LOGIN_SERVICE;
+        return DING_TALK;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class DingTalkBizLoginService implements BizLoginService {
                 "&response_type=code" +
                 "&client_id=" + dingTalkAppKey +
                 "&scope=openid" +
-                "&state=DingTalk" +
+                "&state=" + DING_TALK +
                 "&prompt=consent";
         Loggers.WEB.info("[DingTalkBizLoginService] login url: {}", url);
         return url;
