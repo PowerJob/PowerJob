@@ -37,10 +37,10 @@ public class JwtServiceImpl implements JwtService {
      * <a href="https://music.163.com/#/song?id=167975">GoodSong</a>
      */
     private static final String BASE_SECURITY =
-            "死去元知万事空" +
-            "但悲不见九州同" +
-            "王师北定中原日" +
-            "家祭无忘告乃翁"
+            "CengMengXiangZhangJianZouTianYa" +
+                    "KanYiKanShiJieDeFanHua" +
+                    "NianShaoDeXinZongYouXieQingKuang" +
+                    "RuJinWoSiHaiWeiJia"
             ;
 
     @Override

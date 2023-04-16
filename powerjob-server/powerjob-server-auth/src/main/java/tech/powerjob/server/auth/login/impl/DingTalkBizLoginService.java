@@ -32,22 +32,29 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class DingTalkBizLoginService implements BizLoginService {
 
+    /*
+    配置示例
+    oms.auth.dingtalk.appkey=dinggzqqzqqzqqzqq
+    oms.auth.dingtalk.appSecret=iY-FS8mzqqzqq_xEizqqzqqzqqzqqzqqzqqYEbkZOal
+    oms.auth.dingtalk.callbackUrl=http://localhost:7700/auth/loginCallback
+     */
+
     /**
      * 钉钉应用 AppKey
      */
-    @Value("${oms.auth.dingtalk.appkey}")
+    @Value("${oms.auth.dingtalk.appkey:#{null}}")
     private String dingTalkAppKey;
     /**
      * 钉钉应用 AppSecret
      */
-    @Value("${oms.auth.dingtalk.appSecret}")
+    @Value("${oms.auth.dingtalk.appSecret:#{null}}")
     private String dingTalkAppSecret;
     /**
      * 回调地址，powerjob-server 地址 + /user/auth
-     * 比如本地调试时为 <a href="http://localhost:7700/user/loginCallback">LocalDemoCallbackUrl</a>
-     * 部署后则为 <a href="http://try.powerjob.tech/user/loginCallback">demoCallBackUrl</a>
+     * 比如本地调试时为 <a href="http://localhost:7700/auth/loginCallback">LocalDemoCallbackUrl</a>
+     * 部署后则为 <a href="http://try.powerjob.tech/auth/loginCallback">demoCallBackUrl</a>
      */
-    @Value("${oms.auth.dingtalk.callbackUrl}")
+    @Value("${oms.auth.dingtalk.callbackUrl:#{null}}")
     private String dingTalkCallbackUrl;
 
     private static final String DING_TALK = "DingTalk";

@@ -13,6 +13,6 @@ import tech.powerjob.server.auth.jwt.SecretProvider;
 public class DefaultSecretProvider implements SecretProvider {
     @Override
     public String fetchSecretKey() {
-        return "ZQQ";
+        return "ZQQZJ";
     }
 }

@@ -43,3 +43,6 @@ build/
 */.txt
 */.trc
 powerjob-data/
+
+### local test ###
+application-local.properties

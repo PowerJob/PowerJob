@@ -71,19 +71,24 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
         final BizUser bizUser = loginService.login(loginContext);
 
         String dbUserName = String.format("%s_%s", loginType, bizUser.getUsername());
-        final Optional<UserInfoDO> powerJobUserOpt = userInfoRepository.findByUsername(dbUserName);
+        Optional<UserInfoDO> powerJobUserOpt = userInfoRepository.findByUsername(dbUserName);
 
-        PowerJobUser ret = new PowerJobUser();
-        // 存在则响应 PowerJob 用户，否则同步在 PowerJob 用户库创建该用户
-        if (powerJobUserOpt.isPresent()) {
-            final UserInfoDO dbUser = powerJobUserOpt.get();
-            BeanUtils.copyProperties(dbUser, ret);
-            ret.setUsername(dbUserName);
-        } else {
+        // 如果不存在用户，先同步创建用户
+        if (!powerJobUserOpt.isPresent()) {
             UserInfoDO newUser = new UserInfoDO();
             newUser.setUsername(dbUserName);
             Loggers.WEB.info("[PowerJobLoginService] sync user to PowerJobUserSystem: {}", dbUserName);
             userInfoRepository.saveAndFlush(newUser);
+
+            powerJobUserOpt = userInfoRepository.findByUsername(dbUserName);
+        }
+
+        PowerJobUser ret = new PowerJobUser();
+
+        // 理论上 100% 存在
+        if (powerJobUserOpt.isPresent()) {
+            final UserInfoDO dbUser = powerJobUserOpt.get();
+            BeanUtils.copyProperties(dbUser, ret);
             ret.setUsername(dbUserName);
         }
 
