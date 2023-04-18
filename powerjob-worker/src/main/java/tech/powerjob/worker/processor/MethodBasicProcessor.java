@@ -1,5 +1,6 @@
 package tech.powerjob.worker.processor;
 
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
@@ -19,7 +20,7 @@ public class MethodBasicProcessor implements BasicProcessor {
 
     @Override
     public ProcessResult process(TaskContext context) throws Exception {
-        method.invoke(bean,context);
-        return new ProcessResult(true);
+        Object result = method.invoke(bean, context);
+        return new ProcessResult(true, JsonUtils.toJSONString(result));
     }
 }

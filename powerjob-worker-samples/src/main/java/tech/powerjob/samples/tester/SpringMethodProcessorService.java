@@ -9,9 +9,17 @@ import tech.powerjob.worker.log.OmsLogger;
 public class SpringMethodProcessorService {
 
     @PowerJob("test")
-    public void test(TaskContext context) {
+    public String test(TaskContext context) {
         OmsLogger omsLogger = context.getOmsLogger();
         omsLogger.warn("测试日志");
-        System.out.println("测试执行");
+        return null;
+    }
+
+
+    @PowerJob("test1")
+    public String test1(TaskContext context) {
+        OmsLogger omsLogger = context.getOmsLogger();
+        omsLogger.warn("测试日志");
+        return "测试日志";
     }
 }
