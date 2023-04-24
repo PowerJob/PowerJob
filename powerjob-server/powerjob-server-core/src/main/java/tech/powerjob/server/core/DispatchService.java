@@ -169,15 +169,14 @@ public class DispatchService {
         // 发送请求（不可靠，需要一个后台线程定期轮询状态）
         WorkerInfo taskTracker = suitableWorkers.get(0);
         String taskTrackerAddress = taskTracker.getAddress();
-
-        URL workerUrl = ServerURLFactory.dispatchJob2Worker(taskTrackerAddress);
-        transportService.tell(taskTracker.getProtocol(), workerUrl, req);
-        log.info("[Dispatcher-{}|{}] send schedule request to TaskTracker[protocol:{},address:{}] successfully: {}.", jobId, instanceId, taskTracker.getProtocol(), taskTrackerAddress, req);
-
         // 修改状态
         instanceInfoRepository.update4TriggerSucceed(instanceId, WAITING_WORKER_RECEIVE.getV(), current, taskTrackerAddress, now, instanceInfo.getStatus());
         // 装载缓存
         instanceMetadataService.loadJobInfo(instanceId, jobInfo);
+        
+        URL workerUrl = ServerURLFactory.dispatchJob2Worker(taskTrackerAddress);
+        transportService.tell(taskTracker.getProtocol(), workerUrl, req);
+        log.info("[Dispatcher-{}|{}] send schedule request to TaskTracker[protocol:{},address:{}] successfully: {}.", jobId, instanceId, taskTracker.getProtocol(), taskTrackerAddress, req);
     }
 
     private List<WorkerInfo> filterOverloadWorker(List<WorkerInfo> suitableWorkers) {
