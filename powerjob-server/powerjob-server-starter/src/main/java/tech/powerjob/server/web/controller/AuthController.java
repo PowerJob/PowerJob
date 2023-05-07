@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 登录 & 权限相关
@@ -80,5 +81,11 @@ public class AuthController {
 
         httpServletResponse.addCookie(new Cookie("power_jwt", powerJobUser.getJwtToken()));
         return ResultDTO.success(powerJobUser);
+    }
+
+    @PostMapping(value = "/ifLogin")
+    public ResultDTO<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest) {
+        final Optional<PowerJobUser> powerJobUser = powerJobAuthService.ifLogin(httpServletRequest);
+        return powerJobUser.map(ResultDTO::success).orElseGet(() -> ResultDTO.failed("LOGIN_FAILED"));
     }
 }
