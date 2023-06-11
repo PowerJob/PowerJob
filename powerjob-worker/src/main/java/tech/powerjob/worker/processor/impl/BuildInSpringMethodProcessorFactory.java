@@ -3,7 +3,7 @@ package tech.powerjob.worker.processor.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import tech.powerjob.worker.annotation.PowerJob;
+import tech.powerjob.worker.annotation.PowerJobHandler;
 import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.extension.processor.ProcessorDefinition;
 import tech.powerjob.worker.processor.MethodBasicProcessor;
@@ -45,17 +45,17 @@ public class BuildInSpringMethodProcessorFactory extends AbstractBuildInSpringPr
                 log.info("[ProcessorFactory] can't parse processorDefinition, this processor can't load by 'BuildInSpringMethodProcessorFactory'");
                 return null;
             }
-            String[] split = processorInfo.split("#");
+            String[] split = processorInfo.split(DELIMITER);
             String methodName = split[1];
             String className = split[0];
             Object bean = getBean(className,applicationContext);
             Method[] methods = bean.getClass().getDeclaredMethods();
             for (Method method : methods) {
-                PowerJob powerJob = method.getAnnotation(PowerJob.class);
+                PowerJobHandler powerJob = method.getAnnotation(PowerJobHandler.class);
                 if (powerJob == null) {
                     continue;
                 }
-                String name = powerJob.value();
+                String name = powerJob.name();
                 //匹配到和页面定义相同的methodName
                 if (!name.equals(methodName)) {
                     continue;
