@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.2</version>
+        <version>4.3.3</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-official-processors</artifactId>
-    <version>4.3.2</version>
+    <version>4.3.3</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -20,7 +20,7 @@
         <!-- 不会被打包的部分，scope 只能是 test 或 provide -->
         <junit.version>5.9.1</junit.version>
         <logback.version>1.2.9</logback.version>
-        <powerjob.worker.version>4.3.2</powerjob.worker.version>
+        <powerjob.worker.version>4.3.3</powerjob.worker.version>
         <spring.jdbc.version>5.2.9.RELEASE</spring.jdbc.version>
         <h2.db.version>2.1.214</h2.db.version>
         <mysql.version>8.0.28</mysql.version>

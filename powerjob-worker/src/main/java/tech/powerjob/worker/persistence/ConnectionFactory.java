@@ -57,7 +57,9 @@ public class ConnectionFactory {
         // JVM 关闭时删除数据库文件
         try {
             FileUtils.forceDeleteOnExit(new File(H2_PATH));
-        }catch (Exception ignore) {
+            log.info("[PowerDatasource] delete worker db file[{}] on JVM exit successfully", H2_PATH);
+        }catch (Throwable t) {
+            log.warn("[PowerDatasource] delete file on JVM exit failed: {}", H2_PATH, t);
         }
     }
 
