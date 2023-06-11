@@ -5,9 +5,14 @@ import tech.powerjob.worker.annotation.PowerJobHandler;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.log.OmsLogger;
 
-@Component
+@Component(value = "springMethodProcessorService")
 public class SpringMethodProcessorService {
 
+    /**
+     * 处理器配置方法1： 全限定类名#方法名，比如 tech.powerjob.samples.tester.SpringMethodProcessorService#testEmptyReturn
+     * 处理器配置方法2： SpringBean名称#方法名，比如 springMethodProcessorService#testEmptyReturn
+     * @param context 必须要有入参 TaskContext，返回值可以是 null，也可以是其他任意类型。正常返回代表成功，抛出异常代表执行失败
+     */
     @PowerJobHandler(name = "testEmptyReturn")
     public void test(TaskContext context) {
         OmsLogger omsLogger = context.getOmsLogger();

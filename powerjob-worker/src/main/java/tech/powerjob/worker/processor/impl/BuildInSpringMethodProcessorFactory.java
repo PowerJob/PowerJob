@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationContext;
 import tech.powerjob.worker.annotation.PowerJobHandler;
 import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.extension.processor.ProcessorDefinition;
-import tech.powerjob.worker.processor.MethodBasicProcessor;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
