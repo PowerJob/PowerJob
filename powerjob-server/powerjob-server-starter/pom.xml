@@ -58,6 +58,8 @@
                 <version>${springboot.version}</version>
                 <configuration>
                     <mainClass>tech.powerjob.server.PowerJobServerApplication</mainClass>
+                    <!-- 支持 server 作为 jar 包被外部系统集成 https://gitee.com/KFCFans/PowerJob/issues/I6H8JF -->
+                    <classifier>exec</classifier>
                 </configuration>
                 <executions>
                     <execution>
