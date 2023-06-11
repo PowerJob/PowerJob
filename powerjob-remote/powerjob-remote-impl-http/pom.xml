@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob-remote</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.2</version>
+        <version>4.3.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-remote-impl-http</artifactId>
-    <version>4.3.2</version>
+    <version>4.3.3</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <vertx.version>4.3.7</vertx.version>
-        <powerjob-remote-framework.version>4.3.2</powerjob-remote-framework.version>
+        <powerjob-remote-framework.version>4.3.3</powerjob-remote-framework.version>
     </properties>
 
     <dependencies>

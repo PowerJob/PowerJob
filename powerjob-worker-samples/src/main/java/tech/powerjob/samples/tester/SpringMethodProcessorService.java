@@ -14,14 +14,14 @@ public class SpringMethodProcessorService {
      * @param context 必须要有入参 TaskContext，返回值可以是 null，也可以是其他任意类型。正常返回代表成功，抛出异常代表执行失败
      */
     @PowerJobHandler(name = "testEmptyReturn")
-    public void test(TaskContext context) {
+    public void testEmptyReturn(TaskContext context) {
         OmsLogger omsLogger = context.getOmsLogger();
         omsLogger.warn("测试日志");
     }
 
 
     @PowerJobHandler(name = "testNormalReturn")
-    public String test1(TaskContext context) {
+    public String testNormalReturn(TaskContext context) {
         OmsLogger omsLogger = context.getOmsLogger();
         omsLogger.warn("测试日志");
         return "testNormalReturn";
