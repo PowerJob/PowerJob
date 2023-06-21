@@ -5,18 +5,18 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.2</version>
+        <version>4.3.3</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-client</artifactId>
-    <version>4.3.2</version>
+    <version>4.3.3</version>
     <packaging>jar</packaging>
 
     <properties>
         <junit.version>5.9.1</junit.version>
         <fastjson.version>1.2.83</fastjson.version>
-        <powerjob.common.version>4.3.2</powerjob.common.version>
+        <powerjob.common.version>4.3.3</powerjob.common.version>
 
         <mvn.shade.plugin.version>3.2.4</mvn.shade.plugin.version>
     </properties>

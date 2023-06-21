@@ -5,7 +5,7 @@
     <parent>
         <artifactId>powerjob-server</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.2</version>
+        <version>4.3.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -58,6 +58,8 @@
                 <version>${springboot.version}</version>
                 <configuration>
                     <mainClass>tech.powerjob.server.PowerJobServerApplication</mainClass>
+                    <!-- 支持 server 作为 jar 包被外部系统集成 https://gitee.com/KFCFans/PowerJob/issues/I6H8JF ，短期内为了兼容 CI 流程 deploy 阶段关闭注释，推 master 重新打开-->
+                    <!-- <classifier>exec</classifier>-->
                 </configuration>
                 <executions>
                     <execution>

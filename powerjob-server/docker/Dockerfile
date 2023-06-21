@@ -3,8 +3,8 @@ FROM adoptopenjdk:8-jdk-hotspot
 # 维护者
 MAINTAINER tengjiqi@gmail.com
 # 下载并安装 maven
-RUN curl -O https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-RUN tar -zxvf apache-maven-3.6.3-bin.tar.gz && mv apache-maven-3.6.3 /opt/powerjob-maven && rm -rf apache-maven-3.6.3-bin.tar.gz
+RUN curl -O https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz
+RUN tar -zxvf apache-maven-3.9.2-bin.tar.gz && mv apache-maven-3.9.2 /opt/powerjob-maven && rm -rf apache-maven-3.9.2-bin.tar.gz
 # 替换 maven 配置文件
 RUN rm -rf /opt/powerjob-maven/conf/settings.xml
 COPY settings.xml /opt/powerjob-maven/conf/settings.xml
