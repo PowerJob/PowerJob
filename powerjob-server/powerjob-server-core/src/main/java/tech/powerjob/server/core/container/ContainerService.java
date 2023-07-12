@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.exception.ImpossibleException;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.model.GitRepoInfo;
 import tech.powerjob.common.request.ServerDeployContainerRequest;
@@ -149,6 +150,8 @@ public class ContainerService {
      */
     public String uploadContainerJarFile(MultipartFile file) throws IOException {
 
+        log.info("[ContainerService] start to uploadContainerJarFile, fileName={},size={}", file.getName(), file.getSize());
+
         String workerDirStr = OmsFileUtils.genTemporaryWorkPath();
         String tmpFileStr = workerDirStr + "tmp.jar";
 
@@ -175,9 +178,14 @@ public class ContainerService {
             }
             FileUtils.moveFile(tmpFile, finalFile);
 
+            log.info("[ContainerService] uploadContainerJarFile successfully,md5={}", md5);
             return md5;
 
-        }finally {
+        } catch (Throwable t) {
+            log.error("[ContainerService] uploadContainerJarFile failed!", t);
+            ExceptionUtils.rethrow(t);
+            throw new ImpossibleException();
+        } finally {
             CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(workerDir));
         }
     }
