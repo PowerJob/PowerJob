@@ -30,6 +30,12 @@ public class ProtocolInfo {
 
     private transient Transporter transporter;
 
+    /**
+     * 序列化需要，必须存在无参构造方法！严禁删除
+     */
+    public ProtocolInfo() {
+    }
+
     public ProtocolInfo(String protocol, String host, int port, Transporter transporter) {
         this.protocol = protocol;
         this.transporter = transporter;
