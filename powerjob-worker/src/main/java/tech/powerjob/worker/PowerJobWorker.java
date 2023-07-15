@@ -3,12 +3,14 @@ package tech.powerjob.worker;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.HttpUtils;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.utils.PropertyUtils;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.ServerType;
 import tech.powerjob.remote.framework.engine.EngineConfig;
@@ -79,9 +81,13 @@ public class PowerJobWorker {
                 log.warn("[PowerJobWorker] using TestMode now, it's dangerous if this is production env.");
             }
 
-            // 初始化元数据
-            String workerAddress = NetUtils.getLocalHost() + ":" + config.getPort();
-            workerRuntime.setWorkerAddress(workerAddress);
+            // 初始化网络数据，区别对待上报地址和本机绑定地址（对外统一使用上报地址）
+            String localBindIp = NetUtils.getLocalHost();
+            int localBindPort = config.getPort();
+            String externalIp = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_ADDRESS, localBindIp);
+            String externalPort = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_PORT, String.valueOf(localBindPort));
+            log.info("[PowerJobWorker] [ADDRESS_INFO] localBindIp: {}, localBindPort: {}; externalIp: {}, externalPort: {}", localBindIp, localBindPort, externalIp, externalPort);
+            workerRuntime.setWorkerAddress(Address.toFullAddress(externalIp, Integer.parseInt(externalPort)));
 
             // 初始化 线程池
             final ExecutorManager executorManager = new ExecutorManager(workerRuntime.getWorkerConfig());
@@ -100,7 +106,7 @@ public class PowerJobWorker {
             EngineConfig engineConfig = new EngineConfig()
                     .setType(config.getProtocol().name())
                     .setServerType(ServerType.WORKER)
-                    .setBindAddress(new Address().setHost(NetUtils.getLocalHost()).setPort(config.getPort()))
+                    .setBindAddress(new Address().setHost(localBindIp).setPort(localBindPort))
                     .setActorList(Lists.newArrayList(taskTrackerActor, processorTrackerActor, workerActor));
 
             EngineOutput engineOutput = remoteEngine.start(engineConfig);
@@ -115,7 +121,7 @@ public class PowerJobWorker {
             log.info("[PowerJobWorker] PowerJobRemoteEngine initialized successfully.");
 
             // 初始化日志系统
-            OmsLogHandler omsLogHandler = new OmsLogHandler(workerAddress, workerRuntime.getTransporter(), serverDiscoveryService);
+            OmsLogHandler omsLogHandler = new OmsLogHandler(workerRuntime.getWorkerAddress(), workerRuntime.getTransporter(), serverDiscoveryService);
             workerRuntime.setOmsLogHandler(omsLogHandler);
 
             // 初始化存储
