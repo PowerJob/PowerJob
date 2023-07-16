@@ -1,11 +1,11 @@
-package tech.powerjob.server.extension.defaultimpl.alarm.impl;
+package tech.powerjob.server.core.alarm.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.utils.HttpUtils;
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
-import tech.powerjob.server.extension.Alarmable;
+import tech.powerjob.server.extension.alarm.AlarmTarget;
+import tech.powerjob.server.extension.alarm.Alarm;
+import tech.powerjob.server.extension.alarm.Alarmable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -29,7 +29,7 @@ public class WebHookAlarmService implements Alarmable {
     private static final String HTTPS_PROTOCOL_PREFIX = "https://";
 
     @Override
-    public void onFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
+    public void onFailed(Alarm alarm, List<AlarmTarget> targetUserList) {
         if (CollectionUtils.isEmpty(targetUserList)) {
             return;
         }

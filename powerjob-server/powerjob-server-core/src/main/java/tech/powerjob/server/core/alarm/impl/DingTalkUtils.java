@@ -1,4 +1,4 @@
-package tech.powerjob.server.extension.defaultimpl.alarm.impl;
+package tech.powerjob.server.core.alarm.impl;
 
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;

@@ -1,10 +1,10 @@
-package tech.powerjob.server.extension.defaultimpl.alarm.impl;
+package tech.powerjob.server.core.alarm.impl;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.apache.commons.lang3.StringUtils;
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
-import tech.powerjob.server.extension.Alarmable;
+import tech.powerjob.server.extension.alarm.AlarmTarget;
+import tech.powerjob.server.extension.alarm.Alarm;
+import tech.powerjob.server.extension.alarm.Alarmable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -36,7 +36,7 @@ public class MailAlarmService implements Alarmable {
     private String from;
 
     @Override
-    public void onFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
+    public void onFailed(Alarm alarm, List<AlarmTarget> targetUserList) {
         if (CollectionUtils.isEmpty(targetUserList) || javaMailSender == null || StringUtils.isEmpty(from)) {
             return;
         }
@@ -44,7 +44,7 @@ public class MailAlarmService implements Alarmable {
         SimpleMailMessage sm = new SimpleMailMessage();
         try {
             sm.setFrom(from);
-            sm.setTo(targetUserList.stream().map(UserInfoDO::getEmail).filter(Objects::nonNull).toArray(String[]::new));
+            sm.setTo(targetUserList.stream().map(AlarmTarget::getEmail).filter(Objects::nonNull).toArray(String[]::new));
             sm.setSubject(alarm.fetchTitle());
             sm.setText(alarm.fetchContent());
 

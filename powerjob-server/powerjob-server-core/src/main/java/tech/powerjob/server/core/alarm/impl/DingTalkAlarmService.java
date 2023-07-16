@@ -1,4 +1,4 @@
-package tech.powerjob.server.extension.defaultimpl.alarm.impl;
+package tech.powerjob.server.core.alarm.impl;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -14,9 +14,9 @@ import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.PowerJobServerConfigKey;
 import tech.powerjob.server.common.SJ;
-import tech.powerjob.server.extension.Alarmable;
-import tech.powerjob.server.extension.defaultimpl.alarm.module.Alarm;
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
+import tech.powerjob.server.extension.alarm.AlarmTarget;
+import tech.powerjob.server.extension.alarm.Alarmable;
+import tech.powerjob.server.extension.alarm.Alarm;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -46,7 +46,7 @@ public class DingTalkAlarmService implements Alarmable {
     private static final String EMPTY_TAG = "EMPTY";
 
     @Override
-    public void onFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
+    public void onFailed(Alarm alarm, List<AlarmTarget> targetUserList) {
         if (dingTalkUtils == null) {
             return;
         }

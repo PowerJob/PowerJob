@@ -1,4 +1,4 @@
-package tech.powerjob.server.extension.defaultimpl.workerfilter;
+package tech.powerjob.server.remote.worker.filter;
 
 import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.server.extension.WorkerFilter;

@@ -1,4 +1,4 @@
-package tech.powerjob.server.extension.defaultimpl;
+package tech.powerjob.server.core.lock;
 
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
