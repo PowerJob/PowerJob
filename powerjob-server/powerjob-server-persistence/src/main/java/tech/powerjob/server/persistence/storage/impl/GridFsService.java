@@ -14,6 +14,7 @@ import com.mongodb.client.gridfs.GridFSFindIterable;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Filters;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.bson.conversions.Bson;
@@ -67,6 +68,7 @@ public class GridFsService extends AbstractDFsService {
     @Override
     public void download(DownloadRequest downloadRequest) throws IOException {
         GridFSBucket bucket = getBucket(downloadRequest.getFileLocation().getBucket());
+        FileUtils.forceMkdirParent(downloadRequest.getTarget());
         try (GridFSDownloadStream gis = bucket.openDownloadStream(downloadRequest.getFileLocation().getName());
              BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(downloadRequest.getTarget().toPath()))
         ) {
@@ -128,7 +130,7 @@ public class GridFsService extends AbstractDFsService {
         return environment.getProperty(SPRING_MONGO_DB_CONFIG_KEY);
     }
 
-    private void initMongo(String uri) {
+    void initMongo(String uri) {
         log.info("[GridFsService] mongoDB uri: {}", uri);
         if (StringUtils.isEmpty(uri)) {
             log.warn("[GridFsService] uri is empty, GridFsService is off now!");
@@ -137,9 +139,14 @@ public class GridFsService extends AbstractDFsService {
 
         ConnectionString connectionString = new ConnectionString(uri);
         mongoClient = MongoClients.create(connectionString);
-        db = mongoClient.getDatabase(Optional.ofNullable(connectionString.getDatabase()).orElse("pj"));
 
-        log.info("[GridFsService] turn on mongodb GridFs as storage layer.");
+        if (StringUtils.isEmpty(connectionString.getDatabase())) {
+            log.warn("[GridFsService] can't find database info from uri, will use [powerjob] as default, please make sure you have created the database 'powerjob'");
+        }
+
+        db = mongoClient.getDatabase(Optional.ofNullable(connectionString.getDatabase()).orElse("powerjob"));
+
+        log.info("[GridFsService] initialize MongoDB and GridFS successfully, will use mongodb GridFs as storage layer.");
     }
 
     @Override
