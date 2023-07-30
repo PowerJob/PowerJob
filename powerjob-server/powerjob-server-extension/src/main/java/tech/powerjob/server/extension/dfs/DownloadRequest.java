@@ -1,6 +1,7 @@
 package tech.powerjob.server.extension.dfs;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.io.File;
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import java.io.Serializable;
  * @since 2023/7/16
  */
 @Data
+@Accessors(chain = true)
 public class DownloadRequest implements Serializable {
 
     private transient File target;

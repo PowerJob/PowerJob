@@ -1,6 +1,7 @@
 package tech.powerjob.server.extension.dfs;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * 文件路径
@@ -9,6 +10,7 @@ import lombok.Data;
  * @since 2023/7/16
  */
 @Data
+@Accessors(chain = true)
 public class FileLocation {
 
     /**

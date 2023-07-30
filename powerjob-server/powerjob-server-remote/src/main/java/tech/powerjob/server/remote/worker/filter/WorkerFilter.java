@@ -1,4 +1,4 @@
-package tech.powerjob.server.extension;
+package tech.powerjob.server.remote.worker.filter;
 
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.common.module.WorkerInfo;

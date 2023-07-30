@@ -26,13 +26,6 @@ public interface DFsService {
     void download(DownloadRequest downloadRequest) throws IOException;
 
     /**
-     * 删除文件
-     * @param fileLocation 文件位置
-     * @throws IOException 异常
-     */
-    void delete(FileLocation fileLocation) throws IOException;
-
-    /**
      * 获取文件元信息
      * @param fileLocation 文件位置
      * @return 存在则返回文件元信息

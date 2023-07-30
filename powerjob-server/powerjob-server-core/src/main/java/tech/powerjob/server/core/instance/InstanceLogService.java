@@ -10,17 +10,17 @@ import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.server.common.constants.PJThreadPool;
+import tech.powerjob.server.extension.dfs.*;
+import tech.powerjob.server.persistence.storage.Constants;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.StringPage;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.local.LocalInstanceLogDO;
 import tech.powerjob.server.persistence.local.LocalInstanceLogRepository;
-import tech.powerjob.server.persistence.mongodb.GridFsManager;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -37,6 +37,7 @@ import javax.annotation.Resource;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -58,7 +59,7 @@ public class InstanceLogService {
     private InstanceMetadataService instanceMetadataService;
 
     @Resource
-    private GridFsManager gridFsManager;
+    private DFsService dFsService;
     /**
      * 本地数据库操作bean
      */
@@ -214,14 +215,16 @@ public class InstanceLogService {
             // 先持久化到本地文件
             File stableLogFile = genStableLogFile(instanceId);
             // 将文件推送到 MongoDB
-            if (gridFsManager.available()) {
-                try {
-                    gridFsManager.store(stableLogFile, GridFsManager.LOG_BUCKET, genMongoFileName(instanceId));
-                    log.info("[InstanceLog-{}] push local instanceLogs to mongoDB succeed, using: {}.", instanceId, sw.stop());
-                }catch (Exception e) {
-                    log.warn("[InstanceLog-{}] push local instanceLogs to mongoDB failed.", instanceId, e);
-                }
+
+            FileLocation dfsFL = new FileLocation().setBucket(Constants.LOG_BUCKET).setName(genMongoFileName(instanceId));
+
+            try {
+                dFsService.store(new StoreRequest().setLocalFile(stableLogFile).setFileLocation(dfsFL));
+                log.info("[InstanceLog-{}] push local instanceLogs to mongoDB succeed, using: {}.", instanceId, sw.stop());
+            }catch (Exception e) {
+                log.warn("[InstanceLog-{}] push local instanceLogs to mongoDB failed.", instanceId, e);
             }
+
         }catch (Exception e) {
             log.warn("[InstanceLog-{}] sync local instanceLogs failed.", instanceId, e);
         }
@@ -291,17 +294,14 @@ public class InstanceLogService {
                         }
                     }else {
 
-                        if (!gridFsManager.available()) {
-                            OmsFileUtils.string2File("SYSTEM: There is no local log for this task now, you need to use mongoDB to store the past logs.", f);
-                            return f;
-                        }
-
-                        // 否则从 mongoDB 拉取数据（对应后期查询的情况）
-                        if (!gridFsManager.exists(GridFsManager.LOG_BUCKET, genMongoFileName(instanceId))) {
+                        FileLocation dfl = new FileLocation().setBucket(Constants.LOG_BUCKET).setName(genMongoFileName(instanceId));
+                        Optional<FileMeta> dflMetaOpt = dFsService.fetchFileMeta(dfl);
+                        if (!dflMetaOpt.isPresent()) {
                             OmsFileUtils.string2File("SYSTEM: There is no online log for this job instance.", f);
                             return f;
                         }
-                        gridFsManager.download(f, GridFsManager.LOG_BUCKET, genMongoFileName(instanceId));
+
+                        dFsService.download(new DownloadRequest().setTarget(f).setFileLocation(dfl));
                     }
                     return f;
                 }catch (Exception e) {

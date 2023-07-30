@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.module.WorkerInfo;
-import tech.powerjob.server.extension.WorkerFilter;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 
 import java.util.Set;
