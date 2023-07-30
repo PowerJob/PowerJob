@@ -139,8 +139,6 @@ public class GridFsService extends AbstractDFsService implements InitializingBea
         MongoClient mongoClient = MongoClients.create(connectionString);
         db = mongoClient.getDatabase(Optional.ofNullable(connectionString.getDatabase()).orElse("pj"));
 
-        turnOn();
-
         log.info("[GridFsService] turn on mongodb GridFs as storage layer.");
     }
 }

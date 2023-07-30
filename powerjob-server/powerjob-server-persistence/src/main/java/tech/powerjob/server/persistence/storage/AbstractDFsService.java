@@ -17,17 +17,7 @@ public abstract class AbstractDFsService implements DFsService, InitializingBean
     @Resource
     protected Environment environment;
 
-    protected boolean active = false;
-
     protected static final String PROPERTY_KEY = "oms.storage.dfs";
-
-    protected boolean active() {
-        return active;
-    }
-
-    protected void turnOn() {
-        active = true;
-    }
 
     protected String fetchProperty(String dfsType, String key) {
         String pKey = String.format("%s.%s.%s", PROPERTY_KEY, dfsType, key);

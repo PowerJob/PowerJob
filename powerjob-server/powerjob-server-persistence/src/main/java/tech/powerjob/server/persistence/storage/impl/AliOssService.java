@@ -9,7 +9,9 @@ import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -27,6 +29,7 @@ import java.util.Optional;
  * <a href="https://www.aliyun.com/product/oss">海量、安全、低成本、高可靠的云存储服务</a>
  * 配置项：
  *  oms.storage.dfs.alioss.endpoint
+ *  oms.storage.dfs.alioss.bucket
  *  oms.storage.dfs.alioss.credential_type
  *  oms.storage.dfs.alioss.ak
  *  oms.storage.dfs.alioss.sk
@@ -44,34 +47,38 @@ public class AliOssService extends AbstractDFsService {
     private static final String TYPE_ALI_OSS = "alioss";
 
     private static final String KEY_ENDPOINT = "endpoint";
+    private static final String KEY_BUCKET = "bucket";
     private static final String KEY_CREDENTIAL_TYPE = "credential_type";
     private static final String KEY_AK = "ak";
     private static final String KEY_SK = "sk";
     private static final String KEY_TOKEN = "token";
 
     private OSS oss;
+    private String bucket;
 
     private static final int DOWNLOAD_PART_SIZE = 10240;
+
+    private static final String NO_SUCH_KEY = "NoSuchKey";
 
     @Override
     public void afterPropertiesSet() throws Exception {
 
         String endpoint = fetchProperty(TYPE_ALI_OSS, KEY_ENDPOINT);
+        String bkt = fetchProperty(TYPE_ALI_OSS, KEY_BUCKET);
         String ct = fetchProperty(TYPE_ALI_OSS, KEY_CREDENTIAL_TYPE);
         String ak = fetchProperty(TYPE_ALI_OSS, KEY_AK);
         String sk = fetchProperty(TYPE_ALI_OSS, KEY_SK);
         String token = fetchProperty(TYPE_ALI_OSS, KEY_TOKEN);
 
-        initOssClient(endpoint, ct, ak, sk, token);
+        initOssClient(endpoint, bkt, ct, ak, sk, token);
     }
 
     @Override
     public void store(StoreRequest storeRequest) throws IOException {
 
-        FileLocation dfl = storeRequest.getFileLocation();
         ObjectMetadata objectMetadata = new ObjectMetadata();
 
-        PutObjectRequest putObjectRequest = new PutObjectRequest(dfl.getBucket(), dfl.getName(), storeRequest.getLocalFile(), objectMetadata);
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, parseFileName(storeRequest.getFileLocation()), storeRequest.getLocalFile(), objectMetadata);
         oss.putObject(putObjectRequest);
     }
 
@@ -79,8 +86,9 @@ public class AliOssService extends AbstractDFsService {
     public void download(DownloadRequest downloadRequest) throws IOException {
 
         FileLocation dfl = downloadRequest.getFileLocation();
-        DownloadFileRequest downloadFileRequest = new DownloadFileRequest(dfl.getBucket(), dfl.getName(), downloadRequest.getTarget().getAbsolutePath(), DOWNLOAD_PART_SIZE);
+        DownloadFileRequest downloadFileRequest = new DownloadFileRequest(bucket, parseFileName(dfl), downloadRequest.getTarget().getAbsolutePath(), DOWNLOAD_PART_SIZE);
         try {
+            FileUtils.forceMkdirParent(downloadRequest.getTarget());
             oss.downloadFile(downloadFileRequest);
         } catch (Throwable t) {
             ExceptionUtils.rethrow(t);
@@ -90,7 +98,7 @@ public class AliOssService extends AbstractDFsService {
     @Override
     public Optional<FileMeta> fetchFileMeta(FileLocation fileLocation) throws IOException {
         try {
-            ObjectMetadata objectMetadata = oss.getObjectMetadata(fileLocation.getBucket(), fileLocation.getName());
+            ObjectMetadata objectMetadata = oss.getObjectMetadata(bucket, parseFileName(fileLocation));
             return Optional.ofNullable(objectMetadata).map(ossM -> {
 
                 Map<String, Object> metaInfo = Maps.newHashMap();
@@ -105,14 +113,28 @@ public class AliOssService extends AbstractDFsService {
                         .setMetaInfo(metaInfo);
             });
         } catch (OSSException oe) {
-            // TODO: 判断文件不存在
+            String errorCode = oe.getErrorCode();
+            if (NO_SUCH_KEY.equalsIgnoreCase(errorCode)) {
+                return Optional.empty();
+            }
+            ExceptionUtils.rethrow(oe);
         }
         return Optional.empty();
     }
 
-    void initOssClient(String endpoint, String mode, String ak, String sk, String token) throws Exception {
+    private static String parseFileName(FileLocation fileLocation) {
+        return String.format("%s/%s", fileLocation.getBucket(), fileLocation.getName());
+    }
 
-        log.info("[AliOssService] init OSS by config: {},{},{},{},{}", endpoint, mode, ak, sk, token);
+    void initOssClient(String endpoint, String bucket, String mode, String ak, String sk, String token) throws Exception {
+
+        log.info("[AliOssService] init OSS by config: endpoint={},bucket={},credentialType={},ak={},sk={},token={}", endpoint, bucket, mode, ak, sk, token);
+
+        if (StringUtils.isEmpty(bucket)) {
+            throw new IllegalArgumentException("'oms.storage.dfs.alioss.bucket' can't be empty, please creat a bucket in aliyun oss console then config it to powerjob");
+        }
+
+        this.bucket = bucket;
 
         CredentialsProvider credentialsProvider;
         CredentialType credentialType = CredentialType.parse(mode);
@@ -131,7 +153,16 @@ public class AliOssService extends AbstractDFsService {
         log.info("[AliOssService] initialize OSS successfully!");
     }
 
+    @Override
+    public void cleanExpiredFiles(String bucket, int days) {
+        /*
+        阿里云 OSS 自带生命周期管理，请参考文档进行配置，代码层面不进行实现（浪费服务器资源）https://help.aliyun.com/zh/oss/user-guide/overview-54
+        阿里云 OSS 自带生命周期管理，请参考文档进行配置，代码层面不进行实现（浪费服务器资源）https://help.aliyun.com/zh/oss/user-guide/overview-54
+        阿里云 OSS 自带生命周期管理，请参考文档进行配置，代码层面不进行实现（浪费服务器资源）https://help.aliyun.com/zh/oss/user-guide/overview-54
+         */
+    }
 
+    @Getter
     @AllArgsConstructor
     enum CredentialType {
         /**

@@ -18,7 +18,7 @@ import java.util.Optional;
 @Service
 @Order(value = Ordered.LOWEST_PRECEDENCE)
 @ConditionalOnMissingBean(DFsService.class)
-public class EmptyDFsService implements DFsService, {
+public class EmptyDFsService implements DFsService {
 
     public EmptyDFsService() {
     }
