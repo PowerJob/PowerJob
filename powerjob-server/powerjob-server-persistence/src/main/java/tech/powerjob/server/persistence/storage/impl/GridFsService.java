@@ -83,6 +83,7 @@ public class GridFsService extends AbstractDFsService implements InitializingBea
         }
         return Optional.of(new FileMeta()
                 .setLength(first.getLength())
+                .setLastModifiedTime(first.getUploadDate())
                 .setMetaInfo(first.getMetadata()));
     }
 
@@ -109,7 +110,25 @@ public class GridFsService extends AbstractDFsService implements InitializingBea
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String uri = parseMongoUri(environment);
+        String uri = parseMongoUri();
+        initMongo(uri);
+    }
+
+    private GridFSBucket getBucket(String bucketName) {
+        return bucketCache.computeIfAbsent(bucketName, ignore -> GridFSBuckets.create(db, bucketName));
+    }
+
+    private String parseMongoUri() {
+        // 优先从新的规则读取
+        String uri = fetchProperty(TYPE_MONGO, "uri");
+        if (StringUtils.isNotEmpty(uri)) {
+            return uri;
+        }
+        // 兼容 4.3.3 前的逻辑，读取 SpringMongoDB 配置
+        return environment.getProperty(SPRING_MONGO_DB_CONFIG_KEY);
+    }
+
+    private void initMongo(String uri) {
         log.info("[GridFsService] mongoDB uri: {}", uri);
         if (StringUtils.isEmpty(uri)) {
             log.warn("[GridFsService] uri is empty, GridFsService is off now!");
@@ -123,19 +142,5 @@ public class GridFsService extends AbstractDFsService implements InitializingBea
         turnOn();
 
         log.info("[GridFsService] turn on mongodb GridFs as storage layer.");
-    }
-
-    private GridFSBucket getBucket(String bucketName) {
-        return bucketCache.computeIfAbsent(bucketName, ignore -> GridFSBuckets.create(db, bucketName));
-    }
-
-    static String parseMongoUri(Environment environment) {
-        // 优先从新的规则读取
-        String uri = fetchProperty(environment, TYPE_MONGO, "uri");
-        if (StringUtils.isNotEmpty(uri)) {
-            return uri;
-        }
-        // 兼容 4.3.3 前的逻辑，读取 SpringMongoDB 配置
-        return environment.getProperty(SPRING_MONGO_DB_CONFIG_KEY);
     }
 }

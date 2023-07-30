@@ -54,6 +54,7 @@
         <powerjob-remote-impl-http.version>4.3.3</powerjob-remote-impl-http.version>
         <powerjob-remote-impl-akka.version>4.3.3</powerjob-remote-impl-akka.version>
         <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
+        <aliyun-sdk-oss.version>3.17.1</aliyun-sdk-oss.version>
     </properties>
 
     <dependencyManagement>
@@ -99,11 +100,17 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync -->
+            <!-- 存储扩展-MongoDB，未使用可移除 -->
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongodb-driver-sync</artifactId>
                 <version>${mongodb-driver-sync.version}</version>
+            </dependency>
+            <!-- 存储扩展-阿里云OSS，未使用可移除 -->
+            <dependency>
+                <groupId>com.aliyun.oss</groupId>
+                <artifactId>aliyun-sdk-oss</artifactId>
+                <version>${aliyun-sdk-oss.version}</version>
             </dependency>
 
         </dependencies>

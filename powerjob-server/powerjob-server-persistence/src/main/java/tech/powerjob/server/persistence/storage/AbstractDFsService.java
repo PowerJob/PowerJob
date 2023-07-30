@@ -29,7 +29,7 @@ public abstract class AbstractDFsService implements DFsService, InitializingBean
         active = true;
     }
 
-    protected static String fetchProperty(Environment environment, String dfsType, String key) {
+    protected String fetchProperty(String dfsType, String key) {
         String pKey = String.format("%s.%s.%s", PROPERTY_KEY, dfsType, key);
         return environment.getProperty(pKey);
     }
