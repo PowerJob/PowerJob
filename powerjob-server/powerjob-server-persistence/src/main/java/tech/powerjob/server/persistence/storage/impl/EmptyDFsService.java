@@ -1,12 +1,14 @@
 package tech.powerjob.server.persistence.storage.impl;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Conditional;
 import tech.powerjob.server.extension.dfs.*;
+import tech.powerjob.server.persistence.storage.AbstractDFsService;
+import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
 
+import javax.annotation.Priority;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,13 +17,10 @@ import java.util.Optional;
  * @author tjq
  * @since 2023/7/30
  */
-@Service
-@Order(value = Ordered.LOWEST_PRECEDENCE)
-@ConditionalOnMissingBean(DFsService.class)
-public class EmptyDFsService implements DFsService {
+@Priority(value = Integer.MAX_VALUE)
+@Conditional(EmptyDFsService.EmptyCondition.class)
+public class EmptyDFsService extends AbstractDFsService {
 
-    public EmptyDFsService() {
-    }
 
     @Override
     public void store(StoreRequest storeRequest) throws IOException {
@@ -34,5 +33,27 @@ public class EmptyDFsService implements DFsService {
     @Override
     public Optional<FileMeta> fetchFileMeta(FileLocation fileLocation) throws IOException {
         return Optional.empty();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+    }
+
+    @Override
+    protected void init(ApplicationContext applicationContext) {
+
+    }
+
+
+    public static class EmptyCondition extends PropertyAndOneBeanCondition {
+        @Override
+        protected List<String> anyConfigKey() {
+            return null;
+        }
+
+        @Override
+        protected Class<?> beanType() {
+            return DFsService.class;
+        }
     }
 }

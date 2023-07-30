@@ -1,6 +1,7 @@
 package tech.powerjob.server.persistence.storage.impl;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
@@ -17,17 +18,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
 import tech.powerjob.server.extension.dfs.*;
 import tech.powerjob.server.persistence.storage.AbstractDFsService;
+import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
 
-import java.io.*;
+import javax.annotation.Priority;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -39,14 +43,16 @@ import java.util.Optional;
  * @since 2023/7/28
  */
 @Slf4j
-@Service
-@ConditionalOnProperty(name = {"oms.storage.dfs.mongodb.uri", "spring.data.mongodb.uri"}, matchIfMissing = false)
-@ConditionalOnMissingBean(DFsService.class)
-public class GridFsService extends AbstractDFsService implements InitializingBean {
+@Priority(value = Integer.MAX_VALUE - 10)
+@Conditional(GridFsService.GridFsCondition.class)
+public class GridFsService extends AbstractDFsService {
 
+    private MongoClient mongoClient;
     private MongoDatabase db;
     private final Map<String, GridFSBucket> bucketCache = Maps.newConcurrentMap();
     private static final String TYPE_MONGO = "mongodb";
+
+    private static final String KEY_URI = "uri";
 
     private static final String SPRING_MONGO_DB_CONFIG_KEY = "spring.data.mongodb.uri";
 
@@ -108,19 +114,13 @@ public class GridFsService extends AbstractDFsService implements InitializingBea
         log.info("[GridFsService] clean bucket({}) successfully, delete all files before {}, using {}.", bucketName, date, sw.stop());
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        String uri = parseMongoUri();
-        initMongo(uri);
-    }
-
     private GridFSBucket getBucket(String bucketName) {
         return bucketCache.computeIfAbsent(bucketName, ignore -> GridFSBuckets.create(db, bucketName));
     }
 
-    private String parseMongoUri() {
+    private String parseMongoUri(Environment environment) {
         // 优先从新的规则读取
-        String uri = fetchProperty(TYPE_MONGO, "uri");
+        String uri = fetchProperty(environment, TYPE_MONGO, KEY_URI);
         if (StringUtils.isNotEmpty(uri)) {
             return uri;
         }
@@ -136,9 +136,32 @@ public class GridFsService extends AbstractDFsService implements InitializingBea
         }
 
         ConnectionString connectionString = new ConnectionString(uri);
-        MongoClient mongoClient = MongoClients.create(connectionString);
+        mongoClient = MongoClients.create(connectionString);
         db = mongoClient.getDatabase(Optional.ofNullable(connectionString.getDatabase()).orElse("pj"));
 
         log.info("[GridFsService] turn on mongodb GridFs as storage layer.");
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        mongoClient.close();
+    }
+
+    @Override
+    protected void init(ApplicationContext applicationContext) {
+        String uri = parseMongoUri(applicationContext.getEnvironment());
+        initMongo(uri);
+    }
+
+    public static class GridFsCondition extends PropertyAndOneBeanCondition {
+        @Override
+        protected List<String> anyConfigKey() {
+            return Lists.newArrayList("spring.data.mongodb.uri", "oms.storage.dfs.mongo.uri");
+        }
+
+        @Override
+        protected Class<?> beanType() {
+            return DFsService.class;
+        }
     }
 }

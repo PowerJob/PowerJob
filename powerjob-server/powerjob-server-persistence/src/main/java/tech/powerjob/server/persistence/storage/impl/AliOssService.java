@@ -1,12 +1,15 @@
 package tech.powerjob.server.persistence.storage.impl;
 
-import com.aliyun.oss.*;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.OSSException;
 import com.aliyun.oss.common.auth.CredentialsProvider;
 import com.aliyun.oss.common.auth.CredentialsProviderFactory;
 import com.aliyun.oss.common.auth.DefaultCredentialProvider;
 import com.aliyun.oss.model.DownloadFileRequest;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,13 +17,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.core.env.Environment;
 import tech.powerjob.server.extension.dfs.*;
 import tech.powerjob.server.persistence.storage.AbstractDFsService;
+import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
 
+import javax.annotation.Priority;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -39,9 +45,8 @@ import java.util.Optional;
  * @since 2023/7/30
  */
 @Slf4j
-@Service
-@ConditionalOnProperty(name = {"oms.storage.dfs.alioss.endpoint"}, matchIfMissing = false)
-@ConditionalOnMissingBean(DFsService.class)
+@Priority(value = Integer.MAX_VALUE - 1)
+@Conditional(AliOssService.AliOssCondition.class)
 public class AliOssService extends AbstractDFsService {
 
     private static final String TYPE_ALI_OSS = "alioss";
@@ -59,19 +64,6 @@ public class AliOssService extends AbstractDFsService {
     private static final int DOWNLOAD_PART_SIZE = 10240;
 
     private static final String NO_SUCH_KEY = "NoSuchKey";
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-
-        String endpoint = fetchProperty(TYPE_ALI_OSS, KEY_ENDPOINT);
-        String bkt = fetchProperty(TYPE_ALI_OSS, KEY_BUCKET);
-        String ct = fetchProperty(TYPE_ALI_OSS, KEY_CREDENTIAL_TYPE);
-        String ak = fetchProperty(TYPE_ALI_OSS, KEY_AK);
-        String sk = fetchProperty(TYPE_ALI_OSS, KEY_SK);
-        String token = fetchProperty(TYPE_ALI_OSS, KEY_TOKEN);
-
-        initOssClient(endpoint, bkt, ct, ak, sk, token);
-    }
 
     @Override
     public void store(StoreRequest storeRequest) throws IOException {
@@ -162,6 +154,29 @@ public class AliOssService extends AbstractDFsService {
          */
     }
 
+    @Override
+    public void destroy() throws Exception {
+        oss.shutdown();
+    }
+
+    @Override
+    protected void init(ApplicationContext applicationContext) {
+        Environment environment = applicationContext.getEnvironment();
+
+        String endpoint = fetchProperty(environment, TYPE_ALI_OSS, KEY_ENDPOINT);
+        String bkt = fetchProperty(environment, TYPE_ALI_OSS, KEY_BUCKET);
+        String ct = fetchProperty(environment, TYPE_ALI_OSS, KEY_CREDENTIAL_TYPE);
+        String ak = fetchProperty(environment, TYPE_ALI_OSS, KEY_AK);
+        String sk = fetchProperty(environment, TYPE_ALI_OSS, KEY_SK);
+        String token = fetchProperty(environment, TYPE_ALI_OSS, KEY_TOKEN);
+
+        try {
+            initOssClient(endpoint, bkt, ct, ak, sk, token);
+        } catch (Exception e) {
+            ExceptionUtils.rethrow(e);
+        }
+    }
+
     @Getter
     @AllArgsConstructor
     enum CredentialType {
@@ -197,5 +212,18 @@ public class AliOssService extends AbstractDFsService {
             return PWD;
         }
 
+    }
+
+    public static class AliOssCondition extends PropertyAndOneBeanCondition {
+
+        @Override
+        protected List<String> anyConfigKey() {
+            return Lists.newArrayList("oms.storage.dfs.alioss.endpoint");
+        }
+
+        @Override
+        protected Class<?> beanType() {
+            return DFsService.class;
+        }
     }
 }
