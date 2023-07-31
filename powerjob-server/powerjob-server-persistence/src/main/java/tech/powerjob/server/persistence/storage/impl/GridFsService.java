@@ -163,7 +163,7 @@ public class GridFsService extends AbstractDFsService {
     public static class GridFsCondition extends PropertyAndOneBeanCondition {
         @Override
         protected List<String> anyConfigKey() {
-            return Lists.newArrayList("spring.data.mongodb.uri", "oms.storage.dfs.mongo.uri");
+            return Lists.newArrayList("spring.data.mongodb.uri", "oms.storage.dfs.mongodb.uri");
         }
 
         @Override

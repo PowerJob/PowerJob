@@ -20,6 +20,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.SpringUtils;
+import tech.powerjob.server.core.alarm.AlarmUtils;
 import tech.powerjob.server.core.helper.StatusMappingHelper;
 import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.core.service.UserService;
@@ -458,7 +459,7 @@ public class WorkflowInstanceManager {
                     content.setResult(result);
 
                     List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
-                    alarmCenter.alarmFailed(content, userList);
+                    alarmCenter.alarmFailed(content, AlarmUtils.convertUserInfoList2AlarmTargetList(userList));
                 });
             } catch (Exception ignore) {
                 // ignore

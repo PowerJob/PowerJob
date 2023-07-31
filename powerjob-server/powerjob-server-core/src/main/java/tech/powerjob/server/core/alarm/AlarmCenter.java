@@ -1,19 +1,19 @@
 package tech.powerjob.server.core.alarm;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-import tech.powerjob.server.extension.alarm.Alarm;
-import tech.powerjob.server.extension.alarm.AlarmTarget;
-import tech.powerjob.server.extension.alarm.Alarmable;
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import tech.powerjob.server.extension.alarm.Alarm;
+import tech.powerjob.server.extension.alarm.AlarmTarget;
+import tech.powerjob.server.extension.alarm.Alarmable;
 
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 报警服务
@@ -40,21 +40,13 @@ public class AlarmCenter {
         });
     }
 
-    public void alarmFailed(Alarm alarm, List<UserInfoDO> targetUserList) {
+    public void alarmFailed(Alarm alarm, List<AlarmTarget> alarmTargets) {
         POOL.execute(() -> BEANS.forEach(alarmable -> {
             try {
-                alarmable.onFailed(alarm, targetUserList.stream().map(AlarmCenter::convertUserInfo2AlarmTarget).collect(Collectors.toList()));
+                alarmable.onFailed(alarm, alarmTargets);
             }catch (Exception e) {
                 log.warn("[AlarmCenter] alarm failed.", e);
             }
         }));
-    }
-
-    private static AlarmTarget convertUserInfo2AlarmTarget(UserInfoDO userInfoDO) {
-        AlarmTarget alarmTarget = new AlarmTarget();
-        BeanUtils.copyProperties(userInfoDO, alarmTarget);
-
-        alarmTarget.setName(userInfoDO.getUsername());
-        return alarmTarget;
     }
 }

@@ -1,6 +1,7 @@
 package tech.powerjob.server.core.alarm.module;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 import tech.powerjob.server.extension.alarm.Alarm;
 
 /**
@@ -10,6 +11,7 @@ import tech.powerjob.server.extension.alarm.Alarm;
  * @since 2020/4/30
  */
 @Data
+@Accessors(chain = true)
 public class JobInstanceAlarm implements Alarm {
     /**
      * 应用ID
