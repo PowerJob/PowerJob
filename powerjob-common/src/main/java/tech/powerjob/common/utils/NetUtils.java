@@ -155,6 +155,9 @@ public class NetUtils {
             log.warn("[Net] findNetworkInterface failed", e);
         }
 
+        // sort by interface index, the smaller is preferred.
+        validNetworkInterfaces.sort(Comparator.comparingInt(NetworkInterface::getIndex));
+
         // Try to find the preferred one
         for (NetworkInterface networkInterface : validNetworkInterfaces) {
             if (isPreferredNetworkInterface(networkInterface)) {
