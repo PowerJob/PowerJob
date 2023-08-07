@@ -16,8 +16,8 @@ import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.transporter.ProtocolInfo;
-import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.transporter.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 
 import java.util.Date;
 import java.util.Optional;
@@ -48,6 +48,12 @@ public class ServerElectionService {
     private static final long PING_TIMEOUT_MS = 1000;
     private static final String SERVER_ELECT_LOCK = "server_elect_%d";
 
+    /**
+     * 强制指定服务端访问地址
+     */
+    @Value("${oms.transporter.server-address:}")
+    private String serverAddress;
+
     public ServerElectionService(LockService lockService, TransportService transportService, AppInfoRepository appInfoRepository,@Value("${oms.accurate.select.server.percentage}") int accurateSelectServerPercentage) {
         this.lockService = lockService;
         this.transportService = transportService;
@@ -67,7 +73,10 @@ public class ServerElectionService {
                 }
             }
         }
-        return getServer0(request);
+        // 获取服务端地址
+        String serverAddress = getServer0(request);
+        // 返回处理后的地址
+        return this.addressProcessing( serverAddress );
     }
 
     private String getServer0(ServerDiscoveryRequest discoveryRequest) {
@@ -177,4 +186,24 @@ public class ServerElectionService {
     private boolean accurate() {
         return ThreadLocalRandom.current().nextInt(100) < accurateSelectServerPercentage;
     }
+
+
+    /**
+     * <h3>服务端http、akka统一地址处理</h3>
+     * <pre>
+     *     1. 当强制指定服务端地址时，转换成强制的服务端地址；
+     *     2. 以下情况时需要指定服务端ip：
+     *          .使用外部负载均衡选择服务端时；
+     *          .使用docker仅部署powerjob-server服务端时；
+     * </pre>
+     *
+     * @param serverAddress 源地址
+     * */
+    private String addressProcessing(String serverAddress){
+        if(StringUtils.isNotBlank(this.serverAddress)){
+            return this.serverAddress + ":" + serverAddress.split(":")[1];
+        }
+        return serverAddress;
+    }
+
 }
