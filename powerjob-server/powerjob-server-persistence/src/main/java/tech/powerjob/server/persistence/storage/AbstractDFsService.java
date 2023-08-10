@@ -17,6 +17,8 @@ import tech.powerjob.server.extension.dfs.DFsService;
 @Slf4j
 public abstract class AbstractDFsService implements DFsService, ApplicationContextAware, DisposableBean {
 
+    protected ApplicationContext applicationContext;
+
     public AbstractDFsService() {
         log.info("[DFsService] invoke [{}]'s constructor", this.getClass().getName());
     }
@@ -32,6 +34,7 @@ public abstract class AbstractDFsService implements DFsService, ApplicationConte
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
         log.info("[DFsService] invoke [{}]'s setApplicationContext", this.getClass().getName());
         init(applicationContext);
     }

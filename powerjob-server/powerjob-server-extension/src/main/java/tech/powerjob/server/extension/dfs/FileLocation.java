@@ -1,6 +1,7 @@
 package tech.powerjob.server.extension.dfs;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 /**
@@ -9,7 +10,8 @@ import lombok.experimental.Accessors;
  * @author tjq
  * @since 2023/7/16
  */
-@Data
+@Getter
+@Setter
 @Accessors(chain = true)
 public class FileLocation {
 
@@ -22,4 +24,9 @@ public class FileLocation {
      * 名称
      */
     private String name;
+
+    @Override
+    public String toString() {
+        return String.format("%s.%s", bucket, name);
+    }
 }

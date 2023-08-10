@@ -10,6 +10,7 @@ import tech.powerjob.server.extension.dfs.*;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * AbstractDfsServiceTest
@@ -32,7 +33,7 @@ public abstract class AbstractDfsServiceTest {
 
         DFsService aliOssService = aliOssServiceOpt.get();
 
-        String content = "wlcgyqsl";
+        String content = "wlcgyqsl".concat(String.valueOf(ThreadLocalRandom.current().nextLong()));
 
         String temporarySourcePath = OmsFileUtils.genTemporaryWorkPath() + "source.txt";
         String temporaryDownloadPath = OmsFileUtils.genTemporaryWorkPath() + "download.txt";
@@ -42,7 +43,7 @@ public abstract class AbstractDfsServiceTest {
         FileUtils.forceMkdirParent(sourceFile);
         OmsFileUtils.string2File(content, sourceFile);
 
-        FileLocation fileLocation = new FileLocation().setBucket("pj_test").setName("testAliOss.txt");
+        FileLocation fileLocation = new FileLocation().setBucket("pj_test").setName(String.format("test_%d.txt", ThreadLocalRandom.current().nextLong()));
 
         StoreRequest storeRequest = new StoreRequest()
                 .setFileLocation(fileLocation)
