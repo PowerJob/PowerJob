@@ -5,7 +5,7 @@
     <parent>
         <artifactId>powerjob-server</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.3</version>
+        <version>4.3.4</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -25,7 +25,20 @@
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-extension</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-monitor</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
         </dependency>
     </dependencies>
 

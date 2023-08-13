@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.3</version>
+        <version>4.3.4</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.3.3</version>
+    <version>4.3.4</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -35,6 +35,7 @@
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
         <postgresql.version>42.2.14</postgresql.version>
         <h2.db.version>2.1.214</h2.db.version>
+        <mongodb-driver-sync.version>4.10.2</mongodb-driver-sync.version>
 
         <zip4j.version>2.11.2</zip4j.version>
         <jgit.version>5.7.0.202003110725-r</jgit.version>
@@ -49,10 +50,12 @@
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.1.6</cron-utils.version>
 
-        <powerjob-common.version>4.3.3</powerjob-common.version>
-        <powerjob-remote-impl-http.version>4.3.3</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>4.3.3</powerjob-remote-impl-akka.version>
+        <powerjob-common.version>4.3.4</powerjob-common.version>
+        <powerjob-remote-impl-http.version>4.3.4</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>4.3.4</powerjob-remote-impl-akka.version>
         <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
+        <aliyun-sdk-oss.version>3.17.1</aliyun-sdk-oss.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
     </properties>
 
     <dependencyManagement>
@@ -97,6 +100,28 @@
                 <artifactId>powerjob-server-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- 存储扩展-MongoDB，未使用可移除 -->
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver-sync</artifactId>
+                <version>${mongodb-driver-sync.version}</version>
+            </dependency>
+            <!-- 存储扩展-阿里云OSS，未使用可移除 -->
+            <dependency>
+                <groupId>com.aliyun.oss</groupId>
+                <artifactId>aliyun-sdk-oss</artifactId>
+                <version>${aliyun-sdk-oss.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
@@ -186,11 +211,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>${springboot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
             <version>${springboot.version}</version>
         </dependency>
         <dependency>
