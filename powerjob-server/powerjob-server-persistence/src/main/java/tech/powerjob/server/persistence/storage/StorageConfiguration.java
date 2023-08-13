@@ -10,7 +10,7 @@ import tech.powerjob.server.persistence.storage.impl.GridFsService;
 import tech.powerjob.server.persistence.storage.impl.MySqlSeriesDfsService;
 
 /**
- * Description
+ * 初始化内置的存储服务
  *
  * @author tjq
  * @since 2023/7/30

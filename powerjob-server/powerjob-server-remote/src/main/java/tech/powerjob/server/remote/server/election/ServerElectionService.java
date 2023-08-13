@@ -160,7 +160,8 @@ public class ServerElectionService {
                     downServerCache.remove(serverAddress);
                     ProtocolInfo remoteProtocol = protocolInfo.toJavaObject(ProtocolInfo.class);
                     log.info("[ServerElection] server[{}] is active, it will be the master, final protocol={}", serverAddress, remoteProtocol);
-                    return remoteProtocol.getExternalAddress();
+                    // 4.3.3 升级 4.3.4 过程中，未升级的 server 还不存在 externalAddress，需要使用 address 兼容
+                    return Optional.ofNullable(remoteProtocol.getExternalAddress()).orElse(remoteProtocol.getAddress());
                 } else {
                     log.warn("[ServerElection] server[{}] is active but don't have target protocol", serverAddress);
                 }
