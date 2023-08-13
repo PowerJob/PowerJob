@@ -11,10 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.core.env.Environment;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
 import tech.powerjob.server.extension.dfs.*;
@@ -103,25 +105,25 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
 
     private static final String INSERT_SQL = "insert into %s(bucket, name, version, meta, length, status, data, extra, gmt_create, gmt_modified) values (?,?,?,?,?,?,?,?,?,?);";
 
-    private static final String DELETE_SQL = "DELETE FROM %s";
+    private static final String DELETE_SQL = "DELETE FROM %s ";
 
     private static final String QUERY_FULL_SQL = "select * from %s";
 
     private static final String QUERY_META_SQL = "select bucket, name, version, meta, length, status, extra, gmt_create, gmt_modified from %s";
 
+
     private void deleteByLocation(FileLocation fileLocation) {
         String dSQLPrefix = fullSQL(DELETE_SQL);
+        String dSQL = dSQLPrefix.concat(whereSQL(fileLocation));
+        executeDelete(dSQL);
+    }
 
+    private void executeDelete(String sql) {
         try (Connection con = dataSource.getConnection()) {
-
-            String dSQL = dSQLPrefix.concat(whereSQL(fileLocation));
-
-            con.createStatement().executeUpdate(dSQL);
-
+            con.createStatement().executeUpdate(sql);
         }  catch (Exception e) {
-            log.error("[MySqlSeriesDfsService] deleteByLocation [{}] failed!", fileLocation);
+            log.error("[MySqlSeriesDfsService] executeDelete failed, sql: {}", sql);
         }
-
     }
 
     @Override
@@ -224,6 +226,20 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public void cleanExpiredFiles(String bucket, int days) {
+
+        // 虽然官方提供了服务端删除的能力，依然强烈建议用户直接在数据库层面配置清理事件！！！
+
+        String dSQLPrefix = fullSQL(DELETE_SQL);
+        final long targetTs = DateUtils.addDays(new Date(System.currentTimeMillis()), -days).getTime();
+        final String targetDeleteTime = CommonUtils.formatTime(targetTs);
+        log.info("[MySqlSeriesDfsService] start to cleanExpiredFiles, targetDeleteTime: {}", targetDeleteTime);
+        String fSQL = dSQLPrefix.concat(String.format(" where gmt_modified < '%s'", targetDeleteTime));
+        log.info("[MySqlSeriesDfsService] cleanExpiredFiles SQL: {}", fSQL);
+        executeDelete(fSQL);
     }
 
     @Override

@@ -7,6 +7,7 @@ import tech.powerjob.server.extension.dfs.DFsService;
 import tech.powerjob.server.persistence.storage.impl.AliOssService;
 import tech.powerjob.server.persistence.storage.impl.EmptyDFsService;
 import tech.powerjob.server.persistence.storage.impl.GridFsService;
+import tech.powerjob.server.persistence.storage.impl.MySqlSeriesDfsService;
 
 /**
  * Description
@@ -21,6 +22,12 @@ public class StorageConfiguration {
     @Conditional(GridFsService.GridFsCondition.class)
     public DFsService initGridFs() {
         return new GridFsService();
+    }
+
+    @Bean
+    @Conditional(MySqlSeriesDfsService.MySqlSeriesCondition.class)
+    public DFsService initDbFs() {
+        return new MySqlSeriesDfsService();
     }
 
     @Bean

@@ -21,6 +21,8 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 public abstract class AbstractDfsServiceTest {
 
+    private static final String BUCKET = "pj_test";
+
     abstract protected Optional<DFsService> fetchService();
 
     @Test
@@ -43,7 +45,7 @@ public abstract class AbstractDfsServiceTest {
         FileUtils.forceMkdirParent(sourceFile);
         OmsFileUtils.string2File(content, sourceFile);
 
-        FileLocation fileLocation = new FileLocation().setBucket("pj_test").setName(String.format("test_%d.txt", ThreadLocalRandom.current().nextLong()));
+        FileLocation fileLocation = new FileLocation().setBucket(BUCKET).setName(String.format("test_%d.txt", ThreadLocalRandom.current().nextLong()));
 
         StoreRequest storeRequest = new StoreRequest()
                 .setFileLocation(fileLocation)
@@ -69,6 +71,9 @@ public abstract class AbstractDfsServiceTest {
         String downloadFileContent = FileUtils.readFileToString(downloadFile, StandardCharsets.UTF_8);
         log.info("[testBaseFileOperation] download content: {}", downloadFileContent);
         assert downloadFileContent.equals(content);
+
+        // 定时清理，只是执行，不校验
+        aliOssService.cleanExpiredFiles(BUCKET, 3);
     }
 
     @Test
