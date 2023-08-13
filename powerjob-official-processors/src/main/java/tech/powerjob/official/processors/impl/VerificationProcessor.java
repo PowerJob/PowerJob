@@ -76,7 +76,10 @@ public class VerificationProcessor extends CommonBasicProcessor implements MapRe
                 }
         }
 
-        return new ProcessResult(true, "EXECUTE_SUCCESSFULLY_" + RandomStringUtils.randomAlphanumeric(Optional.ofNullable(verificationParam.getResponseSize()).orElse(10)));
+
+        String randomMsg = RandomStringUtils.randomAlphanumeric(Optional.ofNullable(verificationParam.getResponseSize()).orElse(10));
+        omsLogger.info("generate random string: {}", randomMsg);
+        return new ProcessResult(true, "EXECUTE_SUCCESSFULLY_" + randomMsg);
     }
 
     @Override
@@ -87,6 +90,7 @@ public class VerificationProcessor extends CommonBasicProcessor implements MapRe
     enum Mode {
         /**
          * 常规模式，直接返回响应
+         * {"mode":"BASE","responseSize":12}
          */
         BASE,
         /**

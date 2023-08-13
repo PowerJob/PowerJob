@@ -73,6 +73,7 @@ public abstract class TaskTracker {
         instanceInfo.setThreadConcurrency(req.getThreadConcurrency());
         instanceInfo.setTaskRetryNum(req.getTaskRetryNum());
         instanceInfo.setLogConfig(req.getLogConfig());
+        instanceInfo.setInstanceTimeoutMS(req.getInstanceTimeoutMS());
 
         // 特殊处理超时时间
         if (instanceInfo.getInstanceTimeoutMS() <= 0) {
