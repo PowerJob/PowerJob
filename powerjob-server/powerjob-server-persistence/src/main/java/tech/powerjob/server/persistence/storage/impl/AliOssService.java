@@ -142,7 +142,7 @@ public class AliOssService extends AbstractDFsService {
         }
 
         this.oss = new OSSClientBuilder().build(endpoint, credentialsProvider);
-        log.info("[AliOssService] initialize OSS successfully!");
+        log.info("[AliOssService] initialize successfully, THIS_WILL_BE_THE_STORAGE_LAYER.");
     }
 
     @Override

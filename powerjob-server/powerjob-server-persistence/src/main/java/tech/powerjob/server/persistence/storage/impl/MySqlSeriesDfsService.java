@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.core.env.Environment;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
 import tech.powerjob.server.extension.dfs.*;
@@ -35,8 +36,8 @@ import java.util.Optional;
 /**
  * MySQL 特性类似的数据库存储
  * PS1. 大文件上传可能会报 max_allowed_packet 不足，可根据参数放开数据库限制 set global max_allowed_packet = 500*1024*1024
- * PS1. 官方基于 MySQL 测试，其他数据库使用前请自测，敬请谅解！
- * PS2. 数据库并不适合大规模的文件存储，该扩展仅适用于简单业务，大型业务场景请选择其他存储方案（OSS、MongoDB等）
+ * PS2. 官方基于 MySQL 测试，其他数据库使用前请自测，敬请谅解！
+ * PS3. 数据库并不适合大规模的文件存储，该扩展仅适用于简单业务，大型业务场景请选择其他存储方案（OSS、MongoDB等）
  * ********************* 配置项 *********************
  *  oms.storage.dfs.mysql_series.driver
  *  oms.storage.dfs.mysql_series.url
@@ -138,6 +139,7 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
         deleteByLocation(fileLocation);
 
         Map<String, Object> meta = Maps.newHashMap();
+        meta.put("_server_", NetUtils.getLocalHost());
         meta.put("_local_file_path_", storeRequest.getLocalFile().getAbsolutePath());
 
         Date date = new Date(System.currentTimeMillis());
@@ -262,6 +264,8 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
             log.error("[MySqlSeriesDfsService] init datasource failed!", e);
             ExceptionUtils.rethrow(e);
         }
+
+        log.info("[MySqlSeriesDfsService] initialize successfully, THIS_WILL_BE_THE_STORAGE_LAYER.");
     }
 
     void initDatabase(MySQLProperty property) {

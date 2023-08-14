@@ -1,5 +1,6 @@
 package tech.powerjob.server.persistence.storage.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Conditional;
 import tech.powerjob.server.extension.dfs.*;
@@ -17,6 +18,7 @@ import java.util.Optional;
  * @author tjq
  * @since 2023/7/30
  */
+@Slf4j
 @Priority(value = Integer.MAX_VALUE)
 @Conditional(EmptyDFsService.EmptyCondition.class)
 public class EmptyDFsService extends AbstractDFsService {
@@ -41,7 +43,7 @@ public class EmptyDFsService extends AbstractDFsService {
 
     @Override
     protected void init(ApplicationContext applicationContext) {
-
+        log.info("[EmptyDFsService] initialize successfully, THIS_WILL_BE_THE_STORAGE_LAYER.");
     }
 
 

@@ -158,6 +158,8 @@ public class GridFsService extends AbstractDFsService {
     protected void init(ApplicationContext applicationContext) {
         String uri = parseMongoUri(applicationContext.getEnvironment());
         initMongo(uri);
+
+        log.info("[GridFsService] initialize successfully, THIS_WILL_BE_THE_STORAGE_LAYER.");
     }
 
     public static class GridFsCondition extends PropertyAndOneBeanCondition {
