@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.core.env.Environment;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
 import tech.powerjob.server.extension.dfs.*;
@@ -138,6 +139,7 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
         deleteByLocation(fileLocation);
 
         Map<String, Object> meta = Maps.newHashMap();
+        meta.put("_server_", NetUtils.getLocalHost());
         meta.put("_local_file_path_", storeRequest.getLocalFile().getAbsolutePath());
 
         Date date = new Date(System.currentTimeMillis());
@@ -262,6 +264,8 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
             log.error("[MySqlSeriesDfsService] init datasource failed!", e);
             ExceptionUtils.rethrow(e);
         }
+
+        log.info("[MySqlSeriesDfsService] initialize successfully, THIS_WILL_BE_THE_STORAGE_LAYER.");
     }
 
     void initDatabase(MySQLProperty property) {
