@@ -67,33 +67,33 @@ public class VertxTransporter implements Transporter {
         Future<HttpClientRequest> httpClientRequestFuture = httpClient.request(requestOptions);
         // 转换 -> 发送请求获取响应
         Future<HttpClientResponse> responseFuture = httpClientRequestFuture.compose(httpClientRequest ->
-            httpClientRequest
-                .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
-                .send(JsonObject.mapFrom(request).toBuffer())
+                httpClientRequest
+                        .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+                        .send(JsonObject.mapFrom(request).toBuffer())
         );
         return responseFuture.compose(httpClientResponse -> {
-            // throw exception
-            final int statusCode = httpClientResponse.statusCode();
-            if (statusCode != HttpResponseStatus.OK.code()) {
-                // CompletableFuture.get() 时会传递抛出该异常
-                throw new RemotingException(String.format("request [host:%s,port:%s,url:%s] failed, status: %d, msg: %s",
-                       host, port, path, statusCode, httpClientResponse.statusMessage()
+                    // throw exception
+                    final int statusCode = httpClientResponse.statusCode();
+                    if (statusCode != HttpResponseStatus.OK.code()) {
+                        // CompletableFuture.get() 时会传递抛出该异常
+                        throw new RemotingException(String.format("request [host:%s,port:%s,url:%s] failed, status: %d, msg: %s",
+                                host, port, path, statusCode, httpClientResponse.statusMessage()
                         ));
-            }
+                    }
 
-            return httpClientResponse.body().compose(x -> {
+                    return httpClientResponse.body().compose(x -> {
 
-                if (clz == null) {
-                    return Future.succeededFuture(null);
-                }
+                        if (clz == null) {
+                            return Future.succeededFuture(null);
+                        }
 
-                if (clz.equals(String.class)) {
-                    return Future.succeededFuture((T) x.toString());
-                }
+                        if (clz.equals(String.class)) {
+                            return Future.succeededFuture((T) x.toString());
+                        }
 
-                return Future.succeededFuture(x.toJsonObject().mapTo(clz));
-            });
-        })
+                        return Future.succeededFuture(x.toJsonObject().mapTo(clz));
+                    });
+                })
                 .onFailure(t -> log.warn("[VertxTransporter] post to url[{}] failed,msg: {}", url, ExceptionUtils.getMessage(t)))
                 .toCompletionStage();
     }
