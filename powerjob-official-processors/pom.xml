@@ -22,7 +22,7 @@
         <logback.version>1.2.9</logback.version>
         <powerjob.worker.version>4.3.5</powerjob.worker.version>
         <spring.jdbc.version>5.2.9.RELEASE</spring.jdbc.version>
-        <h2.db.version>2.1.214</h2.db.version>
+        <h2.db.version>2.2.220</h2.db.version>
         <mysql.version>8.0.28</mysql.version>
         <spring.version>5.3.23</spring.version>
 
