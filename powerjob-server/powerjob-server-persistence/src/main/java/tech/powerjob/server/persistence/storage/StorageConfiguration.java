@@ -4,10 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import tech.powerjob.server.extension.dfs.DFsService;
-import tech.powerjob.server.persistence.storage.impl.AliOssService;
-import tech.powerjob.server.persistence.storage.impl.EmptyDFsService;
-import tech.powerjob.server.persistence.storage.impl.GridFsService;
-import tech.powerjob.server.persistence.storage.impl.MySqlSeriesDfsService;
+import tech.powerjob.server.persistence.storage.impl.*;
 
 /**
  * 初始化内置的存储服务
@@ -34,6 +31,12 @@ public class StorageConfiguration {
     @Conditional(AliOssService.AliOssCondition.class)
     public DFsService initAliOssFs() {
         return new AliOssService();
+    }
+
+    @Bean
+    @Conditional(MinioOssService.MinioOssCondition.class)
+    public DFsService initMinioOssFs() {
+        return new MinioOssService();
     }
 
     @Bean
