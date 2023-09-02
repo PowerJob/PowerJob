@@ -1,5 +1,7 @@
 package tech.powerjob.worker.background.discovery;
 
+import tech.powerjob.common.model.WorkerAppInfo;
+
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -14,7 +16,7 @@ public interface ServerDiscoveryService {
      * 鉴权 & 附带信息下发
      * @return appInfo
      */
-    AppInfo assertApp();
+    WorkerAppInfo assertApp();
 
     /**
      * 获取当前的 server 地址

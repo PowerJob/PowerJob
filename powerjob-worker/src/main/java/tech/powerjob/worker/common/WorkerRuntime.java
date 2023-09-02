@@ -1,9 +1,9 @@
 package tech.powerjob.worker.common;
 
 import lombok.Data;
+import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.remote.framework.transporter.Transporter;
 import tech.powerjob.worker.background.OmsLogHandler;
-import tech.powerjob.worker.background.discovery.AppInfo;
 import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.core.executor.ExecutorManager;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
@@ -23,7 +23,7 @@ public class WorkerRuntime {
     /**
      * App 基础信息
      */
-    private AppInfo appInfo;
+    private WorkerAppInfo appInfo;
     /**
      * 当前执行器地址
      */

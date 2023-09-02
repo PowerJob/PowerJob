@@ -1,11 +1,13 @@
-package tech.powerjob.worker.background.discovery;
+package tech.powerjob.common.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.io.Serializable;
+
 /**
- * 应用信息
+ * WorkerAppInfo
  *
  * @author tjq
  * @since 2023/9/2
@@ -13,7 +15,7 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @Accessors(chain = true)
-public class AppInfo {
+public class WorkerAppInfo implements Serializable {
 
     /**
      * 应用唯一 ID

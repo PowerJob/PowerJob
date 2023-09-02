@@ -8,6 +8,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.exception.ImpossibleException;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.ObjectResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -33,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class PowerJobServerDiscoveryService implements ServerDiscoveryService {
 
-    private final AppInfo appInfo = new AppInfo();
+    private final WorkerAppInfo appInfo = new WorkerAppInfo();
 
     private String currentServerAddress;
 
@@ -61,7 +62,7 @@ public class PowerJobServerDiscoveryService implements ServerDiscoveryService {
     }
 
     @Override
-    public AppInfo assertApp() {
+    public WorkerAppInfo assertApp() {
         try {
             return assertApp0();
         } catch (Exception e) {
@@ -76,7 +77,7 @@ public class PowerJobServerDiscoveryService implements ServerDiscoveryService {
         throw new ImpossibleException();
     }
 
-    private AppInfo assertApp0() {
+    private WorkerAppInfo assertApp0() {
         String appName = config.getAppName();
         Objects.requireNonNull(appName, "appName can't be empty!");
 
@@ -97,7 +98,7 @@ public class PowerJobServerDiscoveryService implements ServerDiscoveryService {
                     }
 
                     // 新版本，接口直接下发 AppInfo 内容，后续可扩展安全加密等信息
-                    AppInfo serverAppInfo = JsonUtils.parseObject(JsonUtils.toJSONString(resultDataContent), AppInfo.class);
+                    WorkerAppInfo serverAppInfo = JsonUtils.parseObject(JsonUtils.toJSONString(resultDataContent), WorkerAppInfo.class);
                     appInfo.setAppId(serverAppInfo.getAppId());
                     return appInfo;
                 } else {

@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.PowerJobDKey;
+import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.PropertyUtils;
@@ -18,7 +19,6 @@ import tech.powerjob.worker.actors.TaskTrackerActor;
 import tech.powerjob.worker.actors.WorkerActor;
 import tech.powerjob.worker.background.OmsLogHandler;
 import tech.powerjob.worker.background.WorkerHealthReporter;
-import tech.powerjob.worker.background.discovery.AppInfo;
 import tech.powerjob.worker.background.discovery.PowerJobServerDiscoveryService;
 import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.common.PowerBannerPrinter;
@@ -75,7 +75,7 @@ public class PowerJobWorker {
         try {
             PowerBannerPrinter.print();
             // 校验 appName
-            AppInfo appInfo = serverDiscoveryService.assertApp();
+            WorkerAppInfo appInfo = serverDiscoveryService.assertApp();
             workerRuntime.setAppInfo(appInfo);
 
             // 初始化网络数据，区别对待上报地址和本机绑定地址（对外统一使用上报地址）
