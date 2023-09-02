@@ -65,8 +65,8 @@ public class PowerJobServerDiscoveryService implements ServerDiscoveryService {
         try {
             return assertApp0();
         } catch (Exception e) {
-            if (config.isEnableTestMode()) {
-                log.warn("[PowerJobWorker] using TestMode now, it's dangerous if this is production env.");
+            if (config.isAllowLazyConnectServer()) {
+                log.warn("[PowerJobWorker] worker is not currently connected to the server, and because allowLazyConnectServer is configured to true it won't block the startup, but you have to be aware that this is dangerous in production environments!");
 
                 // 返回引用，方便后续更新对象内属性
                 return appInfo;
@@ -123,7 +123,7 @@ public class PowerJobServerDiscoveryService implements ServerDiscoveryService {
     @Override
     public void timingCheck(ScheduledExecutorService timingPool) {
         this.currentServerAddress = discovery();
-        if (StringUtils.isEmpty(this.currentServerAddress) && !config.isEnableTestMode()) {
+        if (StringUtils.isEmpty(this.currentServerAddress) && !config.isAllowLazyConnectServer()) {
             throw new PowerJobException("can't find any available server, this worker has been quarantined.");
         }
         // 这里必须保证成功

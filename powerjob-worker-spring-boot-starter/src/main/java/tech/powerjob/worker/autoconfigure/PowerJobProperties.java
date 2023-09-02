@@ -81,14 +81,14 @@ public class PowerJobProperties {
     }
 
     @Deprecated
-    @DeprecatedConfigurationProperty(replacement = "powerjob.worker.enable-test-mode")
+    @DeprecatedConfigurationProperty(replacement = "powerjob.worker.allow-lazy-connect-server")
     public boolean isEnableTestMode() {
-        return getWorker().enableTestMode;
+        return getWorker().isAllowLazyConnectServer();
     }
 
     @Deprecated
     public void setEnableTestMode(boolean enableTestMode) {
-        getWorker().setEnableTestMode(enableTestMode);
+        getWorker().setAllowLazyConnectServer(enableTestMode);
     }
 
     /**
@@ -146,10 +146,10 @@ public class PowerJobProperties {
          */
         private int maxResultLength = 8192;
         /**
-         * If test mode is set as true, Powerjob-worker no longer connects to the server or validates appName.
-         * Test mode is used for conditions that your have no powerjob-server in your develop env, so you can't start up the application
+         * If allowLazyConnectServer is set as true, PowerJob worker allows launching without a direct connection to the server.
+         * allowLazyConnectServer is used for conditions that your have no powerjob-server in your develop env so you can't startup the application
          */
-        private boolean enableTestMode = false;
+        private boolean allowLazyConnectServer = false;
         /**
          * Max length of appended workflow context value length. Appended workflow context value that is longer than the value will be ignored.
          * {@link WorkflowContext} max length for #appendedContextData
