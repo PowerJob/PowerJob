@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ModifyAppInfoRequest {
 
     private Long id;
+    private Long namespaceId;
     private String oldPassword;
     private String appName;
     private String password;

@@ -7,17 +7,15 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * 用户角色表
+ * 命名空间，用于组织管理 App
  *
  * @author tjq
- * @since 2023/3/20
+ * @since 2023/9/3
  */
 @Data
 @Entity
-@Table(indexes = {
-        @Index(name = "uidx01_user_id", columnList = "userId")
-})
-public class UserRoleDO {
+@Table(uniqueConstraints = {@UniqueConstraint(name = "uidx01_namespace", columnNames = {"code"})})
+public class NamespaceDO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -25,23 +23,22 @@ public class UserRoleDO {
     private Long id;
 
     /**
-     * 授予角色的用户ID
+     * 空间唯一标识
      */
-    private Long userId;
+    private String code;
 
     /**
-     * 权限范围，namespace 还是 app
+     * 空间名称，比如中文描述（XX部门XX空间）
      */
-    private Integer scope;
-    /**
-     * 和 scope 一起组成授权目标，比如某个 app 或 某个 namespace
-     */
-    private Long target;
+    private String name;
 
     /**
-     * 角色，比如 Observer
+     * 鉴权 token，后续 OpenAPI 调用需要
      */
-    private Integer role;
+    private String token;
+
+    private Integer status;
+
     /**
      * 扩展字段
      */
@@ -50,4 +47,8 @@ public class UserRoleDO {
     private Date gmtCreate;
 
     private Date gmtModified;
+
+    private String creator;
+
+    private String modifier;
 }

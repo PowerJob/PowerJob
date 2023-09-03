@@ -1,0 +1,13 @@
+package tech.powerjob.server.persistence.remote.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import tech.powerjob.server.persistence.remote.model.NamespaceDO;
+
+/**
+ * 命名空间
+ *
+ * @author tjq
+ * @since 2023/9/3
+ */
+public interface NamespaceRepository extends JpaRepository<NamespaceDO, Long> {
+}

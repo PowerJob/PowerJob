@@ -4,21 +4,25 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.Loggers;
-import tech.powerjob.server.auth.LoginContext;
-import tech.powerjob.server.auth.Permission;
-import tech.powerjob.server.auth.PowerJobUser;
-import tech.powerjob.server.auth.Role;
-import tech.powerjob.server.auth.anno.ApiPermission;
+import tech.powerjob.common.exception.ImpossibleException;
+import tech.powerjob.server.auth.*;
+import tech.powerjob.server.auth.interceptor.ApiPermission;
+import tech.powerjob.server.auth.interceptor.dp.DynamicPermission;
+import tech.powerjob.server.auth.interceptor.dp.EmptyDynamicPermission;
 import tech.powerjob.server.auth.jwt.JwtService;
 import tech.powerjob.server.auth.login.BizLoginService;
 import tech.powerjob.server.auth.login.BizUser;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserRoleDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.UserRoleRepository;
 
@@ -32,10 +36,12 @@ import java.util.*;
  * @author tjq
  * @since 2023/3/21
  */
+@Slf4j
 @Service
 public class PowerJobAuthServiceImpl implements PowerJobAuthService {
 
     private final JwtService jwtService;
+    private final AppInfoRepository appInfoRepository;
     private final UserInfoRepository userInfoRepository;
     private final UserRoleRepository userRoleRepository;
     private final Map<String, BizLoginService> type2LoginService = Maps.newHashMap();
@@ -45,8 +51,9 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
     private static final String KEY_USERNAME = "userName";
 
     @Autowired
-    public PowerJobAuthServiceImpl(List<BizLoginService> loginServices, JwtService jwtService, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
+    public PowerJobAuthServiceImpl(List<BizLoginService> loginServices, JwtService jwtService, AppInfoRepository appInfoRepository, UserInfoRepository userInfoRepository, UserRoleRepository userRoleRepository) {
         this.jwtService = jwtService;
+        this.appInfoRepository = appInfoRepository;
         this.userInfoRepository = userInfoRepository;
         this.userRoleRepository = userRoleRepository;
         loginServices.forEach(k -> type2LoginService.put(k.type(), k));
@@ -109,33 +116,52 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
     }
 
     @Override
-    public boolean hasPermission(HttpServletRequest request, PowerJobUser user, ApiPermission apiPermission) {
+    public boolean hasPermission(HttpServletRequest request, Object handler, PowerJobUser user, ApiPermission apiPermission) {
 
         final List<UserRoleDO> userRoleList = Optional.ofNullable(userRoleRepository.findAllByUserId(user.getId())).orElse(Collections.emptyList());
 
-        Multimap<String, Role> appId2Role = ArrayListMultimap.create();
+        Multimap<Long, Role> appId2Role = ArrayListMultimap.create();
+        Multimap<Long, Role> namespaceId2Role = ArrayListMultimap.create();
 
         for (UserRoleDO userRole : userRoleList) {
-            if (userRole.getRole().equalsIgnoreCase(String.valueOf(Role.GOD.getV()))) {
+            if (Objects.equals(Role.GOD.getV(), userRole.getRole())) {
                 return true;
             }
 
-            // 除了上帝角色，其他任何角色都是 roleId_appId 的形式
-            final String[] split = userRole.getRole().split("_");
-            final Role role = Role.of(Integer.parseInt(split[0]));
-            appId2Role.put(split[1], role);
+            final Role role = Role.of(userRole.getRole());
+            if (Objects.equals(userRole.getScope(), RoleScope.NAMESPACE.getV())) {
+                namespaceId2Role.put(userRole.getTarget(), role);
+            }
+            if (Objects.equals(userRole.getScope(), RoleScope.APP.getV())) {
+                appId2Role.put(userRole.getTarget(), role);
+            }
         }
 
         // 无超级管理员权限，校验普通权限
-        final String appId = request.getHeader("appId");
-        if (StringUtils.isEmpty(appId)) {
-            throw new IllegalArgumentException("can't find appId in header, please login again!");
+        final String appIdStr = request.getHeader("appId");
+        if (StringUtils.isEmpty(appIdStr)) {
+            throw new IllegalArgumentException("can't find appId in header, please refresh and try again!");
         }
 
-        final Permission requiredPermission = apiPermission.requiredPermission();
+        Long appId = Long.valueOf(appIdStr);
 
-        final Collection<Role> roleCollection = appId2Role.get(appId);
-        for (Role role : roleCollection) {
+        final Permission requiredPermission = parsePermission(request, handler, apiPermission);
+
+        final Collection<Role> appRoles = appId2Role.get(appId);
+        for (Role role : appRoles) {
+            if (role.getPermissions().contains(requiredPermission)) {
+                return true;
+            }
+        }
+
+        // 校验 namespace 穿透权限
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(appId);
+        if (!appInfoOpt.isPresent()) {
+            throw new IllegalArgumentException("can't find appInfo by appId in permission check: " + appId);
+        }
+        Long namespaceId = Optional.ofNullable(appInfoOpt.get().getNamespaceId()).orElse(-1L);
+        Collection<Role> namespaceRoles = namespaceId2Role.get(namespaceId);
+        for (Role role : namespaceRoles) {
             if (role.getPermissions().contains(requiredPermission)) {
                 return true;
             }
@@ -183,5 +209,20 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
         jwtMap.put(KEY_USERNAME, powerJobUser.getUsername());
 
         powerJobUser.setJwtToken(jwtService.build(jwtMap, null));
+    }
+
+    private static Permission parsePermission(HttpServletRequest request, Object handler, ApiPermission apiPermission) {
+        Class<? extends DynamicPermission> dynamicPermissionPlugin = apiPermission.dynamicPermissionPlugin();
+        if (EmptyDynamicPermission.class.equals(dynamicPermissionPlugin)) {
+            return apiPermission.requiredPermission();
+        }
+        try {
+            DynamicPermission dynamicPermission = dynamicPermissionPlugin.getDeclaredConstructor().newInstance();
+            return dynamicPermission.calculate(request, handler);
+        } catch (Throwable t) {
+            log.error("[PowerJobAuthService] process dynamicPermissionPlugin failed!", t);
+            ExceptionUtils.rethrow(t);
+        }
+        throw new ImpossibleException();
     }
 }

@@ -13,7 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SwitchableStatus {
     /**
-     *
+     * 启用
      */
     ENABLE(1),
     DISABLE(2),

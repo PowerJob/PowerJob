@@ -9,7 +9,6 @@ import tech.powerjob.common.Loggers;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.PowerJobUser;
-import tech.powerjob.server.auth.anno.ApiPermission;
 import tech.powerjob.server.auth.service.PowerJobAuthService;
 
 import javax.annotation.Resource;
@@ -59,7 +58,7 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
         // 写入上下文
         LoginUserHolder.set(powerJobUser);
 
-        final boolean hasPermission = powerJobAuthService.hasPermission(request, powerJobUser, apiPermissionAnno);
+        final boolean hasPermission = powerJobAuthService.hasPermission(request, handler, powerJobUser, apiPermissionAnno);
         if (hasPermission) {
             return true;
         }

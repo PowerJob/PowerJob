@@ -1,6 +1,8 @@
-package tech.powerjob.server.auth.anno;
+package tech.powerjob.server.auth.interceptor;
 
 import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.interceptor.dp.DynamicPermission;
+import tech.powerjob.server.auth.interceptor.dp.EmptyDynamicPermission;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,5 +28,11 @@ public @interface ApiPermission {
      * 需要的权限
      * @return 权限
      */
-    Permission requiredPermission();
+    Permission requiredPermission() default Permission.GLOBAL_SU;
+
+    /**
+     * 固定权限不支持的场景，需要使用动态权限
+     * @return 动态权限
+     */
+    Class<? extends DynamicPermission> dynamicPermissionPlugin() default EmptyDynamicPermission.class;
 }

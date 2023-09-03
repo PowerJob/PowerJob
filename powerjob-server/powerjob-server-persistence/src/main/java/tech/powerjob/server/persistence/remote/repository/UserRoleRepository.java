@@ -14,4 +14,6 @@ import java.util.List;
 public interface UserRoleRepository extends JpaRepository<UserRoleDO, Long> {
 
     List<UserRoleDO> findAllByUserId(Long userId);
+
+    List<UserRoleDO> findAllByScopeAndTarget(Integer scope, Long target);
 }
