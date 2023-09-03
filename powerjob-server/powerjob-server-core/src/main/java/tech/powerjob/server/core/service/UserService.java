@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.service;
 
+import tech.powerjob.common.utils.DigestUtils;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 import com.google.common.base.Splitter;
@@ -32,6 +33,13 @@ public class UserService {
     public void save(UserInfoDO userInfoDO) {
         userInfoDO.setGmtCreate(new Date());
         userInfoDO.setGmtModified(userInfoDO.getGmtCreate());
+
+        // 二次加密密码
+        final String password = userInfoDO.getPassword();
+        if (StringUtils.isNotEmpty(password)) {
+            userInfoDO.setPassword(DigestUtils.rePassword(password, userInfoDO.getUsername()));
+        }
+
         userInfoRepository.saveAndFlush(userInfoDO);
     }
 

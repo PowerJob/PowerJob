@@ -1,18 +1,18 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.response.ResultDTO;
-import org.springframework.beans.BeanUtils;
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
-import tech.powerjob.server.core.service.UserService;
-import tech.powerjob.server.web.request.ModifyUserInfoRequest;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.core.service.UserService;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
+import tech.powerjob.server.web.request.ModifyUserInfoRequest;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/user")
 public class UserInfoController {
-
     @Resource
     private UserService userService;
     @Resource
