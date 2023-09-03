@@ -24,6 +24,7 @@ import java.util.Optional;
 
 /**
  * MINIO support
+ * <a href="https://min.io/">High Performance Object Storage</a>
  * 配置项：
  * oms.storage.dfs.minio.endpoint
  * oms.storage.dfs.minio.bucketName
@@ -34,7 +35,7 @@ import java.util.Optional;
  * @since 2023/8/21
  */
 @Slf4j
-@Priority(value = Integer.MAX_VALUE - 1)
+@Priority(value = Integer.MAX_VALUE - 3)
 @Conditional(MinioOssService.MinioOssCondition.class)
 public class MinioOssService extends AbstractDFsService {
 
