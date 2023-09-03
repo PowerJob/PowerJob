@@ -170,8 +170,8 @@ public class NetUtils {
             log.warn("[Net] findNetworkInterface failed", e);
         }
 
-        // sort by interface index, the smaller is preferred. （部分用户反馈 IP 获取逻辑反而劣化了，先注释）
-        // validNetworkInterfaces.sort(Comparator.comparingInt(NetworkInterface::getIndex));
+        // sort by interface index, the smaller is preferred.
+         validNetworkInterfaces.sort(Comparator.comparingInt(NetworkInterface::getIndex));
 
         // Try to find the preferred one
         for (NetworkInterface networkInterface : validNetworkInterfaces) {
