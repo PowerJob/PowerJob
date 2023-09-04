@@ -3,6 +3,7 @@ package tech.powerjob.server.core.service;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.utils.CommonUtils;
@@ -15,6 +16,7 @@ import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRe
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Echo009
@@ -45,6 +47,8 @@ public class WorkflowNodeHandleService {
      * 注意，上层调用方必须保证这里的 taskNodeList 不能为空
      */
     public void handleTaskNodes(List<PEWorkflowDAG.Node> taskNodeList, PEWorkflowDAG dag, WorkflowInstanceInfoDO wfInstanceInfo) {
+        // 获取父工作流（如存在）
+        Optional<WorkflowInstanceInfoDO> parentWfInstance = workflowInstanceInfoRepository.findByWfInstanceId(wfInstanceInfo.getParentWfInstanceId());
 
         // 创建任务实例
         taskNodeList.forEach(taskNode -> {
@@ -56,6 +60,14 @@ public class WorkflowNodeHandleService {
         // 持久化工作流实例信息
         wfInstanceInfo.setDag(JSON.toJSONString(dag));
         workflowInstanceInfoRepository.saveAndFlush(wfInstanceInfo);
+        if (parentWfInstance.isPresent()) {
+            WorkflowInstanceInfoDO parentWfInstanceDO = parentWfInstance.get();
+            if (parentWfInstanceDO.getStatus() != WorkflowInstanceStatus.RUNNING.getV()) {
+                parentWfInstanceDO.setStatus(WorkflowInstanceStatus.RUNNING.getV());
+                workflowInstanceInfoRepository.saveAndFlush(parentWfInstanceDO);
+            }
+
+        }
         // 启动
         taskNodeList.forEach(taskNode -> {
             TaskNodeHandler taskNodeHandler = (TaskNodeHandler) findMatchingHandler(taskNode);
