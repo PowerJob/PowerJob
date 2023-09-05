@@ -14,6 +14,10 @@ import lombok.Getter;
 public enum Permission {
 
     /**
+     * 不需要权限
+     */
+    NONE(1),
+    /**
      * 读权限，查看控制台数据
      */
     READ(10),

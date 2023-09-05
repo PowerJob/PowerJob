@@ -146,6 +146,9 @@ public class PowerJobAuthServiceImpl implements PowerJobAuthService {
         Long appId = Long.valueOf(appIdStr);
 
         final Permission requiredPermission = parsePermission(request, handler, apiPermission);
+        if (requiredPermission == Permission.NONE) {
+            return true;
+        }
 
         final Collection<Role> appRoles = appId2Role.get(appId);
         for (Role role : appRoles) {
