@@ -250,6 +250,7 @@ public class InstanceManager implements TransportServiceAware {
         if (!StringUtils.isEmpty(alertContent)) {
             content.setResult(alertContent);
         }
+        if(userList.isEmpty()) return;
         if(!canAlarm(content)) return ;
         alarmCenter.alarmFailed(content, AlarmUtils.convertUserInfoList2AlarmTargetList(userList));
     }
