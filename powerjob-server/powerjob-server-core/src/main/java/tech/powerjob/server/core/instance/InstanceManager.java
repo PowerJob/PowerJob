@@ -277,12 +277,14 @@ public class InstanceManager implements TransportServiceAware {
                 long l = nowTime - lastAlarmTime;
                 if(l<alarmConfig.getStatisticWindowLen()){
                     //还在静默期，不报警
+                    log.info("静默期，不报警");
                     return false;
                 }
             }
             // 已经过了静默期，或从没有报警过，判断是否要报警
             boolean b = checkAlarm(alarmConfig, nowTime, alarm);
             if(b){
+                log.info("设置静默时间");
                 silenceWindow.put(alarm.getJobId(),nowTime);
             }
             return b;
@@ -302,21 +304,25 @@ public class InstanceManager implements TransportServiceAware {
                     //还在时间窗口中
                     Integer threshold = alertThreshold.get(alarm.getJobId());
                     if((threshold+1)>=alarmConfig.getAlertThreshold()){
-                        alertThreshold.put(alarm.getJobId(),0);
+                        alertThreshold.put(alarm.getJobId(),1);
                         statisticWindow.put(alarm.getJobId(),nowTime);
+                        log.info("时间窗口内，已经到达阈值，报警");
                         return true;
                     }else{
+                        log.info("时间窗口内，未到达阈值，不报警");
                         alertThreshold.put(alarm.getJobId(),threshold+1);
                         return false;
                     }
 
                 }
             }
+            log.info("初始化时间窗口，不报警");
             statisticWindow.put(alarm.getJobId(),nowTime);
             alertThreshold.put(alarm.getJobId(),1);
             return false;
 
         }else{
+            log.info("为设置时间窗口或阈值小于1，报警");
             // 未配置统计窗口，或阈值小于等于1
             return true;
         }
