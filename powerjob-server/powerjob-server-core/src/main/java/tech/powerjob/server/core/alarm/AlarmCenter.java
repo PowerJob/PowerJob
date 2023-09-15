@@ -5,15 +5,13 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.server.extension.alarm.Alarm;
 import tech.powerjob.server.extension.alarm.AlarmTarget;
 import tech.powerjob.server.extension.alarm.Alarmable;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * 报警服务
@@ -29,6 +27,8 @@ public class AlarmCenter {
 
     private final List<Alarmable> BEANS = Lists.newLinkedList();
 
+
+
     public AlarmCenter(List<Alarmable> alarmables) {
         int cores = Runtime.getRuntime().availableProcessors();
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("AlarmPool-%d").build();
@@ -41,6 +41,7 @@ public class AlarmCenter {
     }
 
     public void alarmFailed(Alarm alarm, List<AlarmTarget> alarmTargets) {
+
         POOL.execute(() -> BEANS.forEach(alarmable -> {
             try {
                 alarmable.onFailed(alarm, alarmTargets);
@@ -49,4 +50,6 @@ public class AlarmCenter {
             }
         }));
     }
+
+
 }

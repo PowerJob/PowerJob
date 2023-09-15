@@ -1,5 +1,6 @@
 package tech.powerjob.server.core.alarm.module;
 
+import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import lombok.Data;
 import tech.powerjob.server.extension.alarm.Alarm;
@@ -53,5 +54,10 @@ public class WorkflowInstanceAlarm implements Alarm {
     @Override
     public String fetchTitle() {
         return "PowerJob AlarmService: Workflow Running Failed";
+    }
+
+    @Override
+    public AlarmConfig alarmConfigs() {
+        return null;
     }
 }
