@@ -69,10 +69,10 @@ public class OmsLogHandler {
 
 
 
-    private class LogSubmitter implements Runnable {
+    private class LogSubmitter extends RunnableAndCatch {
 
         @Override
-        public void run() {
+        public void run0() {
 
             boolean lockResult = reportLock.tryLock();
             if (!lockResult) {

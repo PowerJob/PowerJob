@@ -22,12 +22,12 @@ import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class WorkerHealthReporter implements Runnable {
+public class WorkerHealthReporter extends RunnableAndCatch {
 
     private final WorkerRuntime workerRuntime;
 
     @Override
-    public void run() {
+    public void run0() {
 
         // 没有可用Server，无法上报
         String currentServer = workerRuntime.getServerDiscoveryService().getCurrentServerAddress();
