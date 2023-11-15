@@ -15,6 +15,7 @@ import tech.powerjob.remote.framework.engine.RemoteEngine;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
@@ -45,26 +46,35 @@ class HttpVertxCSInitializerTest {
         BenchmarkActor.BenchmarkRequest request = new BenchmarkActor.BenchmarkRequest()
                 .setContent("request from test")
                 .setBlockingMills(100)
-                .setResponseSize(10240);
+                .setResponseSize(1024);
 
         log.info("[HttpVertxCSInitializerTest] test empty request!");
         URL emptyURL = new URL()
                 .setAddress(address)
                 .setLocation(new HandlerLocation().setMethodPath("emptyReturn").setRootPath("benchmark"));
+        request.setId(UUID.randomUUID().toString());
+        long s1 = System.currentTimeMillis();
         transporter.tell(emptyURL, request);
+        log.info("[HttpVertxCSInitializerTest] test empty request, tell cost: {}ms", System.currentTimeMillis() - s1);
 
         log.info("[HttpVertxCSInitializerTest] test string request!");
         URL stringURL = new URL()
                 .setAddress(address)
                 .setLocation(new HandlerLocation().setMethodPath("stringReturn").setRootPath("benchmark"));
-        final String strResponse = transporter.ask(stringURL, request, String.class).toCompletableFuture().get();
-        log.info("[HttpVertxCSInitializerTest] strResponse: {}", strResponse);
+        request.setId(UUID.randomUUID().toString());
+        long s2 = System.currentTimeMillis();
+        CompletionStage<String> stringCompletionStage = transporter.ask(stringURL, request, String.class);
+        long s3 = System.currentTimeMillis();
+        final String strResponse = stringCompletionStage.toCompletableFuture().get();
+        long s4 = System.currentTimeMillis();
+        log.info("[HttpVertxCSInitializerTest] askCost:{}, waitCost:{}, strResponse: {}", s3-s2, s4-s3, strResponse);
 
         log.info("[HttpVertxCSInitializerTest] test normal request!");
         URL url = new URL()
                 .setAddress(address)
                 .setLocation(new HandlerLocation().setMethodPath("standard").setRootPath("benchmark"));
 
+        request.setId(UUID.randomUUID().toString());
         final CompletionStage<BenchmarkActor.BenchmarkResponse> benchmarkResponseCompletionStage = transporter.ask(url, request, BenchmarkActor.BenchmarkResponse.class);
         final BenchmarkActor.BenchmarkResponse response = benchmarkResponseCompletionStage.toCompletableFuture().get(10, TimeUnit.SECONDS);
         log.info("[HttpVertxCSInitializerTest] response: {}", response);

@@ -23,8 +23,9 @@ public class BenchmarkActor {
 
     @Handler(path = "standard")
     public BenchmarkResponse standardRequest(BenchmarkRequest request) {
+        String id = request.getId();
         long startTs = System.currentTimeMillis();
-        log.info("[BenchmarkActor] [standardRequest] receive request: {}", request);
+        log.info("[BenchmarkActor] [standardRequest] [{}] receive request: {}", id, request);
         BenchmarkResponse response = new BenchmarkResponse()
                 .setSuccess(true)
                 .setContent(request.getContent())
@@ -35,6 +36,7 @@ public class BenchmarkActor {
         }
         executeSleep(request);
         response.setServerCost(System.currentTimeMillis() - startTs);
+        log.info("[BenchmarkActor] [standardRequest] [{}] finished process, start to return.", id);
         return response;
     }
 
@@ -61,6 +63,7 @@ public class BenchmarkActor {
     @Data
     @Accessors(chain = true)
     public static class BenchmarkRequest implements PowerSerializable {
+        private String id;
         /**
          * 请求内容
          */
