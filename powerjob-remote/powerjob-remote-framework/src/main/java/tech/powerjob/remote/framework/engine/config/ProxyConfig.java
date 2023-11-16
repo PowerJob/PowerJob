@@ -1,4 +1,4 @@
-package tech.powerjob.remote.framework.cs;
+package tech.powerjob.remote.framework.engine.config;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -22,7 +22,7 @@ public class ProxyConfig implements Serializable {
     /**
      * 本机启动的代理服务器端口，当 enableProxyServer 为 true 时有效
      */
-    private Integer proxyServerPort;
+    private Integer proxyServerPort = 9999;
 
     /* ******************* 上述配置是本机自身行为，下面的配置是对外的访问行为，请勿混淆 ******************* */
     /**

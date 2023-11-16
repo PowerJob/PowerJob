@@ -1,8 +1,8 @@
 package tech.powerjob.remote.framework.proxy;
 
-import tech.powerjob.remote.framework.cs.ProxyConfig;
-
-import java.util.concurrent.CompletionStage;
+import tech.powerjob.remote.framework.base.ServerType;
+import tech.powerjob.remote.framework.engine.config.ProxyConfig;
+import tech.powerjob.remote.framework.transporter.Transporter;
 
 /**
  * 代理服务
@@ -16,12 +16,7 @@ public interface ProxyService {
      * 初始化
      * @param proxyConfig 代理服务
      */
-    void initialize(ProxyConfig proxyConfig);
+    void initializeProxyServer(ProxyConfig proxyConfig);
 
-    /**
-     * 代理请求
-     * @param proxyRequest 代理请求
-     * @return 代理响应
-     */
-    CompletionStage<ProxyResult> sendProxyRequest(ProxyRequest proxyRequest);
+    Transporter warpProxyTransporter(ServerType currentServerType);
 }

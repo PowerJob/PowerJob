@@ -10,7 +10,7 @@ import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.PropertyUtils;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.ServerType;
-import tech.powerjob.remote.framework.engine.EngineConfig;
+import tech.powerjob.remote.framework.engine.config.EngineConfig;
 import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;

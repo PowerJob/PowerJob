@@ -1,4 +1,4 @@
-package tech.powerjob.remote.framework.engine;
+package tech.powerjob.remote.framework.engine.config;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -30,6 +30,10 @@ public class EngineConfig implements Serializable {
      * 绑定的本地地址
      */
     private Address bindAddress;
+    /**
+     * 代理配置
+     */
+    private ProxyConfig proxyConfig;
     /**
      * actor实例，交由使用侧自己实例化以便自行注入各种 bean
      */

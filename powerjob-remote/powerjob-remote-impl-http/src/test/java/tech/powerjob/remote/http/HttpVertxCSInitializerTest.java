@@ -9,7 +9,7 @@ import tech.powerjob.remote.framework.BenchmarkActor;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.HandlerLocation;
 import tech.powerjob.remote.framework.base.URL;
-import tech.powerjob.remote.framework.engine.EngineConfig;
+import tech.powerjob.remote.framework.engine.config.EngineConfig;
 import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;

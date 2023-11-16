@@ -1,4 +1,4 @@
-package tech.powerjob.remote.framework.proxy;
+package tech.powerjob.remote.framework.proxy.module;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

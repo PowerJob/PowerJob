@@ -1,5 +1,7 @@
 package tech.powerjob.remote.framework.engine;
 
+import tech.powerjob.remote.framework.engine.config.EngineConfig;
+
 import java.io.IOException;
 
 /**

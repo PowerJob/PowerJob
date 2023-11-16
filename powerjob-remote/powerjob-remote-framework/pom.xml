@@ -18,9 +18,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <powerjob-common.version>4.3.6</powerjob-common.version>
+
         <reflections.version>0.10.2</reflections.version>
-
-
+        <powerjob-shade-vertx.version>4.4.6</powerjob-shade-vertx.version>
     </properties>
 
     <dependencies>
@@ -34,6 +34,18 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>${reflections.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-shade-vertx</artifactId>
+            <version>${powerjob-shade-vertx.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

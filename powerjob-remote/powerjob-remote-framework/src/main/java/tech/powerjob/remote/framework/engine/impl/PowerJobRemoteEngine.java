@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.remote.framework.actor.ActorInfo;
 import tech.powerjob.remote.framework.cs.CSInitializer;
 import tech.powerjob.remote.framework.cs.CSInitializerConfig;
-import tech.powerjob.remote.framework.engine.EngineConfig;
+import tech.powerjob.remote.framework.engine.config.ProxyConfig;
+import tech.powerjob.remote.framework.engine.config.EngineConfig;
 import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
+import tech.powerjob.remote.framework.proxy.HttpProxyService;
+import tech.powerjob.remote.framework.proxy.ProxyService;
 import tech.powerjob.remote.framework.transporter.Transporter;
 
 import java.io.IOException;
@@ -46,16 +49,21 @@ public class PowerJobRemoteEngine implements RemoteEngine {
 
         // 构建通讯器
         Transporter transporter = csInitializer.buildTransporter();
-        engineOutput.setTransporter(transporter);
 
         log.info("[PowerJobRemoteEngine] [{}] start to bind Handler", engineType);
         actorInfos.forEach(actor -> actor.getHandlerInfos().forEach(handlerInfo -> log.info("[PowerJobRemoteEngine] [{}] PATH={}, handler={}", engineType, handlerInfo.getLocation().toPath(), handlerInfo.getMethod())));
 
         // 绑定 handler
         csInitializer.bindHandlers(actorInfos);
-
         log.info("[PowerJobRemoteEngine] [{}] startup successfully, cost: {}", engineType, sw);
 
+        // 处理代理服务器
+        ProxyConfig proxyConfig = engineConfig.getProxyConfig();
+        ProxyService proxyService = new HttpProxyService(transporter);
+        proxyService.initializeProxyServer(proxyConfig);
+        transporter = proxyService.warpProxyTransporter(engineConfig.getServerType());
+
+        engineOutput.setTransporter(transporter);
         return engineOutput;
     }
 

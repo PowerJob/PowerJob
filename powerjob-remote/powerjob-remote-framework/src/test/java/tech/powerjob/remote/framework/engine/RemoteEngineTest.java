@@ -1,11 +1,9 @@
 package tech.powerjob.remote.framework.engine;
 
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.remote.framework.base.Address;
+import tech.powerjob.remote.framework.engine.config.EngineConfig;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * RemoteEngineTest

@@ -22,6 +22,4 @@ public class CSInitializerConfig implements Serializable {
     private Address bindAddress;
 
     private ServerType serverType;
-
-    private ProxyConfig proxyConfig;
 }
