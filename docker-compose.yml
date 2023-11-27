@@ -51,4 +51,4 @@ services:
     entrypoint:
       - "sh"
       - "-c"
-      - "chmod +x wait-for-it.sh && ./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx512m -jar /powerjob-worker-samples.jar --powerjob.worker.server-address=powerjob-server:7700"
+      - "link /usr/bin/python3 /usr/bin/python && chmod +x wait-for-it.sh && ./wait-for-it.sh powerjob-server:7700 --strict -- java -Xmx512m -jar /powerjob-worker-samples.jar --powerjob.worker.server-address=powerjob-server:7700"
