@@ -3,6 +3,7 @@ package tech.powerjob.worker;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.utils.CommonUtils;
@@ -13,6 +14,7 @@ import tech.powerjob.remote.framework.base.ServerType;
 import tech.powerjob.remote.framework.engine.config.EngineConfig;
 import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
+import tech.powerjob.remote.framework.engine.config.ProxyConfig;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;
 import tech.powerjob.worker.actors.ProcessorTrackerActor;
 import tech.powerjob.worker.actors.TaskTrackerActor;
@@ -105,6 +107,11 @@ public class PowerJobWorker {
                     .setServerType(ServerType.WORKER)
                     .setBindAddress(new Address().setHost(localBindIp).setPort(localBindPort))
                     .setActorList(Lists.newArrayList(taskTrackerActor, processorTrackerActor, workerActor));
+            if (StringUtils.isNotEmpty(config.getServerProxyAddress())) {
+                ProxyConfig proxyConfig = new ProxyConfig().setUseProxy(true).setProxyUrl(config.getServerProxyAddress());
+                engineConfig.setProxyConfig(proxyConfig);
+                log.info("[PowerJobWorker] active proxy by config, proxy config: {}", proxyConfig);
+            }
 
             EngineOutput engineOutput = remoteEngine.start(engineConfig);
             workerRuntime.setTransporter(engineOutput.getTransporter());

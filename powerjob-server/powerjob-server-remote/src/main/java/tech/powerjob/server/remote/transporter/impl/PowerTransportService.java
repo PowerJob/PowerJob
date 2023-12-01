@@ -25,6 +25,7 @@ import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.remote.framework.engine.config.EngineConfig;
 import tech.powerjob.remote.framework.engine.EngineOutput;
 import tech.powerjob.remote.framework.engine.RemoteEngine;
+import tech.powerjob.remote.framework.engine.config.ProxyConfig;
 import tech.powerjob.remote.framework.engine.impl.PowerJobRemoteEngine;
 import tech.powerjob.server.remote.transporter.ProtocolInfo;
 import tech.powerjob.server.remote.transporter.TransportService;
@@ -54,6 +55,15 @@ public class PowerTransportService implements TransportService, InitializingBean
      */
     @Value("${oms.transporter.main.protocol}")
     private String mainProtocol;
+
+    /**
+     * 是否发布代理服务 & 代理服务的端口
+     * 用于 server 和 worker 跨网段但可互通的场景，如 server 在 K8S 集群内，worker 在虚拟机集群内。worker 通过域名可连接 server，但无法根据 IP 直连。使用代理即可完成 worker 对 server 的访问
+     */
+    @Value("${oms.transporter.proxy.enable}")
+    private boolean enableProxyServer;
+    @Value("${oms.transporter.proxy.server-port}")
+    private int proxyServerPort;
 
     private static final String PROTOCOL_PORT_CONFIG = "oms.%s.port";
 
@@ -109,10 +119,14 @@ public class PowerTransportService implements TransportService, InitializingBean
         Address address = new Address()
                 .setHost(NetUtils.getLocalHost())
                 .setPort(port);
+        ProxyConfig proxyConfig = new ProxyConfig()
+                .setEnableProxyServer(enableProxyServer)
+                .setProxyServerPort(proxyServerPort);
         EngineConfig engineConfig = new EngineConfig()
                 .setServerType(ServerType.SERVER)
                 .setType(protocol.toUpperCase())
                 .setBindAddress(address)
+                .setProxyConfig(proxyConfig)
                 .setActorList(Lists.newArrayList(beansWithAnnotation.values()));
         log.info("[PowerTransportService] start to initialize RemoteEngine[type={},address={}]", protocol, address);
         RemoteEngine re = new PowerJobRemoteEngine();
