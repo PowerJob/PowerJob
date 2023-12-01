@@ -1,16 +1,16 @@
 package tech.powerjob.remote.http;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RequestBody;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
+import tech.powerjob.shade.io.vertx.core.Handler;
+import tech.powerjob.shade.io.vertx.core.Vertx;
+import tech.powerjob.shade.io.vertx.core.http.HttpClient;
+import tech.powerjob.shade.io.vertx.core.http.HttpServer;
+import tech.powerjob.shade.io.vertx.core.json.JsonObject;
+import tech.powerjob.shade.io.vertx.ext.web.RequestBody;
+import tech.powerjob.shade.io.vertx.ext.web.Route;
+import tech.powerjob.shade.io.vertx.ext.web.Router;
+import tech.powerjob.shade.io.vertx.ext.web.RoutingContext;
+import tech.powerjob.shade.io.vertx.ext.web.handler.BodyHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.exception.PowerJobException;

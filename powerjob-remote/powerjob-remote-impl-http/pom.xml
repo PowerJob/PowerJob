@@ -29,21 +29,6 @@
             <version>${powerjob-remote-framework.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-core</artifactId>
-            <version>${vertx.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web</artifactId>
-            <version>${vertx.version}</version>
-        </dependency>
-
-
-
     </dependencies>
 
 </project>

@@ -1,11 +1,11 @@
 package tech.powerjob.remote.http.vertx;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
+import tech.powerjob.shade.io.vertx.core.Vertx;
+import tech.powerjob.shade.io.vertx.core.VertxOptions;
+import tech.powerjob.shade.io.vertx.core.http.HttpClient;
+import tech.powerjob.shade.io.vertx.core.http.HttpClientOptions;
+import tech.powerjob.shade.io.vertx.core.http.HttpServer;
+import tech.powerjob.shade.io.vertx.core.http.HttpServerOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.OmsConstant;
@@ -50,7 +50,7 @@ public class VertxInitializer {
         // 非核心组件，不直接依赖类（无 import），加载报错可忽略
         try {
             httpServerOptions
-                    .addCompressor(io.netty.handler.codec.compression.StandardCompressionOptions.gzip())
+                    .addCompressor(tech.powerjob.shade.io.netty.handler.codec.compression.StandardCompressionOptions.gzip())
                     .setCompressionSupported(true);
             log.warn("[PowerJob-Vertx] enable server side compression successfully!");
         } catch (Throwable t) {
