@@ -107,8 +107,8 @@ public class PowerJobWorker {
                     .setServerType(ServerType.WORKER)
                     .setBindAddress(new Address().setHost(localBindIp).setPort(localBindPort))
                     .setActorList(Lists.newArrayList(taskTrackerActor, processorTrackerActor, workerActor));
-            if (StringUtils.isNotEmpty(config.getServerProxyAddress())) {
-                ProxyConfig proxyConfig = new ProxyConfig().setUseProxy(true).setProxyUrl(config.getServerProxyAddress());
+            if (StringUtils.isNotEmpty(config.getProxyServerAddress())) {
+                ProxyConfig proxyConfig = new ProxyConfig().setUseProxy(true).setProxyUrl(config.getProxyServerAddress());
                 engineConfig.setProxyConfig(proxyConfig);
                 log.info("[PowerJobWorker] active proxy by config, proxy config: {}", proxyConfig);
             }

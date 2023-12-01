@@ -55,4 +55,12 @@ class HttpProxyServiceTest {
         Thread.sleep(1000);
     }
 
+    @Test
+    void testFixUrl() {
+        String correctUrl = "http://www.taobao.com";
+        assert  HttpProxyService.fixUrl("http://www.taobao.com").equals(correctUrl);
+        assert  HttpProxyService.fixUrl("http://www.taobao.com/").equals(correctUrl);
+        assert  HttpProxyService.fixUrl("www.taobao.com/").equals(correctUrl);
+    }
+
 }

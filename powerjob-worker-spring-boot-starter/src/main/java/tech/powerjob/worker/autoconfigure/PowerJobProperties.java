@@ -170,5 +170,7 @@ public class PowerJobProperties {
          */
         private Integer healthReportInterval = 10;
 
+        private String proxyServerAddress;
+
     }
 }

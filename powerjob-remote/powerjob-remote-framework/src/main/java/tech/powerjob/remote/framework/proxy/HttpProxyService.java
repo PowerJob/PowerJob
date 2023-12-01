@@ -1,5 +1,6 @@
 package tech.powerjob.remote.framework.proxy;
 
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import tech.powerjob.shade.io.vertx.ext.web.Router;
 import tech.powerjob.shade.io.vertx.ext.web.handler.BodyHandler;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +49,8 @@ public class HttpProxyService implements ProxyService {
 
     private static final String PROXY_PATH = "/proxy";
 
+    private static final Set<Integer> INITIALIZED_PORTS = Sets.newHashSet();
+
     public HttpProxyService(Transporter transporter) {
         this.transporter = transporter;
     }
@@ -61,6 +65,14 @@ public class HttpProxyService implements ProxyService {
             return;
         }
 
+        // server 存在多套协议时，会初始化多次 proxy-server，同一个端口只需要初始化一次
+        Integer proxyServerPort = proxyConfig.getProxyServerPort();
+        if (INITIALIZED_PORTS.contains(proxyServerPort)) {
+            log.info("[HttpProxyService] this port already publish the proxy service, skip publish!");
+            return;
+        }
+
+        INITIALIZED_PORTS.add(proxyServerPort);
         log.info("[HttpProxyService] start to initialize proxy server by proxy config: {}", proxyConfig);
 
         HttpServerOptions httpServerOptions = new HttpServerOptions().setIdleTimeout(300);
@@ -71,6 +83,10 @@ public class HttpProxyService implements ProxyService {
         router.post(PROXY_PATH).blockingHandler(ctx -> {
             final RequestBody body = ctx.body();
             ProxyRequest proxyRequest = body.asPojo(ProxyRequest.class);
+
+            if (log.isDebugEnabled()) {
+                log.debug("[HttpProxyService] receive proxy request: {}", proxyRequest);
+            }
 
             PowerSerializable ret = (PowerSerializable) JsonUtils.parseObjectUnsafe(proxyRequest.getRequest(), proxyRequest.getClz());
 
@@ -90,14 +106,15 @@ public class HttpProxyService implements ProxyService {
                 log.error("[HttpProxyService] proxy request failed!", e);
             }
 
-            log.debug("[HttpProxyService] send proxy result: {}", proxyResult);
+            if (log.isDebugEnabled()) {
+                log.debug("[HttpProxyService] send proxy result: {}", proxyResult);
+            }
             ctx.json(JsonObject.mapFrom(proxyResult));
         });
 
-        Integer proxyServerPort = proxyConfig.getProxyServerPort();
 
         httpServer.requestHandler(router)
-                .exceptionHandler(e -> log.error("[HttpProxyService] unknown exception in Actor communication!", e))
+                .exceptionHandler(e -> log.error("[HttpProxyService] unknown exception in HttpProxyService!", e))
                 .listen(proxyServerPort)
                 .toCompletionStage()
                 .toCompletableFuture()
@@ -108,6 +125,10 @@ public class HttpProxyService implements ProxyService {
 
     @Override
     public Transporter warpProxyTransporter(ServerType currentServerType) {
+
+        if (proxyConfig == null) {
+            return transporter;
+        }
 
         if (proxyConfig.isUseProxy()) {
             String proxyUrl = proxyConfig.getProxyUrl();
@@ -122,7 +143,11 @@ public class HttpProxyService implements ProxyService {
 
     CompletionStage<ProxyResult> sendProxyRequest(ProxyRequest proxyRequest) {
 
-        String fullUrl = String.format("%s/%s", proxyConfig.getProxyUrl(), PROXY_PATH);
+        String fullUrl = String.format("%s%s", fixUrl(proxyConfig.getProxyUrl()), PROXY_PATH);
+
+        if (log.isDebugEnabled()) {
+            log.debug("[ProxyTransporter] send proxy request, url: {}, request: {}", fullUrl, proxyRequest);
+        }
 
         HttpClient httpClient = vertx().createHttpClient();
         RequestOptions requestOptions = new RequestOptions()
@@ -234,6 +259,16 @@ public class HttpProxyService implements ProxyService {
             // 仅对向通讯需要使用代理
             return Objects.equals(url.getServerType(), myServerType);
         }
+    }
+
+    static String fixUrl(String url) {
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        if (url.startsWith("http")) {
+            return url;
+        }
+        return "http://".concat(url);
     }
 
 }

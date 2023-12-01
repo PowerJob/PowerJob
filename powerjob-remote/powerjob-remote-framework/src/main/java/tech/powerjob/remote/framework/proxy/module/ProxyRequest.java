@@ -64,4 +64,9 @@ public class ProxyRequest implements Serializable {
         this.proxyMethod = proxyMethod;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return JsonUtils.toJSONString(this);
+    }
 }

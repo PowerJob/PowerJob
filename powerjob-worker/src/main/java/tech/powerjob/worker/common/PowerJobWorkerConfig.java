@@ -91,5 +91,5 @@ public class PowerJobWorkerConfig {
     /**
      * server proxy address
      */
-    private String serverProxyAddress;
+    private String proxyServerAddress;
 }

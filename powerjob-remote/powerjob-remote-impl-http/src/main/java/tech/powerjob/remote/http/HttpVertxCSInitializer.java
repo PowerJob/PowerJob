@@ -94,7 +94,7 @@ public class HttpVertxCSInitializer implements CSInitializer {
         final String host = config.getBindAddress().getHost();
 
         httpServer.requestHandler(router)
-                .exceptionHandler(e -> log.error("[PowerJob] unknown exception in Actor communication!", e))
+                .exceptionHandler(e -> log.error("[PowerJob] unknown exception in HttpVertx communication!", e))
                 .listen(port, host)
                 .toCompletionStage()
                 .toCompletableFuture()
