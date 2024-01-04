@@ -20,7 +20,7 @@ public class Address implements Serializable {
     private int port;
 
     public String toFullAddress() {
-        return String.format("%s:%d", host, port);
+        return toFullAddress(host, port);
     }
 
     public static Address fromIpv4(String ipv4) {
@@ -28,6 +28,10 @@ public class Address implements Serializable {
         return new Address()
                 .setHost(split[0])
                 .setPort(Integer.parseInt(split[1]));
+    }
+
+    public static String toFullAddress(String host, int port) {
+        return String.format("%s:%d", host, port);
     }
 
     @Override

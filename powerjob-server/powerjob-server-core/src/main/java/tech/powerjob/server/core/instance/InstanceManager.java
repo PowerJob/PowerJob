@@ -15,10 +15,11 @@ import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.timewheel.holder.HashedWheelTimerHolder;
 import tech.powerjob.server.common.utils.SpringUtils;
+import tech.powerjob.server.core.alarm.AlarmUtils;
 import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
-import tech.powerjob.server.extension.defaultimpl.alarm.AlarmCenter;
-import tech.powerjob.server.extension.defaultimpl.alarm.module.JobInstanceAlarm;
+import tech.powerjob.server.core.alarm.AlarmCenter;
+import tech.powerjob.server.core.alarm.module.JobInstanceAlarm;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
@@ -239,7 +240,7 @@ public class InstanceManager implements TransportServiceAware {
         if (!StringUtils.isEmpty(alertContent)) {
             content.setResult(alertContent);
         }
-        alarmCenter.alarmFailed(content, userList);
+        alarmCenter.alarmFailed(content, AlarmUtils.convertUserInfoList2AlarmTargetList(userList));
     }
 
     @Override
