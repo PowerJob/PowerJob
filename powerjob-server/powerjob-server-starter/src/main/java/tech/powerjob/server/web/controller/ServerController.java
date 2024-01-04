@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
@@ -47,6 +48,16 @@ public class ServerController implements ServerInfoAware {
     public ResultDTO<Long> assertAppName(String appName) {
         Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
         return appInfoOpt.map(appInfoDO -> ResultDTO.success(appInfoDO.getId())).
+                orElseGet(() -> ResultDTO.failed(String.format("app(%s) is not registered! Please register the app in oms-console first.", appName)));
+    }
+
+    @GetMapping("/assertV2")
+    public ResultDTO<WorkerAppInfo> assertAppNameV2(String appName) {
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
+        return appInfoOpt.map(appInfoDO -> {
+                    WorkerAppInfo workerAppInfo = new WorkerAppInfo().setAppId(appInfoDO.getId());
+                    return ResultDTO.success(workerAppInfo);
+                }).
                 orElseGet(() -> ResultDTO.failed(String.format("app(%s) is not registered! Please register the app in oms-console first.", appName)));
     }
 

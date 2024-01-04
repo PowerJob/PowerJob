@@ -57,6 +57,21 @@ public class NetUtils {
     }
 
     /**
+     * 检测某个 IP 端口是否可用
+     * @param ip IP
+     * @param port 端口
+     * @return 是否可用
+     */
+    public static boolean checkIpPortAvailable(String ip, int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(ip, port), 1000);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
      * 获取本机 IP 地址
      *
      * @return 本机 IP 地址
@@ -154,6 +169,9 @@ public class NetUtils {
         } catch (Throwable e) {
             log.warn("[Net] findNetworkInterface failed", e);
         }
+
+        // sort by interface index, the smaller is preferred.
+         validNetworkInterfaces.sort(Comparator.comparingInt(NetworkInterface::getIndex));
 
         // Try to find the preferred one
         for (NetworkInterface networkInterface : validNetworkInterfaces) {

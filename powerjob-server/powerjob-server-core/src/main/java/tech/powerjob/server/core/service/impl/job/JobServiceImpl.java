@@ -89,8 +89,12 @@ public class JobServiceImpl implements JobService {
         fillDefaultValue(jobInfoDO);
 
         // 转化报警用户列表
-        if (!CollectionUtils.isEmpty(request.getNotifyUserIds())) {
-            jobInfoDO.setNotifyUserIds(SJ.COMMA_JOINER.join(request.getNotifyUserIds()));
+        if (request.getNotifyUserIds() != null) {
+            if (request.getNotifyUserIds().size() == 0) {
+                jobInfoDO.setNotifyUserIds(null);
+            } else {
+                jobInfoDO.setNotifyUserIds(SJ.COMMA_JOINER.join(request.getNotifyUserIds()));
+            }
         }
         LifeCycle lifecycle = Optional.ofNullable(request.getLifeCycle()).orElse(LifeCycle.EMPTY_LIFE_CYCLE);
         jobInfoDO.setLifecycle(JSON.toJSONString(lifecycle));

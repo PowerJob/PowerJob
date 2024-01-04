@@ -10,14 +10,16 @@ import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.request.ServerStopInstanceReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.timewheel.holder.HashedWheelTimerHolder;
 import tech.powerjob.server.common.utils.SpringUtils;
+import tech.powerjob.server.core.alarm.AlarmUtils;
 import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
-import tech.powerjob.server.extension.defaultimpl.alarm.AlarmCenter;
-import tech.powerjob.server.extension.defaultimpl.alarm.module.JobInstanceAlarm;
+import tech.powerjob.server.core.alarm.AlarmCenter;
+import tech.powerjob.server.core.alarm.module.JobInstanceAlarm;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
@@ -81,6 +83,14 @@ public class InstanceManager implements TransportServiceAware {
             log.warn("[InstanceManager-{}] can't find InstanceInfo from database", instanceId);
             return;
         }
+
+        // 考虑极端情况：Processor 处理耗时小于 server 写 DB 耗时，会导致状态上报时无 taskTracker 地址，此处等待后重新从DB获取数据 GitHub#620
+        if (StringUtils.isEmpty(instanceInfo.getTaskTrackerAddress())) {
+            log.warn("[InstanceManager-{}] TaskTrackerAddress is empty, server will wait then acquire again!", instanceId);
+            CommonUtils.easySleep(277);
+            instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
+        }
+
         int originStatus = instanceInfo.getStatus();
         // 丢弃过期的上报数据
         if (req.getReportTime() <= instanceInfo.getLastReportTime()) {
@@ -230,7 +240,7 @@ public class InstanceManager implements TransportServiceAware {
         if (!StringUtils.isEmpty(alertContent)) {
             content.setResult(alertContent);
         }
-        alarmCenter.alarmFailed(content, userList);
+        alarmCenter.alarmFailed(content, AlarmUtils.convertUserInfoList2AlarmTargetList(userList));
     }
 
     @Override

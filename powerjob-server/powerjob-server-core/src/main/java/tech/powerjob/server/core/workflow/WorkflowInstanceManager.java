@@ -20,14 +20,15 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.utils.SpringUtils;
+import tech.powerjob.server.core.alarm.AlarmUtils;
 import tech.powerjob.server.core.helper.StatusMappingHelper;
 import tech.powerjob.server.core.lock.UseCacheLock;
 import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.core.service.WorkflowNodeHandleService;
 import tech.powerjob.server.core.uid.IdGenerateService;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;
-import tech.powerjob.server.extension.defaultimpl.alarm.AlarmCenter;
-import tech.powerjob.server.extension.defaultimpl.alarm.module.WorkflowInstanceAlarm;
+import tech.powerjob.server.core.alarm.AlarmCenter;
+import tech.powerjob.server.core.alarm.module.WorkflowInstanceAlarm;
 import tech.powerjob.server.persistence.remote.model.*;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInfoRepository;
@@ -458,7 +459,7 @@ public class WorkflowInstanceManager {
                     content.setResult(result);
 
                     List<UserInfoDO> userList = userService.fetchNotifyUserList(wfInfo.getNotifyUserIds());
-                    alarmCenter.alarmFailed(content, userList);
+                    alarmCenter.alarmFailed(content, AlarmUtils.convertUserInfoList2AlarmTargetList(userList));
                 });
             } catch (Exception ignore) {
                 // ignore

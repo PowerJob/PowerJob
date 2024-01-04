@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.extension.processor.ProcessorFactory;
+import tech.powerjob.worker.processor.impl.BuildInSpringMethodProcessorFactory;
 import tech.powerjob.worker.processor.impl.BuiltInSpringProcessorFactory;
 
 import java.util.Collections;
@@ -43,12 +44,14 @@ public class PowerJobSpringWorker implements ApplicationContextAware, Initializi
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         BuiltInSpringProcessorFactory springProcessorFactory = new BuiltInSpringProcessorFactory(applicationContext);
 
+        BuildInSpringMethodProcessorFactory springMethodProcessorFactory = new BuildInSpringMethodProcessorFactory(applicationContext);
         // append BuiltInSpringProcessorFactory
 
         List<ProcessorFactory> processorFactories = Lists.newArrayList(
                 Optional.ofNullable(config.getProcessorFactoryList())
                         .orElse(Collections.emptyList()));
         processorFactories.add(springProcessorFactory);
+        processorFactories.add(springMethodProcessorFactory);
         config.setProcessorFactoryList(processorFactories);
     }
 

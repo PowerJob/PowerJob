@@ -13,10 +13,11 @@ import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.server.common.constants.PJThreadPool;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.extension.LockService;
-import tech.powerjob.server.persistence.mongodb.GridFsManager;
+import tech.powerjob.server.extension.dfs.DFsService;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.WorkflowNodeInfoRepository;
+import tech.powerjob.server.persistence.storage.Constants;
 import tech.powerjob.server.remote.worker.WorkerClusterManagerService;
 
 import java.io.File;
@@ -32,7 +33,7 @@ import java.util.Date;
 @Service
 public class CleanService {
 
-    private final GridFsManager gridFsManager;
+    private final DFsService dFsService;
 
     private final InstanceInfoRepository instanceInfoRepository;
 
@@ -57,12 +58,12 @@ public class CleanService {
 
     private static final String HISTORY_DELETE_LOCK = "history_delete_lock";
 
-    public CleanService(GridFsManager gridFsManager, InstanceInfoRepository instanceInfoRepository, WorkflowInstanceInfoRepository workflowInstanceInfoRepository,
+    public CleanService(DFsService dFsService, InstanceInfoRepository instanceInfoRepository, WorkflowInstanceInfoRepository workflowInstanceInfoRepository,
                         WorkflowNodeInfoRepository workflowNodeInfoRepository, LockService lockService,
                         @Value("${oms.instanceinfo.retention}") int instanceInfoRetentionDay,
                         @Value("${oms.container.retention.local}") int localContainerRetentionDay,
                         @Value("${oms.container.retention.remote}") int remoteContainerRetentionDay) {
-        this.gridFsManager = gridFsManager;
+        this.dFsService = dFsService;
         this.instanceInfoRepository = instanceInfoRepository;
         this.workflowInstanceInfoRepository = workflowInstanceInfoRepository;
         this.workflowNodeInfoRepository = workflowNodeInfoRepository;
@@ -106,8 +107,8 @@ public class CleanService {
             // 删除无用节点
             cleanWorkflowNodeInfo();
             // 删除 GridFS 过期文件
-            cleanRemote(GridFsManager.LOG_BUCKET, instanceInfoRetentionDay);
-            cleanRemote(GridFsManager.CONTAINER_BUCKET, remoteContainerRetentionDay);
+            cleanRemote(Constants.LOG_BUCKET, instanceInfoRetentionDay);
+            cleanRemote(Constants.CONTAINER_BUCKET, remoteContainerRetentionDay);
         } finally {
             lockService.unlock(HISTORY_DELETE_LOCK);
         }
@@ -152,15 +153,13 @@ public class CleanService {
             log.info("[CleanService] won't clean up bucket({}) because of offset day <= 0.", bucketName);
             return;
         }
-        if (gridFsManager.available()) {
-            Stopwatch stopwatch = Stopwatch.createStarted();
-            try {
-                gridFsManager.deleteBefore(bucketName, day);
-            }catch (Exception e) {
-                log.warn("[CleanService] clean remote bucket({}) failed.", bucketName, e);
-            }
-            log.info("[CleanService] clean remote bucket({}) successfully, using {}.", bucketName, stopwatch.stop());
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        try {
+            dFsService.cleanExpiredFiles(bucketName, day);
+        }catch (Exception e) {
+            log.warn("[CleanService] clean remote bucket({}) failed.", bucketName, e);
         }
+        log.info("[CleanService] clean remote bucket({}) successfully, using {}.", bucketName, stopwatch.stop());
     }
 
     @VisibleForTesting

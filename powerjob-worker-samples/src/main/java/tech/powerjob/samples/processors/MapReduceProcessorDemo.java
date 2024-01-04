@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -40,7 +41,7 @@ public class MapReduceProcessorDemo implements MapReduceProcessor {
         log.info("taskContext:{}", JsonUtils.toJSONString(context));
 
         // 根据控制台参数获取MR批次及子任务大小
-        final JSONObject jobParams = JSONObject.parseObject(context.getJobParams());
+        final JSONObject jobParams = Optional.ofNullable(context.getJobParams()).map(JSONObject::parseObject).orElse(new JSONObject());
 
         Integer batchSize = (Integer) jobParams.getOrDefault("batchSize", 100);
         Integer batchNum = (Integer) jobParams.getOrDefault("batchNum", 10);

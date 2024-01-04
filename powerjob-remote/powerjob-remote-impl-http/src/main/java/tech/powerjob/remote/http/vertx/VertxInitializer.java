@@ -53,8 +53,8 @@ public class VertxInitializer {
                     .addCompressor(io.netty.handler.codec.compression.StandardCompressionOptions.gzip())
                     .setCompressionSupported(true);
             log.warn("[PowerJob-Vertx] enable server side compression successfully!");
-        } catch (Exception e) {
-            log.warn("[PowerJob-Vertx] enable server side compression failed!", e);
+        } catch (Throwable t) {
+            log.warn("[PowerJob-Vertx] enable server side compression failed. The error is not fatal, but performance may be degraded", t);
         }
     }
 

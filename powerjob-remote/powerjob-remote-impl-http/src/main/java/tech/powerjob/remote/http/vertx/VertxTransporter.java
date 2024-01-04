@@ -10,6 +10,8 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.RequestOptions;
 import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.remote.framework.base.RemotingException;
 import tech.powerjob.remote.framework.base.URL;
@@ -25,6 +27,7 @@ import java.util.concurrent.CompletionStage;
  * @author tjq
  * @since 2023/1/1
  */
+@Slf4j
 public class VertxTransporter implements Transporter {
 
     private final HttpClient httpClient;
@@ -90,6 +93,8 @@ public class VertxTransporter implements Transporter {
 
                 return Future.succeededFuture(x.toJsonObject().mapTo(clz));
             });
-        }).toCompletionStage();
+        })
+                .onFailure(t -> log.warn("[VertxTransporter] post to url[{}] failed,msg: {}", url, ExceptionUtils.getMessage(t)))
+                .toCompletionStage();
     }
 }

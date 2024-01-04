@@ -68,7 +68,8 @@ public class SystemInfoUtils {
         }
 
         metrics.setDiskUsed(bytes2GB(total - free));
-        metrics.setDiskTotal(bytes2GB(total));
+        // 防止内存溢出导致total为负数,导致找不到worker实例
+        metrics.setDiskTotal(bytes2GB(total < 0 ? Long.MAX_VALUE >> 6 : total ));
         metrics.setDiskUsage(miniDouble(metrics.getDiskUsed() / metrics.getDiskTotal()));
     }
 

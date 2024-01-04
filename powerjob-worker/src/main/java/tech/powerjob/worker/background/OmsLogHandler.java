@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.common.utils.TransportUtils;
 
 import java.util.List;
