@@ -1,8 +1,13 @@
 package tech.powerjob.client;
 
-import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson2.TypeReference;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
-import tech.powerjob.common.response.*;
+import tech.powerjob.common.response.InstanceInfoDTO;
+import tech.powerjob.common.response.JobInfoDTO;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.response.WorkflowInfoDTO;
+import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
+import tech.powerjob.common.response.WorkflowNodeInfoDTO;
 
 import java.util.List;
 

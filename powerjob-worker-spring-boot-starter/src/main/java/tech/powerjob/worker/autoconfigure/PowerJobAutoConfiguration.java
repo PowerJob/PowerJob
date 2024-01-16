@@ -5,9 +5,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.worker.PowerJobSpringWorker;
+import tech.powerjob.worker.autoconfigure.registry.PowerJobAutoRegistryConfiguration;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 
 import java.util.Arrays;
@@ -21,6 +23,7 @@ import java.util.List;
  */
 @Configuration
 @EnableConfigurationProperties(PowerJobProperties.class)
+@Import({PowerJobAutoRegistryConfiguration.class})
 @ConditionalOnProperty(prefix = "powerjob.worker", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class PowerJobAutoConfiguration {
 

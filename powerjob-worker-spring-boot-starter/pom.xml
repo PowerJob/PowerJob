@@ -47,6 +47,19 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-client</artifactId>
+            <version>${powerjob.worker.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.alibaba.fastjson2</groupId>
+                    <artifactId>fastjson2</artifactId>
+                </exclusion>
+            </exclusions>
+            <optional>true</optional>
+        </dependency>
+
     </dependencies>
 
 </project>
