@@ -1,5 +1,6 @@
 package tech.powerjob.worker.autoconfigure;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,10 +23,12 @@ import java.util.List;
  * @since 2020/7/26 16:37
  */
 @Configuration
+@RequiredArgsConstructor
 @EnableConfigurationProperties(PowerJobProperties.class)
-@Import({PowerJobAutoRegistryConfiguration.class})
+@Import(PowerJobAutoRegistryConfiguration.class)
 @ConditionalOnProperty(prefix = "powerjob.worker", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class PowerJobAutoConfiguration {
+
 
     @Bean
     @ConditionalOnMissingBean
@@ -38,7 +41,7 @@ public class PowerJobAutoConfiguration {
          * any prefix, i.e. http://.
          */
         CommonUtils.requireNonNull(worker.getServerAddress(), "serverAddress can't be empty! " +
-            "if you don't want to enable powerjob, please config program arguments: powerjob.worker.enabled=false");
+                "if you don't want to enable powerjob, please config program arguments: powerjob.worker.enabled=false");
         List<String> serverAddress = Arrays.asList(worker.getServerAddress().split(","));
 
         /*
@@ -93,5 +96,6 @@ public class PowerJobAutoConfiguration {
          */
         return new PowerJobSpringWorker(config);
     }
+
 
 }

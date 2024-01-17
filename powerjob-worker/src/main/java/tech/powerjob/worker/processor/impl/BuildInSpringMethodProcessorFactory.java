@@ -3,9 +3,9 @@ package tech.powerjob.worker.processor.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import tech.powerjob.worker.annotation.PowerJobHandler;
 import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.extension.processor.ProcessorDefinition;
+import tech.powerjob.worker.sdk.PowerJobHandler;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;

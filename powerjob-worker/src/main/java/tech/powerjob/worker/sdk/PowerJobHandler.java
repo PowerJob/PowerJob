@@ -1,7 +1,11 @@
-package tech.powerjob.worker.annotation;
+package tech.powerjob.worker.sdk;
 
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * 方法级别的power-job调度

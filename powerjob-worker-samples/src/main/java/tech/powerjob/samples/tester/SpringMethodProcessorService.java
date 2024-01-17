@@ -1,9 +1,9 @@
 package tech.powerjob.samples.tester;
 
 import org.springframework.stereotype.Component;
-import tech.powerjob.worker.annotation.PowerJobHandler;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.log.OmsLogger;
+import tech.powerjob.worker.sdk.PowerJobHandler;
 
 @Component(value = "springMethodProcessorService")
 public class SpringMethodProcessorService {
