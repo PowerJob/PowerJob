@@ -15,7 +15,9 @@ public interface ProcessRegistry {
     /**
      * 任务名称
      */
-    String name();
+    default String name() {
+        return "DEFAULT";
+    }
 
     /**
      * 任务描述

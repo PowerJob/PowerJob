@@ -3,7 +3,6 @@ package tech.powerjob.worker.autoconfigure.registry;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.util.ClassUtils;
@@ -64,8 +63,13 @@ public class AutoRegistryJobBean implements InitializingBean {
             jobInfoQuery.setStatusIn(Lists.newArrayList(1));
             ResultDTO<List<JobInfoDTO>> listResultDTO = powerJobClient.queryJob(jobInfoQuery);
             List<JobInfoDTO> data = listResultDTO.getData();
+            String jobName;
+            if ("DEFAULT".equals(registry.name())) {
+                jobName = appName + '-' + registry.name() + '-';
+            } else {
+                jobName = registry.name();
+            }
 
-            String jobName = appName + '-' + registry.name() + '-' + DateFormatUtils.format(System.currentTimeMillis(), "yyyyMMddHHmmss");
 
             if (data.isEmpty()) {
                 //注册
