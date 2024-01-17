@@ -51,8 +51,13 @@ public class PowerJobAutoConfiguration {
         /*
          * Configuration of worker port. Random port is enabled when port is set with non-positive number.
          */
+
         if (worker.getPort() != null) {
-            config.setPort(worker.getPort());
+            int port = worker.getPort();
+            if (port <= 0) {
+                port = NetUtils.getRandomPort();
+            }
+            config.setPort(port);
         } else {
             int port = worker.getAkkaPort();
             if (port <= 0) {

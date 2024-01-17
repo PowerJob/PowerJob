@@ -1,46 +1,46 @@
 package tech.powerjob.worker.autoconfigure.registry;
 
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.FormBody;
+import com.alibaba.fastjson.JSON;
+import okhttp3.MediaType;
 import okhttp3.RequestBody;
-import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.client.TypeStore;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.HttpUtils;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author minsin/mintonzhang@163.com
  * @since 2024/1/17
  */
-@Slf4j
 public abstract class RegistryAppUtils {
 
-    public static void tryRegisterApp(String appName, String password, List<String> addressList) {
+    public static void tryRegisterApp(AtomicBoolean flag, String appName, String password, List<String> addressList) {
 
+        HashMap<String, String> request = new HashMap<>();
+        request.put("appName", appName);
+        request.put("password", password);
 
-        List<Exception> exceptions = new ArrayList<>(addressList.size());
+        RequestBody requestBody = RequestBody.create(MediaType.parse(OmsConstant.JSON_MEDIA_TYPE), JSON.toJSONString(request));
+
 
         for (String address : addressList) {
             try {
-                RequestBody body = new FormBody.Builder()
-                        .add("appName", appName)
-                        .add("password", password)
-                        .build();
-
                 String url = String.format("http://%s%s%s", address, "", "/appInfo/save");
-                HttpUtils.post(url, body);
-            } catch (Exception err) {
-                exceptions.add(err);
+                String post = HttpUtils.post(url, requestBody);
+                //JSON
+                ResultDTO<Void> result = JSON.parseObject(post, TypeStore.VOID_RESULT_TYPE);
+                if (result.isSuccess()) {
+                    flag.set(true);
+                    break;
+                }
+            } catch (Exception ignore) {
+
             }
         }
 
-        if (exceptions.isEmpty()) {
-            log.info("[PowerJobRegistry] 注册App成功,appName:({}),password:({}),serverAddress:({})", appName, password, addressList);
-        } else {
-            PowerJobException powerJobException = new PowerJobException("registry failed.");
-            exceptions.forEach(powerJobException::addSuppressed);
-            log.error("[PowerJobRegistry] 注册App失败,appName:({}),password:({}),serverAddress:({})", appName, password, addressList, powerJobException);
-        }
     }
 }

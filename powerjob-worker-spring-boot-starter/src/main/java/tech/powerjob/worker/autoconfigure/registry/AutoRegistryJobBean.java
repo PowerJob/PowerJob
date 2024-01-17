@@ -65,7 +65,7 @@ public class AutoRegistryJobBean implements InitializingBean {
             ResultDTO<List<JobInfoDTO>> listResultDTO = powerJobClient.queryJob(jobInfoQuery);
             List<JobInfoDTO> data = listResultDTO.getData();
 
-            String jobName = appName + '-' + registry.name() + '-' + DateFormatUtils.format(System.currentTimeMillis(), "yyyyMMdd HH:mm:ss");
+            String jobName = appName + '-' + registry.name() + '-' + DateFormatUtils.format(System.currentTimeMillis(), "yyyyMMddHHmmss");
 
             if (data.isEmpty()) {
                 //注册
@@ -80,6 +80,7 @@ public class AutoRegistryJobBean implements InitializingBean {
                 saveJobInfoRequest.setEnable(registry.enable());
                 saveJobInfoRequest.setExtra("Client Auto Registry");
                 saveJobInfoRequest.setTag(appName);
+                saveJobInfoRequest.setLogConfig(registry.logConfig());
                 powerJobClient.saveJob(saveJobInfoRequest);
                 log.info("[PowerJobRegistry] 自动注册job成功,process({}),jobName:({})", classFileName, jobName);
             } else {

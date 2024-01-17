@@ -1,12 +1,12 @@
 package tech.powerjob.worker.autoconfigure;
 
-import tech.powerjob.worker.PowerJobWorker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import tech.powerjob.worker.PowerJobWorker;
 
 @Configuration
 @EnableAutoConfiguration

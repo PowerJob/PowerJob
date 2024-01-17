@@ -1,10 +1,8 @@
 package tech.powerjob.worker.sdk;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
-import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.LogConfig;
 
 /**
  * @author minsin/mintonzhang@163.com
@@ -46,6 +44,15 @@ public interface ProcessRegistry {
 
     TimeExpression timeExpression();
 
+
+    default LogConfig logConfig() {
+        //参考 log type {@link tech.powerjob.common.enums.LogType}
+        //参考 log type  {@link tech.powerjob.common.enums.LogLevel}
+        return new LogConfig()
+                .setLevel(2)
+                .setType(1);
+    }
+
     /**
      * 注册后自动执行
      */
@@ -53,11 +60,4 @@ public interface ProcessRegistry {
         return true;
     }
 
-    @Getter
-    @RequiredArgsConstructor
-    class TimeExpression {
-
-        private final TimeExpressionType timeExpressionType;
-        private final String timeExpression;
-    }
 }
