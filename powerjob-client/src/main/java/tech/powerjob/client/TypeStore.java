@@ -1,6 +1,6 @@
 package tech.powerjob.client;
 
-import com.alibaba.fastjson2.TypeReference;
+import com.alibaba.fastjson.TypeReference;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;

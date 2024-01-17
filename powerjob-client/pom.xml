@@ -15,7 +15,7 @@
 
     <properties>
         <junit.version>5.9.1</junit.version>
-        <fastjson2.version>2.0.25</fastjson2.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <powerjob.common.version>4.3.6</powerjob.common.version>
 
         <mvn.shade.plugin.version>3.2.4</mvn.shade.plugin.version>
@@ -25,9 +25,9 @@
 
         <!-- fastJson -->
         <dependency>
-            <groupId>com.alibaba.fastjson2</groupId>
-            <artifactId>fastjson2</artifactId>
-            <version>${fastjson2.version}</version>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
         </dependency>
 
         <!-- oms-common -->

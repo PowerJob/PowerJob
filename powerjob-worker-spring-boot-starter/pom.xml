@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-spring-boot-starter</artifactId>
-    <version>4.3.6-SNAPSHOT</version>
+    <version>4.3.6</version>
     <packaging>jar</packaging>
 
     <properties>

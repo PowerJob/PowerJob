@@ -1,7 +1,7 @@
 //package tech.powerjob.client.test;
 //
 //
-//import com.alibaba.fastjson2.JSONObject;
+//import com.alibaba.fastjson.JSONObject;
 //import tech.powerjob.client.PowerJobClient;
 //import tech.powerjob.common.enums.ExecuteType;
 //import tech.powerjob.common.enums.ProcessorType;
