@@ -83,7 +83,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(instanceId, req.getMaxWorkerCount(), req.getAllWorkerAddress());
         this.taskPersistenceService = workerRuntime.getTaskPersistenceService();
         // 构建缓存
-        taskId2BriefInfo = CacheBuilder.newBuilder().maximumSize(1024).build();
+        taskId2BriefInfo = CacheBuilder.newBuilder().maximumSize(1024).softValues().build();
 
         // 构建分段锁
         segmentLock = new SegmentLock(UPDATE_CONCURRENCY);
@@ -226,7 +226,6 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                         3. 广播任务每台机器都需要执行，因此不应该重新分配worker（广播任务不应当修改地址）
                          */
                         String taskName = taskOpt.get().getTaskName();
-                        ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
                         if (!taskName.equals(TaskConstant.ROOT_TASK_NAME) && !taskName.equals(TaskConstant.LAST_TASK_NAME) && executeType != ExecuteType.BROADCAST) {
                             updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
                         }
@@ -243,8 +242,8 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                 }
             }
 
-            // 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）
-            result = result == null ? "" : result;
+            // 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）（24.2.4 更新：大规模 MAP 任务追求极限性能，不持久化无用的子任务 result）
+            result = result == null || ExecuteType.MAP.equals(executeType) ? "" : result;
             boolean updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, newStatus, reportTime, result);
 
             if (!updateResult) {
