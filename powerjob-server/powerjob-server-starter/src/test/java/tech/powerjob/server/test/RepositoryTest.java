@@ -53,7 +53,7 @@ public class RepositoryTest {
     public void testBatchLock() {
         List<OmsLockDO> locks = Lists.newArrayList();
         for (int i = 0; i < 10; i++) {
-            OmsLockDO lockDO = new OmsLockDO("lock" + i, NetUtils.getLocalHost(), 10000L);
+            OmsLockDO lockDO = new OmsLockDO("lock" + i, NetUtils.getLocalHost4Test(), 10000L);
             locks.add(lockDO);
         }
         omsLockRepository.saveAll(locks);
@@ -63,7 +63,7 @@ public class RepositoryTest {
     @Test
     public void testDeleteLock() {
         String lockName = "test-lock";
-        OmsLockDO lockDO = new OmsLockDO(lockName, NetUtils.getLocalHost(), 10000L);
+        OmsLockDO lockDO = new OmsLockDO(lockName, NetUtils.getLocalHost4Test(), 10000L);
         omsLockRepository.save(lockDO);
         omsLockRepository.deleteByLockName(lockName);
     }

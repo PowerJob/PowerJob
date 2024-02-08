@@ -123,14 +123,14 @@ public class VerificationProcessor extends CommonBasicProcessor implements MapRe
 
     @Override
     public ProcessResult preProcess(TaskContext context) throws Exception {
-        context.getOmsLogger().info("start to preProcess, current worker IP is {}.", NetUtils.getLocalHost());
+        context.getOmsLogger().info("start to preProcess, current worker IP is {}.", NetUtils.getLocalHost4Test());
         return new ProcessResult(true, "preProcess successfully!");
     }
 
     @Override
     public ProcessResult postProcess(TaskContext context, List<TaskResult> taskResults) throws Exception {
         OmsLogger omsLogger = context.getOmsLogger();
-        omsLogger.info("start to postProcess, current worker IP is {}.", NetUtils.getLocalHost());
+        omsLogger.info("start to postProcess, current worker IP is {}.", NetUtils.getLocalHost4Test());
         omsLogger.info("====== All Node's Process Result ======");
         taskResults.forEach(r -> omsLogger.info("taskId:{},success:{},result:{}", r.getTaskId(), r.isSuccess(), r.getResult()));
         return new ProcessResult(true, "postProcess successfully!");

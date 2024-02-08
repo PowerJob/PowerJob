@@ -69,7 +69,7 @@ public class ServerController implements ServerInfoAware {
     @GetMapping("/hello")
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
-        res.put("localHost", NetUtils.getLocalHost());
+        res.put("localHost", serverInfo.getIp());
         res.put("serverInfo", serverInfo);
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeTs", System.currentTimeMillis());

@@ -40,7 +40,7 @@ public class PersistenceServiceTest {
             task.setFailedCnt(0);
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
-            task.setAddress(NetUtils.getLocalHost());
+            task.setAddress(NetUtils.getLocalHost4Test());
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
             task.setLastReportTime(System.currentTimeMillis());
@@ -70,7 +70,7 @@ public class PersistenceServiceTest {
             task.setFailedCnt(0);
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
-            task.setAddress(NetUtils.getLocalHost());
+            task.setAddress(NetUtils.getLocalHost4Test());
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
             task.setLastReportTime(System.currentTimeMillis());
@@ -93,14 +93,14 @@ public class PersistenceServiceTest {
     @Test
     public void testUpdateLostTasks() throws Exception {
         Thread.sleep(1000);
-        boolean success = taskPersistenceService.updateLostTasks(10086L, Lists.newArrayList(NetUtils.getLocalHost()), true);
+        boolean success = taskPersistenceService.updateLostTasks(10086L, Lists.newArrayList(NetUtils.getLocalHost4Test()), true);
         System.out.println("updateLostTasks: " + success);
     }
 
     @Test
     public void testGetAllUnFinishedTaskByAddress() throws Exception {
         System.out.println("=============== testGetAllUnFinishedTaskByAddress ===============");
-        List<TaskDO> res = taskPersistenceService.getAllUnFinishedTaskByAddress(10086L, NetUtils.getLocalHost());
+        List<TaskDO> res = taskPersistenceService.getAllUnFinishedTaskByAddress(10086L, NetUtils.getLocalHost4Test());
         System.out.println(res);
     }
 

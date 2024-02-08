@@ -95,6 +95,14 @@ public class NetUtils {
     }
 
     /**
+     * 隔离调用 scope，核心场景才能直接调用 getLocalHost，方便查看使用点
+     * @return IP
+     */
+    public static String getLocalHost4Test() {
+        return getLocalHost();
+    }
+
+    /**
      * Find first valid IP from local network card
      *
      * @return first valid local IP

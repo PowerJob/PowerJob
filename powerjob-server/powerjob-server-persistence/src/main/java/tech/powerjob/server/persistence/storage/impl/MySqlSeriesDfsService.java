@@ -139,7 +139,7 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
         deleteByLocation(fileLocation);
 
         Map<String, Object> meta = Maps.newHashMap();
-        meta.put("_server_", NetUtils.getLocalHost());
+        meta.put("_server_", serverInfo.getIp());
         meta.put("_local_file_path_", storeRequest.getLocalFile().getAbsolutePath());
         BufferedInputStream bufferedInputStream = new BufferedInputStream(Files.newInputStream(storeRequest.getLocalFile().toPath()));
 

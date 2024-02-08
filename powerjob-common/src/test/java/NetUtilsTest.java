@@ -12,19 +12,19 @@ public class NetUtilsTest {
 
     @Test
     public void testOrigin() {
-        System.out.println(NetUtils.getLocalHost());
+        System.out.println(NetUtils.getLocalHost4Test());
     }
 
     @Test
     public void testPreferredNetworkInterface() {
         System.setProperty(PowerJobDKey.PREFERRED_NETWORK_INTERFACE, "en5");
-        System.out.println(NetUtils.getLocalHost());
+        System.out.println(NetUtils.getLocalHost4Test());
     }
 
     @Test
     public void testIgnoredNetworkInterface() {
         System.setProperty(PowerJobDKey.IGNORED_NETWORK_INTERFACE_REGEX, "utun.|llw.");
-        System.out.println(NetUtils.getLocalHost());
+        System.out.println(NetUtils.getLocalHost4Test());
     }
 
 }
