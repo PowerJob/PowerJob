@@ -56,14 +56,6 @@ public class PersistenceServiceTest {
         Thread.sleep(60000);
     }
 
-    @AfterEach
-    public void listData() {
-        System.out.println("============= listData =============");
-        List<TaskDO> result = taskPersistenceService.listAll();
-        System.out.println("size: " + result.size());
-        result.forEach(System.out::println);
-    }
-
 
     @Test
     public void testBatchSave(){
