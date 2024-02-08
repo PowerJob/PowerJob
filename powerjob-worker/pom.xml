@@ -19,7 +19,7 @@
         <hikaricp.version>4.0.3</hikaricp.version>
         <junit.version>5.9.1</junit.version>
 
-        <logback.version>1.2.9</logback.version>
+        <logback.version>1.2.13</logback.version>
 
         <powerjob-common.version>4.3.6</powerjob-common.version>
         <powerjob-remote-framework.version>4.3.6</powerjob-remote-framework.version>

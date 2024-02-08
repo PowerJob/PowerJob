@@ -19,7 +19,7 @@
 
         <!-- 不会被打包的部分，scope 只能是 test 或 provide -->
         <junit.version>5.9.1</junit.version>
-        <logback.version>1.2.9</logback.version>
+        <logback.version>1.2.13</logback.version>
         <powerjob.worker.version>4.3.6</powerjob.worker.version>
         <h2.db.version>2.2.224</h2.db.version>
         <mysql.version>8.0.28</mysql.version>
