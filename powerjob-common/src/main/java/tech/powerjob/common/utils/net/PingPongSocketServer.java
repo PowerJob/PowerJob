@@ -22,7 +22,7 @@ public class PingPongSocketServer implements PingPongServer {
 
     private ServerSocket serverSocket;
 
-    private transient boolean terminated = false;
+    private volatile boolean terminated = false;
 
     @Override
     public void initialize(int port) throws Exception{
