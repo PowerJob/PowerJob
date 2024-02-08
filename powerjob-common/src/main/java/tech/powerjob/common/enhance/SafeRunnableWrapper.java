@@ -1,4 +1,4 @@
-package tech.powerjob.worker.background;
+package tech.powerjob.common.enhance;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,11 +11,11 @@ import java.util.concurrent.ScheduledExecutorService;
  * @since 2023/9/20 16:04
  */
 @Slf4j
-public class RunnableWrapper implements Runnable {
+public class SafeRunnableWrapper implements Runnable {
 
   private final Runnable runnable;
 
-  public RunnableWrapper(Runnable runnable) {
+  public SafeRunnableWrapper(Runnable runnable) {
     this.runnable = runnable;
   }
 
@@ -24,7 +24,7 @@ public class RunnableWrapper implements Runnable {
     try {
       runnable.run();
     } catch (Exception e) {
-      log.error("[RunnableWrapper] run failed", e);
+      log.error("[SafeRunnableWrapper] run failed", e);
     }
   }
 }

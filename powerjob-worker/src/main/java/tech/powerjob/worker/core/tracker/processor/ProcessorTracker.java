@@ -9,7 +9,7 @@ import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.worker.background.RunnableAndCatch;
+import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.TransportUtils;
@@ -238,7 +238,7 @@ public class ProcessorTracker {
     /**
      * 定时向 TaskTracker 汇报（携带任务执行信息的心跳）
      */
-    private class CheckerAndReporter extends RunnableAndCatch {
+    private class CheckerAndReporter extends SafeRunnable {
 
         @Override
         @SuppressWarnings({"squid:S1066","squid:S3776"})

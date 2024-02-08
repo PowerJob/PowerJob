@@ -1,5 +1,6 @@
 package tech.powerjob.worker.background;
 
+import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.enums.LogLevel;
 import tech.powerjob.common.model.InstanceLogContent;
 import tech.powerjob.common.request.WorkerLogReportReq;
@@ -69,7 +70,7 @@ public class OmsLogHandler {
 
 
 
-    private class LogSubmitter extends RunnableAndCatch {
+    private class LogSubmitter extends SafeRunnable {
 
         @Override
         public void run0() {
