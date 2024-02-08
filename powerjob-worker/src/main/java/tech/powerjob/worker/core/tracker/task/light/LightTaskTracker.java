@@ -9,6 +9,7 @@ import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
+import tech.powerjob.worker.background.RunnableWrapper;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
@@ -93,14 +94,14 @@ public class LightTaskTracker extends TaskTracker {
             // 初始延迟加入随机值，避免在高并发场景下所有请求集中在一个时间段
             long initDelay = RandomUtils.nextInt(5000, 10000);
             // 上报任务状态
-            statusReportScheduledFuture = workerRuntime.getExecutorManager().getLightweightTaskStatusCheckExecutor().scheduleWithFixedDelay(this::checkAndReportStatus, initDelay, delay, TimeUnit.MILLISECONDS);
+            statusReportScheduledFuture = workerRuntime.getExecutorManager().getLightweightTaskStatusCheckExecutor().scheduleWithFixedDelay(new RunnableWrapper(this::checkAndReportStatus), initDelay, delay, TimeUnit.MILLISECONDS);
             // 超时控制
             if (instanceInfo.getInstanceTimeoutMS() != Integer.MAX_VALUE) {
                 if (instanceInfo.getInstanceTimeoutMS() < 1000L) {
-                    timeoutCheckScheduledFuture = workerRuntime.getExecutorManager().getLightweightTaskStatusCheckExecutor().scheduleAtFixedRate(this::timeoutCheck, instanceInfo.getInstanceTimeoutMS(), instanceInfo.getInstanceTimeoutMS() / 10, TimeUnit.MILLISECONDS);
+                    timeoutCheckScheduledFuture = workerRuntime.getExecutorManager().getLightweightTaskStatusCheckExecutor().scheduleAtFixedRate(new RunnableWrapper(this::timeoutCheck), instanceInfo.getInstanceTimeoutMS(), instanceInfo.getInstanceTimeoutMS() / 10, TimeUnit.MILLISECONDS);
                 } else {
                     // 执行时间超过 1 s 的任务，超时检测最小颗粒度为 1 s
-                    timeoutCheckScheduledFuture = workerRuntime.getExecutorManager().getLightweightTaskStatusCheckExecutor().scheduleAtFixedRate(this::timeoutCheck, instanceInfo.getInstanceTimeoutMS(), 1000L, TimeUnit.MILLISECONDS);
+                    timeoutCheckScheduledFuture = workerRuntime.getExecutorManager().getLightweightTaskStatusCheckExecutor().scheduleAtFixedRate(new RunnableWrapper(this::timeoutCheck), instanceInfo.getInstanceTimeoutMS(), 1000L, TimeUnit.MILLISECONDS);
                 }
             } else {
                 timeoutCheckScheduledFuture = null;
@@ -148,7 +149,12 @@ public class LightTaskTracker extends TaskTracker {
         }
         LightTaskTrackerManager.removeTaskTracker(instanceId);
         // 最后一列为总耗时（即占用资源的耗时，当前时间减去创建时间）
-        log.warn("[TaskTracker-{}] remove TaskTracker,task status {},start time:{},end time:{},real cost:{},total time:{}", instanceId, status, taskStartTime, taskEndTime, taskEndTime != null ? taskEndTime - taskStartTime : "unknown", System.currentTimeMillis() - createTime);
+        String msg = String.format("[TaskTracker-%s] remove TaskTracker,task status %s,start time:%s,end time:%s,real cost:%s,total time:%s", instanceId, status, taskStartTime, taskEndTime, taskEndTime != null ? taskEndTime - taskStartTime : "unknown", System.currentTimeMillis() - createTime);
+        if (TaskStatus.WORKER_PROCESS_SUCCESS.equals(status)) {
+            log.info(msg);
+        } else {
+            log.warn(msg);
+        }
     }
 
     @Override

@@ -19,6 +19,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.SegmentLock;
+import tech.powerjob.worker.background.RunnableAndCatch;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
@@ -444,13 +445,13 @@ public abstract class HeavyTaskTracker extends TaskTracker {
     /**
      * 定时扫描数据库中的task（出于内存占用量考虑，每次最多获取100个），并将需要执行的任务派发出去
      */
-    protected class Dispatcher implements Runnable {
+    protected class Dispatcher extends RunnableAndCatch {
 
         // 数据库查询限制，每次最多查询几个任务
         private static final int DB_QUERY_LIMIT = 100;
 
         @Override
-        public void run() {
+        public void run0() {
 
             if (finished.get()) {
                 return;
@@ -502,9 +503,9 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      * 执行器动态上线（for 秒级任务和 MR 任务）
      * 原则：server 查询得到的 执行器状态不会干预 worker 自己维护的状态，即只做新增，不做任何修改
      */
-    protected class WorkerDetector implements Runnable {
+    protected class WorkerDetector extends RunnableAndCatch {
         @Override
-        public void run() {
+        public void run0() {
 
             boolean needMoreWorker = ptStatusHolder.checkNeedMoreWorker();
             log.info("[TaskTracker-{}] checkNeedMoreWorker: {}", instanceId, needMoreWorker);
