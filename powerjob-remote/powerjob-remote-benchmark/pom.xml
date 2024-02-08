@@ -20,7 +20,7 @@
         <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
 
         <logback.version>1.2.9</logback.version>
-        <springboot.version>2.7.14</springboot.version>
+        <springboot.version>2.7.18</springboot.version>
         <powerjob-remote-impl-http.version>4.3.6</powerjob-remote-impl-http.version>
         <powerjob-remote-impl-akka.version>4.3.6</powerjob-remote-impl-akka.version>
 

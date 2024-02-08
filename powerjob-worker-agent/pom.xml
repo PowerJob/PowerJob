@@ -18,7 +18,7 @@
         <powerjob.worker.version>4.3.6</powerjob.worker.version>
         <logback.version>1.2.9</logback.version>
         <picocli.version>4.3.2</picocli.version>
-        <spring.version>5.3.23</spring.version>
+        <spring.version>5.3.31</spring.version>
 
         <spring.boot.version>2.3.4.RELEASE</spring.boot.version>
 

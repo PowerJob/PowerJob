@@ -21,10 +21,9 @@
         <junit.version>5.9.1</junit.version>
         <logback.version>1.2.9</logback.version>
         <powerjob.worker.version>4.3.6</powerjob.worker.version>
-        <spring.jdbc.version>5.2.9.RELEASE</spring.jdbc.version>
-        <h2.db.version>2.2.220</h2.db.version>
+        <h2.db.version>2.2.224</h2.db.version>
         <mysql.version>8.0.28</mysql.version>
-        <spring.version>5.3.23</spring.version>
+        <spring.version>5.3.31</spring.version>
 
         <!-- 全部 shade 化，避免依赖冲突 -->
         <fastjson.version>1.2.83</fastjson.version>
@@ -87,7 +86,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${spring.jdbc.version}</version>
+            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
 

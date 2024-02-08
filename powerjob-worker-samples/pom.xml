@@ -13,7 +13,7 @@
     <version>4.3.6</version>
 
     <properties>
-        <springboot.version>2.7.14</springboot.version>
+        <springboot.version>2.7.18</springboot.version>
         <powerjob.worker.starter.version>4.3.6</powerjob.worker.starter.version>
         <fastjson.version>1.2.83</fastjson.version>
         <powerjob.official.processors.version>4.3.6</powerjob.official.processors.version>
