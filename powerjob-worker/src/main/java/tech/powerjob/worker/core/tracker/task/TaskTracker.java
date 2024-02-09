@@ -2,6 +2,7 @@ package tech.powerjob.worker.core.tracker.task;
 
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.request.ServerScheduleJobReq;
@@ -33,6 +34,7 @@ public abstract class TaskTracker {
      * 任务实例信息
      */
     protected final InstanceInfo instanceInfo;
+    protected final ExecuteType executeType;
     /**
      * 追加的工作流上下文数据
      *
@@ -74,6 +76,9 @@ public abstract class TaskTracker {
         instanceInfo.setTaskRetryNum(req.getTaskRetryNum());
         instanceInfo.setLogConfig(req.getLogConfig());
         instanceInfo.setInstanceTimeoutMS(req.getInstanceTimeoutMS());
+
+        // 常用变量初始化
+        executeType = ExecuteType.valueOf(req.getExecuteType());
 
         // 特殊处理超时时间
         if (instanceInfo.getInstanceTimeoutMS() <= 0) {

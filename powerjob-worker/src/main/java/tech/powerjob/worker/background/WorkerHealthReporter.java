@@ -3,6 +3,7 @@ package tech.powerjob.worker.background;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.model.SystemMetrics;
 import tech.powerjob.common.request.WorkerHeartbeat;
 import tech.powerjob.worker.common.PowerJobWorkerVersion;
@@ -22,12 +23,12 @@ import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class WorkerHealthReporter implements Runnable {
+public class WorkerHealthReporter extends SafeRunnable {
 
     private final WorkerRuntime workerRuntime;
 
     @Override
-    public void run() {
+    public void run0() {
 
         // 没有可用Server，无法上报
         String currentServer = workerRuntime.getServerDiscoveryService().getCurrentServerAddress();

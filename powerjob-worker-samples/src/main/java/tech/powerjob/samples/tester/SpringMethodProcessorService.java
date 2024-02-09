@@ -1,6 +1,7 @@
 package tech.powerjob.samples.tester;
 
 import org.springframework.stereotype.Component;
+import tech.powerjob.samples.anno.ATestMethodAnnotation;
 import tech.powerjob.worker.annotation.PowerJobHandler;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.log.OmsLogger;
@@ -32,5 +33,13 @@ public class SpringMethodProcessorService {
         OmsLogger omsLogger = context.getOmsLogger();
         omsLogger.warn("testThrowException");
         throw new IllegalArgumentException("test");
+    }
+
+    @ATestMethodAnnotation
+    @PowerJobHandler(name = "testNormalReturnWithCustomAnno")
+    public String testNormalReturnWithCustomAnno(TaskContext context) {
+        OmsLogger omsLogger = context.getOmsLogger();
+        omsLogger.warn("测试自定义注解");
+        return "testNormalReturnWithCustomAnno";
     }
 }

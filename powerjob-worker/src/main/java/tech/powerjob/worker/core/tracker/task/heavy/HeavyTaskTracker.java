@@ -19,6 +19,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.SegmentLock;
+import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
@@ -83,7 +84,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(instanceId, req.getMaxWorkerCount(), req.getAllWorkerAddress());
         this.taskPersistenceService = workerRuntime.getTaskPersistenceService();
         // 构建缓存
-        taskId2BriefInfo = CacheBuilder.newBuilder().maximumSize(1024).build();
+        taskId2BriefInfo = CacheBuilder.newBuilder().maximumSize(1024).softValues().build();
 
         // 构建分段锁
         segmentLock = new SegmentLock(UPDATE_CONCURRENCY);
@@ -226,7 +227,6 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                         3. 广播任务每台机器都需要执行，因此不应该重新分配worker（广播任务不应当修改地址）
                          */
                         String taskName = taskOpt.get().getTaskName();
-                        ExecuteType executeType = ExecuteType.valueOf(instanceInfo.getExecuteType());
                         if (!taskName.equals(TaskConstant.ROOT_TASK_NAME) && !taskName.equals(TaskConstant.LAST_TASK_NAME) && executeType != ExecuteType.BROADCAST) {
                             updateEntity.setAddress(RemoteConstant.EMPTY_ADDRESS);
                         }
@@ -243,8 +243,8 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                 }
             }
 
-            // 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）
-            result = result == null ? "" : result;
+            // 更新状态（失败重试写入DB失败的，也就不重试了...谁让你那么倒霉呢...）（24.2.4 更新：大规模 MAP 任务追求极限性能，不持久化无用的子任务 result）
+            result = result == null || ExecuteType.MAP.equals(executeType) ? "" : result;
             boolean updateResult = taskPersistenceService.updateTaskStatus(instanceId, taskId, newStatus, reportTime, result);
 
             if (!updateResult) {
@@ -445,13 +445,13 @@ public abstract class HeavyTaskTracker extends TaskTracker {
     /**
      * 定时扫描数据库中的task（出于内存占用量考虑，每次最多获取100个），并将需要执行的任务派发出去
      */
-    protected class Dispatcher implements Runnable {
+    protected class Dispatcher extends SafeRunnable {
 
         // 数据库查询限制，每次最多查询几个任务
         private static final int DB_QUERY_LIMIT = 100;
 
         @Override
-        public void run() {
+        public void run0() {
 
             if (finished.get()) {
                 return;
@@ -503,9 +503,9 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      * 执行器动态上线（for 秒级任务和 MR 任务）
      * 原则：server 查询得到的 执行器状态不会干预 worker 自己维护的状态，即只做新增，不做任何修改
      */
-    protected class WorkerDetector implements Runnable {
+    protected class WorkerDetector extends SafeRunnable {
         @Override
-        public void run() {
+        public void run0() {
 
             boolean needMoreWorker = ptStatusHolder.checkNeedMoreWorker();
             log.info("[TaskTracker-{}] checkNeedMoreWorker: {}", instanceId, needMoreWorker);

@@ -21,7 +21,7 @@ public class TestUtils {
 
         req.setJobId(1L);
         req.setInstanceId(10086L);
-        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost() + ":" + RemoteConstant.DEFAULT_WORKER_PORT));
+        req.setAllWorkerAddress(Lists.newArrayList(NetUtils.getLocalHost4Test() + ":" + RemoteConstant.DEFAULT_WORKER_PORT));
 
         req.setJobParams("JobParams");
         req.setInstanceParams("InstanceParams");

@@ -6,7 +6,6 @@ import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.StringPage;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
-import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.core.service.CacheService;
 import tech.powerjob.server.core.instance.InstanceLogService;
@@ -69,8 +68,14 @@ public class InstanceController {
     }
 
     @GetMapping("/detail")
-    public ResultDTO<InstanceDetailVO> getInstanceDetail(Long instanceId) {
-        return ResultDTO.success(InstanceDetailVO.from(instanceService.getInstanceDetail(instanceId)));
+    public ResultDTO<InstanceDetailVO> getInstanceDetail(Long appId, Long instanceId) {
+
+        // 兼容老版本前端不存在 appId 的场景
+        if (appId == null) {
+            appId = instanceService.getInstanceInfo(instanceId).getAppId();
+        }
+
+        return ResultDTO.success(InstanceDetailVO.from(instanceService.getInstanceDetail(appId, instanceId)));
     }
 
     @GetMapping("/log")

@@ -2,6 +2,7 @@ package tech.powerjob.samples.processors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import lombok.*;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
@@ -9,10 +10,6 @@ import tech.powerjob.worker.core.processor.TaskResult;
 import tech.powerjob.worker.core.processor.sdk.MapReduceProcessor;
 import tech.powerjob.worker.log.OmsLogger;
 import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -85,10 +82,18 @@ public class MapReduceProcessorDemo implements MapReduceProcessor {
     }
 
     @Getter
+    @Setter
     @ToString
-    @NoArgsConstructor
     @AllArgsConstructor
     public static class TestSubTask {
+
+        /**
+         * 注意：代表子任务参数的类：一定要有无参构造方法！一定要有无参构造方法！一定要有无参构造方法！
+         * 最好把 GET / SET 方法也加上，减少序列化问题的概率
+         */
+        public TestSubTask() {
+        }
+
         private String name;
         private int age;
     }

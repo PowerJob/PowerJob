@@ -5,26 +5,26 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.6</version>
+        <version>4.3.7</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker</artifactId>
-    <version>4.3.6</version>
+    <version>4.3.7</version>
     <packaging>jar</packaging>
 
     <properties>
-        <spring.version>5.3.23</spring.version>
-        <h2.db.version>2.2.220</h2.db.version>
+        <spring.version>5.3.31</spring.version>
+        <h2.db.version>2.2.224</h2.db.version>
         <hikaricp.version>4.0.3</hikaricp.version>
         <junit.version>5.9.1</junit.version>
 
-        <logback.version>1.2.9</logback.version>
+        <logback.version>1.2.13</logback.version>
 
-        <powerjob-common.version>4.3.6</powerjob-common.version>
-        <powerjob-remote-framework.version>4.3.6</powerjob-remote-framework.version>
-        <powerjob-remote-impl-akka.version>4.3.6</powerjob-remote-impl-akka.version>
-        <powerjob-remote-impl-http.version>4.3.6</powerjob-remote-impl-http.version>
+        <powerjob-common.version>4.3.7</powerjob-common.version>
+        <powerjob-remote-framework.version>4.3.7</powerjob-remote-framework.version>
+        <powerjob-remote-impl-akka.version>4.3.7</powerjob-remote-impl-akka.version>
+        <powerjob-remote-impl-http.version>4.3.7</powerjob-remote-impl-http.version>
     </properties>
 
     <dependencies>
