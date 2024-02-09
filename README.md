@@ -1,6 +1,10 @@
 # English | [简体中文](./README_zhCN.md)
 
 <p align="center">
+🏮PowerJob 全体成员祝大家龙年腾飞，新的一年身体健康，万事如意，阖家欢乐，幸福安康！🏮
+</p>
+
+<p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
 </p>
 

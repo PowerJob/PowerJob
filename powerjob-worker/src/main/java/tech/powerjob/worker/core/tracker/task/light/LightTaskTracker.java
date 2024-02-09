@@ -149,12 +149,7 @@ public class LightTaskTracker extends TaskTracker {
         }
         LightTaskTrackerManager.removeTaskTracker(instanceId);
         // 最后一列为总耗时（即占用资源的耗时，当前时间减去创建时间）
-        String msg = String.format("[TaskTracker-%s] remove TaskTracker,task status %s,start time:%s,end time:%s,real cost:%s,total time:%s", instanceId, status, taskStartTime, taskEndTime, taskEndTime != null ? taskEndTime - taskStartTime : "unknown", System.currentTimeMillis() - createTime);
-        if (TaskStatus.WORKER_PROCESS_SUCCESS.equals(status)) {
-            log.info(msg);
-        } else {
-            log.warn(msg);
-        }
+        log.info("[TaskTracker-{}] remove TaskTracker,task status {},start time:{},end time:{},real cost:{},total time:{}", instanceId, status, taskStartTime, taskEndTime, taskEndTime != null ? taskEndTime - taskStartTime : "unknown", System.currentTimeMillis() - createTime);
     }
 
     @Override
