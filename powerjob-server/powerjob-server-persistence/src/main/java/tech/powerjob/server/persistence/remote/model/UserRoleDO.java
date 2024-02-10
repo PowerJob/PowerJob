@@ -7,44 +7,41 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * 用户信息表
+ * 用户角色表
  *
  * @author tjq
- * @since 2020/4/12
+ * @since 2023/3/20
  */
 @Data
 @Entity
 @Table(indexes = {
-        @Index(name = "uidx01_user_info", columnList = "username"),
-        @Index(name = "uidx02_user_info", columnList = "email")
+        @Index(name = "uidx01_user_id", columnList = "userId")
 })
-public class UserInfoDO {
+public class UserRoleDO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
 
-    private String username;
     /**
-     * since 5.0.0
-     * 昵称（第三方登陆的 username 很难识别，方便后续展示引入 nick）
+     * 授予角色的用户ID
      */
-    private String nick;
+    private Long userId;
 
-    private String password;
     /**
-     * 手机号
+     * 权限范围，namespace 还是 app
      */
-    private String phone;
+    private Integer scope;
     /**
-     * 邮箱地址
+     * 和 scope 一起组成授权目标，比如某个 app 或 某个 namespace
      */
-    private String email;
+    private Long target;
+
     /**
-     * webHook
+     * 角色，比如 Observer
      */
-    private String webHook;
+    private Integer role;
     /**
      * 扩展字段
      */

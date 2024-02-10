@@ -22,6 +22,7 @@
         <module>powerjob-server-migrate</module>
         <module>powerjob-server-core</module>
         <module>powerjob-server-monitor</module>
+        <module>powerjob-server-auth</module>
     </modules>
 
 
