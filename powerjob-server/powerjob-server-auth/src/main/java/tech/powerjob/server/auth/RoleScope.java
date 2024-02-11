@@ -28,4 +28,13 @@ public enum RoleScope {
     ;
 
     private final int v;
+
+    public static RoleScope of(int vv) {
+        for (RoleScope rs : values()) {
+            if (vv == rs.v) {
+                return rs;
+            }
+        }
+        throw new IllegalArgumentException("unknown RoleScope: " + vv);
+    }
 }

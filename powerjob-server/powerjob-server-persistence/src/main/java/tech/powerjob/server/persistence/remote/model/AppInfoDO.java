@@ -22,6 +22,11 @@ public class AppInfoDO {
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
 
+    /**
+     * 命名空间ID，外键关联
+     */
+    private Long namespaceId;
+
     private String appName;
     /**
      * 应用分组密码
