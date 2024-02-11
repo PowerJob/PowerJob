@@ -68,18 +68,38 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
             }
         }
 
+        // 前置判断需要的权限（新增场景还没有 appId or namespaceId）
+        final Permission requiredPermission = parsePermission(request, handler, apiPermission);
+        if (requiredPermission == Permission.NONE) {
+            return true;
+        }
+
+        // 检验全局穿透权限
+        for (Role role : globalRoles) {
+            if (role.getPermissions().contains(requiredPermission)) {
+                return true;
+            }
+        }
+
         // 无超级管理员权限，校验普通权限
+        if (RoleScope.APP.equals(apiPermission.roleScope())) {
+            return checkAppPermission(request, requiredPermission, appId2Role, namespaceId2Role);
+        }
+
+        if (RoleScope.NAMESPACE.equals(apiPermission.roleScope())) {
+            return checkNamespacePermission(request, requiredPermission, namespaceId2Role);
+        }
+
+        return false;
+    }
+
+    private boolean checkAppPermission(HttpServletRequest request, Permission requiredPermission, Multimap<Long, Role> appId2Role, Multimap<Long, Role> namespaceId2Role) {
         final String appIdStr = request.getHeader("appId");
         if (StringUtils.isEmpty(appIdStr)) {
             throw new IllegalArgumentException("can't find appId in header, please refresh and try again!");
         }
 
         Long appId = Long.valueOf(appIdStr);
-
-        final Permission requiredPermission = parsePermission(request, handler, apiPermission);
-        if (requiredPermission == Permission.NONE) {
-            return true;
-        }
 
         final Collection<Role> appRoles = appId2Role.get(appId);
         for (Role role : appRoles) {
@@ -101,8 +121,18 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
             }
         }
 
-        // 检验全局穿透权限（按使用频率排列检测顺序，即 app -> namespace -> global）
-        for (Role role : globalRoles) {
+        return false;
+    }
+
+    private boolean checkNamespacePermission(HttpServletRequest request, Permission requiredPermission, Multimap<Long, Role> namespaceId2Role) {
+        final String namespaceIdStr = request.getHeader("namespaceId");
+        if (StringUtils.isEmpty(namespaceIdStr)) {
+            throw new IllegalArgumentException("can't find namespace in header, please refresh and try again!");
+        }
+        Long namespaceId = Long.valueOf(namespaceIdStr);
+
+        Collection<Role> namespaceRoles = namespaceId2Role.get(namespaceId);
+        for (Role role : namespaceRoles) {
             if (role.getPermissions().contains(requiredPermission)) {
                 return true;
             }
@@ -110,6 +140,8 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
 
         return false;
     }
+
+
 
     private static Permission parsePermission(HttpServletRequest request, Object handler, ApiPermission apiPermission) {
         Class<? extends DynamicPermission> dynamicPermissionPlugin = apiPermission.dynamicPermissionPlugin();

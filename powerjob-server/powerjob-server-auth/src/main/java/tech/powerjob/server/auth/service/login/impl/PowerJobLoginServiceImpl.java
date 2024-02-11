@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.OmsConstant;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.common.AuthErrorCode;
@@ -140,6 +141,12 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     private Optional<String> parseUserName(HttpServletRequest httpServletRequest) {
         // header、cookie 都能获取
         String jwtStr = httpServletRequest.getHeader(AuthConstants.JWT_NAME);
+
+        // 解决 window.localStorage.getItem 为 null 的问题
+        if (OmsConstant.NULL.equalsIgnoreCase(jwtStr)) {
+            jwtStr = null;
+        }
+
         if (StringUtils.isEmpty(jwtStr)) {
             for (Cookie cookie : Optional.ofNullable(httpServletRequest.getCookies()).orElse(new Cookie[]{})) {
                 if (cookie.getName().equals(AuthConstants.JWT_NAME)) {

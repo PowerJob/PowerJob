@@ -1,8 +1,11 @@
 package tech.powerjob.server.auth.interceptor;
 
 import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.interceptor.dp.DynamicPermission;
 import tech.powerjob.server.auth.interceptor.dp.EmptyDynamicPermission;
+import tech.powerjob.server.auth.interceptor.gp.EmptyGrantPermissionPlugin;
+import tech.powerjob.server.auth.interceptor.gp.GrantPermissionPlugin;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,6 +27,8 @@ public @interface ApiPermission {
      */
     String name() default "";
 
+    RoleScope roleScope() default RoleScope.APP;
+
     /**
      * 需要的权限
      * @return 权限
@@ -35,4 +40,10 @@ public @interface ApiPermission {
      * @return 动态权限
      */
     Class<? extends DynamicPermission> dynamicPermissionPlugin() default EmptyDynamicPermission.class;
+
+    /**
+     * 新增场景，需要授权插件执行授权
+     * @return 授权插件
+     */
+    Class<? extends GrantPermissionPlugin> grandPermissionPlugin() default EmptyGrantPermissionPlugin.class;
 }

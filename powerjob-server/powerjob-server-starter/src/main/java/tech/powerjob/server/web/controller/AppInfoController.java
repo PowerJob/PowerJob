@@ -1,23 +1,31 @@
 package tech.powerjob.server.web.controller;
 
-import lombok.RequiredArgsConstructor;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.persistence.remote.model.AppInfoDO;
-import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.core.service.AppInfoService;
-import tech.powerjob.server.web.request.AppAssertRequest;
-import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import com.google.common.collect.Lists;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.core.service.AppInfoService;
+import tech.powerjob.server.persistence.PageResult;
+import tech.powerjob.server.persistence.QueryConvertUtils;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.web.request.AppAssertRequest;
+import tech.powerjob.server.web.request.ModifyAppInfoRequest;
+import tech.powerjob.server.web.request.QueryAppInfoRequest;
 
-import javax.annotation.Resource;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -42,7 +50,7 @@ public class AppInfoController {
     private static final int MAX_APP_NUM = 200;
 
     @PostMapping("/save")
-    public ResultDTO<Void> saveAppInfo(@RequestBody ModifyAppInfoRequest req) {
+    public ResultDTO<AppInfoVO> saveAppInfo(@RequestBody ModifyAppInfoRequest req) {
 
         req.valid();
         AppInfoDO appInfoDO;
@@ -62,8 +70,8 @@ public class AppInfoController {
         BeanUtils.copyProperties(req, appInfoDO);
         appInfoDO.setGmtModified(new Date());
 
-        appInfoRepository.saveAndFlush(appInfoDO);
-        return ResultDTO.success(null);
+        AppInfoDO savedAppInfo = appInfoRepository.saveAndFlush(appInfoDO);
+        return ResultDTO.success(convert(Lists.newArrayList(savedAppInfo), false).get(0));
     }
 
     @PostMapping("/assert")
@@ -86,18 +94,66 @@ public class AppInfoController {
         }else {
             result = appInfoRepository.findByAppNameLike("%" + condition + "%", limit).getContent();
         }
-        return ResultDTO.success(convert(result));
+        return ResultDTO.success(convert(result, false));
     }
 
-    private static List<AppInfoVO> convert(List<AppInfoDO> data) {
+    @PostMapping("/listByQuery")
+    public ResultDTO<PageResult<AppInfoVO>> listAppInfoByQuery(QueryAppInfoRequest queryAppInfoRequest) {
+
+        Pageable pageable = PageRequest.of(queryAppInfoRequest.getIndex(), queryAppInfoRequest.getPageSize());
+
+        // TODO: 我有权限的列表
+        Specification<AppInfoDO> specification = new Specification<AppInfoDO>() {
+            @Override
+            public Predicate toPredicate(Root<AppInfoDO> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = Lists.newArrayList();
+
+
+                Long appId = queryAppInfoRequest.getAppId();
+                Long namespaceId = queryAppInfoRequest.getNamespaceId();
+
+                if (appId != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("id"), appId));
+                }
+
+                if (namespaceId != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("namespaceId"), namespaceId));
+                }
+
+                if (StringUtils.isNotEmpty(queryAppInfoRequest.getAppName())) {
+                    predicates.add(criteriaBuilder.like(root.get("appName"), QueryConvertUtils.convertLikeParams(queryAppInfoRequest.getAppName())));
+                }
+
+                return query.where(predicates.toArray(new Predicate[0])).getRestriction();
+            }
+        };
+
+        Page<AppInfoDO> pageAppInfoResult = appInfoRepository.findAll(specification, pageable);
+
+        PageResult<AppInfoVO> pageRet = new PageResult<>(pageAppInfoResult);
+
+        List<AppInfoDO> appinfoDos = pageAppInfoResult.get().collect(Collectors.toList());
+        pageRet.setData(convert(appinfoDos, true));
+
+        return ResultDTO.success(pageRet);
+    }
+
+
+    private static List<AppInfoVO> convert(List<AppInfoDO> data, boolean fillDetail) {
         if (CollectionUtils.isEmpty(data)) {
             return Lists.newLinkedList();
         }
-        return data.stream().map(appInfoDO -> {
+        List<AppInfoVO> appInfoVOList = data.stream().map(appInfoDO -> {
             AppInfoVO appInfoVO = new AppInfoVO();
             BeanUtils.copyProperties(appInfoDO, appInfoVO);
             return appInfoVO;
         }).collect(Collectors.toList());
+
+        if (fillDetail) {
+            // TODO: 补全权限等额外信息
+        }
+
+        return appInfoVOList;
     }
 
     @Data

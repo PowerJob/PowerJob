@@ -8,7 +8,11 @@ package tech.powerjob.server.auth.common;
  */
 public class AuthConstants {
 
-    public static final String JWT_NAME = "power_jwt";
+    /**
+     * JWT key
+     * 前端 header 默认首字母大写，保持一致方便处理
+     */
+    public static final String JWT_NAME = "Power_jwt";
 
     /**
      * 前端跳转到指定页面指令

@@ -1,11 +1,12 @@
 package tech.powerjob.server.persistence.remote.repository;
 
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import java.util.Optional;
  * @author tjq
  * @since 2020/4/1
  */
-public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long> {
+public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long>, JpaSpecificationExecutor<AppInfoDO> {
 
     Optional<AppInfoDO> findByAppName(String appName);
 
