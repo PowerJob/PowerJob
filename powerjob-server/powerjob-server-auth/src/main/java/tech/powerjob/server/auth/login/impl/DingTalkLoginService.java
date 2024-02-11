@@ -9,6 +9,7 @@ import com.aliyun.teautil.models.RuntimeOptions;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.common.Loggers;
@@ -27,6 +28,7 @@ import java.nio.charset.StandardCharsets;
  * @author tjq
  * @since 2023/3/26
  */
+@Service
 public class DingTalkLoginService implements ThirdPartyLoginService {
 
     /*

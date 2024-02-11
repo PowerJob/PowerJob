@@ -67,7 +67,8 @@ public class AuthController {
      * @return 登录结果
      */
     @PostMapping("/thirdPartyLoginDirect")
-    public ResultDTO<PowerJobUser> selfLogin(LoginRequest loginRequest, HttpServletResponse httpServletResponse) {
+    public ResultDTO<PowerJobUser> selfLogin(@RequestBody LoginRequest loginRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        loginRequest.setHttpServletRequest(httpServletRequest);
         try {
             final PowerJobUser powerJobUser = powerJobLoginService.doLogin(loginRequest);
             if (powerJobUser == null) {

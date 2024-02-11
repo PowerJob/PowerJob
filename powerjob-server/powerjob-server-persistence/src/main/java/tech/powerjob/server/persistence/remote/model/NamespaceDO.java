@@ -40,6 +40,11 @@ public class NamespaceDO {
     private Integer status;
 
     /**
+     * 标签，扩展性之王，多值逗号分割
+     */
+    private String tags;
+
+    /**
      * 扩展字段
      */
     private String extra;

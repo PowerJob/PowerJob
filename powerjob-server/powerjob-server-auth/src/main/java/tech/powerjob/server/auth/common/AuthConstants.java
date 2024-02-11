@@ -9,4 +9,9 @@ package tech.powerjob.server.auth.common;
 public class AuthConstants {
 
     public static final String JWT_NAME = "power_jwt";
+
+    /**
+     * 前端跳转到指定页面指令
+     */
+    public static final String FE_REDIRECT_KEY = "FE-REDIRECT:";
 }

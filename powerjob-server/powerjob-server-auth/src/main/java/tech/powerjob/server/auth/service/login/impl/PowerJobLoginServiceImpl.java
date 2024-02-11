@@ -141,7 +141,7 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         // header、cookie 都能获取
         String jwtStr = httpServletRequest.getHeader(AuthConstants.JWT_NAME);
         if (StringUtils.isEmpty(jwtStr)) {
-            for (Cookie cookie : httpServletRequest.getCookies()) {
+            for (Cookie cookie : Optional.ofNullable(httpServletRequest.getCookies()).orElse(new Cookie[]{})) {
                 if (cookie.getName().equals(AuthConstants.JWT_NAME)) {
                     jwtStr = cookie.getValue();
                 }

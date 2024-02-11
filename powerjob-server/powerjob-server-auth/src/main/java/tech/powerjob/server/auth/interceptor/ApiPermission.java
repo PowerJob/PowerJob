@@ -28,7 +28,7 @@ public @interface ApiPermission {
      * 需要的权限
      * @return 权限
      */
-    Permission requiredPermission() default Permission.GLOBAL_SU;
+    Permission requiredPermission() default Permission.SU;
 
     /**
      * 固定权限不支持的场景，需要使用动态权限
