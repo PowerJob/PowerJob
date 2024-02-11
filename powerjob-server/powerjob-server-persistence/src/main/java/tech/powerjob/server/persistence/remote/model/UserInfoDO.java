@@ -8,16 +8,19 @@ import java.util.Date;
 
 /**
  * 用户信息表
+ * 5.0.0 可能不兼容改动：为了支持第三方登录，需要通过 username 与第三方登录系统做匹配，该列需要声明为唯一索引，确保全局唯一
  *
  * @author tjq
  * @since 2020/4/12
  */
 @Data
 @Entity
-@Table(indexes = {
-        @Index(name = "uidx01_user_info", columnList = "username"),
-        @Index(name = "uidx02_user_info", columnList = "email")
-})
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "uidx01_user_name", columnNames = {"username"})
+},
+        indexes = {
+                @Index(name = "uidx02_user_info", columnList = "email")
+        })
 public class UserInfoDO {
 
     @Id

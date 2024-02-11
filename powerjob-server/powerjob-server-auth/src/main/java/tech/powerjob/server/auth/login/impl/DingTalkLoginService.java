@@ -10,12 +10,10 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.server.auth.login.LoginContext;
-import tech.powerjob.server.auth.login.LoginTypeInfo;
-import tech.powerjob.server.auth.login.ThirdPartyLoginService;
-import tech.powerjob.server.auth.login.ThirdPartyUser;
+import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.common.Loggers;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -68,7 +66,7 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
 
     @Override
     @SneakyThrows
-    public String generateLoginUrl(LoginContext loginContext) {
+    public String generateLoginUrl(HttpServletRequest httpServletRequest) {
         if (StringUtils.isAnyEmpty(dingTalkAppKey, dingTalkAppSecret, dingTalkCallbackUrl)) {
             throw new IllegalArgumentException("please config 'oms.auth.dingtalk.appkey', 'oms.auth.dingtalk.appSecret' and 'oms.auth.dingtalk.callbackUrl' in properties!");
         }
@@ -87,7 +85,7 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
 
     @Override
     @SneakyThrows
-    public ThirdPartyUser login(LoginContext loginContext) {
+    public ThirdPartyUser login(ThirdPartyLoginRequest loginRequest) {
         try {
             com.aliyun.dingtalkoauth2_1_0.Client client = authClient();
             GetUserTokenRequest getUserTokenRequest = new GetUserTokenRequest()
@@ -95,7 +93,7 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
                     .setClientId(dingTalkAppKey)
                     //应用基础信息-应用信息的AppSecret，,请务必替换为开发的应用AppSecret
                     .setClientSecret(dingTalkAppSecret)
-                    .setCode(loginContext.getHttpServletRequest().getParameter("authCode"))
+                    .setCode(loginRequest.getHttpServletRequest().getParameter("authCode"))
                     .setGrantType("authorization_code");
             GetUserTokenResponse getUserTokenResponse = client.getUserToken(getUserTokenRequest);
             //获取用户个人 token

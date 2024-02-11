@@ -3,8 +3,8 @@ package tech.powerjob.server.auth.login.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.server.auth.login.LoginContext;
 import tech.powerjob.server.auth.login.LoginTypeInfo;
+import tech.powerjob.server.auth.login.ThirdPartyLoginRequest;
 import tech.powerjob.server.auth.login.ThirdPartyLoginService;
 import tech.powerjob.server.auth.login.ThirdPartyUser;
 import tech.powerjob.server.common.Loggers;
@@ -14,6 +14,7 @@ import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ import java.util.Optional;
  * @since 2023/3/20
  */
 @Service
-public class PowerJobLoginService implements ThirdPartyLoginService {
+public class PowerJobThirdPartyLoginService implements ThirdPartyLoginService {
 
     @Resource
     private UserInfoRepository userInfoRepository;
@@ -44,14 +45,14 @@ public class PowerJobLoginService implements ThirdPartyLoginService {
     }
 
     @Override
-    public String generateLoginUrl(LoginContext loginContext) {
+    public String generateLoginUrl(HttpServletRequest httpServletRequest) {
         // 前端实现跳转，服务端返回特殊指令
         return "FE-REDIRECT:PowerJob";
     }
 
     @Override
-    public ThirdPartyUser login(LoginContext loginContext) {
-        final String loginInfo = loginContext.getOriginParams();
+    public ThirdPartyUser login(ThirdPartyLoginRequest loginRequest) {
+        final String loginInfo = loginRequest.getOriginParams();
         if (StringUtils.isEmpty(loginInfo)) {
             throw new IllegalArgumentException("can't find login Info");
         }

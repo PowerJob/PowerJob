@@ -1,5 +1,7 @@
 package tech.powerjob.server.auth.login;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 第三方登录服务
  *
@@ -19,13 +21,13 @@ public interface ThirdPartyLoginService {
      * @param loginContext 上下文
      * @return 重定向地址
      */
-    String generateLoginUrl(LoginContext loginContext);
+    String generateLoginUrl(HttpServletRequest httpServletRequest);
 
     /**
      * 执行第三方登录
      * @param loginContext 上下文
      * @return 登录地址
      */
-    ThirdPartyUser login(LoginContext loginContext);
+    ThirdPartyUser login(ThirdPartyLoginRequest loginRequest);
 
 }
