@@ -18,14 +18,14 @@ public interface ThirdPartyLoginService {
 
     /**
      * 生成登陆的重定向 URL
-     * @param loginContext 上下文
+     * @param httpServletRequest http请求
      * @return 重定向地址
      */
     String generateLoginUrl(HttpServletRequest httpServletRequest);
 
     /**
      * 执行第三方登录
-     * @param loginContext 上下文
+     * @param loginRequest 上下文
      * @return 登录地址
      */
     ThirdPartyUser login(ThirdPartyLoginRequest loginRequest);

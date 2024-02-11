@@ -1,6 +1,7 @@
 package tech.powerjob.server.auth.common;
 
 import lombok.Getter;
+import tech.powerjob.common.exception.PowerJobException;
 
 /**
  * 鉴权相关错误
@@ -9,7 +10,7 @@ import lombok.Getter;
  * @since 2024/2/10
  */
 @Getter
-public class PowerJobAuthException extends RuntimeException {
+public class PowerJobAuthException extends PowerJobException {
 
     private final String code;
 

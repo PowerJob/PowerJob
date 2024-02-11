@@ -8,6 +8,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.auth.PowerJobUser;
+import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.common.AuthErrorCode;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.jwt.JwtService;
@@ -43,7 +44,7 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     private final UserInfoRepository userInfoRepository;
     private final Map<String, ThirdPartyLoginService> code2ThirdPartyLoginService;
 
-    private static final String JWT_NAME = "power_jwt";
+
 
     private static final String KEY_USERNAME = "userName";
 
@@ -66,8 +67,9 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     }
 
     @Override
-    public String fetchThirdPartyLoginUrl(HttpServletRequest httpServletRequest) {
-        return null;
+    public String fetchThirdPartyLoginUrl(String type, HttpServletRequest httpServletRequest) {
+        final ThirdPartyLoginService thirdPartyLoginService = fetchBizLoginService(type);
+        return thirdPartyLoginService.generateLoginUrl(httpServletRequest);
     }
 
     @Override
@@ -137,10 +139,10 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
 
     private Optional<String> parseUserName(HttpServletRequest httpServletRequest) {
         // header、cookie 都能获取
-        String jwtStr = httpServletRequest.getHeader(JWT_NAME);
+        String jwtStr = httpServletRequest.getHeader(AuthConstants.JWT_NAME);
         if (StringUtils.isEmpty(jwtStr)) {
             for (Cookie cookie : httpServletRequest.getCookies()) {
-                if (cookie.getName().equals(JWT_NAME)) {
+                if (cookie.getName().equals(AuthConstants.JWT_NAME)) {
                     jwtStr = cookie.getValue();
                 }
             }

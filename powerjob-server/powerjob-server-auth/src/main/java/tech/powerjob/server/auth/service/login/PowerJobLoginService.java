@@ -25,10 +25,11 @@ public interface PowerJobLoginService {
 
     /**
      * 获取第三方登录链接
+     * @param loginType 登录类型
      * @param httpServletRequest http请求
      * @return 重定向地址
      */
-    String fetchThirdPartyLoginUrl(HttpServletRequest httpServletRequest);
+    String fetchThirdPartyLoginUrl(String loginType, HttpServletRequest httpServletRequest);
 
     /**
      * 执行真正的登录请求，底层调用第三方登录服务完成登录

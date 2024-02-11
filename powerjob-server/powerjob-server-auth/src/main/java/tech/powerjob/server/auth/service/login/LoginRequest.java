@@ -1,6 +1,7 @@
 package tech.powerjob.server.auth.service.login;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
  * @since 2024/2/10
  */
 @Data
+@Accessors(chain = true)
 public class LoginRequest {
 
     /**
