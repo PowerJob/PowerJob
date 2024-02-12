@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.dp;
+package tech.powerjob.server.auth.plugin;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StreamUtils;

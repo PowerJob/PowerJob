@@ -4,7 +4,7 @@ import org.springframework.beans.BeanUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
-import tech.powerjob.server.web.response.NamespaceBaseVO;
+import tech.powerjob.server.web.response.NamespaceVO;
 
 /**
  * NamespaceConverter
@@ -14,8 +14,8 @@ import tech.powerjob.server.web.response.NamespaceBaseVO;
  */
 public class NamespaceConverter {
 
-    public static NamespaceBaseVO do2BaseVo(NamespaceDO d) {
-        NamespaceBaseVO v = new NamespaceBaseVO();
+    public static NamespaceVO do2BaseVo(NamespaceDO d) {
+        NamespaceVO v = new NamespaceVO();
         BeanUtils.copyProperties(d, v);
         v.setGmtCreateStr(CommonUtils.formatTime(d.getGmtCreate()));
         v.setGmtModifiedStr(CommonUtils.formatTime(d.getGmtModified()));

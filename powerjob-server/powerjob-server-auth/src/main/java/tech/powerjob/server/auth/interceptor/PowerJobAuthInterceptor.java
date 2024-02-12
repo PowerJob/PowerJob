@@ -1,13 +1,21 @@
 package tech.powerjob.server.auth.interceptor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import tech.powerjob.common.exception.ImpossibleException;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.auth.LoginUserHolder;
+import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.PowerJobUser;
+import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.server.auth.common.PowerJobAuthException;
+import tech.powerjob.server.auth.common.utils.HttpServletUtils;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
 import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
 import tech.powerjob.server.common.Loggers;
@@ -24,6 +32,7 @@ import java.util.Optional;
  * @author tjq
  * @since 2023/3/25
  */
+@Slf4j
 @Component
 public class PowerJobAuthInterceptor implements HandlerInterceptor {
     @Resource
@@ -48,11 +57,9 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
         // 尝试直接解析登陆
         final Optional<PowerJobUser> loginUserOpt = powerJobLoginService.ifLogin(request);
 
-        // 未登录前先使用302重定向到登录页面 TODO: 前端登录还是服务端直接跳转有待考虑
+        // 未登录直接报错，返回固定状态码，前端拦截后跳转到登录页
         if (!loginUserOpt.isPresent()) {
-            response.setStatus(302);
-            response.setHeader("location", request.getContextPath() + "/login");
-            return false;
+            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
         }
 
         // 登陆用户进行权限校验
@@ -61,7 +68,27 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
         // 写入上下文
         LoginUserHolder.set(powerJobUser);
 
-        final boolean hasPermission = powerJobPermissionService.hasPermission(request, handler, powerJobUser, apiPermissionAnno);
+        Permission requiredPermission = parsePermission(request, handler, apiPermissionAnno);
+        RoleScope roleScope = apiPermissionAnno.roleScope();
+        Long targetId = null;
+
+        if (RoleScope.NAMESPACE.equals(roleScope)) {
+
+            final String namespaceIdStr = HttpServletUtils.fetchFromHeader("NamespaceId", request);
+            if (StringUtils.isNotEmpty(namespaceIdStr)) {
+                targetId = Long.valueOf(namespaceIdStr);
+            }
+        }
+
+        if (RoleScope.APP.equals(roleScope)) {
+            final String appIdStr = HttpServletUtils.fetchFromHeader("AppId", request);
+            if (StringUtils.isNotEmpty(appIdStr)) {
+                targetId = Long.valueOf(appIdStr);
+            }
+        }
+
+
+        final boolean hasPermission = powerJobPermissionService.hasPermission(powerJobUser.getId(), roleScope, targetId, requiredPermission);
         if (hasPermission) {
             return true;
         }
@@ -89,5 +116,20 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
         } catch (Exception ignore) {
         }
         return "UNKNOWN";
+    }
+
+    private static Permission parsePermission(HttpServletRequest request, Object handler, ApiPermission apiPermission) {
+        Class<? extends DynamicPermissionPlugin> dynamicPermissionPlugin = apiPermission.dynamicPermissionPlugin();
+        if (EmptyPlugin.class.equals(dynamicPermissionPlugin)) {
+            return apiPermission.requiredPermission();
+        }
+        try {
+            DynamicPermissionPlugin dynamicPermission = dynamicPermissionPlugin.getDeclaredConstructor().newInstance();
+            return dynamicPermission.calculate(request, handler);
+        } catch (Throwable t) {
+            log.error("[PowerJobAuthService] process dynamicPermissionPlugin failed!", t);
+            ExceptionUtils.rethrow(t);
+        }
+        throw new ImpossibleException();
     }
 }

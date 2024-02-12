@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.gp;
+package tech.powerjob.server.auth.plugin;
 
 import tech.powerjob.server.auth.RoleScope;
 

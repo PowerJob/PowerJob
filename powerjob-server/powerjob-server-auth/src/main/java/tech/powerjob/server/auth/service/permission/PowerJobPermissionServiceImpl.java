@@ -1,27 +1,20 @@
 package tech.powerjob.server.auth.service.permission;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
-import tech.powerjob.common.exception.ImpossibleException;
 import tech.powerjob.server.auth.Permission;
-import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
-import tech.powerjob.server.auth.interceptor.ApiPermission;
-import tech.powerjob.server.auth.interceptor.DynamicPermissionPlugin;
-import tech.powerjob.server.auth.interceptor.EmptyPlugin;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserRoleDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.UserRoleRepository;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -40,8 +33,8 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
     private UserRoleRepository userRoleRepository;
 
     @Override
-    public boolean hasPermission(HttpServletRequest request, Object handler, PowerJobUser user, ApiPermission apiPermission) {
-        final List<UserRoleDO> userRoleList = Optional.ofNullable(userRoleRepository.findAllByUserId(user.getId())).orElse(Collections.emptyList());
+    public boolean hasPermission(Long userId, RoleScope roleScope, Long target, Permission requiredPermission) {
+        final List<UserRoleDO> userRoleList = Optional.ofNullable(userRoleRepository.findAllByUserId(userId)).orElse(Collections.emptyList());
 
         Multimap<Long, Role> appId2Role = ArrayListMultimap.create();
         Multimap<Long, Role> namespaceId2Role = ArrayListMultimap.create();
@@ -50,7 +43,6 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
 
         for (UserRoleDO userRole : userRoleList) {
             final Role role = Role.of(userRole.getRole());
-            RoleScope roleScope = RoleScope.of(userRole.getScope());
 
             // 处理全局权限
             if (RoleScope.GLOBAL.equals(roleScope)) {
@@ -69,7 +61,6 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         }
 
         // 前置判断需要的权限（新增场景还没有 appId or namespaceId）
-        final Permission requiredPermission = parsePermission(request, handler, apiPermission);
         if (requiredPermission == Permission.NONE) {
             return true;
         }
@@ -82,12 +73,12 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         }
 
         // 无超级管理员权限，校验普通权限
-        if (RoleScope.APP.equals(apiPermission.roleScope())) {
-            return checkAppPermission(request, requiredPermission, appId2Role, namespaceId2Role);
+        if (RoleScope.APP.equals(roleScope)) {
+            return checkAppPermission(target, requiredPermission, appId2Role, namespaceId2Role);
         }
 
-        if (RoleScope.NAMESPACE.equals(apiPermission.roleScope())) {
-            return checkNamespacePermission(request, requiredPermission, namespaceId2Role);
+        if (RoleScope.NAMESPACE.equals(roleScope)) {
+            return checkNamespacePermission(target, requiredPermission, namespaceId2Role);
         }
 
         return false;
@@ -110,15 +101,31 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         log.info("[PowerJobPermissionService] saveAndFlush userRole successfully: {}", userRoleDO);
     }
 
-    private boolean checkAppPermission(HttpServletRequest request, Permission requiredPermission, Multimap<Long, Role> appId2Role, Multimap<Long, Role> namespaceId2Role) {
-        final String appIdStr = request.getHeader("appId");
-        if (StringUtils.isEmpty(appIdStr)) {
-            throw new IllegalArgumentException("can't find appId in header, please refresh and try again!");
-        }
+    @Override
+    public void retrievePermission(RoleScope roleScope, Long target, Long userId, Role role) {
+        List<UserRoleDO> originUserRole = userRoleRepository.findAllByScopeAndTargetAndRoleAndUserId(roleScope.getV(), target, role.getV(), userId);
+        log.info("[PowerJobPermissionService] [retrievePermission] origin rule: {}", originUserRole);
+        Optional.ofNullable(originUserRole).orElse(Collections.emptyList()).forEach(r -> {
+            userRoleRepository.deleteById(r.getId());
+            log.info("[PowerJobPermissionService] [retrievePermission] delete UserRole: {}", r);
+        });
+    }
 
-        Long appId = Long.valueOf(appIdStr);
+    @Override
+    public Map<Role, List<Long>> fetchUserWithPermissions(RoleScope roleScope, Long target) {
+        List<UserRoleDO> permissionUserList = userRoleRepository.findAllByScopeAndTarget(roleScope.getV(), target);
+        Map<Role, List<Long>> ret = Maps.newHashMap();
+        Optional.ofNullable(permissionUserList).orElse(Collections.emptyList()).forEach(userRoleDO -> {
+            Role role = Role.of(userRoleDO.getRole());
+            List<Long> userIds = ret.computeIfAbsent(role, ignore -> Lists.newArrayList());
+            userIds.add(userRoleDO.getUserId());
+        });
+        return ret;
+    }
 
-        final Collection<Role> appRoles = appId2Role.get(appId);
+    private boolean checkAppPermission(Long targetId, Permission requiredPermission, Multimap<Long, Role> appId2Role, Multimap<Long, Role> namespaceId2Role) {
+
+        final Collection<Role> appRoles = appId2Role.get(targetId);
         for (Role role : appRoles) {
             if (role.getPermissions().contains(requiredPermission)) {
                 return true;
@@ -126,9 +133,9 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         }
 
         // 校验 namespace 穿透权限
-        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(appId);
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(targetId);
         if (!appInfoOpt.isPresent()) {
-            throw new IllegalArgumentException("can't find appInfo by appId in permission check: " + appId);
+            throw new IllegalArgumentException("can't find appInfo by appId in permission check: " + targetId);
         }
         Long namespaceId = Optional.ofNullable(appInfoOpt.get().getNamespaceId()).orElse(-1L);
         Collection<Role> namespaceRoles = namespaceId2Role.get(namespaceId);
@@ -141,14 +148,8 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         return false;
     }
 
-    private boolean checkNamespacePermission(HttpServletRequest request, Permission requiredPermission, Multimap<Long, Role> namespaceId2Role) {
-        final String namespaceIdStr = request.getHeader("namespaceId");
-        if (StringUtils.isEmpty(namespaceIdStr)) {
-            throw new IllegalArgumentException("can't find namespace in header, please refresh and try again!");
-        }
-        Long namespaceId = Long.valueOf(namespaceIdStr);
-
-        Collection<Role> namespaceRoles = namespaceId2Role.get(namespaceId);
+    private boolean checkNamespacePermission(Long targetId, Permission requiredPermission, Multimap<Long, Role> namespaceId2Role) {
+        Collection<Role> namespaceRoles = namespaceId2Role.get(targetId);
         for (Role role : namespaceRoles) {
             if (role.getPermissions().contains(requiredPermission)) {
                 return true;
@@ -158,20 +159,4 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         return false;
     }
 
-
-
-    private static Permission parsePermission(HttpServletRequest request, Object handler, ApiPermission apiPermission) {
-        Class<? extends DynamicPermissionPlugin> dynamicPermissionPlugin = apiPermission.dynamicPermissionPlugin();
-        if (EmptyPlugin.class.equals(dynamicPermissionPlugin)) {
-            return apiPermission.requiredPermission();
-        }
-        try {
-            DynamicPermissionPlugin dynamicPermission = dynamicPermissionPlugin.getDeclaredConstructor().newInstance();
-            return dynamicPermission.calculate(request, handler);
-        } catch (Throwable t) {
-            log.error("[PowerJobAuthService] process dynamicPermissionPlugin failed!", t);
-            ExceptionUtils.rethrow(t);
-        }
-        throw new ImpossibleException();
-    }
 }

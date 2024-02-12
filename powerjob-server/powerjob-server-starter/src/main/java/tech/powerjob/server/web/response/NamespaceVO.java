@@ -3,6 +3,7 @@ package tech.powerjob.server.web.response;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -16,7 +17,7 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
-public class NamespaceBaseVO implements Serializable {
+public class NamespaceVO implements Serializable {
 
     private Long id;
 
@@ -52,4 +53,13 @@ public class NamespaceBaseVO implements Serializable {
     private String creator;
 
     private String modifier;
+
+    /**
+     * 访问 token
+     * 仅拥有当前 namespace 权限的访问者可见
+     */
+    private String token;
+
+    private ComponentUserRoleInfo componentUserRoleInfo;
+
 }

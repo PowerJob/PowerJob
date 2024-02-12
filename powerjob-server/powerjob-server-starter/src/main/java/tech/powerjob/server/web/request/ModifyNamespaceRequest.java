@@ -39,6 +39,10 @@ public class ModifyNamespaceRequest {
      * 扩展字段
      */
     private String extra;
+    /**
+     * 权限表单
+     */
+    private ComponentUserRoleInfo componentUserRoleInfo;
 
     public void valid() {
         CommonUtils.requireNonNull(code, "namespace code can't be empty");

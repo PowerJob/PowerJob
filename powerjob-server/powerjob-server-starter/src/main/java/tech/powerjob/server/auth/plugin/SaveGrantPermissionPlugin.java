@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.gp;
+package tech.powerjob.server.auth.plugin;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
