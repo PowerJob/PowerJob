@@ -1,9 +1,10 @@
-package tech.powerjob.server.auth.interceptor.dp;
+package tech.powerjob.server.auth.dp;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StreamUtils;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.interceptor.DynamicPermissionPlugin;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.Map;
  * @since 2023/9/3
  */
 @Slf4j
-public class ModifyOrCreateDynamicPermission implements DynamicPermission {
+public class ModifyOrCreateDynamicPermission implements DynamicPermissionPlugin {
     @Override
     public Permission calculate(HttpServletRequest request, Object handler) {
 
@@ -36,7 +37,7 @@ public class ModifyOrCreateDynamicPermission implements DynamicPermission {
 
             return Permission.WRITE;
         } catch (Exception e) {
-            log.error("[ModifyOrCreateDynamicPermission] check permission failed, please fix the bug!!!");
+            log.error("[ModifyOrCreateDynamicPermission] check permission failed, please fix the bug!!!", e);
         }
 
         // 异常情况先放行，不影响功能使用，后续修复 BUG

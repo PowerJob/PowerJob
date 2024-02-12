@@ -1,18 +1,26 @@
 package tech.powerjob.server.web.controller;
 
+import com.google.common.collect.Maps;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.auth.PowerJobUser;
+import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.server.auth.*;
 import tech.powerjob.server.auth.common.AuthConstants;
+import tech.powerjob.server.auth.dp.GrantDynamicPermission;
+import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.login.LoginTypeInfo;
 import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
+import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
+import tech.powerjob.server.web.request.GrantPermissionRequest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -27,6 +35,8 @@ public class AuthController {
 
     @Resource
     private PowerJobLoginService powerJobLoginService;
+    @Resource
+    private PowerJobPermissionService powerJobPermissionService;
 
     @GetMapping("/supportLoginTypes")
     public ResultDTO<List<LoginTypeInfo>> listSupportLoginTypes() {
@@ -89,5 +99,35 @@ public class AuthController {
 
     private void fillJwt4LoginUser(PowerJobUser powerJobUser, HttpServletResponse httpServletResponse) {
         httpServletResponse.addCookie(new Cookie(AuthConstants.JWT_NAME, powerJobUser.getJwtToken()));
+    }
+
+    /* 授权相关 */
+    @PostMapping("/grantApp")
+    @ApiPermission(name = "Auth-GrantAppPermission", roleScope = RoleScope.APP, dynamicPermissionPlugin = GrantDynamicPermission.class)
+    public ResultDTO<Void> grantAppPermission(GrantPermissionRequest grantPermissionRequest) {
+        grantPermission(RoleScope.APP, grantPermissionRequest);
+        return ResultDTO.success(null);
+    }
+
+    @PostMapping("/grantNamespace")
+    @ApiPermission(name = "Auth-GrantNamespacePermission", roleScope = RoleScope.NAMESPACE, dynamicPermissionPlugin = GrantDynamicPermission.class)
+    public ResultDTO<Void> grantNamespacePermission(GrantPermissionRequest grantPermissionRequest) {
+        grantPermission(RoleScope.NAMESPACE, grantPermissionRequest);
+        return ResultDTO.success(null);
+    }
+
+    private void grantPermission(RoleScope roleScope, GrantPermissionRequest grantPermissionRequest) {
+
+        Role role = Role.of(grantPermissionRequest.getRole());
+
+        Optional.ofNullable(grantPermissionRequest.getUserIds()).orElse(Collections.emptyList()).forEach(uid -> {
+            // 记录授权人信息
+            Map<String, Object> extraInfo = Maps.newHashMap();
+            extraInfo.put("grantor", LoginUserHolder.getUserName());
+            String extra = JsonUtils.toJSONString(extraInfo);
+
+            powerJobPermissionService.grantPermission(roleScope, grantPermissionRequest.getTargetId(), uid, role, extra);
+        });
+
     }
 }

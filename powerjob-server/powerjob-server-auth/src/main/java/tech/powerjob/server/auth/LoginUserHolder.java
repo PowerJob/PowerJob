@@ -21,4 +21,16 @@ public class LoginUserHolder {
     public static void clean() {
         TL.remove();
     }
+
+    /**
+     * 获取用户名
+     * @return 存在则返回常规用户名，否则返回 unknown
+     */
+    public static String getUserName() {
+        PowerJobUser powerJobUser = get();
+        if (powerJobUser != null) {
+            return powerJobUser.getUsername();
+        }
+        return "UNKNOWN";
+    }
 }

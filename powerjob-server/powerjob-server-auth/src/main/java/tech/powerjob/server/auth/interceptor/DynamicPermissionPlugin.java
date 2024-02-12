@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.interceptor.dp;
+package tech.powerjob.server.auth.interceptor;
 
 import tech.powerjob.server.auth.Permission;
 
@@ -10,6 +10,6 @@ import javax.servlet.http.HttpServletRequest;
  * @author tjq
  * @since 2023/9/3
  */
-public interface DynamicPermission {
+public interface DynamicPermissionPlugin {
     Permission calculate(HttpServletRequest request, Object handler);
 }

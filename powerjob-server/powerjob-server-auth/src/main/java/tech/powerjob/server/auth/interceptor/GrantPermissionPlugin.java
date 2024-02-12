@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.interceptor.gp;
+package tech.powerjob.server.auth.interceptor;
 
 import java.lang.reflect.Method;
 

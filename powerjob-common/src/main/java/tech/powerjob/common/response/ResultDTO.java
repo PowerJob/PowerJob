@@ -18,6 +18,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public class ResultDTO<T> implements PowerSerializable {
 
     private boolean success;
+    private String code;
     private T data;
     private String message;
 

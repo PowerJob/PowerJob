@@ -14,10 +14,22 @@ public class QueryNamespaceRequest {
     /**
      * code 模糊查询
      */
-    private String code;
+    private String codeLike;
 
     /**
      * 名称模糊查询
      */
-    private String name;
+    private String nameLike;
+
+    private String tagLike;
+
+    /* ****************** 分页参数  ****************** */
+    /**
+     * 当前页码
+     */
+    private Integer index = 0;
+    /**
+     * 页大小
+     */
+    private Integer pageSize = 10;
 }

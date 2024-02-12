@@ -30,6 +30,9 @@ public class NamespaceBaseVO implements Serializable {
      */
     private String name;
 
+    private String dept;
+    private String tags;
+
     private Integer status;
     private String statusStr;
 

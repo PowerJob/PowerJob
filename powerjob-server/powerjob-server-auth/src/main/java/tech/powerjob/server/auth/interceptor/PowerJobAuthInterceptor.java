@@ -48,7 +48,7 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
         // 尝试直接解析登陆
         final Optional<PowerJobUser> loginUserOpt = powerJobLoginService.ifLogin(request);
 
-        // 未登录前先使用302重定向到登录页面
+        // 未登录前先使用302重定向到登录页面 TODO: 前端登录还是服务端直接跳转有待考虑
         if (!loginUserOpt.isPresent()) {
             response.setStatus(302);
             response.setHeader("location", request.getContextPath() + "/login");

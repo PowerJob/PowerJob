@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.interceptor.gp;
+package tech.powerjob.server.auth.gp;
 
 import tech.powerjob.server.auth.RoleScope;
 

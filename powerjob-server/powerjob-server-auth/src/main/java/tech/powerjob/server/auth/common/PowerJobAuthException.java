@@ -12,17 +12,12 @@ import tech.powerjob.common.exception.PowerJobException;
 @Getter
 public class PowerJobAuthException extends PowerJobException {
 
-    private final String code;
-
-    private final String msg;
-
     public PowerJobAuthException(AuthErrorCode errorCode) {
-        this.code = errorCode.getCode();
-        this.msg = errorCode.getMsg();
+        this(errorCode, null);
     }
 
     public PowerJobAuthException(AuthErrorCode errorCode, String extraMsg) {
+        super(extraMsg == null ? errorCode.getMsg() : errorCode.getMsg().concat(":").concat(extraMsg));
         this.code = errorCode.getCode();
-        this.msg = errorCode.getMsg().concat(":").concat(extraMsg);
     }
 }

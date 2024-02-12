@@ -26,6 +26,8 @@ public class ModifyNamespaceRequest {
      */
     private String name;
 
+    private String dept;
+
     /**
      * 标签，扩展性之王，多值逗号分割
      */

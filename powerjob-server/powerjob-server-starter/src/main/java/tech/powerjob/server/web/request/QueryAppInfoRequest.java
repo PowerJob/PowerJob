@@ -29,6 +29,7 @@ public class QueryAppInfoRequest {
      */
     private Boolean showMyRelated;
 
+    /* ****************** 分页参数  ****************** */
     /**
      * 当前页码
      */

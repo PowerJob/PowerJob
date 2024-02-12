@@ -13,8 +13,8 @@ import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
-import tech.powerjob.server.auth.interceptor.dp.DynamicPermission;
-import tech.powerjob.server.auth.interceptor.dp.EmptyDynamicPermission;
+import tech.powerjob.server.auth.interceptor.DynamicPermissionPlugin;
+import tech.powerjob.server.auth.interceptor.EmptyPlugin;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserRoleDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
@@ -93,6 +93,23 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         return false;
     }
 
+    @Override
+    public void grantPermission(RoleScope roleScope, Long target, Long userId, Role role, String extra) {
+
+        UserRoleDO userRoleDO = new UserRoleDO();
+        userRoleDO.setGmtCreate(new Date());
+        userRoleDO.setGmtModified(new Date());
+        userRoleDO.setExtra(extra);
+
+        userRoleDO.setScope(roleScope.getV());
+        userRoleDO.setTarget(target);
+        userRoleDO.setUserId(userId);
+        userRoleDO.setRole(role.getV());
+
+        userRoleRepository.saveAndFlush(userRoleDO);
+        log.info("[PowerJobPermissionService] saveAndFlush userRole successfully: {}", userRoleDO);
+    }
+
     private boolean checkAppPermission(HttpServletRequest request, Permission requiredPermission, Multimap<Long, Role> appId2Role, Multimap<Long, Role> namespaceId2Role) {
         final String appIdStr = request.getHeader("appId");
         if (StringUtils.isEmpty(appIdStr)) {
@@ -144,12 +161,12 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
 
 
     private static Permission parsePermission(HttpServletRequest request, Object handler, ApiPermission apiPermission) {
-        Class<? extends DynamicPermission> dynamicPermissionPlugin = apiPermission.dynamicPermissionPlugin();
-        if (EmptyDynamicPermission.class.equals(dynamicPermissionPlugin)) {
+        Class<? extends DynamicPermissionPlugin> dynamicPermissionPlugin = apiPermission.dynamicPermissionPlugin();
+        if (EmptyPlugin.class.equals(dynamicPermissionPlugin)) {
             return apiPermission.requiredPermission();
         }
         try {
-            DynamicPermission dynamicPermission = dynamicPermissionPlugin.getDeclaredConstructor().newInstance();
+            DynamicPermissionPlugin dynamicPermission = dynamicPermissionPlugin.getDeclaredConstructor().newInstance();
             return dynamicPermission.calculate(request, handler);
         } catch (Throwable t) {
             log.error("[PowerJobAuthService] process dynamicPermissionPlugin failed!", t);

@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.interceptor.gp;
+package tech.powerjob.server.auth.gp;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -8,6 +8,7 @@ import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.interceptor.GrantPermissionPlugin;
 import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.persistence.remote.model.UserRoleDO;
 import tech.powerjob.server.persistence.remote.repository.UserRoleRepository;

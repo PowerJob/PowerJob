@@ -40,6 +40,12 @@ public class NamespaceDO {
     private Integer status;
 
     /**
+     * 部门，组织架构相关属性。
+     * 预留数据库字段方便基于组织架构二次开发
+     */
+    private String dept;
+
+    /**
      * 标签，扩展性之王，多值逗号分割
      */
     private String tags;

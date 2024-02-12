@@ -2,10 +2,6 @@ package tech.powerjob.server.auth.interceptor;
 
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
-import tech.powerjob.server.auth.interceptor.dp.DynamicPermission;
-import tech.powerjob.server.auth.interceptor.dp.EmptyDynamicPermission;
-import tech.powerjob.server.auth.interceptor.gp.EmptyGrantPermissionPlugin;
-import tech.powerjob.server.auth.interceptor.gp.GrantPermissionPlugin;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -39,11 +35,11 @@ public @interface ApiPermission {
      * 固定权限不支持的场景，需要使用动态权限
      * @return 动态权限
      */
-    Class<? extends DynamicPermission> dynamicPermissionPlugin() default EmptyDynamicPermission.class;
+    Class<? extends DynamicPermissionPlugin> dynamicPermissionPlugin() default EmptyPlugin.class;
 
     /**
      * 新增场景，需要授权插件执行授权
      * @return 授权插件
      */
-    Class<? extends GrantPermissionPlugin> grandPermissionPlugin() default EmptyGrantPermissionPlugin.class;
+    Class<? extends GrantPermissionPlugin> grandPermissionPlugin() default EmptyPlugin.class;
 }

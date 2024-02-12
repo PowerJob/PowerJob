@@ -1,6 +1,7 @@
 package tech.powerjob.server.persistence.remote.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 
 import java.util.Optional;
@@ -11,7 +12,7 @@ import java.util.Optional;
  * @author tjq
  * @since 2023/9/3
  */
-public interface NamespaceRepository extends JpaRepository<NamespaceDO, Long> {
+public interface NamespaceRepository extends JpaRepository<NamespaceDO, Long>, JpaSpecificationExecutor<NamespaceDO> {
 
     Optional<NamespaceDO> findByCode(String code);
 }
