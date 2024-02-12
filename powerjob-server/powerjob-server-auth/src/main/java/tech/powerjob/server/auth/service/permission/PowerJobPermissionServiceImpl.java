@@ -45,17 +45,17 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
             final Role role = Role.of(userRole.getRole());
 
             // 处理全局权限
-            if (RoleScope.GLOBAL.equals(roleScope)) {
+            if (RoleScope.GLOBAL.getV() == userRole.getScope()) {
                 if (Role.ADMIN.equals(role)) {
                     return true;
                 }
                 globalRoles.add(role);
             }
 
-            if (Objects.equals(userRole.getScope(), RoleScope.NAMESPACE.getV())) {
+            if (RoleScope.NAMESPACE.getV() == userRole.getScope()) {
                 namespaceId2Role.put(userRole.getTarget(), role);
             }
-            if (Objects.equals(userRole.getScope(), RoleScope.APP.getV())) {
+            if (RoleScope.APP.getV() == userRole.getScope()) {
                 appId2Role.put(userRole.getTarget(), role);
             }
         }
@@ -98,7 +98,7 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         userRoleDO.setRole(role.getV());
 
         userRoleRepository.saveAndFlush(userRoleDO);
-        log.info("[PowerJobPermissionService] saveAndFlush userRole successfully: {}", userRoleDO);
+        log.info("[PowerJobPermissionService] [grantPermission] saveAndFlush userRole successfully: {}", userRoleDO);
     }
 
     @Override

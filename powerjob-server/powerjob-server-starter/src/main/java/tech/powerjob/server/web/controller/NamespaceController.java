@@ -12,6 +12,7 @@ import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveNamespaceGrantPermissionPlugin;
@@ -105,6 +106,7 @@ public class NamespaceController {
     }
 
     @PostMapping("/list")
+    @ApiPermission(name = "Namespace-List", roleScope = RoleScope.NAMESPACE, requiredPermission = Permission.NONE)
     public ResultDTO<PageResult<NamespaceVO>> listNamespace(@RequestBody QueryNamespaceRequest queryNamespaceRequest) {
 
         String codeLike = queryNamespaceRequest.getCodeLike();
@@ -155,9 +157,7 @@ public class NamespaceController {
 
         // 有权限用户填充 token
         boolean hasPermission = webAuthService.hasPermission(RoleScope.NAMESPACE, namespaceId, Permission.READ);
-        if (hasPermission) {
-            namespaceVO.setToken(namespaceDO.getToken());
-        }
+        namespaceVO.setToken(hasPermission ? namespaceDO.getToken() : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
     }
 
     private NamespaceDO fetchById(Long id) {

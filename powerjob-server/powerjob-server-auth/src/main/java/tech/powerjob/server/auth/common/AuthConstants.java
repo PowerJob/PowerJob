@@ -18,4 +18,6 @@ public class AuthConstants {
      * 前端跳转到指定页面指令
      */
     public static final String FE_REDIRECT_KEY = "FE-REDIRECT:";
+
+    public static final String TIPS_NO_PERMISSION_TO_SEE = "NO_PERMISSION_TO_SEE";
 }

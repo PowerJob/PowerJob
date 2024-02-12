@@ -22,7 +22,9 @@ public class QueryAppInfoRequest {
     /**
      * 任务名称
      */
-    private String appName;
+    private String appNameLike;
+
+    private String tagLike;
 
     /**
      * 查询与我相关的任务（我有直接权限的）

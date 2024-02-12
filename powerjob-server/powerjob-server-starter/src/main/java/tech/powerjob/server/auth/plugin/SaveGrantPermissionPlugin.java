@@ -1,5 +1,6 @@
 package tech.powerjob.server.auth.plugin;
 
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import tech.powerjob.common.response.ResultDTO;
@@ -9,12 +10,10 @@ import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.interceptor.GrantPermissionPlugin;
+import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
 import tech.powerjob.server.common.utils.SpringUtils;
-import tech.powerjob.server.persistence.remote.model.UserRoleDO;
-import tech.powerjob.server.persistence.remote.repository.UserRoleRepository;
 
 import java.lang.reflect.Method;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -65,17 +64,12 @@ public abstract class SaveGrantPermissionPlugin implements GrantPermissionPlugin
             throw new IllegalArgumentException("[GrantPermission] result success but id not exits, maybe there has some bug, please fix it!!!");
         }
 
-        UserRoleRepository userRoleRepository = SpringUtils.getBean(UserRoleRepository.class);
-        UserRoleDO userRoleDO = new UserRoleDO();
+        PowerJobPermissionService powerJobPermissionService = SpringUtils.getBean(PowerJobPermissionService.class);
 
-        userRoleDO.setUserId(powerJobUser.getId());
-        userRoleDO.setRole(Role.ADMIN.getV());
-        userRoleDO.setScope(fetchRuleScope().getV());
-        userRoleDO.setTarget(savedId);
-        userRoleDO.setGmtCreate(new Date());
-        userRoleDO.setGmtModified(new Date());
+        Map<String, Object> extra = Maps.newHashMap();
+        extra.put("source", "SaveGrantPermissionPlugin");
 
-        userRoleRepository.saveAndFlush(userRoleDO);
+        powerJobPermissionService.grantPermission(fetchRuleScope(), savedId, powerJobUser.getId(), Role.ADMIN, JsonUtils.toJSONString(extra));
     }
 
     protected abstract RoleScope fetchRuleScope();

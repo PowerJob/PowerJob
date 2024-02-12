@@ -17,7 +17,7 @@ public class HttpServletUtils {
         String v = httpServletRequest.getHeader(key);
 
         // 解决 window.localStorage.getItem 为 null 的问题
-        if (OmsConstant.NULL.equalsIgnoreCase(v)) {
+        if (OmsConstant.NULL.equalsIgnoreCase(v) || "undefined".equalsIgnoreCase(v)) {
             return null;
         }
 

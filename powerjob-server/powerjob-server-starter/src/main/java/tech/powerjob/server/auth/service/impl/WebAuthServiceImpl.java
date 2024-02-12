@@ -56,9 +56,7 @@ public class WebAuthServiceImpl implements WebAuthService {
             return false;
         }
 
-        powerJobPermissionService.hasPermission(powerJobUser.getId(), roleScope, target, permission);
-
-        return false;
+        return powerJobPermissionService.hasPermission(powerJobUser.getId(), roleScope, target, permission);
     }
 
     private void diffGrant(RoleScope roleScope, Long target, Role role, List<Long> uids, Map<Role, List<Long>> originRole2Uids) {
