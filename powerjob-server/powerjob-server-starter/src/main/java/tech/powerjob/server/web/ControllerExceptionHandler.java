@@ -30,9 +30,9 @@ public class ControllerExceptionHandler {
         // 不是所有异常都需要打印完整堆栈，后续可以定义内部的Exception，便于判断
         if (e instanceof PowerJobException) {
             ret.setCode(((PowerJobException) e).getCode());
-            log.warn("[ControllerException] PowerJobException, message is {}.", ExceptionUtils.getMessage(e));
+            log.warn("[ControllerException] PowerJobException, message is {}.", e.getMessage());
         } else if (e instanceof IllegalArgumentException) {
-            log.warn("[ControllerException] http request failed, message is {}.", e.getMessage());
+            log.warn("[ControllerException] http request failed due to IllegalArgument, message is {}.", e.getMessage());
         } else if (e instanceof HttpMessageNotReadableException || e instanceof MethodArgumentTypeMismatchException) {
             log.warn("[ControllerException] invalid http request params, exception is {}.", e.getMessage());
         } else if (e instanceof HttpRequestMethodNotSupportedException) {

@@ -47,9 +47,17 @@ public interface PowerJobPermissionService {
 
     /**
      * 获取有相关权限的用户
-     * @param roleScope 权限范围
+     * @param roleScope 角色范围
      * @param target 目标
      * @return 角色对应的用户列表
      */
     Map<Role, List<Long>> fetchUserWithPermissions(RoleScope roleScope, Long target);
+
+    /**
+     * 获取用户有权限的目标
+     * @param roleScope 角色范围
+     * @param userId 用户ID
+     * @return result
+     */
+    Map<Role, List<Long>> fetchUserHadPermissionTargets(RoleScope roleScope, Long userId);
 }

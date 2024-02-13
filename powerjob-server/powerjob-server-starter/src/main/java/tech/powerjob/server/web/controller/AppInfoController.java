@@ -2,6 +2,7 @@ package tech.powerjob.server.web.controller;
 
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -30,8 +31,10 @@ import tech.powerjob.server.web.request.QueryAppInfoRequest;
 import tech.powerjob.server.web.response.AppInfoVO;
 
 import javax.persistence.criteria.Predicate;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -102,10 +105,17 @@ public class AppInfoController {
 
         Pageable pageable = PageRequest.of(queryAppInfoRequest.getIndex(), queryAppInfoRequest.getPageSize());
 
-        // TODO: 我有权限的列表
+        // 相关权限（先查处关联 ids）
+        Set<Long> queryAppIds;
+        Boolean showMyRelated = queryAppInfoRequest.getShowMyRelated();
+        if (BooleanUtils.isTrue(showMyRelated)) {
+            queryAppIds = webAuthService.fetchMyPermissionTargets(RoleScope.APP);
+        } else {
+            queryAppIds = Collections.emptySet();
+        }
+
         Specification<AppInfoDO> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = Lists.newArrayList();
-
 
             Long appId = queryAppInfoRequest.getAppId();
             Long namespaceId = queryAppInfoRequest.getNamespaceId();
@@ -120,6 +130,10 @@ public class AppInfoController {
 
             if (StringUtils.isNotEmpty(queryAppInfoRequest.getAppNameLike())) {
                 predicates.add(criteriaBuilder.like(root.get("appName"), QueryConvertUtils.convertLikeParams(queryAppInfoRequest.getAppNameLike())));
+            }
+
+            if (!queryAppIds.isEmpty()) {
+                predicates.add(criteriaBuilder.in(root.get("id")).value(queryAppIds));
             }
 
             return query.where(predicates.toArray(new Predicate[0])).getRestriction();

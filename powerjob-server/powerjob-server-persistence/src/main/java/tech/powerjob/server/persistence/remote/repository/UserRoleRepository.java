@@ -18,4 +18,6 @@ public interface UserRoleRepository extends JpaRepository<UserRoleDO, Long> {
     List<UserRoleDO> findAllByScopeAndTarget(Integer scope, Long target);
 
     List<UserRoleDO> findAllByScopeAndTargetAndRoleAndUserId(Integer scope, Long target, Integer role, Long userId);
+
+    List<UserRoleDO> findAllByUserIdAndScope(Long userId, Integer scope);
 }

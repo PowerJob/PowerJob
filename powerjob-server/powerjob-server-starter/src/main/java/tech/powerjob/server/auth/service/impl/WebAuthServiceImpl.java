@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.*;
+import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
@@ -57,6 +59,23 @@ public class WebAuthServiceImpl implements WebAuthService {
         }
 
         return powerJobPermissionService.hasPermission(powerJobUser.getId(), roleScope, target, permission);
+    }
+
+    @Override
+    public Set<Long> fetchMyPermissionTargets(RoleScope roleScope) {
+
+        PowerJobUser powerJobUser = LoginUserHolder.get();
+        if (powerJobUser == null) {
+            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+        }
+
+        Map<Role, List<Long>> role2TargetIds = powerJobPermissionService.fetchUserHadPermissionTargets(roleScope, powerJobUser.getId());
+
+        Set<Long> targetIds = Sets.newHashSet();
+        role2TargetIds.values().forEach(targetIds::addAll);
+
+        // 展示不考虑穿透权限的问题（即拥有 namespace 权限也可以看到全部的 apps）
+        return targetIds;
     }
 
     private void diffGrant(RoleScope roleScope, Long target, Role role, List<Long> uids, Map<Role, List<Long>> originRole2Uids) {

@@ -2,12 +2,14 @@ package tech.powerjob.server.web.controller;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.Permission;
@@ -17,10 +19,13 @@ import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveNamespaceGrantPermissionPlugin;
 import tech.powerjob.server.auth.service.WebAuthService;
+import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.QueryConvertUtils;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
+import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.NamespaceRepository;
 import tech.powerjob.server.web.converter.NamespaceConverter;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
@@ -50,6 +55,8 @@ public class NamespaceController {
 
     @Resource
     private WebAuthService webAuthService;
+    @Resource
+    private AppInfoRepository appInfoRepository;
     @Resource
     private NamespaceRepository namespaceRepository;
 
@@ -102,6 +109,13 @@ public class NamespaceController {
     @DeleteMapping("/delete")
     @ApiPermission(name = "Namespace-Delete", roleScope = RoleScope.NAMESPACE, requiredPermission = Permission.SU)
     public ResultDTO<Void> deleteNamespace(Long id) {
+
+        List<AppInfoDO> appInfosInNamespace = appInfoRepository.findAllByNamespaceId(id);
+        if (CollectionUtils.isNotEmpty(appInfosInNamespace)) {
+            List<String> relatedApps = appInfosInNamespace.stream().map(AppInfoDO::getAppName).collect(Collectors.toList());
+            throw new PowerJobException("Unable to delete due to associated apps: " + SJ.COMMA_JOINER.join(relatedApps));
+        }
+
         namespaceRepository.deleteById(id);
         return ResultDTO.success(null);
     }

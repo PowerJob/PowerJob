@@ -123,6 +123,21 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
         return ret;
     }
 
+    @Override
+    public Map<Role, List<Long>> fetchUserHadPermissionTargets(RoleScope roleScope, Long userId) {
+
+        Map<Role, List<Long>> ret = Maps.newHashMap();
+        List<UserRoleDO> userRoleDOList = userRoleRepository.findAllByUserIdAndScope(userId, roleScope.getV());
+
+        Optional.ofNullable(userRoleDOList).orElse(Collections.emptyList()).forEach(r -> {
+            Role role = Role.of(r.getRole());
+            List<Long> targetIds = ret.computeIfAbsent(role, ignore -> Lists.newArrayList());
+            targetIds.add(r.getTarget());
+        });
+
+        return ret;
+    }
+
     private boolean checkAppPermission(Long targetId, Permission requiredPermission, Multimap<Long, Role> appId2Role, Multimap<Long, Role> namespaceId2Role) {
 
         final Collection<Role> appRoles = appId2Role.get(targetId);

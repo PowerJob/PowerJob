@@ -32,4 +32,6 @@ public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long>, JpaSp
     @Query(value = "select id from AppInfoDO where currentServer = :currentServer")
     List<Long> listAppIdByCurrentServer(@Param("currentServer")String currentServer);
 
+    List<AppInfoDO> findAllByNamespaceId(Long namespaceId);
+
 }

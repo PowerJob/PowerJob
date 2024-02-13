@@ -4,6 +4,8 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 
+import java.util.Set;
+
 /**
  * Web Auth 服务
  * 写在 starter 包下，抽取 controller 的公共逻辑
@@ -38,4 +40,6 @@ public interface WebAuthService {
      * @return 是否有权限
      */
     boolean hasPermission(RoleScope roleScope, Long target, Permission permission);
+
+    Set<Long> fetchMyPermissionTargets(RoleScope roleScope);
 }
