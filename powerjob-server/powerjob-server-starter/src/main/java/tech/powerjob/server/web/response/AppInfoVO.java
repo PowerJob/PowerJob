@@ -1,9 +1,10 @@
 package tech.powerjob.server.web.response;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -12,19 +13,10 @@ import java.util.Date;
  * @author tjq
  * @since 2024/2/12
  */
-@Data
-public class AppInfoVO implements Serializable {
-
-    private Long id;
-
-    private String appName;
-
-    private Long namespaceId;
-
-    /**
-     * 描述
-     */
-    private String title;
+@Getter
+@Setter
+@ToString
+public class AppInfoVO extends AppBaseVO {
 
     private String password;
 

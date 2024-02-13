@@ -1,6 +1,7 @@
 package tech.powerjob.server.web.controller;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -109,7 +110,9 @@ public class AppInfoController {
         Set<Long> queryAppIds;
         Boolean showMyRelated = queryAppInfoRequest.getShowMyRelated();
         if (BooleanUtils.isTrue(showMyRelated)) {
-            queryAppIds = webAuthService.fetchMyPermissionTargets(RoleScope.APP);
+            Set<Long> targetIds = Sets.newHashSet();
+            webAuthService.fetchMyPermissionTargets(RoleScope.APP).values().forEach(targetIds::addAll);
+            queryAppIds = targetIds;
         } else {
             queryAppIds = Collections.emptySet();
         }

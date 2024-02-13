@@ -32,6 +32,10 @@ public class ThirdPartyUser {
      */
     private String email;
     /**
+     * web 回调地址
+     */
+    private String webHook;
+    /**
      * 扩展字段
      */
     private String extra;

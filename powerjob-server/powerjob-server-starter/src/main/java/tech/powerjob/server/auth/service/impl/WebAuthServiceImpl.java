@@ -62,20 +62,15 @@ public class WebAuthServiceImpl implements WebAuthService {
     }
 
     @Override
-    public Set<Long> fetchMyPermissionTargets(RoleScope roleScope) {
+    public Map<Role, List<Long>> fetchMyPermissionTargets(RoleScope roleScope) {
 
         PowerJobUser powerJobUser = LoginUserHolder.get();
         if (powerJobUser == null) {
             throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
         }
 
-        Map<Role, List<Long>> role2TargetIds = powerJobPermissionService.fetchUserHadPermissionTargets(roleScope, powerJobUser.getId());
-
-        Set<Long> targetIds = Sets.newHashSet();
-        role2TargetIds.values().forEach(targetIds::addAll);
-
         // 展示不考虑穿透权限的问题（即拥有 namespace 权限也可以看到全部的 apps）
-        return targetIds;
+        return powerJobPermissionService.fetchUserHadPermissionTargets(roleScope, powerJobUser.getId());
     }
 
     private void diffGrant(RoleScope roleScope, Long target, Role role, List<Long> uids, Map<Role, List<Long>> originRole2Uids) {

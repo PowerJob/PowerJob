@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,4 +17,6 @@ import java.util.Optional;
 public interface NamespaceRepository extends JpaRepository<NamespaceDO, Long>, JpaSpecificationExecutor<NamespaceDO> {
 
     Optional<NamespaceDO> findByCode(String code);
+
+    List<NamespaceDO> findAllByIdIn(Collection<Long> ids);
 }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,4 +35,6 @@ public interface AppInfoRepository extends JpaRepository<AppInfoDO, Long>, JpaSp
 
     List<AppInfoDO> findAllByNamespaceId(Long namespaceId);
 
+
+    List<AppInfoDO> findAllByIdIn(Collection<Long> ids);
 }

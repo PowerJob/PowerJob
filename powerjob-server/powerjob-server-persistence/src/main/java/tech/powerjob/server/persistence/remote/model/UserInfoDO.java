@@ -8,6 +8,7 @@ import java.util.Date;
 
 /**
  * 用户信息表
+ * PowerJob 自身维护的全部用户体系数据
  * 5.0.0 可能不兼容改动：为了支持第三方登录，需要通过 username 与第三方登录系统做匹配，该列需要声明为唯一索引，确保全局唯一
  *
  * @author tjq
@@ -27,6 +28,11 @@ public class UserInfoDO {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     private Long id;
+
+    /**
+     * 账号类型
+     */
+    private String accountType;
 
     private String username;
     /**

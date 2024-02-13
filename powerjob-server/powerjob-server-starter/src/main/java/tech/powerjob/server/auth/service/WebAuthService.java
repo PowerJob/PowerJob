@@ -1,10 +1,12 @@
 package tech.powerjob.server.auth.service;
 
 import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Web Auth 服务
@@ -41,5 +43,5 @@ public interface WebAuthService {
      */
     boolean hasPermission(RoleScope roleScope, Long target, Permission permission);
 
-    Set<Long> fetchMyPermissionTargets(RoleScope roleScope);
+    Map<Role, List<Long>> fetchMyPermissionTargets(RoleScope roleScope);
 }

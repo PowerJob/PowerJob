@@ -22,7 +22,9 @@ public enum AuthErrorCode {
     /**
      * 无效请求，一般是参数问题
      */
-    INVALID_REQUEST("-300", "INVALID_REQUEST")
+    INVALID_REQUEST("-300", "INVALID_REQUEST"),
+
+    INCORRECT_PASSWORD("-400", "INCORRECT_PASSWORD")
 
     ;
 

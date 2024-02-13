@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.common.Loggers;
 
@@ -56,13 +57,11 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
     @Value("${oms.auth.dingtalk.callbackUrl:#{null}}")
     private String dingTalkCallbackUrl;
 
-    private static final String DING_TALK = "DingTalk";
-
     @Override
     public LoginTypeInfo loginType() {
         return new LoginTypeInfo()
-                .setType(DING_TALK)
-                .setName("钉钉登录")
+                .setType(AuthConstants.ACCOUNT_TYPE_DING)
+                .setName("DingTalkLogin")
                 ;
     }
 
@@ -79,7 +78,7 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
                 "&response_type=code" +
                 "&client_id=" + dingTalkAppKey +
                 "&scope=openid" +
-                "&state=" + DING_TALK +
+                "&state=" + AuthConstants.ACCOUNT_TYPE_DING +
                 "&prompt=consent";
         Loggers.WEB.info("[DingTalkBizLoginService] login url: {}", url);
         return url;

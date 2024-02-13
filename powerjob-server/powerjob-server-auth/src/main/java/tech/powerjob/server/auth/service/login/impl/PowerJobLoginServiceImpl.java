@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.common.AuthErrorCode;
@@ -91,6 +92,16 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         if (!powerJobUserOpt.isPresent()) {
             UserInfoDO newUser = new UserInfoDO();
             newUser.setUsername(dbUserName);
+            // 写入账号体系类型
+            newUser.setAccountType(loginType);
+
+            // 同步素材
+            newUser.setEmail(bizUser.getEmail());
+            newUser.setPhone(bizUser.getPhone());
+            newUser.setNick(bizUser.getNick());
+            newUser.setWebHook(bizUser.getWebHook());
+            newUser.setExtra(bizUser.getExtra());
+
             Loggers.WEB.info("[PowerJobLoginService] sync user to PowerJobUserSystem: {}", dbUserName);
             userInfoRepository.saveAndFlush(newUser);
 
@@ -117,6 +128,10 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         return userNameOpt.flatMap(uname -> userInfoRepository.findByUsername(uname).map(userInfoDO -> {
             PowerJobUser powerJobUser = new PowerJobUser();
             BeanUtils.copyProperties(userInfoDO, powerJobUser);
+
+            // 兼容某些直接通过 ifLogin 判断登录的场景
+            LoginUserHolder.set(powerJobUser);
+
             return powerJobUser;
         }));
     }
