@@ -55,9 +55,15 @@ public class UserInfoDO {
      */
     private String webHook;
     /**
-     * 扩展字段
+     * 扩展字段 for 第三方
+     * PowerJob 内部不允许使用该字段
      */
     private String extra;
+
+    /**
+     * 原始账号 username
+     */
+    private String originUsername;
 
     private Date gmtCreate;
 

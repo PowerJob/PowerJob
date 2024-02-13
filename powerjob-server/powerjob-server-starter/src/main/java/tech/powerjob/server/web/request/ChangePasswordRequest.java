@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Data
 public class ChangePasswordRequest implements Serializable {
 
-    private Long userId;
+    private String username;
 
     private String oldPassword;
 

@@ -56,7 +56,7 @@ public class PwjbUserInfoController {
         pwjbUserInfoDO.setGmtModified(new Date());
 
         // 二次加密密码
-        final String password = pwjbUserInfoDO.getPassword();
+        final String password = request.getPassword();
         if (StringUtils.isNotEmpty(password)) {
             pwjbUserInfoDO.setPassword(DigestUtils.rePassword(password, pwjbUserInfoDO.getUsername()));
         }
@@ -76,9 +76,10 @@ public class PwjbUserInfoController {
             throw new IllegalArgumentException("Inconsistent passwords");
         }
 
-        Optional<PwjbUserInfoDO> userOpt = pwjbUserInfoRepository.findById(changePasswordRequest.getUserId());
+        String username = changePasswordRequest.getUsername();
+        Optional<PwjbUserInfoDO> userOpt = pwjbUserInfoRepository.findByUsername(username);
         if (!userOpt.isPresent()) {
-            throw new IllegalArgumentException("can't find user by userId: " + changePasswordRequest.getUserId());
+            throw new IllegalArgumentException("can't find user by username: " + username);
         }
 
         PwjbUserInfoDO dbUser = userOpt.get();

@@ -39,6 +39,8 @@ public class UserDetailVO extends UserBaseVO {
      * webHook
      */
     private String webHook;
+
+    private String originUsername;
     /**
      * 扩展字段
      */

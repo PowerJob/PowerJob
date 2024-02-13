@@ -26,4 +26,6 @@ public class ModifyUserInfoRequest {
      * 邮箱地址
      */
     private String email;
+
+    private String extra;
 }

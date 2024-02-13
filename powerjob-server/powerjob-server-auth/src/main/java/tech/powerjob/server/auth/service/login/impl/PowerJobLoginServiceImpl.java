@@ -94,6 +94,7 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
             newUser.setUsername(dbUserName);
             // 写入账号体系类型
             newUser.setAccountType(loginType);
+            newUser.setOriginUsername(bizUser.getUsername());
 
             // 同步素材
             newUser.setEmail(bizUser.getEmail());

@@ -3,13 +3,11 @@ package tech.powerjob.server.web.controller;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.PowerJobUser;
@@ -19,7 +17,6 @@ import tech.powerjob.server.auth.common.AuthErrorCode;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
-import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
@@ -28,6 +25,7 @@ import tech.powerjob.server.persistence.remote.repository.NamespaceRepository;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 import tech.powerjob.server.web.converter.NamespaceConverter;
 import tech.powerjob.server.web.converter.UserConverter;
+import tech.powerjob.server.web.request.ModifyUserInfoRequest;
 import tech.powerjob.server.web.response.AppBaseVO;
 import tech.powerjob.server.web.response.NamespaceBaseVO;
 import tech.powerjob.server.web.response.UserBaseVO;
@@ -35,10 +33,7 @@ import tech.powerjob.server.web.response.UserDetailVO;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,8 +46,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/user")
 public class UserInfoController {
     @Resource
-    private UserService userService;
-    @Resource
     private UserInfoRepository userInfoRepository;
     @Resource
     private PowerJobLoginService powerJobLoginService;
@@ -62,6 +55,50 @@ public class UserInfoController {
     private NamespaceRepository namespaceRepository;
     @Resource
     private AppInfoRepository appInfoRepository;
+
+    @SneakyThrows
+    @PostMapping("/modify")
+    public ResultDTO<Void> modifyUser(@RequestBody ModifyUserInfoRequest modifyUserInfoRequest, HttpServletRequest httpServletRequest) {
+
+        Optional<PowerJobUser> powerJobUserOpt = powerJobLoginService.ifLogin(httpServletRequest);
+        if (!powerJobUserOpt.isPresent()) {
+            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+        }
+
+        Long userId = modifyUserInfoRequest.getId();
+        Optional<UserInfoDO> userOpt = userInfoRepository.findById(userId);
+        if (!userOpt.isPresent()) {
+            throw new IllegalArgumentException("can't find user by userId:" + userId);
+        }
+
+        if (!Objects.equals(powerJobUserOpt.get().getId(), userId)) {
+            throw new IllegalAccessException("no permission to change others user info");
+        }
+
+        UserInfoDO dbUser = userOpt.get();
+
+        // 拷入允许修改的内容
+        if (StringUtils.isNotEmpty(modifyUserInfoRequest.getNick())) {
+            dbUser.setNick(modifyUserInfoRequest.getNick());
+        }
+        if (StringUtils.isNotEmpty(modifyUserInfoRequest.getPhone())) {
+            dbUser.setPhone(modifyUserInfoRequest.getPhone());
+        }
+        if (StringUtils.isNotEmpty(modifyUserInfoRequest.getEmail())) {
+            dbUser.setEmail(modifyUserInfoRequest.getEmail());
+        }
+        if (StringUtils.isNotEmpty(modifyUserInfoRequest.getWebHook())) {
+            dbUser.setWebHook(modifyUserInfoRequest.getWebHook());
+        }
+        if (StringUtils.isNotEmpty(modifyUserInfoRequest.getExtra())) {
+            dbUser.setExtra(modifyUserInfoRequest.getExtra());
+        }
+
+        dbUser.setGmtModified(new Date());
+        userInfoRepository.saveAndFlush(dbUser);
+
+        return ResultDTO.success(null);
+    }
 
     @GetMapping("/list")
     public ResultDTO<List<UserBaseVO>> list(@RequestParam(required = false) String name) {
@@ -106,8 +143,10 @@ public class UserInfoController {
                     return;
                 }
                 NamespaceBaseVO namespaceBaseVO = JsonUtils.parseObjectIgnoreException(JsonUtils.toJSONString(NamespaceConverter.do2BaseVo(namespaceDO)), NamespaceBaseVO.class);
-                namespaceBaseVO.genFrontName();
-                namespaceBaseVOS.add(namespaceBaseVO);
+                if (namespaceBaseVO != null) {
+                    namespaceBaseVO.genFrontName();
+                    namespaceBaseVOS.add(namespaceBaseVO);
+                }
             });
         });
         userDetailVO.setRole2NamespaceList(role2NamespaceBaseVo);
