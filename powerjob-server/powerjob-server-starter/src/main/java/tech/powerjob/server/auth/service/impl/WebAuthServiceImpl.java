@@ -61,7 +61,7 @@ public class WebAuthServiceImpl implements WebAuthService {
 
     private void diffGrant(RoleScope roleScope, Long target, Role role, List<Long> uids, Map<Role, List<Long>> originRole2Uids) {
 
-        Set<Long> orignUids = Sets.newHashSet(Optional.ofNullable(originRole2Uids.get(role)).orElse(Collections.emptyList()));
+        Set<Long> originUids = Sets.newHashSet(Optional.ofNullable(originRole2Uids.get(role)).orElse(Collections.emptyList()));
         Set<Long> currentUids = Sets.newHashSet(Optional.ofNullable(uids).orElse(Collections.emptyList()));
 
         Map<String, Object> extraInfo = Maps.newHashMap();
@@ -69,12 +69,12 @@ public class WebAuthServiceImpl implements WebAuthService {
         extraInfo.put("source", "diffGrant");
         String extra = JsonUtils.toJSONString(extraInfo);
 
-        Set<Long> allIds = Sets.newHashSet(orignUids);
+        Set<Long> allIds = Sets.newHashSet(originUids);
         allIds.addAll(currentUids);
 
         Set<Long> allIds2 = Sets.newHashSet(allIds);
 
-        // 在 orignUids 不在 currentUids，需要取消授权
+        // 在 originUids 不在 currentUids，需要取消授权
         allIds.removeAll(currentUids);
         allIds.forEach(cancelPermissionUid -> {
             powerJobPermissionService.retrievePermission(roleScope, target, cancelPermissionUid, role);
@@ -82,7 +82,7 @@ public class WebAuthServiceImpl implements WebAuthService {
         });
 
         // 在 currentUids 当不在 orignUids，需要增加授权
-        allIds2.removeAll(orignUids);
+        allIds2.removeAll(originUids);
         allIds2.forEach(addPermissionUid -> {
             powerJobPermissionService.grantPermission(roleScope, target, addPermissionUid, role, extra);
             log.info("[WebAuthService] [diffGrant] grantPermission: roleScope={},target={},uid={},role={},extra={}", roleScope, target, addPermissionUid, role, extra);

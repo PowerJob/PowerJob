@@ -19,6 +19,8 @@ public class AppInfoVO implements Serializable {
 
     private String appName;
 
+    private Long namespaceId;
+
     /**
      * 描述
      */

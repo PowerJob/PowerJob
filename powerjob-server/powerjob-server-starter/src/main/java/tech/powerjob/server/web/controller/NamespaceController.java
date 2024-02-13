@@ -26,6 +26,7 @@ import tech.powerjob.server.web.converter.NamespaceConverter;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 import tech.powerjob.server.web.request.ModifyNamespaceRequest;
 import tech.powerjob.server.web.request.QueryNamespaceRequest;
+import tech.powerjob.server.web.response.NamespaceBaseVO;
 import tech.powerjob.server.web.response.NamespaceVO;
 
 import javax.annotation.Resource;
@@ -145,6 +146,22 @@ public class NamespaceController {
         }).collect(Collectors.toList()));
 
         return ResultDTO.success(ret);
+    }
+
+    @PostMapping("/listAll")
+    @ApiPermission(name = "Namespace-ListAll", roleScope = RoleScope.NAMESPACE, requiredPermission = Permission.NONE)
+    public ResultDTO<List<NamespaceBaseVO>> listAll() {
+        // 数量应该不是很多，先简单处理，不查询精简对象
+        List<NamespaceDO> namespaceRepositoryAll = namespaceRepository.findAll();
+        List<NamespaceBaseVO> namespaceBaseVOList = namespaceRepositoryAll.stream().map(nd -> {
+            NamespaceBaseVO nv = new NamespaceBaseVO();
+            nv.setId(nd.getId());
+            nv.setCode(nd.getCode());
+            nv.setName(nd.getName());
+            nv.genFrontName();
+            return nv;
+        }).collect(Collectors.toList());
+        return ResultDTO.success(namespaceBaseVOList);
     }
 
     private void fillPermissionInfo(NamespaceDO namespaceDO, NamespaceVO namespaceVO) {

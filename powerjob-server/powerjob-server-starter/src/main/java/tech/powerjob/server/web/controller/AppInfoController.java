@@ -20,12 +20,10 @@ import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveAppGrantPermissionPlugin;
 import tech.powerjob.server.auth.service.WebAuthService;
-import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.QueryConvertUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.web.request.AppAssertRequest;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import tech.powerjob.server.web.request.QueryAppInfoRequest;
@@ -50,11 +48,7 @@ public class AppInfoController {
 
     private final WebAuthService webAuthService;
 
-    private final AppInfoService appInfoService;
-
     private final AppInfoRepository appInfoRepository;
-
-    private static final int MAX_APP_NUM = 200;
 
     @PostMapping("/save")
     @ApiPermission(name = "App-Save", roleScope = RoleScope.APP, dynamicPermissionPlugin = ModifyOrCreateDynamicPermission.class, grandPermissionPlugin = SaveAppGrantPermissionPlugin.class)
@@ -102,11 +96,6 @@ public class AppInfoController {
         return ResultDTO.success(null);
     }
 
-    @PostMapping("/assert")
-    public ResultDTO<Long> assertApp(@RequestBody AppAssertRequest request) {
-        return ResultDTO.success(appInfoService.assertApp(request.getAppName(), request.getPassword()));
-    }
-
     @PostMapping("/list")
     @ApiPermission(name = "Namespace-List", roleScope = RoleScope.APP, requiredPermission = Permission.NONE)
     public ResultDTO<PageResult<AppInfoVO>> listAppInfoByQuery(@RequestBody QueryAppInfoRequest queryAppInfoRequest) {
@@ -145,7 +134,6 @@ public class AppInfoController {
 
         return ResultDTO.success(pageRet);
     }
-
 
     private List<AppInfoVO> convert(List<AppInfoDO> data, boolean fillDetail) {
         if (CollectionUtils.isEmpty(data)) {

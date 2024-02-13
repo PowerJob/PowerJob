@@ -2,6 +2,9 @@ package tech.powerjob.server.web.controller;
 
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.StringPage;
@@ -43,8 +46,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/instance")
 public class InstanceController {
 
-
-
     @Resource
     private InstanceService instanceService;
     @Resource
@@ -56,18 +57,21 @@ public class InstanceController {
     private InstanceInfoRepository instanceInfoRepository;
 
     @GetMapping("/stop")
+    @ApiPermission(name = "Instance-Stop", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<Void> stopInstance(Long appId,Long instanceId) {
         instanceService.stopInstance(appId,instanceId);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/retry")
+    @ApiPermission(name = "Instance-Retry", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<Void> retryInstance(String appId, Long instanceId) {
         instanceService.retryInstance(Long.valueOf(appId), instanceId);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/detail")
+    @ApiPermission(name = "Instance-Detail", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<InstanceDetailVO> getInstanceDetail(Long appId, Long instanceId) {
 
         // 兼容老版本前端不存在 appId 的场景
@@ -79,11 +83,13 @@ public class InstanceController {
     }
 
     @GetMapping("/log")
+    @ApiPermission(name = "Instance-Log", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<StringPage> getInstanceLog(Long appId, Long instanceId, Long index) {
         return ResultDTO.success(instanceLogService.fetchInstanceLog(appId, instanceId, index));
     }
 
     @GetMapping("/downloadLogUrl")
+    @ApiPermission(name = "Instance-FetchDownloadLogUrl", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<String> getDownloadUrl(Long appId, Long instanceId) {
         return ResultDTO.success(instanceLogService.fetchDownloadUrl(appId, instanceId));
     }
@@ -115,6 +121,7 @@ public class InstanceController {
     }
 
     @PostMapping("/list")
+    @ApiPermission(name = "Instance-List", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<PageResult<InstanceInfoVO>> list(@RequestBody QueryInstanceRequest request) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");

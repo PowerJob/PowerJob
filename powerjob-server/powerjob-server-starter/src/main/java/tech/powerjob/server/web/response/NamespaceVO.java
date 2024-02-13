@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.ToString;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -17,19 +16,7 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
-public class NamespaceVO implements Serializable {
-
-    private Long id;
-
-    /**
-     * 空间唯一标识
-     */
-    private String code;
-
-    /**
-     * 空间名称，比如中文描述（XX部门XX空间）
-     */
-    private String name;
+public class NamespaceVO extends NamespaceBaseVO {
 
     private String dept;
     private String tags;

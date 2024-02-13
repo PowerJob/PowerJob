@@ -19,7 +19,7 @@ import java.util.List;
 public class ServerInfoAwareProcessor {
 
     public ServerInfoAwareProcessor(ServerInfoService serverInfoService, List<ServerInfoAware> awareList) {
-        final ServerInfo serverInfo = serverInfoService.fetchServiceInfo();
+        final ServerInfo serverInfo = serverInfoService.fetchCurrentServerInfo();
         log.info("[ServerInfoAwareProcessor] current server info: {}", serverInfo);
         awareList.forEach(aware -> {
             aware.setServerInfo(serverInfo);
