@@ -54,6 +54,12 @@ public class UserInfoDO {
      * webHook
      */
     private String webHook;
+
+    /**
+     * JWT 登录的二次校验信息
+     */
+    private String tokenLoginVerifyInfo;
+
     /**
      * 扩展字段 for 第三方
      * PowerJob 内部不允许使用该字段

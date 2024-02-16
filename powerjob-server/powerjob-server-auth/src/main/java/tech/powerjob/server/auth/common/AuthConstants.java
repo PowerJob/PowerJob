@@ -26,6 +26,13 @@ public class AuthConstants {
      */
     public static final String ACCOUNT_LARK = "LARK";
 
+    public static final String PARAM_KEY_USERNAME = "username";
+    public static final String PARAM_KEY_PASSWORD = "password";
+    /**
+     * 前端参数-密码加密类型，官方版本出于成本未进行前后端传输的对称加密，接入方有需求可自行实现，此处定义加密协议字段
+     */
+    public static final String PARAM_KEY_ENCRYPTION = "encryption";
+
     /* ********** 账号体系 ********** */
 
     /**
@@ -40,4 +47,6 @@ public class AuthConstants {
     public static final String FE_REDIRECT_KEY = "FE-REDIRECT:";
 
     public static final String TIPS_NO_PERMISSION_TO_SEE = "NO_PERMISSION_TO_SEE";
+
+    public static final Long GLOBAL_ADMIN_TARGET_ID = 1L;
 }

@@ -30,4 +30,13 @@ public interface ThirdPartyLoginService {
      */
     ThirdPartyUser login(ThirdPartyLoginRequest loginRequest);
 
+    /**
+     * JWT 登录的回调校验
+     * @param username 用户名称
+     * @param tokenLoginVerifyInfo 二次校验信息
+     * @return 是否通过
+     */
+    default boolean tokenLoginVerify(String username, TokenLoginVerifyInfo tokenLoginVerifyInfo) {
+        return true;
+    }
 }

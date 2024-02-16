@@ -85,7 +85,7 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
     }
 
     @Override
-    public void grantPermission(RoleScope roleScope, Long target, Long userId, Role role, String extra) {
+    public void grantRole(RoleScope roleScope, Long target, Long userId, Role role, String extra) {
 
         UserRoleDO userRoleDO = new UserRoleDO();
         userRoleDO.setGmtCreate(new Date());
@@ -102,7 +102,7 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
     }
 
     @Override
-    public void retrievePermission(RoleScope roleScope, Long target, Long userId, Role role) {
+    public void retrieveRole(RoleScope roleScope, Long target, Long userId, Role role) {
         List<UserRoleDO> originUserRole = userRoleRepository.findAllByScopeAndTargetAndRoleAndUserId(roleScope.getV(), target, role.getV(), userId);
         log.info("[PowerJobPermissionService] [retrievePermission] origin rule: {}", originUserRole);
         Optional.ofNullable(originUserRole).orElse(Collections.emptyList()).forEach(r -> {

@@ -15,6 +15,7 @@ public enum AuthErrorCode {
 
     USER_NOT_LOGIN("-100", "UserNotLoggedIn"),
     USER_NOT_EXIST("-101", "UserNotExist"),
+    USER_AUTH_FAILED("-102", "UserAuthFailed"),
 
 
     NO_PERMISSION("-200", "NoPermission"),
@@ -24,7 +25,9 @@ public enum AuthErrorCode {
      */
     INVALID_REQUEST("-300", "INVALID_REQUEST"),
 
-    INCORRECT_PASSWORD("-400", "INCORRECT_PASSWORD")
+    INCORRECT_PASSWORD("-400", "INCORRECT_PASSWORD"),
+
+    INVALID_TOKEN("-401", "INVALID_TOKEN"),
 
     ;
 

@@ -8,10 +8,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.common.AuthErrorCode;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
-import tech.powerjob.server.auth.login.LoginTypeInfo;
-import tech.powerjob.server.auth.login.ThirdPartyLoginRequest;
-import tech.powerjob.server.auth.login.ThirdPartyLoginService;
-import tech.powerjob.server.auth.login.ThirdPartyUser;
+import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.common.Loggers;
 import tech.powerjob.server.common.utils.DigestUtils;
 import tech.powerjob.server.persistence.remote.model.PwjbUserInfoDO;
@@ -35,10 +32,6 @@ public class PowerJobThirdPartyLoginService implements ThirdPartyLoginService {
     @Resource
     private PwjbUserInfoRepository pwjbUserInfoRepository;
 
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_PASSWORD = "password";
-
-    private static final String KEY_ENCRYPTION = "encryption";
 
     @Override
     public LoginTypeInfo loginType() {
@@ -63,9 +56,11 @@ public class PowerJobThirdPartyLoginService implements ThirdPartyLoginService {
 
         Map<String, Object> loginInfoMap = JsonUtils.parseMap(loginInfo);
 
-        final String username = MapUtils.getString(loginInfoMap, KEY_USERNAME);
-        final String password = MapUtils.getString(loginInfoMap, KEY_PASSWORD);
-        final String encryption = MapUtils.getString(loginInfoMap, KEY_ENCRYPTION);
+        final String username = MapUtils.getString(loginInfoMap, AuthConstants.PARAM_KEY_USERNAME);
+        final String password = MapUtils.getString(loginInfoMap, AuthConstants.PARAM_KEY_PASSWORD);
+        final String encryption = MapUtils.getString(loginInfoMap, AuthConstants.PARAM_KEY_ENCRYPTION);
+
+        Loggers.WEB.debug("[PowerJobLoginService] username: {}, password: {}, encryption: {}", username, password, encryption);
 
         if (StringUtils.isAnyEmpty(username, password)) {
             Loggers.WEB.debug("[PowerJobLoginService] username or password is empty, login failed!");
@@ -96,10 +91,31 @@ public class PowerJobThirdPartyLoginService implements ThirdPartyLoginService {
                 }
             }
 
+            // 下发加密的密码作为 JWT 的一部分，方便处理改密码后失效的场景
+            TokenLoginVerifyInfo tokenLoginVerifyInfo = new TokenLoginVerifyInfo();
+            tokenLoginVerifyInfo.setEncryptedToken(dbUser.getPassword());
+            bizUser.setTokenLoginVerifyInfo(tokenLoginVerifyInfo);
+
             return bizUser;
         }
 
         Loggers.WEB.debug("[PowerJobLoginService] user[{}]'s password is incorrect, login failed!", username);
         throw new PowerJobException("password is incorrect");
+    }
+
+    @Override
+    public boolean tokenLoginVerify(String username, TokenLoginVerifyInfo tokenLoginVerifyInfo) {
+
+        if (tokenLoginVerifyInfo == null) {
+            return false;
+        }
+
+        final Optional<PwjbUserInfoDO> userInfoOpt = pwjbUserInfoRepository.findByUsername(username);
+        if (userInfoOpt.isPresent()) {
+            String dbPassword = userInfoOpt.get().getPassword();
+            return StringUtils.equals(dbPassword, tokenLoginVerifyInfo.getEncryptedToken());
+        }
+
+        return false;
     }
 }

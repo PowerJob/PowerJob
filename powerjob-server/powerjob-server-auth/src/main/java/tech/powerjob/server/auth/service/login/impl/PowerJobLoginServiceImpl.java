@@ -2,11 +2,15 @@ package tech.powerjob.server.auth.service.login.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.common.AuthConstants;
@@ -14,10 +18,7 @@ import tech.powerjob.server.auth.common.AuthErrorCode;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.common.utils.HttpServletUtils;
 import tech.powerjob.server.auth.jwt.JwtService;
-import tech.powerjob.server.auth.login.LoginTypeInfo;
-import tech.powerjob.server.auth.login.ThirdPartyLoginRequest;
-import tech.powerjob.server.auth.login.ThirdPartyLoginService;
-import tech.powerjob.server.auth.login.ThirdPartyUser;
+import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
 import tech.powerjob.server.common.Loggers;
@@ -26,6 +27,8 @@ import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,14 +44,9 @@ import java.util.stream.Collectors;
 @Service
 public class PowerJobLoginServiceImpl implements PowerJobLoginService {
 
-
     private final JwtService jwtService;
     private final UserInfoRepository userInfoRepository;
     private final Map<String, ThirdPartyLoginService> code2ThirdPartyLoginService;
-
-
-
-    private static final String KEY_USERNAME = "userName";
 
     @Autowired
     public PowerJobLoginServiceImpl(JwtService jwtService, UserInfoRepository userInfoRepository, List<ThirdPartyLoginService> thirdPartyLoginServices) {
@@ -96,6 +94,8 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
             newUser.setAccountType(loginType);
             newUser.setOriginUsername(bizUser.getUsername());
 
+            newUser.setTokenLoginVerifyInfo(JsonUtils.toJSONString(bizUser.getTokenLoginVerifyInfo()));
+
             // 同步素材
             newUser.setEmail(bizUser.getEmail());
             newUser.setPhone(bizUser.getPhone());
@@ -107,6 +107,15 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
             userInfoRepository.saveAndFlush(newUser);
 
             powerJobUserOpt = userInfoRepository.findByUsername(dbUserName);
+        } else {
+
+            // 更新二次校验的 TOKEN 信息
+            UserInfoDO dbUserInfoDO = powerJobUserOpt.get();
+
+            dbUserInfoDO.setTokenLoginVerifyInfo(JsonUtils.toJSONString(bizUser.getTokenLoginVerifyInfo()));
+            dbUserInfoDO.setGmtModified(new Date());
+
+            userInfoRepository.saveAndFlush(dbUserInfoDO);
         }
 
         PowerJobUser ret = new PowerJobUser();
@@ -118,23 +127,52 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
             ret.setUsername(dbUserName);
         }
 
-        fillJwt(ret);
+        fillJwt(ret, Optional.ofNullable(bizUser.getTokenLoginVerifyInfo()).map(TokenLoginVerifyInfo::getEncryptedToken).orElse(null));
 
         return ret;
     }
 
     @Override
     public Optional<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest) {
-        final Optional<String> userNameOpt = parseUserName(httpServletRequest);
-        return userNameOpt.flatMap(uname -> userInfoRepository.findByUsername(uname).map(userInfoDO -> {
-            PowerJobUser powerJobUser = new PowerJobUser();
-            BeanUtils.copyProperties(userInfoDO, powerJobUser);
+        final Optional<JwtBody> jwtBodyOpt = parseJwt(httpServletRequest);
+        if (!jwtBodyOpt.isPresent()) {
+            return Optional.empty();
+        }
 
-            // 兼容某些直接通过 ifLogin 判断登录的场景
-            LoginUserHolder.set(powerJobUser);
+        JwtBody jwtBody = jwtBodyOpt.get();
 
-            return powerJobUser;
-        }));
+        Optional<UserInfoDO> dbUserInfoOpt = userInfoRepository.findByUsername(jwtBody.getUsername());
+        if (!dbUserInfoOpt.isPresent()) {
+            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_EXIST);
+        }
+
+        UserInfoDO dbUser = dbUserInfoOpt.get();
+
+        PowerJobUser powerJobUser = new PowerJobUser();
+
+        String tokenLoginVerifyInfoStr = dbUser.getTokenLoginVerifyInfo();
+        TokenLoginVerifyInfo tokenLoginVerifyInfo = Optional.ofNullable(tokenLoginVerifyInfoStr).map(x -> JsonUtils.parseObjectIgnoreException(x, TokenLoginVerifyInfo.class)).orElse(new TokenLoginVerifyInfo());
+
+        // DB 中的 encryptedToken 存在，代表需要二次校验
+        if (StringUtils.isNotEmpty(tokenLoginVerifyInfo.getEncryptedToken())) {
+            if (!StringUtils.equals(jwtBody.getEncryptedToken(), tokenLoginVerifyInfo.getEncryptedToken())) {
+                throw new PowerJobAuthException(AuthErrorCode.INVALID_TOKEN);
+            }
+
+            ThirdPartyLoginService thirdPartyLoginService = code2ThirdPartyLoginService.get(dbUser.getAccountType());
+            boolean tokenLoginVerifyOk = thirdPartyLoginService.tokenLoginVerify(dbUser.getOriginUsername(), tokenLoginVerifyInfo);
+
+            if (!tokenLoginVerifyOk) {
+                throw new PowerJobAuthException(AuthErrorCode.USER_AUTH_FAILED);
+            }
+        }
+
+        BeanUtils.copyProperties(dbUser, powerJobUser);
+
+        // 兼容某些直接通过 ifLogin 判断登录的场景
+        LoginUserHolder.set(powerJobUser);
+
+        return Optional.of(powerJobUser);
     }
 
     private ThirdPartyLoginService fetchBizLoginService(String loginType) {
@@ -145,16 +183,22 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         return loginService;
     }
 
-    private void fillJwt(PowerJobUser powerJobUser) {
-        Map<String, Object> jwtMap = Maps.newHashMap();
+    private void fillJwt(PowerJobUser powerJobUser, String encryptedToken) {
 
         // 不能下发 userId，容易被轮询爆破
-        jwtMap.put(KEY_USERNAME, powerJobUser.getUsername());
+        JwtBody jwtBody = new JwtBody();
+        jwtBody.setUsername(powerJobUser.getUsername());
+        if (StringUtils.isNotEmpty(encryptedToken)) {
+            jwtBody.setEncryptedToken(encryptedToken);
+        }
+
+        Map<String, Object> jwtMap = JsonUtils.parseMap(JsonUtils.toJSONString(jwtBody));
 
         powerJobUser.setJwtToken(jwtService.build(jwtMap, null));
     }
 
-    private Optional<String> parseUserName(HttpServletRequest httpServletRequest) {
+    @SneakyThrows
+    private Optional<JwtBody> parseJwt(HttpServletRequest httpServletRequest) {
         // header、cookie 都能获取
         String jwtStr = HttpServletUtils.fetchFromHeader(AuthConstants.JWT_NAME, httpServletRequest);
 
@@ -169,12 +213,19 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
             return Optional.empty();
         }
         final Map<String, Object> jwtBodyMap = jwtService.parse(jwtStr, null);
-        final Object userName = jwtBodyMap.get(KEY_USERNAME);
 
-        if (userName == null) {
+        if (MapUtils.isEmpty(jwtBodyMap)) {
             return Optional.empty();
         }
 
-        return Optional.of(String.valueOf(userName));
+        return Optional.ofNullable(JsonUtils.parseObject(JsonUtils.toJSONString(jwtBodyMap), JwtBody.class));
+    }
+
+    @Data
+    static class JwtBody implements Serializable {
+
+        private String username;
+
+        private String encryptedToken;
     }
 }

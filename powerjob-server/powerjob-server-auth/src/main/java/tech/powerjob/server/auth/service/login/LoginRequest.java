@@ -25,5 +25,8 @@ public class LoginRequest {
      */
     private String originParams;
 
+    /**
+     * http原始请求，第三方回调参数传递类型无法枚举，直接传递 HttpServletRequest 满足扩展性要求
+     */
     private transient HttpServletRequest httpServletRequest;
 }

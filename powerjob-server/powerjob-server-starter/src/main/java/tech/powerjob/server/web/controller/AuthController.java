@@ -1,18 +1,25 @@
 package tech.powerjob.server.web.controller;
 
+import com.google.common.collect.Maps;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.auth.PowerJobUser;
+import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.server.auth.*;
 import tech.powerjob.server.auth.common.AuthConstants;
+import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.login.LoginTypeInfo;
 import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
+import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
+import tech.powerjob.server.web.request.GrantPermissionRequest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -27,6 +34,8 @@ public class AuthController {
 
     @Resource
     private PowerJobLoginService powerJobLoginService;
+    @Resource
+    private PowerJobPermissionService powerJobPermissionService;
 
     @GetMapping("/supportLoginTypes")
     public ResultDTO<List<LoginTypeInfo>> listSupportLoginTypes() {
@@ -85,6 +94,34 @@ public class AuthController {
     public ResultDTO<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest) {
         final Optional<PowerJobUser> powerJobUser = powerJobLoginService.ifLogin(httpServletRequest);
         return powerJobUser.map(ResultDTO::success).orElseGet(() -> ResultDTO.success(null));
+    }
+
+    /* ****************** 授权相关 ****************** */
+    @PostMapping("/grantAdmin")
+    @ApiPermission(name = "Auth-GrantAdmin", roleScope = RoleScope.GLOBAL, requiredPermission = Permission.SU)
+    public ResultDTO<Void> grantAppPermission(GrantPermissionRequest grantPermissionRequest) {
+
+        grantPermissionRequest.setRole(Role.ADMIN.getV());
+        grantPermissionRequest.setTargetId(AuthConstants.GLOBAL_ADMIN_TARGET_ID);
+
+        grantPermission(RoleScope.GLOBAL, grantPermissionRequest);
+        return ResultDTO.success(null);
+    }
+
+
+    private void grantPermission(RoleScope roleScope, GrantPermissionRequest grantPermissionRequest) {
+
+        Role role = Role.of(grantPermissionRequest.getRole());
+
+        Optional.ofNullable(grantPermissionRequest.getUserIds()).orElse(Collections.emptyList()).forEach(uid -> {
+            // 记录授权人信息
+            Map<String, Object> extraInfo = Maps.newHashMap();
+            extraInfo.put("grantor", LoginUserHolder.getUserName());
+            String extra = JsonUtils.toJSONString(extraInfo);
+
+            powerJobPermissionService.grantRole(roleScope, grantPermissionRequest.getTargetId(), uid, role, extra);
+        });
+
     }
 
     private void fillJwt4LoginUser(PowerJobUser powerJobUser, HttpServletResponse httpServletResponse) {

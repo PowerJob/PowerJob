@@ -17,6 +17,11 @@ public class ThirdPartyUser {
      * 用户的唯一标识，用于关联到 PowerJob 的 username
      */
     private String username;
+    /**
+     * JWT 登录的二次校验配置
+     * 可空，空则代表放弃二次校验（会出现第三方登录改了密码当 PowerJob JWT 登录依然可用的情况）
+     */
+    private TokenLoginVerifyInfo tokenLoginVerifyInfo;
 
     /* ******** 以下全部选填即可，只是方便数据同步，后续都可以去 PowerJob 控制台更改 ******** */
     /**

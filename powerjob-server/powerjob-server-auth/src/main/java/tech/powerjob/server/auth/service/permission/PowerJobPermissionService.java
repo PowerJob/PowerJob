@@ -27,23 +27,23 @@ public interface PowerJobPermissionService {
     boolean hasPermission(Long userId, RoleScope roleScope, Long target, Permission permission);
 
     /**
-     * 授予用户权限
+     * 授予用户角色
      * @param roleScope 权限范围
      * @param target 权限目标
      * @param userId 用户ID
      * @param role 角色
      * @param extra 其他
      */
-    void grantPermission(RoleScope roleScope, Long target, Long userId, Role role, String extra);
+    void grantRole(RoleScope roleScope, Long target, Long userId, Role role, String extra);
 
     /**
-     * 回收用户权限
+     * 回收用户角色
      * @param roleScope 权限范围
      * @param target 权限目标
      * @param userId 用户ID
      * @param role 角色
      */
-    void retrievePermission(RoleScope roleScope, Long target, Long userId, Role role);
+    void retrieveRole(RoleScope roleScope, Long target, Long userId, Role role);
 
     /**
      * 获取有相关权限的用户

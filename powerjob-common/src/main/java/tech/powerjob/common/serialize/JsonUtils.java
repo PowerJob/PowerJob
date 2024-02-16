@@ -1,5 +1,6 @@
 package tech.powerjob.common.serialize;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,6 +33,10 @@ public class JsonUtils {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .build();
 
+    static {
+        JSON_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
     private static final TypeReference<Map<String, Object>>  MAP_TYPE_REFERENCE  = new TypeReference<Map<String, Object>> () {};
 
     private JsonUtils(){
@@ -39,6 +44,9 @@ public class JsonUtils {
     }
 
     public static String toJSONString(Object obj) {
+        if (obj == null) {
+            return null;
+        }
         if (obj instanceof String) {
             return (String) obj;
         }

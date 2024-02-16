@@ -91,14 +91,14 @@ public class WebAuthServiceImpl implements WebAuthService {
         // 在 originUids 不在 currentUids，需要取消授权
         allIds.removeAll(currentUids);
         allIds.forEach(cancelPermissionUid -> {
-            powerJobPermissionService.retrievePermission(roleScope, target, cancelPermissionUid, role);
+            powerJobPermissionService.retrieveRole(roleScope, target, cancelPermissionUid, role);
             log.info("[WebAuthService] [diffGrant] cancelPermission: roleScope={},target={},uid={},role={}", roleScope, target, cancelPermissionUid, role);
         });
 
         // 在 currentUids 当不在 orignUids，需要增加授权
         allIds2.removeAll(originUids);
         allIds2.forEach(addPermissionUid -> {
-            powerJobPermissionService.grantPermission(roleScope, target, addPermissionUid, role, extra);
+            powerJobPermissionService.grantRole(roleScope, target, addPermissionUid, role, extra);
             log.info("[WebAuthService] [diffGrant] grantPermission: roleScope={},target={},uid={},role={},extra={}", roleScope, target, addPermissionUid, role, extra);
         });
     }

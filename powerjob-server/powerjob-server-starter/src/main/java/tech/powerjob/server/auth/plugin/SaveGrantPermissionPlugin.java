@@ -69,7 +69,7 @@ public abstract class SaveGrantPermissionPlugin implements GrantPermissionPlugin
         Map<String, Object> extra = Maps.newHashMap();
         extra.put("source", "SaveGrantPermissionPlugin");
 
-        powerJobPermissionService.grantPermission(fetchRuleScope(), savedId, powerJobUser.getId(), Role.ADMIN, JsonUtils.toJSONString(extra));
+        powerJobPermissionService.grantRole(fetchRuleScope(), savedId, powerJobUser.getId(), Role.ADMIN, JsonUtils.toJSONString(extra));
     }
 
     protected abstract RoleScope fetchRuleScope();
