@@ -61,7 +61,7 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
     public LoginTypeInfo loginType() {
         return new LoginTypeInfo()
                 .setType(AuthConstants.ACCOUNT_TYPE_DING)
-                .setName("DingTalkLogin")
+                .setName("DingTalk")
                 ;
     }
 

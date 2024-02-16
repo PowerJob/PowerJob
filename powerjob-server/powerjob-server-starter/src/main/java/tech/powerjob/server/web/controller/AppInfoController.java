@@ -25,17 +25,18 @@ import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.QueryConvertUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
+import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.web.converter.NamespaceConverter;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import tech.powerjob.server.web.request.QueryAppInfoRequest;
 import tech.powerjob.server.web.response.AppInfoVO;
+import tech.powerjob.server.web.response.NamespaceBaseVO;
+import tech.powerjob.server.web.service.NamespaceWebService;
 
 import javax.persistence.criteria.Predicate;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +54,8 @@ public class AppInfoController {
     private final WebAuthService webAuthService;
 
     private final AppInfoRepository appInfoRepository;
+
+    private final NamespaceWebService namespaceWebService;
 
     @PostMapping("/save")
     @ApiPermission(name = "App-Save", roleScope = RoleScope.APP, dynamicPermissionPlugin = ModifyOrCreateDynamicPermission.class, grandPermissionPlugin = SaveAppGrantPermissionPlugin.class)
@@ -172,6 +175,15 @@ public class AppInfoController {
                 // 密码
                 boolean hasPermission = webAuthService.hasPermission(RoleScope.APP, appInfoDO.getId(), Permission.READ);
                 appInfoVO.setPassword(hasPermission ? appInfoDO.getPassword() : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
+
+                // namespace
+                Optional<NamespaceDO> namespaceOpt = namespaceWebService.findById(appInfoVO.getId());
+                if (namespaceOpt.isPresent()) {
+                    NamespaceBaseVO baseNamespace = NamespaceConverter.do2BaseVo(namespaceOpt.get());
+                    appInfoVO.setNamespace(baseNamespace);
+                    appInfoVO.setNamespaceName(baseNamespace.getName());
+                }
+
             }
 
             return appInfoVO;

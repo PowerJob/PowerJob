@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * namespace 基本 VO 对象，用于列表渲染
@@ -26,6 +27,21 @@ public class NamespaceBaseVO implements Serializable {
      * 空间名称，比如中文描述（XX部门XX空间）
      */
     protected String name;
+
+    private Integer status;
+    private String statusStr;
+
+    private Date gmtCreate;
+
+    private String gmtCreateStr;
+
+    private Date gmtModified;
+
+    private String gmtModifiedStr;
+
+    private String creator;
+
+    private String modifier;
 
     /**
      * 前端名称（拼接 code + name，更容易辨认）

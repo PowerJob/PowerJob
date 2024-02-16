@@ -1,6 +1,7 @@
 package tech.powerjob.server.web.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
@@ -44,7 +45,7 @@ public class NamespaceController {
     @ResponseBody
     @PostMapping("/save")
     @ApiPermission(name = "Namespace-Save", roleScope = RoleScope.NAMESPACE, dynamicPermissionPlugin = ModifyOrCreateDynamicPermission.class, grandPermissionPlugin = SaveNamespaceGrantPermissionPlugin.class)
-    public ResultDTO<NamespaceVO> save(@RequestBody ModifyNamespaceRequest req) {
+    public ResultDTO<NamespaceBaseVO> save(@RequestBody ModifyNamespaceRequest req) {
 
         NamespaceDO savedNamespace = namespaceWebService.save(req);
         return ResultDTO.success(NamespaceConverter.do2BaseVo(savedNamespace));
@@ -65,9 +66,12 @@ public class NamespaceController {
 
         PageResult<NamespaceVO> ret = new PageResult<>(namespacePageResult);
         ret.setData(namespacePageResult.get().map(x -> {
-            NamespaceVO namespaceVO = NamespaceConverter.do2BaseVo(x);
-            fillPermissionInfo(x, namespaceVO);
-            return namespaceVO;
+            NamespaceVO detailVo = new NamespaceVO();
+            NamespaceBaseVO baseVO = NamespaceConverter.do2BaseVo(x);
+            BeanUtils.copyProperties(baseVO, detailVo);
+
+            fillPermissionInfo(x, detailVo);
+            return detailVo;
         }).collect(Collectors.toList()));
 
         return ResultDTO.success(ret);

@@ -9,7 +9,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
@@ -143,11 +142,8 @@ public class UserInfoController {
                 if (namespaceDO == null) {
                     return;
                 }
-                NamespaceBaseVO namespaceBaseVO = JsonUtils.parseObjectIgnoreException(JsonUtils.toJSONString(NamespaceConverter.do2BaseVo(namespaceDO)), NamespaceBaseVO.class);
-                if (namespaceBaseVO != null) {
-                    namespaceBaseVO.genShowName();
-                    namespaceBaseVOS.add(namespaceBaseVO);
-                }
+                NamespaceBaseVO namespaceBaseVO = NamespaceConverter.do2BaseVo(namespaceDO);
+                namespaceBaseVOS.add(namespaceBaseVO);
             });
         });
         userDetailVO.setRole2NamespaceList(role2NamespaceBaseVo);

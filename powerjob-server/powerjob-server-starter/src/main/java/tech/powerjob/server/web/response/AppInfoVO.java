@@ -37,4 +37,11 @@ public class AppInfoVO extends AppBaseVO {
     private String creator;
 
     private String modifier;
+
+    /**
+     * Namespace Info
+     */
+    private NamespaceBaseVO namespace;
+
+    private String namespaceName;
 }

@@ -27,7 +27,7 @@ import java.util.Optional;
  * @since 2023/3/20
  */
 @Service
-public class PowerJobThirdPartyLoginService implements ThirdPartyLoginService {
+public class PwjbAccountLoginService implements ThirdPartyLoginService {
 
     @Resource
     private PwjbUserInfoRepository pwjbUserInfoRepository;
@@ -37,7 +37,7 @@ public class PowerJobThirdPartyLoginService implements ThirdPartyLoginService {
     public LoginTypeInfo loginType() {
         return new LoginTypeInfo()
                 .setType(AuthConstants.ACCOUNT_TYPE_POWER_JOB)
-                .setName("PowerJob Built-in Login")
+                .setName("PowerJob Account")
                 ;
     }
 

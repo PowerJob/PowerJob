@@ -44,5 +44,8 @@ public class ModifyAppInfoRequest {
             throw new PowerJobException("appName can't contains white space!");
         }
         CommonUtils.requireNonNull(password, "password can't be empty");
+
+        // 后续版本强制要求设置 namespace，方便统一管理
+        CommonUtils.requireNonNull(namespaceId, "namespace can't be empty");
     }
 }

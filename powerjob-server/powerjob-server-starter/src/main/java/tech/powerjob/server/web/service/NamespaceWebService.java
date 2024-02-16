@@ -6,6 +6,7 @@ import tech.powerjob.server.web.request.ModifyNamespaceRequest;
 import tech.powerjob.server.web.request.QueryNamespaceRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * namespace web 服务
@@ -18,6 +19,8 @@ public interface NamespaceWebService {
     NamespaceDO save(ModifyNamespaceRequest req);
 
     void delete(Long id);
+
+    Optional<NamespaceDO> findById(Long id);
 
     Page<NamespaceDO> list(QueryNamespaceRequest queryNamespaceRequest);
 
