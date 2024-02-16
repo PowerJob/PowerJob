@@ -12,10 +12,14 @@ import tech.powerjob.server.web.response.UserBaseVO;
 public class UserConverter {
 
     public static UserBaseVO do2BaseVo(UserInfoDO x) {
+
         UserBaseVO userBaseVO = new UserBaseVO();
+
         userBaseVO.setId(x.getId());
         userBaseVO.setUsername(x.getUsername());
         userBaseVO.setNick(x.getNick());
+
+        userBaseVO.genShowName();
         return userBaseVO;
     }
 

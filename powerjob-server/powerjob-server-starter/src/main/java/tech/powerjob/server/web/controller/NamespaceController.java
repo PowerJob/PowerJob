@@ -83,7 +83,7 @@ public class NamespaceController {
             nv.setId(nd.getId());
             nv.setCode(nd.getCode());
             nv.setName(nd.getName());
-            nv.genFrontName();
+            nv.genShowName();
             return nv;
         }).collect(Collectors.toList());
         return ResultDTO.success(namespaceBaseVOList);

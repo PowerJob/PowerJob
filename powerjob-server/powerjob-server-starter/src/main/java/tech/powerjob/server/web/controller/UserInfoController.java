@@ -124,6 +124,7 @@ public class UserInfoController {
         }
         UserDetailVO userDetailVO = new UserDetailVO();
         BeanUtils.copyProperties(userinfoDoOpt.get(), userDetailVO);
+        userDetailVO.genShowName();
 
         // 权限信息
         Map<Role, List<Long>> globalPermissions = webAuthService.fetchMyPermissionTargets(RoleScope.GLOBAL);
@@ -144,7 +145,7 @@ public class UserInfoController {
                 }
                 NamespaceBaseVO namespaceBaseVO = JsonUtils.parseObjectIgnoreException(JsonUtils.toJSONString(NamespaceConverter.do2BaseVo(namespaceDO)), NamespaceBaseVO.class);
                 if (namespaceBaseVO != null) {
-                    namespaceBaseVO.genFrontName();
+                    namespaceBaseVO.genShowName();
                     namespaceBaseVOS.add(namespaceBaseVO);
                 }
             });

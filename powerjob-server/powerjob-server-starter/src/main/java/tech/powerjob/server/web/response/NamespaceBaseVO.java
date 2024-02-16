@@ -30,9 +30,9 @@ public class NamespaceBaseVO implements Serializable {
     /**
      * 前端名称（拼接 code + name，更容易辨认）
      */
-    protected String frontName;
+    protected String showName;
 
-    public void genFrontName() {
-        frontName = String.format("%s(%s)", name, code);
+    public void genShowName() {
+        showName = String.format("%s(%s)", name, code);
     }
 }
