@@ -20,7 +20,9 @@ import tech.powerjob.server.web.request.ModifyNamespaceRequest;
 import tech.powerjob.server.web.request.QueryNamespaceRequest;
 import tech.powerjob.server.web.response.NamespaceBaseVO;
 import tech.powerjob.server.web.response.NamespaceVO;
+import tech.powerjob.server.web.response.UserBaseVO;
 import tech.powerjob.server.web.service.NamespaceWebService;
+import tech.powerjob.server.web.service.UserWebService;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -39,6 +41,8 @@ public class NamespaceController {
 
     @Resource
     private WebAuthService webAuthService;
+    @Resource
+    private UserWebService userWebService;
     @Resource
     private NamespaceWebService namespaceWebService;
 
@@ -70,7 +74,7 @@ public class NamespaceController {
             NamespaceBaseVO baseVO = NamespaceConverter.do2BaseVo(x);
             BeanUtils.copyProperties(baseVO, detailVo);
 
-            fillPermissionInfo(x, detailVo);
+            fillDetail(x, detailVo);
             return detailVo;
         }).collect(Collectors.toList()));
 
@@ -93,7 +97,7 @@ public class NamespaceController {
         return ResultDTO.success(namespaceBaseVOList);
     }
 
-    private void fillPermissionInfo(NamespaceDO namespaceDO, NamespaceVO namespaceVO) {
+    private void fillDetail(NamespaceDO namespaceDO, NamespaceVO namespaceVO) {
 
         Long namespaceId = namespaceVO.getId();
 
@@ -104,6 +108,10 @@ public class NamespaceController {
         // 有权限用户填充 token
         boolean hasPermission = webAuthService.hasPermission(RoleScope.NAMESPACE, namespaceId, Permission.READ);
         namespaceVO.setToken(hasPermission ? namespaceDO.getToken() : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
+
+        // 用户信息
+        namespaceVO.setCreatorShowName(userWebService.fetchBaseUserInfo(namespaceDO.getCreator()).map(UserBaseVO::getShowName).orElse(null));
+        namespaceVO.setModifierShowName(userWebService.fetchBaseUserInfo(namespaceDO.getModifier()).map(UserBaseVO::getShowName).orElse(null));
     }
 
 }

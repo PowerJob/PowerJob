@@ -36,7 +36,7 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
     配置示例
     oms.auth.dingtalk.appkey=dinggzqqzqqzqqzqq
     oms.auth.dingtalk.appSecret=iY-FS8mzqqzqq_xEizqqzqqzqqzqqzqqzqqYEbkZOal
-    oms.auth.dingtalk.callbackUrl=http://localhost:7700/auth/loginCallback
+    oms.auth.dingtalk.callbackUrl=http://localhost:7700
      */
 
     /**
@@ -50,9 +50,9 @@ public class DingTalkLoginService implements ThirdPartyLoginService {
     @Value("${oms.auth.dingtalk.appSecret:#{null}}")
     private String dingTalkAppSecret;
     /**
-     * 回调地址，powerjob-server 地址 + /user/auth
-     * 比如本地调试时为 <a href="http://localhost:7700/auth/loginCallback">LocalDemoCallbackUrl</a>
-     * 部署后则为 <a href="http://try.powerjob.tech/auth/loginCallback">demoCallBackUrl</a>
+     * 回调地址，powerjob 前端控制台地址，即 powerjob-console 地址
+     * 比如本地调试时为 <a href="http://localhost:7700">LocalDemoCallbackUrl</a>
+     * 部署后则为 <a href="http://try.powerjob.tech">demoCallBackUrl</a>
      */
     @Value("${oms.auth.dingtalk.callbackUrl:#{null}}")
     private String dingTalkCallbackUrl;

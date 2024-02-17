@@ -25,7 +25,6 @@ import tech.powerjob.server.common.Loggers;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.util.Date;
@@ -202,6 +201,10 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         // header、cookie 都能获取
         String jwtStr = HttpServletUtils.fetchFromHeader(AuthConstants.JWT_NAME, httpServletRequest);
 
+        /*
+
+        开发阶段跨域无法简单传输 cookies，暂时采取 header 方案传输 JWT
+
         if (StringUtils.isEmpty(jwtStr)) {
             for (Cookie cookie : Optional.ofNullable(httpServletRequest.getCookies()).orElse(new Cookie[]{})) {
                 if (cookie.getName().equals(AuthConstants.JWT_NAME)) {
@@ -209,6 +212,8 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
                 }
             }
         }
+         */
+
         if (StringUtils.isEmpty(jwtStr)) {
             return Optional.empty();
         }

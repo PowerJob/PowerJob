@@ -33,4 +33,16 @@ public class LoginUserHolder {
         }
         return "UNKNOWN";
     }
+
+    /**
+     * 获取用户ID
+     * @return 存在则返回，否则返回 null
+     */
+    public static Long getUserId() {
+        PowerJobUser powerJobUser = get();
+        if (powerJobUser != null) {
+            return powerJobUser.getId();
+        }
+        return null;
+    }
 }

@@ -33,7 +33,9 @@ import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import tech.powerjob.server.web.request.QueryAppInfoRequest;
 import tech.powerjob.server.web.response.AppInfoVO;
 import tech.powerjob.server.web.response.NamespaceBaseVO;
+import tech.powerjob.server.web.response.UserBaseVO;
 import tech.powerjob.server.web.service.NamespaceWebService;
+import tech.powerjob.server.web.service.UserWebService;
 
 import javax.persistence.criteria.Predicate;
 import java.util.*;
@@ -53,6 +55,8 @@ public class AppInfoController {
 
     private final WebAuthService webAuthService;
 
+    private final UserWebService userWebService;
+
     private final AppInfoRepository appInfoRepository;
 
     private final NamespaceWebService namespaceWebService;
@@ -68,7 +72,7 @@ public class AppInfoController {
         if (id == null) {
             appInfoDO = new AppInfoDO();
             appInfoDO.setGmtCreate(new Date());
-            appInfoDO.setCreator(LoginUserHolder.getUserName());
+            appInfoDO.setCreator(LoginUserHolder.getUserId());
         } else {
             appInfoDO = appInfoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by id:" + id));
 
@@ -86,7 +90,7 @@ public class AppInfoController {
         appInfoDO.setExtra(req.getExtra());
 
         appInfoDO.setGmtModified(new Date());
-        appInfoDO.setModifier(LoginUserHolder.getUserName());
+        appInfoDO.setModifier(LoginUserHolder.getUserId());
 
         AppInfoDO savedAppInfo = appInfoRepository.saveAndFlush(appInfoDO);
 
@@ -138,6 +142,10 @@ public class AppInfoController {
                 predicates.add(criteriaBuilder.like(root.get("appName"), QueryConvertUtils.convertLikeParams(queryAppInfoRequest.getAppNameLike())));
             }
 
+            if (StringUtils.isNotEmpty(queryAppInfoRequest.getTagLike())) {
+                predicates.add(criteriaBuilder.like(root.get("tags"), QueryConvertUtils.convertLikeParams(queryAppInfoRequest.getTagLike())));
+            }
+
             if (!queryAppIds.isEmpty()) {
                 predicates.add(criteriaBuilder.in(root.get("id")).value(queryAppIds));
             }
@@ -149,8 +157,8 @@ public class AppInfoController {
 
         PageResult<AppInfoVO> pageRet = new PageResult<>(pageAppInfoResult);
 
-        List<AppInfoDO> appinfoDos = pageAppInfoResult.get().collect(Collectors.toList());
-        pageRet.setData(convert(appinfoDos, true));
+        List<AppInfoDO> appInfoDos = pageAppInfoResult.get().collect(Collectors.toList());
+        pageRet.setData(convert(appInfoDos, true));
 
         return ResultDTO.success(pageRet);
     }
@@ -160,7 +168,7 @@ public class AppInfoController {
             return Lists.newLinkedList();
         }
 
-        return data.stream().map(appInfoDO -> {
+        return data.parallelStream().map(appInfoDO -> {
             AppInfoVO appInfoVO = new AppInfoVO();
             BeanUtils.copyProperties(appInfoDO, appInfoVO);
 
@@ -177,12 +185,16 @@ public class AppInfoController {
                 appInfoVO.setPassword(hasPermission ? appInfoDO.getPassword() : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
 
                 // namespace
-                Optional<NamespaceDO> namespaceOpt = namespaceWebService.findById(appInfoVO.getId());
+                Optional<NamespaceDO> namespaceOpt = namespaceWebService.findById(appInfoDO.getNamespaceId());
                 if (namespaceOpt.isPresent()) {
                     NamespaceBaseVO baseNamespace = NamespaceConverter.do2BaseVo(namespaceOpt.get());
                     appInfoVO.setNamespace(baseNamespace);
                     appInfoVO.setNamespaceName(baseNamespace.getName());
                 }
+
+                // user 信息
+                appInfoVO.setCreatorShowName(userWebService.fetchBaseUserInfo(appInfoDO.getCreator()).map(UserBaseVO::getShowName).orElse(null));
+                appInfoVO.setModifierShowName(userWebService.fetchBaseUserInfo(appInfoDO.getModifier()).map(UserBaseVO::getShowName).orElse(null));
 
             }
 

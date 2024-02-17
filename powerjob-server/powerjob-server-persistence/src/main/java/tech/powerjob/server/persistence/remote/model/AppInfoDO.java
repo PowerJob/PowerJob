@@ -59,7 +59,7 @@ public class AppInfoDO {
 
     private Date gmtModified;
 
-    private String creator;
+    private Long creator;
 
-    private String modifier;
+    private Long modifier;
 }

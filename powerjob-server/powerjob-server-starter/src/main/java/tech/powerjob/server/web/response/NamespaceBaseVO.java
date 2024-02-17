@@ -39,10 +39,6 @@ public class NamespaceBaseVO implements Serializable {
 
     private String gmtModifiedStr;
 
-    private String creator;
-
-    private String modifier;
-
     /**
      * 前端名称（拼接 code + name，更容易辨认）
      */

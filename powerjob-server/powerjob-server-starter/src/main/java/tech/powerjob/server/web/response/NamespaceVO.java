@@ -32,4 +32,8 @@ public class NamespaceVO extends NamespaceBaseVO {
 
     private ComponentUserRoleInfo componentUserRoleInfo;
 
+    private String creatorShowName;
+
+    private String modifierShowName;
+
 }

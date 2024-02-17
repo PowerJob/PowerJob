@@ -64,11 +64,11 @@ public class NamespaceWebServiceImpl implements NamespaceWebService {
             namespaceDO.setCode(req.getCode());
             // 创建时生成 token
             namespaceDO.setToken(UUID.randomUUID().toString());
-            namespaceDO.setCreator(LoginUserHolder.getUserName());
+            namespaceDO.setCreator(LoginUserHolder.getUserId());
 
         } else {
             namespaceDO = fetchById(id);
-            namespaceDO.setModifier(LoginUserHolder.getUserName());
+            namespaceDO.setModifier(LoginUserHolder.getUserId());
 
             if (!namespaceDO.getCode().equalsIgnoreCase(req.getCode())) {
                 throw new IllegalArgumentException("NOT_ALLOW_CHANGE_THE_NAMESPACE_CODE");

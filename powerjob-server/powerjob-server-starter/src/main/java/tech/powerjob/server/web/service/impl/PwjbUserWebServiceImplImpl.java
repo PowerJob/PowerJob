@@ -1,5 +1,6 @@
 package tech.powerjob.server.web.service.impl;
 
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import tech.powerjob.server.web.service.PwjbUserWebService;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * PwjbUserWebService
@@ -30,11 +32,15 @@ public class PwjbUserWebServiceImplImpl implements PwjbUserWebService {
     @Resource
     private PwjbUserInfoRepository pwjbUserInfoRepository;
 
+    private static final Set<String> NOT_ALLOWED_CHANGE_PASSWORD_ACCOUNTS = Sets.newHashSet("powerjob_trial_account");
+
     @Override
     @SneakyThrows
     public PwjbUserInfoDO save(ModifyUserInfoRequest request) {
         String username = request.getUsername();
         CommonUtils.requireNonNull(username, "userName can't be null or empty!");
+        CommonUtils.requireNonNull(request.getPassword(), "password can't be null or empty!");
+
         Optional<PwjbUserInfoDO> oldUserOpt = pwjbUserInfoRepository.findByUsername(username);
         if (oldUserOpt.isPresent()) {
             throw new IllegalArgumentException("username already exist, please change one!");
@@ -79,6 +85,11 @@ public class PwjbUserWebServiceImplImpl implements PwjbUserWebService {
         String oldPasswordInReq = DigestUtils.rePassword(changePasswordRequest.getOldPassword(), dbUser.getUsername());
         if (!StringUtils.equals(oldPasswordInDb, oldPasswordInReq)) {
             throw new PowerJobAuthException(AuthErrorCode.INCORRECT_PASSWORD);
+        }
+
+        // 测试账号特殊处理
+        if (NOT_ALLOWED_CHANGE_PASSWORD_ACCOUNTS.contains(username)) {
+            throw new IllegalArgumentException("this account not allowed change the password");
         }
 
         dbUser.setPassword(DigestUtils.rePassword(changePasswordRequest.getNewPassword(), dbUser.getUsername()));

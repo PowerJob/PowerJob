@@ -25,6 +25,7 @@ public class UserBaseVO {
     protected String showName;
 
     public void genShowName() {
+
         if (StringUtils.isEmpty(nick)) {
             showName = username;
         } else {

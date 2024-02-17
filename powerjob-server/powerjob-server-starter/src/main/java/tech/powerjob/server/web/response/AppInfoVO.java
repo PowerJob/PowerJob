@@ -34,9 +34,9 @@ public class AppInfoVO extends AppBaseVO {
 
     private String gmtModifiedStr;
 
-    private String creator;
+    private String creatorShowName;
 
-    private String modifier;
+    private String modifierShowName;
 
     /**
      * Namespace Info
