@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.0.0-beta</version>
+        <version>5.0.0-beta2</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>5.0.0-beta</version>
+    <version>5.0.0-beta2</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -51,9 +51,9 @@
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.2.1</cron-utils.version>
 
-        <powerjob-common.version>5.0.0-beta</powerjob-common.version>
-        <powerjob-remote-impl-http.version>5.0.0-beta</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>5.0.0-beta</powerjob-remote-impl-akka.version>
+        <powerjob-common.version>5.0.0-beta2</powerjob-common.version>
+        <powerjob-remote-impl-http.version>5.0.0-beta2</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>5.0.0-beta2</powerjob-remote-impl-akka.version>
         <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
         <aliyun-sdk-oss.version>3.17.1</aliyun-sdk-oss.version>
         <minio.version>8.5.2</minio.version>
