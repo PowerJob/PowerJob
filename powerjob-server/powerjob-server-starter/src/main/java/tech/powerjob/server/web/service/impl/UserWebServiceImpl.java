@@ -1,5 +1,7 @@
 package tech.powerjob.server.web.service.impl;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
@@ -9,6 +11,7 @@ import tech.powerjob.server.web.service.UserWebService;
 
 import javax.annotation.Resource;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * UserWebService
@@ -18,6 +21,15 @@ import java.util.Optional;
  */
 @Service
 public class UserWebServiceImpl implements UserWebService {
+
+    /**
+     * 展示用的 user 查询缓存，对延迟不敏感
+     */
+    private final Cache<Long, UserInfoDO> userCache4Show = CacheBuilder.newBuilder()
+            .softValues()
+            .maximumSize(256)
+            .expireAfterWrite(3, TimeUnit.MINUTES)
+            .build();
 
     @Resource
     private UserInfoRepository userInfoRepository;
@@ -29,7 +41,18 @@ public class UserWebServiceImpl implements UserWebService {
             return Optional.empty();
         }
 
-        Optional<UserInfoDO> userInfoOpt = userInfoRepository.findById(userId);
-        return userInfoOpt.map(UserConverter::do2BaseVo);
+        try {
+            UserInfoDO userInfoDO = userCache4Show.get(userId, () -> {
+                Optional<UserInfoDO> userInfoOpt = userInfoRepository.findById(userId);
+                if (userInfoOpt.isPresent()) {
+                    return userInfoOpt.get();
+                }
+                throw new IllegalArgumentException("can't find user by userId: " + userId);
+            });
+
+            return Optional.of(UserConverter.do2BaseVo(userInfoDO));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

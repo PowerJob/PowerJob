@@ -105,8 +105,8 @@ public class AuthController {
     }
 
     @PostMapping("/saveGlobalAdmin")
-    @ApiPermission(name = "Auth-GrantAdmin", roleScope = RoleScope.GLOBAL, requiredPermission = Permission.SU)
-    public ResultDTO<Void> grantAppPermission(@RequestBody ComponentUserRoleInfo componentUserRoleInfo) {
+    @ApiPermission(name = "Auth-SaveGlobalAdmin", roleScope = RoleScope.GLOBAL, requiredPermission = Permission.SU)
+    public ResultDTO<Void> saveGlobalAdmin(@RequestBody ComponentUserRoleInfo componentUserRoleInfo) {
 
         if (CollectionUtils.isEmpty(componentUserRoleInfo.getAdmin())) {
             throw new IllegalArgumentException("At least one super administrator is required!");

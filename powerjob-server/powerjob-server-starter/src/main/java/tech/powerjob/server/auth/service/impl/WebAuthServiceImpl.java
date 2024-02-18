@@ -30,6 +30,15 @@ public class WebAuthServiceImpl implements WebAuthService {
 
 
     @Override
+    public void grantRole2LoginUser(RoleScope roleScope, Long target, Role role, String extra) {
+        Long userId = LoginUserHolder.getUserId();
+        if (userId == null) {
+            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+        }
+        powerJobPermissionService.grantRole(roleScope, target, userId, role, extra);
+    }
+
+    @Override
     public void processPermissionOnSave(RoleScope roleScope, Long target, ComponentUserRoleInfo o) {
         ComponentUserRoleInfo componentUserRoleInfo = Optional.ofNullable(o).orElse(new ComponentUserRoleInfo());
         

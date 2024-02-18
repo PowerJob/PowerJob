@@ -19,6 +19,15 @@ import java.util.Map;
 public interface WebAuthService {
 
     /**
+     * 对当前登录用户授予角色
+     * @param roleScope 角色范围
+     * @param target 目标
+     * @param role 角色
+     * @param extra 其他信息
+     */
+    void grantRole2LoginUser(RoleScope roleScope, Long target, Role role, String extra);
+
+    /**
      * 处理授权
      * @param roleScope 权限范围
      * @param target 权限目标

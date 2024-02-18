@@ -1,6 +1,7 @@
 package tech.powerjob.server.web.controller;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
@@ -13,11 +14,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.common.AuthConstants;
+import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveAppGrantPermissionPlugin;
@@ -28,6 +33,7 @@ import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.web.converter.NamespaceConverter;
+import tech.powerjob.server.web.request.AppAssertRequest;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import tech.powerjob.server.web.request.QueryAppInfoRequest;
@@ -108,7 +114,7 @@ public class AppInfoController {
     }
 
     @PostMapping("/list")
-    @ApiPermission(name = "Namespace-List", roleScope = RoleScope.APP, requiredPermission = Permission.NONE)
+    @ApiPermission(name = "App-List", roleScope = RoleScope.APP, requiredPermission = Permission.NONE)
     public ResultDTO<PageResult<AppInfoVO>> listAppInfoByQuery(@RequestBody QueryAppInfoRequest queryAppInfoRequest) {
 
         Pageable pageable = PageRequest.of(queryAppInfoRequest.getIndex(), queryAppInfoRequest.getPageSize());
@@ -161,6 +167,26 @@ public class AppInfoController {
         pageRet.setData(convert(appInfoDos, true));
 
         return ResultDTO.success(pageRet);
+    }
+
+    @PostMapping("/becomeAdmin")
+    @ApiPermission(name = "App-BecomeAdmin", roleScope = RoleScope.GLOBAL, requiredPermission = Permission.NONE)
+    public ResultDTO<Void> becomeAdminByAppNameAndPassword(@RequestBody AppAssertRequest appAssertRequest) {
+        String appName = appAssertRequest.getAppName();
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
+        if (!appInfoOpt.isPresent()) {
+            throw new IllegalArgumentException("can't find app by appName: " + appName);
+        }
+        if (!StringUtils.equals(appInfoOpt.get().getPassword(), appAssertRequest.getPassword())) {
+            throw new PowerJobAuthException(AuthErrorCode.INCORRECT_PASSWORD);
+        }
+
+        Map<String, Object> extra = Maps.newHashMap();
+        extra.put("source", "becomeAdminByAppNameAndPassword");
+
+        webAuthService.grantRole2LoginUser(RoleScope.APP, appInfoOpt.get().getId(), Role.ADMIN, JsonUtils.toJSONString(extra));
+
+        return ResultDTO.success(null);
     }
 
     private List<AppInfoVO> convert(List<AppInfoDO> data, boolean fillDetail) {
