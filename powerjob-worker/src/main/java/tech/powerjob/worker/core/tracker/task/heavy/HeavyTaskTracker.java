@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.RemoteConstant;
+import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.ServerScheduleJobReq;
@@ -19,7 +20,6 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.SegmentLock;
-import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
@@ -28,6 +28,7 @@ import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.ha.ProcessorTrackerStatusHolder;
 import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
+import tech.powerjob.worker.core.tracker.task.stat.InstanceStatisticsHolder;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
@@ -432,12 +433,12 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(instanceId, subInstanceId);
         InstanceStatisticsHolder holder = new InstanceStatisticsHolder();
 
-        holder.waitingDispatchNum = status2Num.getOrDefault(TaskStatus.WAITING_DISPATCH, 0L);
-        holder.workerUnreceivedNum = status2Num.getOrDefault(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 0L);
-        holder.receivedNum = status2Num.getOrDefault(TaskStatus.WORKER_RECEIVED, 0L);
-        holder.runningNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESSING, 0L);
-        holder.failedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_FAILED, 0L);
-        holder.succeedNum = status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_SUCCESS, 0L);
+        holder.setWaitingDispatchNum(status2Num.getOrDefault(TaskStatus.WAITING_DISPATCH, 0L));
+        holder.setWorkerUnreceivedNum(status2Num.getOrDefault(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 0L));
+        holder.setReceivedNum(status2Num.getOrDefault(TaskStatus.WORKER_RECEIVED, 0L));
+        holder.setRunningNum(status2Num.getOrDefault(TaskStatus.WORKER_PROCESSING, 0L));
+        holder.setFailedNum(status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_FAILED, 0L));
+        holder.setSucceedNum(status2Num.getOrDefault(TaskStatus.WORKER_PROCESS_SUCCESS, 0L));
         return holder;
     }
 
@@ -544,27 +545,6 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         private TaskStatus status;
 
         private Long lastReportTime;
-    }
-
-    /**
-     * 存储任务实例产生的各个Task状态，用于分析任务实例执行情况
-     */
-    @Data
-    protected static class InstanceStatisticsHolder {
-        // 等待派发状态（仅存在 TaskTracker 数据库中）
-        protected long waitingDispatchNum;
-        // 已派发，但 ProcessorTracker 未确认，可能由于网络错误请求未送达，也有可能 ProcessorTracker 线程池满，拒绝执行
-        protected long workerUnreceivedNum;
-        // ProcessorTracker确认接收，存在与线程池队列中，排队执行
-        protected long receivedNum;
-        // ProcessorTracker正在执行
-        protected long runningNum;
-        protected long failedNum;
-        protected long succeedNum;
-
-        public long getTotalTaskNum() {
-            return waitingDispatchNum + workerUnreceivedNum + receivedNum + runningNum + failedNum + succeedNum;
-        }
     }
 
     /**

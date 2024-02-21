@@ -18,6 +18,7 @@ import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.TransportUtils;
+import tech.powerjob.worker.core.tracker.task.stat.InstanceStatisticsHolder;
 import tech.powerjob.worker.persistence.TaskDO;
 
 import java.util.List;
@@ -87,8 +88,8 @@ public class CommonTaskTracker extends HeavyTaskTracker {
         // 填充详细信息
         InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
         InstanceDetail.TaskDetail taskDetail = new InstanceDetail.TaskDetail();
-        taskDetail.setSucceedTaskNum(holder.succeedNum);
-        taskDetail.setFailedTaskNum(holder.failedNum);
+        taskDetail.setSucceedTaskNum(holder.getSucceedNum());
+        taskDetail.setFailedTaskNum(holder.getFailedNum());
         taskDetail.setTotalTaskNum(holder.getTotalTaskNum());
         detail.setTaskDetail(taskDetail);
 
@@ -136,8 +137,8 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
             InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
 
-            long finishedNum = holder.succeedNum + holder.failedNum;
-            long unfinishedNum = holder.waitingDispatchNum + holder.workerUnreceivedNum + holder.receivedNum + holder.runningNum;
+            long finishedNum = holder.getFinishedNum();
+            long unfinishedNum = holder.getUnfinishedNum();
 
             log.debug("[TaskTracker-{}] status check result: {}", instanceId, holder);
 
@@ -147,8 +148,8 @@ public class CommonTaskTracker extends HeavyTaskTracker {
             req.setInstanceId(instanceId);
             req.setWfInstanceId(instanceInfo.getWfInstanceId());
             req.setTotalTaskNum(finishedNum + unfinishedNum);
-            req.setSucceedTaskNum(holder.succeedNum);
-            req.setFailedTaskNum(holder.failedNum);
+            req.setSucceedTaskNum(holder.getSucceedNum());
+            req.setFailedTaskNum(holder.getFailedNum());
             req.setReportTime(System.currentTimeMillis());
             req.setStartTime(createTime);
             req.setSourceAddress(workerRuntime.getWorkerAddress());
@@ -183,8 +184,8 @@ public class CommonTaskTracker extends HeavyTaskTracker {
                         // MAP 不关心结果，最简单
                         case MAP:
                             finished.set(true);
-                            success = holder.failedNum == 0;
-                            result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.succeedNum, holder.failedNum);
+                            success = holder.getFailedNum() == 0;
+                            result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.getSucceedNum(), holder.getFailedNum());
                             break;
                         // MapReduce 和 Broadcast 任务实例是否完成根据**LastTask**的执行情况判断
                         default:
@@ -239,7 +240,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
             // 6.1 定期检查 -> 重试派发后未确认的任务
             long currentMS = System.currentTimeMillis();
-            if (holder.workerUnreceivedNum != 0) {
+            if (holder.getWorkerUnreceivedNum() != 0) {
                 taskPersistenceService.getTaskByStatus(instanceId, TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 100).forEach(uncheckTask -> {
 
                     long elapsedTime = currentMS - uncheckTask.getLastModifiedTime();

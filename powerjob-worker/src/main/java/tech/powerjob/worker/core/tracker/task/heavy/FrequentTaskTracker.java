@@ -22,6 +22,7 @@ import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.LRUCache;
 import tech.powerjob.worker.common.utils.TransportUtils;
+import tech.powerjob.worker.core.tracker.task.stat.InstanceStatisticsHolder;
 import tech.powerjob.worker.persistence.TaskDO;
 
 import java.util.*;
@@ -283,8 +284,8 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
                 // 查看执行情况
                 InstanceStatisticsHolder holder = getInstanceStatisticsHolder(subInstanceId);
 
-                long finishedNum = holder.succeedNum + holder.failedNum;
-                long unfinishedNum = holder.waitingDispatchNum + holder.workerUnreceivedNum + holder.receivedNum + holder.runningNum;
+                long finishedNum = holder.getFinishedNum();
+                long unfinishedNum = holder.getUnfinishedNum();
 
                 if (unfinishedNum == 0) {
 
@@ -304,8 +305,8 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
                             continue;
                             // MAP 不关心结果，最简单
                         case MAP:
-                            String result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.succeedNum, holder.failedNum);
-                            onFinished(subInstanceId, holder.failedNum == 0, result, iterator);
+                            String result = String.format("total:%d,succeed:%d,failed:%d", holder.getTotalTaskNum(), holder.getSucceedNum(), holder.getFailedNum());
+                            onFinished(subInstanceId, holder.getFailedNum() == 0, result, iterator);
                             continue;
                             // MapReduce 和 BroadCast 需要根据是否有 LAST_TASK 来判断结束与否
                         default:
