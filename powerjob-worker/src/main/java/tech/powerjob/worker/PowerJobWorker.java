@@ -26,7 +26,7 @@ import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.utils.WorkerNetUtils;
 import tech.powerjob.worker.core.executor.ExecutorManager;
 import tech.powerjob.worker.extension.processor.ProcessorFactory;
-import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.persistence.db.TaskPersistenceService;
 import tech.powerjob.worker.processor.PowerJobProcessorLoader;
 import tech.powerjob.worker.processor.ProcessorLoader;
 import tech.powerjob.worker.processor.impl.BuiltInDefaultProcessorFactory;

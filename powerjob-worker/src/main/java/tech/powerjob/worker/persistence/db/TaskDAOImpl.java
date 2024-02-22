@@ -1,10 +1,9 @@
-package tech.powerjob.worker.persistence;
+package tech.powerjob.worker.persistence.db;
 
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.core.processor.TaskResult;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.AllArgsConstructor;
 
 import java.sql.*;
 import java.util.Collection;

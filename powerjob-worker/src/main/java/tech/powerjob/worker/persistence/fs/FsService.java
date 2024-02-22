@@ -1,0 +1,16 @@
+package tech.powerjob.worker.persistence.fs;
+
+import java.io.IOException;
+
+/**
+ * FileSystemService
+ *
+ * @author tjq
+ * @since 2024/2/22
+ */
+public interface FsService extends AutoCloseable {
+
+    void writeLine(String content) throws IOException;
+
+    String readLine() throws IOException;
+}

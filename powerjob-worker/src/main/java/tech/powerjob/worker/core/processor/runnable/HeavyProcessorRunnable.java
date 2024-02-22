@@ -21,7 +21,7 @@ import tech.powerjob.worker.core.processor.sdk.BroadcastProcessor;
 import tech.powerjob.worker.core.processor.sdk.MapReduceProcessor;
 import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.log.OmsLogger;
-import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.db.TaskDO;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 import tech.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
 

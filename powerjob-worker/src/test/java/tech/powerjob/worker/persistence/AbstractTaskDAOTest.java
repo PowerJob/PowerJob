@@ -1,6 +1,7 @@
 package tech.powerjob.worker.persistence;
 
 import tech.powerjob.worker.common.constants.TaskStatus;
+import tech.powerjob.worker.persistence.db.TaskDO;
 
 import java.nio.charset.StandardCharsets;
 

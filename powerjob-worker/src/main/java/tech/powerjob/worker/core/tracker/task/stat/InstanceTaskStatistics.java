@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @since 2024/2/21
  */
 @Data
-public class InstanceStatisticsHolder implements Serializable {
+public class InstanceTaskStatistics implements Serializable {
 
     /**
      * 等待派发状态（仅存在 TaskTracker 数据库中）

@@ -18,8 +18,8 @@ import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.TransportUtils;
-import tech.powerjob.worker.core.tracker.task.stat.InstanceStatisticsHolder;
-import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.core.tracker.task.stat.InstanceTaskStatistics;
+import tech.powerjob.worker.persistence.db.TaskDO;
 
 import java.util.List;
 import java.util.Optional;
@@ -86,7 +86,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
         detail.setTaskTrackerAddress(workerRuntime.getWorkerAddress());
 
         // 填充详细信息
-        InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
+        InstanceTaskStatistics holder = getInstanceStatisticsHolder(instanceId);
         InstanceDetail.TaskDetail taskDetail = new InstanceDetail.TaskDetail();
         taskDetail.setSucceedTaskNum(holder.getSucceedNum());
         taskDetail.setFailedTaskNum(holder.getFailedNum());
@@ -105,18 +105,12 @@ public class CommonTaskTracker extends HeavyTaskTracker {
     private void persistenceRootTask() {
 
         TaskDO rootTask = new TaskDO();
-        rootTask.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
-        rootTask.setInstanceId(instanceInfo.getInstanceId());
         rootTask.setTaskId(ROOT_TASK_ID);
-        rootTask.setFailedCnt(0);
         rootTask.setAddress(workerRuntime.getWorkerAddress());
         rootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
-        rootTask.setCreatedTime(System.currentTimeMillis());
-        rootTask.setLastModifiedTime(System.currentTimeMillis());
-        rootTask.setLastReportTime(-1L);
         rootTask.setSubInstanceId(instanceId);
 
-        if (taskPersistenceService.save(rootTask)) {
+        if (submitTask(Lists.newArrayList(rootTask))) {
             log.info("[TaskTracker-{}] create root task successfully.", instanceId);
         } else {
             log.error("[TaskTracker-{}] create root task failed.", instanceId);
@@ -135,7 +129,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
         @SuppressWarnings("squid:S3776")
         private void innerRun() {
 
-            InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
+            InstanceTaskStatistics holder = getInstanceStatisticsHolder(instanceId);
 
             long finishedNum = holder.getFinishedNum();
             long unfinishedNum = holder.getUnfinishedNum();

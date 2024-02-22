@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.enums.ExecuteType;
@@ -28,9 +29,11 @@ import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.ha.ProcessorTrackerStatusHolder;
 import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
-import tech.powerjob.worker.core.tracker.task.stat.InstanceStatisticsHolder;
-import tech.powerjob.worker.persistence.TaskDO;
-import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.core.tracker.task.stat.CommittedTaskStatistics;
+import tech.powerjob.worker.core.tracker.task.stat.ExternalTaskStatistics;
+import tech.powerjob.worker.core.tracker.task.stat.InstanceTaskStatistics;
+import tech.powerjob.worker.persistence.db.TaskDO;
+import tech.powerjob.worker.persistence.db.TaskPersistenceService;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStopInstanceReq;
@@ -68,6 +71,16 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      */
     private final Cache<String, TaskBriefInfo> taskId2BriefInfo;
 
+    /**
+     * 任务统计相关
+     */
+    private final ExternalTaskStatistics externalTaskStatistics;
+    private final CommittedTaskStatistics committedTaskStatistics;
+
+    /**
+     * 运行时最大任务数量，超出 SWAP 到磁盘
+     */
+    private final long maxActiveTaskNum;
 
     /**
      * 分段锁
@@ -86,6 +99,11 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         this.taskPersistenceService = workerRuntime.getTaskPersistenceService();
         // 构建缓存
         taskId2BriefInfo = CacheBuilder.newBuilder().maximumSize(1024).softValues().build();
+
+        // 初始化统计参数
+        this.externalTaskStatistics = new ExternalTaskStatistics();
+        this.committedTaskStatistics = new CommittedTaskStatistics();
+        this.maxActiveTaskNum = Long.parseLong(System.getProperty(PowerJobDKey.WORKER_RUNTIME_MAX_ACTIVE_TASK_NUM, "100000"));
 
         // 构建分段锁
         segmentLock = new SegmentLock(UPDATE_CONCURRENCY);
@@ -275,16 +293,36 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         }
         // 基础处理（多循环一次虽然有些浪费，但分布式执行中，这点耗时绝不是主要占比，忽略不计！）
         newTaskList.forEach(task -> {
+
+            // 秒级任务持久化的同时直接派发，有直接的状态
+            if (task.getStatus() == null) {
+                task.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
+            }
             task.setInstanceId(instanceId);
-            task.setStatus(TaskStatus.WAITING_DISPATCH.getValue());
             task.setFailedCnt(0);
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
             task.setLastReportTime(-1L);
         });
 
-        log.debug("[TaskTracker-{}] receive new tasks: {}", instanceId, newTaskList);
-        return taskPersistenceService.batchSave(newTaskList);
+        long totalCommittedNum = committedTaskStatistics.getTotalCommittedNum();
+        log.debug("[TaskTracker-{}] current committed num: {}, receive new tasks: {}", instanceId, totalCommittedNum, newTaskList);
+
+        boolean saveResult = true;
+        if (totalCommittedNum > maxActiveTaskNum) {
+            log.info("[TaskTracker-{}] totalCommittedNum({}) > maxActiveTaskNum({}), persist task to disk", instanceId, totalCommittedNum, maxActiveTaskNum);
+        } else {
+            saveResult = taskPersistenceService.batchSave(newTaskList);
+        }
+
+
+        if (saveResult) {
+            committedTaskStatistics.getSucceedNum().add(newTaskList.size());
+        } else {
+            committedTaskStatistics.getFailedNum().add(newTaskList.size());
+            log.error("[TaskTracker-{}] batchSave new tasks failed, please check the log", instanceId);
+        }
+        return saveResult;
     }
 
     /**
@@ -428,10 +466,10 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      * @param subInstanceId 子任务实例ID
      * @return InstanceStatisticsHolder
      */
-    protected InstanceStatisticsHolder getInstanceStatisticsHolder(long subInstanceId) {
+    protected InstanceTaskStatistics getInstanceStatisticsHolder(long subInstanceId) {
 
         Map<TaskStatus, Long> status2Num = taskPersistenceService.getTaskStatusStatistics(instanceId, subInstanceId);
-        InstanceStatisticsHolder holder = new InstanceStatisticsHolder();
+        InstanceTaskStatistics holder = new InstanceTaskStatistics();
 
         holder.setWaitingDispatchNum(status2Num.getOrDefault(TaskStatus.WAITING_DISPATCH, 0L));
         holder.setWorkerUnreceivedNum(status2Num.getOrDefault(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK, 0L));

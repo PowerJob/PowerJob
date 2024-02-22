@@ -1,4 +1,4 @@
-package tech.powerjob.worker.persistence;
+package tech.powerjob.worker.persistence.db;
 
 
 import com.google.common.collect.Lists;

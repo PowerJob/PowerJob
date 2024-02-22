@@ -1,7 +1,7 @@
 package tech.powerjob.worker.pojo.request;
 
 import tech.powerjob.common.PowerSerializable;
-import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.db.TaskDO;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

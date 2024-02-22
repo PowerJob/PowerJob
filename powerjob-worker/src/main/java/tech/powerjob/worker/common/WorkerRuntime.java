@@ -6,7 +6,7 @@ import tech.powerjob.remote.framework.transporter.Transporter;
 import tech.powerjob.worker.background.OmsLogHandler;
 import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.core.executor.ExecutorManager;
-import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.persistence.db.TaskPersistenceService;
 import tech.powerjob.worker.processor.ProcessorLoader;
 
 import java.util.Optional;

@@ -22,8 +22,8 @@ import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.LRUCache;
 import tech.powerjob.worker.common.utils.TransportUtils;
-import tech.powerjob.worker.core.tracker.task.stat.InstanceStatisticsHolder;
-import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.core.tracker.task.stat.InstanceTaskStatistics;
+import tech.powerjob.worker.persistence.db.TaskDO;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -184,13 +184,11 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
             newRootTask.setTaskId(taskId);
 
             newRootTask.setStatus(TaskStatus.DISPATCH_SUCCESS_WORKER_UNCHECK.getValue());
-            newRootTask.setFailedCnt(0);
+
             // 根任务总是默认本机执行
             newRootTask.setAddress(myAddress);
             newRootTask.setTaskName(TaskConstant.ROOT_TASK_NAME);
-            newRootTask.setCreatedTime(System.currentTimeMillis());
-            newRootTask.setLastModifiedTime(System.currentTimeMillis());
-            newRootTask.setLastReportTime(-1L);
+
 
             // 判断是否超出最大执行实例数
             if (maxInstanceNum > 0) {
@@ -204,7 +202,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
             }
 
             // 必须先持久化，持久化成功才能 dispatch，否则会导致后续报错（因为DB中没有这个taskId对应的记录，会各种报错）
-            if (!taskPersistenceService.save(newRootTask)) {
+            if (!submitTask(Lists.newArrayList(newRootTask))) {
                 log.error("[FQTaskTracker-{}] Launcher create new root task failed.", instanceId);
                 processFinishedSubInstance(subInstanceId, false, "LAUNCH_FAILED");
                 return;
@@ -282,7 +280,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
                 }
 
                 // 查看执行情况
-                InstanceStatisticsHolder holder = getInstanceStatisticsHolder(subInstanceId);
+                InstanceTaskStatistics holder = getInstanceStatisticsHolder(subInstanceId);
 
                 long finishedNum = holder.getFinishedNum();
                 long unfinishedNum = holder.getUnfinishedNum();

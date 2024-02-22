@@ -1,6 +1,6 @@
 package tech.powerjob.worker.common;
 
-import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.db.TaskDO;
 
 import java.util.concurrent.atomic.AtomicLong;
 

@@ -8,7 +8,7 @@ import tech.powerjob.worker.common.ThreadLocalStore;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.utils.TransportUtils;
-import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.db.TaskDO;
 import tech.powerjob.worker.pojo.request.ProcessorMapTaskRequest;
 
 import java.util.List;

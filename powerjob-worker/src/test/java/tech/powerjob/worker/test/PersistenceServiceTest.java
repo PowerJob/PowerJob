@@ -3,8 +3,8 @@ package tech.powerjob.worker.test;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.common.utils.NetUtils;
-import tech.powerjob.worker.persistence.TaskDO;
-import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.persistence.db.TaskDO;
+import tech.powerjob.worker.persistence.db.TaskPersistenceService;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.*;
 

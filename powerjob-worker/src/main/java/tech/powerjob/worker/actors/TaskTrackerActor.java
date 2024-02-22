@@ -18,7 +18,7 @@ import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
 import tech.powerjob.worker.core.tracker.task.heavy.HeavyTaskTracker;
 import tech.powerjob.worker.core.tracker.task.light.LightTaskTracker;
-import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.db.TaskDO;
 import tech.powerjob.worker.pojo.request.ProcessorMapTaskRequest;
 import tech.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;

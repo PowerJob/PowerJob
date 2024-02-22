@@ -1,4 +1,4 @@
-package tech.powerjob.worker.persistence;
+package tech.powerjob.worker.persistence.db;
 
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
