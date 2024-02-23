@@ -1,6 +1,7 @@
-package tech.powerjob.worker.persistence;
+package tech.powerjob.worker.persistence.db;
 
 import tech.powerjob.worker.core.processor.TaskResult;
+import tech.powerjob.worker.persistence.TaskDO;
 
 import java.sql.SQLException;
 import java.util.Collection;

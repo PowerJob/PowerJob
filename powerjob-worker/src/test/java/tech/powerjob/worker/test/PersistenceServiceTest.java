@@ -3,6 +3,7 @@ package tech.powerjob.worker.test;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.worker.persistence.DbTaskPersistenceService;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
 import com.google.common.collect.Lists;
@@ -21,7 +22,7 @@ import static tech.powerjob.worker.core.tracker.task.heavy.CommonTaskTracker.ROO
  */
 public class PersistenceServiceTest {
 
-    private static TaskPersistenceService taskPersistenceService = new TaskPersistenceService(StoreStrategy.DISK);
+    private static final TaskPersistenceService taskPersistenceService = new DbTaskPersistenceService(StoreStrategy.DISK);
 
     @BeforeAll
     public static void initTable() throws Exception {
