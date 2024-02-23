@@ -34,6 +34,8 @@ import tech.powerjob.worker.core.tracker.task.stat.ExternalTaskStatistics;
 import tech.powerjob.worker.core.tracker.task.stat.InstanceTaskStatistics;
 import tech.powerjob.worker.persistence.db.TaskDO;
 import tech.powerjob.worker.persistence.db.TaskPersistenceService;
+import tech.powerjob.worker.persistence.fs.ExternalTaskPersistenceService;
+import tech.powerjob.worker.persistence.fs.impl.ExternalTaskFileSystemPersistenceService;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStopInstanceReq;
@@ -62,6 +64,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      * 数据库持久化服务
      */
     protected final TaskPersistenceService taskPersistenceService;
+    protected ExternalTaskPersistenceService externalTaskPersistenceService;
     /**
      * 定时任务线程池
      */
@@ -308,13 +311,12 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         long totalCommittedNum = committedTaskStatistics.getTotalCommittedNum();
         log.debug("[TaskTracker-{}] current committed num: {}, receive new tasks: {}", instanceId, totalCommittedNum, newTaskList);
 
-        boolean saveResult = true;
+        boolean saveResult;
         if (totalCommittedNum > maxActiveTaskNum) {
-            log.info("[TaskTracker-{}] totalCommittedNum({}) > maxActiveTaskNum({}), persist task to disk", instanceId, totalCommittedNum, maxActiveTaskNum);
+            saveResult = getExternalTaskPersistenceService().persistPendingTask(newTaskList);
         } else {
             saveResult = taskPersistenceService.batchSave(newTaskList);
         }
-
 
         if (saveResult) {
             committedTaskStatistics.getSucceedNum().add(newTaskList.size());
@@ -574,6 +576,14 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         }
     }
 
+    protected class YuGong extends SafeRunnable {
+
+        @Override
+        protected void run0() {
+
+        }
+    }
+
     @Data
     @AllArgsConstructor
     protected static class TaskBriefInfo {
@@ -591,4 +601,21 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      * @param req 服务器调度任务实例运行请求
      */
     protected abstract void initTaskTracker(ServerScheduleJobReq req);
+
+    protected ExternalTaskPersistenceService getExternalTaskPersistenceService() {
+        if (externalTaskPersistenceService != null) {
+            return externalTaskPersistenceService;
+        }
+        synchronized (this) {
+            if (externalTaskPersistenceService != null) {
+                return externalTaskPersistenceService;
+            }
+
+            boolean needResult = ExecuteType.MAP_REDUCE.equals(executeType);
+
+            log.info("[TaskTracker-{}] totalCommittedNum({}) > maxActiveTaskNum({}), start to use ExternalTaskPersistenceService", instanceId, committedTaskStatistics.getTotalCommittedNum(), maxActiveTaskNum);
+            externalTaskPersistenceService = new ExternalTaskFileSystemPersistenceService(instanceId, needResult);
+            return externalTaskPersistenceService;
+        }
+    }
 }

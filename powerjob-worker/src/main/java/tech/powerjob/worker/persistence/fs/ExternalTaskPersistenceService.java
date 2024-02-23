@@ -2,6 +2,7 @@ package tech.powerjob.worker.persistence.fs;
 
 import tech.powerjob.worker.persistence.db.TaskDO;
 
+import java.io.Closeable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * @author tjq
  * @since 2024/2/22
  */
-public interface ExternalTaskPersistenceService extends AutoCloseable {
+public interface ExternalTaskPersistenceService extends Closeable {
 
     boolean persistPendingTask(List<TaskDO> tasks);
 

@@ -92,14 +92,16 @@ public class CommonUtils {
     public static void executeIgnoreException(SupplierPlus<?> executor) {
         try {
             executor.get();
-        }catch (Exception ignore) {
+        }catch (Exception e) {
+            log.warn("executeIgnoreException but exception!", e);
         }
     }
 
     public static void executeIgnoreException(Meaningless executor) {
         try {
             executor.m();
-        }catch (Exception ignore) {
+        }catch (Exception e) {
+            log.warn("executeIgnoreException but exception!", e);
         }
     }
 

@@ -9,6 +9,7 @@ import tech.powerjob.worker.persistence.db.TaskDO;
 import tech.powerjob.worker.persistence.fs.ExternalTaskPersistenceService;
 import tech.powerjob.worker.persistence.fs.FsService;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,21 +22,35 @@ import java.util.List;
 @Slf4j
 public class ExternalTaskFileSystemPersistenceService implements ExternalTaskPersistenceService {
     private final Long instanceId;
-    private final Long subInstanceId;
 
     private final FsService pendingFsService;
 
     private final FsService resultFsService;
 
-    private static final String PENDING_FILE_NAME = "%d_%d-pending";
-    private static final String RESULT_FILE_NAME = "%d_%d-result";
+    private static final String PENDING_FILE_NAME = "%d-pending";
+    private static final String RESULT_FILE_NAME = "%d-result";
 
-    public ExternalTaskFileSystemPersistenceService(Long instanceId, Long subInstanceId) {
+    public ExternalTaskFileSystemPersistenceService(Long instanceId, boolean needResult) {
         this.instanceId = instanceId;
-        this.subInstanceId = subInstanceId;
 
-        this.pendingFsService = new LocalDiskFsService(String.format(PENDING_FILE_NAME, instanceId, subInstanceId));
-        this.resultFsService = new LocalDiskFsService(String.format(RESULT_FILE_NAME, instanceId, subInstanceId));
+        this.pendingFsService = new LocalDiskFsService(String.format(PENDING_FILE_NAME, instanceId));
+        if (needResult) {
+            this.resultFsService = new LocalDiskFsService(String.format(RESULT_FILE_NAME, instanceId));
+        } else {
+            this.resultFsService = new FsService() {
+                @Override
+                public void writeLine(String content) throws IOException {
+                }
+
+                @Override
+                public String readLine() throws IOException {
+                    return null;
+                }
+                @Override
+                public void close() {
+                }
+            };
+        }
     }
 
     @Override
@@ -45,7 +60,7 @@ public class ExternalTaskFileSystemPersistenceService implements ExternalTaskPer
             pendingFsService.writeLine(content);
             return true;
         } catch (Exception e) {
-            log.error("[ExternalTaskPersistenceService] [{}-{}] persistPendingTask failed: {}", instanceId, subInstanceId, tasks);
+            log.error("[ExternalTaskPersistenceService] [{}] persistPendingTask failed: {}", instanceId, tasks);
         }
         return false;
     }
@@ -68,7 +83,7 @@ public class ExternalTaskFileSystemPersistenceService implements ExternalTaskPer
             resultFsService.writeLine(content);
             return true;
         } catch (Exception e) {
-            log.error("[ExternalTaskPersistenceService] [{}-{}] persistPendingTask failed: {}", instanceId, subInstanceId, tasks);
+            log.error("[ExternalTaskPersistenceService] [{}] persistPendingTask failed: {}", instanceId, tasks);
         }
         return false;
     }
@@ -85,7 +100,7 @@ public class ExternalTaskFileSystemPersistenceService implements ExternalTaskPer
     }
 
     @Override
-    public void close() throws Exception {
+    public void close()  {
         CommonUtils.executeIgnoreException(() -> {
             if (pendingFsService != null) {
                 pendingFsService.close();
