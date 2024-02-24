@@ -30,6 +30,7 @@ import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.pojo.model.InstanceInfo;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStartTaskReq;
 import tech.powerjob.worker.pojo.request.TaskTrackerStopInstanceReq;
@@ -82,7 +83,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         // 保护性操作
         instanceInfo.setThreadConcurrency(Math.max(1, instanceInfo.getThreadConcurrency()));
         this.ptStatusHolder = new ProcessorTrackerStatusHolder(instanceId, req.getMaxWorkerCount(), req.getAllWorkerAddress());
-        this.taskPersistenceService = workerRuntime.getTaskPersistenceService();
+        this.taskPersistenceService = initTaskPersistenceService(instanceInfo, workerRuntime);
         // 构建缓存
         taskId2BriefInfo = CacheBuilder.newBuilder().maximumSize(1024).softValues().build();
 
@@ -93,6 +94,10 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         initTaskTracker(req);
 
         log.info("[TaskTracker-{}] create TaskTracker successfully.", instanceId);
+    }
+
+    protected TaskPersistenceService initTaskPersistenceService(InstanceInfo instanceInfo, WorkerRuntime workerRuntime) {
+        return workerRuntime.getTaskPersistenceService();
     }
 
     /**

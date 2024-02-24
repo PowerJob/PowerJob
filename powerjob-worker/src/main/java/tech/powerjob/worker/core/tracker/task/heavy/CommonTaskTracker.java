@@ -19,7 +19,10 @@ import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.core.processor.TaskResult;
+import tech.powerjob.worker.persistence.SwapTaskPersistenceService;
 import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.pojo.model.InstanceInfo;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,6 +52,11 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
     protected CommonTaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
         super(req, workerRuntime);
+    }
+
+    @Override
+    protected TaskPersistenceService initTaskPersistenceService(InstanceInfo instanceInfo, WorkerRuntime workerRuntime) {
+        return new SwapTaskPersistenceService(instanceInfo, workerRuntime.getTaskPersistenceService());
     }
 
     @Override

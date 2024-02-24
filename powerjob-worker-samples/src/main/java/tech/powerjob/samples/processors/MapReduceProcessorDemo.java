@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @since 2020/4/17
  */
 @Slf4j
-@Component
+@Component("testMapReduceProcessor")
 public class MapReduceProcessorDemo implements MapReduceProcessor {
 
     @Override
