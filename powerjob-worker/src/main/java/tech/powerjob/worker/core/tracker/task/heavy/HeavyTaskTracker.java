@@ -57,7 +57,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
     /**
      * 数据库持久化服务
      */
-    protected final TaskPersistenceService taskPersistenceService;
+    protected TaskPersistenceService taskPersistenceService;
     /**
      * 定时任务线程池
      */

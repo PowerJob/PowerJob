@@ -18,6 +18,7 @@ import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.TransportUtils;
+import tech.powerjob.worker.core.processor.TaskResult;
 import tech.powerjob.worker.persistence.TaskDO;
 
 import java.util.List;
@@ -115,7 +116,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
         rootTask.setLastReportTime(-1L);
         rootTask.setSubInstanceId(instanceId);
 
-        if (taskPersistenceService.save(rootTask)) {
+        if (taskPersistenceService.batchSave(Lists.newArrayList(rootTask))) {
             log.info("[TaskTracker-{}] create root task successfully.", instanceId);
         } else {
             log.error("[TaskTracker-{}] create root task failed.", instanceId);
@@ -171,13 +172,13 @@ public class CommonTaskTracker extends HeavyTaskTracker {
                         // STANDALONE 只有一个任务，完成即结束
                         case STANDALONE:
                             finished.set(true);
-                            List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
-                            if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
+                            List<TaskResult> allTaskResult = taskPersistenceService.getAllTaskResult(instanceId, instanceId);
+                            if (CollectionUtils.isEmpty(allTaskResult) || allTaskResult.size() > 1) {
                                 result = SystemInstanceResult.UNKNOWN_BUG;
                                 log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
                             } else {
-                                result = allTask.get(0).getResult();
-                                success = allTask.get(0).getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
+                                result = allTaskResult.get(0).getResult();
+                                success = allTaskResult.get(0).isSuccess();
                             }
                             break;
                         // MAP 不关心结果，最简单

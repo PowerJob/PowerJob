@@ -2,6 +2,10 @@ package tech.powerjob.worker.persistence.db;
 
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.common.utils.CollectionUtils;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * 简单查询直接类，只支持 select * from task_info where xxx = xxx and xxx = xxx 的查询
@@ -15,6 +19,9 @@ public class SimpleTaskQuery {
     private static final String LINK = " and ";
 
     private String taskId;
+
+    private Collection<String> taskIds;
+
     private Long subInstanceId;
     private Long instanceId;
     private String taskName;
@@ -35,6 +42,11 @@ public class SimpleTaskQuery {
         StringBuilder sb = new StringBuilder();
         if (!StringUtils.isEmpty(taskId)) {
             sb.append("task_id = '").append(taskId).append("'").append(LINK);
+        }
+        if (!CollectionUtils.isEmpty(taskIds)) {
+            String taskIdsInQuery = taskIds.stream().map(id -> String.format("'%s'", id)).collect(Collectors.joining(", "));
+
+            sb.append("task_id in (").append(taskIdsInQuery).append(")").append(LINK);
         }
         if (subInstanceId != null) {
             sb.append("sub_instance_id = ").append(subInstanceId).append(LINK);

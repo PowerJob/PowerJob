@@ -16,6 +16,7 @@ import tech.powerjob.worker.persistence.db.SimpleTaskQuery;
 import tech.powerjob.worker.persistence.db.TaskDAO;
 import tech.powerjob.worker.persistence.db.TaskDAOImpl;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,17 +59,6 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
 
         taskDAO = new TaskDAOImpl(connectionFactory);
         taskDAO.initTable();
-    }
-
-    @Override
-    public boolean save(TaskDO task) {
-
-        try {
-            return execute(() -> taskDAO.save(task), cost -> log.warn("[TaskPersistenceService] [Slow] [{}] taskId={} save cost {}ms", task.getInstanceId(), task.getTaskId(), cost));
-        }catch (Exception e) {
-            log.error("[TaskPersistenceService] save task{} failed.",  task, e);
-        }
-        return false;
     }
 
     @Override
@@ -169,19 +159,6 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
         }
 
         return Optional.empty();
-    }
-
-    @Override
-    public List<TaskDO> getAllTask(Long instanceId, Long subInstanceId) {
-        try {
-            SimpleTaskQuery query = new SimpleTaskQuery();
-            query.setInstanceId(instanceId);
-            query.setSubInstanceId(subInstanceId);
-            return execute(() -> taskDAO.simpleQuery(query), cost -> log.warn("[TaskPersistenceService] [Slow] [{}.{}] getAllTask cost {}ms", instanceId, subInstanceId, cost));
-        }catch (Exception e) {
-            log.error("[TaskPersistenceService] getAllTask for instance(id={}) failed.", instanceId, e);
-        }
-        return Lists.newArrayList();
     }
 
     /**
@@ -309,6 +286,19 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
             return execute(() -> taskDAO.simpleDelete(condition), cost -> log.warn("[TaskPersistenceService] [Slow] [{}.{}] deleteAllSubInstanceTasks cost {}ms", instanceId, subInstanceId, cost));
         }catch (Exception e) {
             log.error("[TaskPersistenceService] deleteAllTasks failed, instanceId={}.", instanceId, e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteTasksByTaskIds(Long instanceId, Collection<String> taskId) {
+        try {
+            SimpleTaskQuery condition = new SimpleTaskQuery();
+            condition.setInstanceId(instanceId);
+            condition.setTaskIds(taskId);
+            return execute(() -> taskDAO.simpleDelete(condition), cost -> log.warn("[TaskPersistenceService] [Slow] [{}] deleteTasksByTaskIds cost {}ms", instanceId, cost));
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] deleteTasksByTaskIds failed, instanceId={}.", instanceId, e);
         }
         return false;
     }
