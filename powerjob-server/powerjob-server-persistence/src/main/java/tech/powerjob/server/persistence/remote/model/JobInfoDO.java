@@ -163,4 +163,10 @@ public class JobInfoDO {
      * 日志配置，包括日志级别、日志方式等配置信息
      */
     private String logConfig;
+
+    /**
+     * 高级运行时配置
+     * 不需要用于索引的高级运行参数，后续统一存储到这里，便于版本升级（尽可能保证数据库表结构稳定）
+     */
+    private String advancedRuntimeConfig;
 }

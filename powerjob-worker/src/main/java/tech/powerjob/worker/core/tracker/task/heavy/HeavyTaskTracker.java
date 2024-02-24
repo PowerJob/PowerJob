@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.ExecuteType;
+import tech.powerjob.common.enums.TaskTrackerBehavior;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.WorkerQueryExecutorClusterReq;
@@ -489,7 +490,13 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                     // 获取 ProcessorTracker 地址，如果 Task 中自带了 Address，则使用该 Address
                     String ptAddress = task.getAddress();
                     if (StringUtils.isEmpty(ptAddress) || RemoteConstant.EMPTY_ADDRESS.equals(ptAddress)) {
-                        ptAddress = availablePtIps.get(index.getAndIncrement() % availablePtIps.size());
+                        if (taskNeedByPassTaskTracker()) {
+                            do {
+                                ptAddress = availablePtIps.get(index.getAndIncrement() % availablePtIps.size());
+                            } while (workerRuntime.getWorkerAddress().equals(ptAddress));
+                        } else {
+                            ptAddress = availablePtIps.get(index.getAndIncrement() % availablePtIps.size());
+                        }
                     }
                     dispatchTask(task, ptAddress);
                 });
@@ -501,6 +508,13 @@ public abstract class HeavyTaskTracker extends TaskTracker {
             }
 
             log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch.stop());
+        }
+
+        private boolean taskNeedByPassTaskTracker() {
+            if (ExecuteType.MAP.equals(executeType) || ExecuteType.MAP_REDUCE.equals(executeType)) {
+                return TaskTrackerBehavior.PADDLING.getV().equals(advancedRuntimeConfig.getTaskTrackerBehavior());
+            }
+            return false;
         }
     }
 

@@ -2,6 +2,7 @@ package tech.powerjob.common.response;
 
 import lombok.Data;
 import tech.powerjob.common.model.AlarmConfig;
+import tech.powerjob.common.model.JobAdvancedRuntimeConfig;
 import tech.powerjob.common.model.LogConfig;
 
 import java.util.Date;
@@ -144,4 +145,5 @@ public class JobInfoDTO {
      */
     private LogConfig logConfig;
 
+    private JobAdvancedRuntimeConfig advancedRuntimeConfig;
 }

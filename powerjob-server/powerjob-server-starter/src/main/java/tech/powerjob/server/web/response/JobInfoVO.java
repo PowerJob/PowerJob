@@ -7,6 +7,7 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.AlarmConfig;
+import tech.powerjob.common.model.JobAdvancedRuntimeConfig;
 import tech.powerjob.common.model.LogConfig;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.utils.CommonUtils;
@@ -161,6 +162,8 @@ public class JobInfoVO {
      */
     private LogConfig logConfig;
 
+    private JobAdvancedRuntimeConfig advancedRuntimeConfig;
+
     public static JobInfoVO from(JobInfoDO jobInfoDO) {
         JobInfoVO jobInfoVO = new JobInfoVO();
         BeanUtils.copyProperties(jobInfoDO, jobInfoVO);
@@ -197,6 +200,12 @@ public class JobInfoVO {
         } else {
             // 不存在 job 配置时防止前端报错
             jobInfoVO.setLogConfig(new LogConfig());
+        }
+
+        if (StringUtils.isEmpty(jobInfoDO.getAdvancedRuntimeConfig())) {
+            jobInfoVO.setAdvancedRuntimeConfig(new JobAdvancedRuntimeConfig());
+        } else {
+            jobInfoVO.setAdvancedRuntimeConfig(JSONObject.parseObject(jobInfoDO.getAdvancedRuntimeConfig(), JobAdvancedRuntimeConfig.class));
         }
 
         return jobInfoVO;

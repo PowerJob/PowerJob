@@ -5,6 +5,7 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.AlarmConfig;
+import tech.powerjob.common.model.JobAdvancedRuntimeConfig;
 import tech.powerjob.common.model.LogConfig;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.utils.CommonUtils;
@@ -155,6 +156,10 @@ public class SaveJobInfoRequest {
      */
     private LogConfig logConfig;
 
+    /**
+     * 高级运行时配置
+     */
+    private JobAdvancedRuntimeConfig advancedRuntimeConfig;
 
     /**
      * Check non-null properties.
