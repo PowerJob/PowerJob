@@ -14,6 +14,7 @@ import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -125,7 +126,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
     }
 
     @Override
-    public InstanceDetail fetchRunningStatus() {
+    public InstanceDetail fetchRunningStatus(ServerQueryInstanceStatusReq req) {
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
         detail.setActualTriggerTime(createTime);

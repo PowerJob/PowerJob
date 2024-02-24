@@ -148,7 +148,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField) throws SQLException {
         String sqlFormat = "update task_info set %s where %s";
-        String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getQueryCondition());
+        String updateSQL = String.format(sqlFormat, updateField.fetchUpdateSQL(), condition.getQueryCondition());
         try (Connection conn = connectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
             stat.executeUpdate();
             return true;

@@ -245,6 +245,19 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
         return Lists.newLinkedList();
     }
 
+    @Override
+    public List<TaskDO> getTaskByQuery(Long instanceId, String customQuery) {
+        SimpleTaskQuery simpleTaskQuery = new SimpleTaskQuery();
+        simpleTaskQuery.setInstanceId(instanceId);
+        simpleTaskQuery.setFullCustomQueryCondition(customQuery);
+        try {
+            return execute(() -> taskDAO.simpleQuery(simpleTaskQuery), cost -> log.warn("[TaskPersistenceService] [Slow] [{}] getTaskByQuery cost {}ms", instanceId, cost));
+        }catch (Exception e) {
+            log.error("[TaskPersistenceService] getTaskByQuery for instance(id={}) failed.", instanceId, e);
+        }
+        return Lists.newLinkedList();
+    }
+
     /**
      * 根据主键查询 Task
      */

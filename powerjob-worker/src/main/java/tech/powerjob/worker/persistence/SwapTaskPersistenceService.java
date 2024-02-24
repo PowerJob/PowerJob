@@ -103,6 +103,11 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
     }
 
     @Override
+    public List<TaskDO> getTaskByQuery(Long instanceId, String customQuery) {
+        return dbTaskPersistenceService.getTaskByQuery(instanceId, customQuery);
+    }
+
+    @Override
     public Optional<TaskDO> getTask(Long instanceId, String taskId) {
         return dbTaskPersistenceService.getTask(instanceId, taskId);
     }

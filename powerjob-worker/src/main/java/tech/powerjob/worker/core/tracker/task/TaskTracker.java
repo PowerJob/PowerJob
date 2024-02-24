@@ -6,6 +6,7 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.model.JobAdvancedRuntimeConfig;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -112,7 +113,7 @@ public abstract class TaskTracker {
      *
      * @return 任务实例的详细运行状态
      */
-    public abstract InstanceDetail fetchRunningStatus();
+    public abstract InstanceDetail fetchRunningStatus(ServerQueryInstanceStatusReq req);
 
 
     public static void reportCreateErrorToServer(ServerScheduleJobReq req, WorkerRuntime workerRuntime, Exception e) {

@@ -28,17 +28,24 @@ public class SimpleTaskQuery {
     private String address;
     private Integer status;
 
+    // 查询内容，默认为 *
+    private String queryContent = " * ";
+
     // 自定义的查询条件（where 后面的语句），如 crated_time > 10086 and status = 3
     private String queryCondition;
     // 自定义的查询条件，如 GROUP BY status
     private String otherCondition;
 
-    // 查询内容，默认为 *
-    private String queryContent = " * ";
-
     private Integer limit;
 
+    /**
+     * 高级模式，完全自定义查询 SQL
+     * 当传入此值时忽略 queryCondition + otherCondition + limit
+     */
+    private String fullCustomQueryCondition;
+
     public String getQueryCondition() {
+
         StringBuilder sb = new StringBuilder();
         if (!StringUtils.isEmpty(taskId)) {
             sb.append("task_id = '").append(taskId).append("'").append(LINK);
@@ -62,6 +69,12 @@ public class SimpleTaskQuery {
         }
         if (status != null) {
             sb.append("status = ").append(status).append(LINK);
+        }
+
+        // 自定义查询模式专用
+        if (StringUtils.isNotEmpty(fullCustomQueryCondition)) {
+            sb.append(fullCustomQueryCondition);
+            return sb.toString();
         }
 
         if (!StringUtils.isEmpty(queryCondition)) {

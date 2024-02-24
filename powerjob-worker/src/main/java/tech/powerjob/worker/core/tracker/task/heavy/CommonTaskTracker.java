@@ -11,6 +11,8 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.model.TaskDetailInfo;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.utils.CollectionUtils;
@@ -22,13 +24,16 @@ import tech.powerjob.worker.core.processor.TaskResult;
 import tech.powerjob.worker.persistence.SwapTaskPersistenceService;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.pojo.converter.TaskConverter;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 负责管理 JobInstance 的运行，主要包括任务的派发（MR可能存在大量的任务）和状态的更新
@@ -85,7 +90,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
     }
 
     @Override
-    public InstanceDetail fetchRunningStatus() {
+    public InstanceDetail fetchRunningStatus(ServerQueryInstanceStatusReq req) {
 
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
@@ -95,15 +100,27 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
         // 填充详细信息
         InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
+
         InstanceDetail.TaskDetail taskDetail = new InstanceDetail.TaskDetail();
-        taskDetail.setSucceedTaskNum(holder.succeedNum);
-        taskDetail.setFailedTaskNum(holder.failedNum);
+        taskDetail.setSucceedTaskNum(holder.getSucceedNum());
+        taskDetail.setFailedTaskNum(holder.getFailedNum());
         taskDetail.setTotalTaskNum(holder.getTotalTaskNum());
+        taskDetail.setWaitingDispatchTaskNum(holder.getWaitingDispatchNum());
+        taskDetail.setWorkerUnreceivedTaskNum(holder.getWorkerUnreceivedNum());
+        taskDetail.setReceivedTaskNum(holder.getReceivedNum());
+        taskDetail.setRunningTaskNum(holder.getRunningNum());
+
         detail.setTaskDetail(taskDetail);
+
+        // 填充最近的任务结果
+        String customQuery = Optional.ofNullable(req.getCustomQuery()).orElse(" status in (5, 6) order by last_modified_time ");
+        customQuery = customQuery.concat(" limit 10");
+        List<TaskDO> queriedTaskDos = taskPersistenceService.getTaskByQuery(instanceId, customQuery);
+        List<TaskDetailInfo> taskDetailInfoList = Optional.ofNullable(queriedTaskDos).orElse(Collections.emptyList()).stream().map(TaskConverter::taskDo2TaskDetail).collect(Collectors.toList());
+        detail.setQueriedTaskDetailInfoList(taskDetailInfoList);
 
         return detail;
     }
-
 
 
 

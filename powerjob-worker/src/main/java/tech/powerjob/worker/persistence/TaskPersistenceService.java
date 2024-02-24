@@ -33,6 +33,8 @@ public interface TaskPersistenceService {
 
     List<TaskDO> getTaskByStatus(Long instanceId, TaskStatus status, int limit);
 
+    List<TaskDO> getTaskByQuery(Long instanceId, String customQuery);
+
     Map<TaskStatus, Long> getTaskStatusStatistics(Long instanceId, Long subInstanceId);
 
     List<TaskResult> getAllTaskResult(Long instanceId, Long subInstanceId);
