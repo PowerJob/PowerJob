@@ -134,6 +134,11 @@ public class SaveJobInfoRequest {
 
     private DispatchStrategy dispatchStrategy;
 
+    /**
+     * 某种派发策略背后的具体配置，值取决于 dispatchStrategy
+     */
+    private String dispatchStrategyConfig;
+
     private LifeCycle lifeCycle;
     /**
      * alarm config

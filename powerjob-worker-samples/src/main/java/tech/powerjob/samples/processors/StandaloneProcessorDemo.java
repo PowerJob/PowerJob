@@ -17,7 +17,7 @@ import java.util.Collections;
  * @since 2020/4/17
  */
 @Slf4j
-@Component
+@Component("testBaseProcessor")
 public class StandaloneProcessorDemo implements BasicProcessor {
 
     @Override

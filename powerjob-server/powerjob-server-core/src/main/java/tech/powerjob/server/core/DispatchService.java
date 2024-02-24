@@ -26,6 +26,7 @@ import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository
 import tech.powerjob.server.remote.transporter.TransportService;
 import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
+import tech.powerjob.server.remote.worker.selector.TaskTrackerSelectorService;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,6 +58,8 @@ public class DispatchService {
     private final InstanceMetadataService instanceMetadataService;
 
     private final InstanceInfoRepository instanceInfoRepository;
+
+    private final TaskTrackerSelectorService taskTrackerSelectorService;
 
     /**
      * 异步重新派发
@@ -145,7 +148,7 @@ public class DispatchService {
         }
 
         // 获取当前最合适的 worker 列表
-        List<WorkerInfo> suitableWorkers = workerClusterQueryService.getSuitableWorkers(jobInfo);
+        List<WorkerInfo> suitableWorkers = workerClusterQueryService.geAvailableWorkers(jobInfo);
 
         if (CollectionUtils.isEmpty(suitableWorkers)) {
             log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available", jobId, instanceId);
@@ -167,7 +170,7 @@ public class DispatchService {
         ServerScheduleJobReq req = constructServerScheduleJobReq(jobInfo, instanceInfo, workerIpList);
 
         // 发送请求（不可靠，需要一个后台线程定期轮询状态）
-        WorkerInfo taskTracker = suitableWorkers.get(0);
+        WorkerInfo taskTracker = taskTrackerSelectorService.select(jobInfo, instanceInfo, suitableWorkers);
         String taskTrackerAddress = taskTracker.getAddress();
 
         URL workerUrl = ServerURLFactory.dispatchJob2Worker(taskTrackerAddress);

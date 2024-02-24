@@ -142,6 +142,11 @@ public class JobInfoVO {
 
     private String dispatchStrategy;
 
+    /**
+     * 某种派发策略背后的具体配置，值取决于 dispatchStrategy
+     */
+    private String dispatchStrategyConfig;
+
     private LifeCycle lifeCycle;
 
     private AlarmConfig alarmConfig;

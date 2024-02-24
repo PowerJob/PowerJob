@@ -121,7 +121,14 @@ public class JobInfoDTO {
 
     private String extra;
 
+    /**
+     * 派发策略
+     */
     private Integer dispatchStrategy;
+    /**
+     * 某种派发策略背后的具体配置，值取决于 dispatchStrategy
+     */
+    private String dispatchStrategyConfig;
 
     private String lifecycle;
 
