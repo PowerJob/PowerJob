@@ -41,20 +41,31 @@ if [ "$rebuild" = "y" ] || [  "$rebuild" = "Y" ]; then
   docker rmi -f powerjob/powerjob-worker-samples:$version
   echo "================== 构建 powerjob-server 镜像(tjqq) =================="
   docker buildx build --platform=linux/amd64,linux/arm64 --tag tjqq/powerjob-server:$version powerjob-server/docker/. --push || exit
-  docker buildx build --platform=linux/amd64,linux/arm64 --tag tjqq/powerjob-server:latest powerjob-server/docker/. --push || exit
   echo "================== 构建 powerjob-server 镜像(powerjob) =================="
   docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-server:$version powerjob-server/docker/. --push || exit
-  docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-server:latest powerjob-server/docker/. --push || exit
   echo "================== 构建 powerjob-agent 镜像(tjqq) =================="
   docker buildx build --platform=linux/amd64,linux/arm64 --tag tjqq/powerjob-agent:$version powerjob-worker-agent/. --push|| exit
-  docker buildx build --platform=linux/amd64,linux/arm64 --tag tjqq/powerjob-agent:latest powerjob-worker-agent/. --push|| exit
   echo "================== 构建 powerjob-agent 镜像(powerjob) =================="
   docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-agent:$version powerjob-worker-agent/. --push|| exit
-  docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-agent:latest powerjob-worker-agent/. --push|| exit
   echo "================== 构建 powerjob-mysql 镜像 =================="
   docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-mysql:$version others/. --push|| exit
-  docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-mysql:latest others/. --push|| exit
   echo "================== 构建 powerjob-worker-samples 镜像 =================="
   docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-worker-samples:$version powerjob-worker-samples/. --push|| exit
+fi
+
+read -r -p "是否推送LATEST（y/n）:" push_latest
+if [ "$push_latest" = "y" ] || [  "$push_latest" = "Y" ]; then
+
+  echo "==================  powerjob-server LATEST (tjqq) =================="
+  docker buildx build --platform=linux/amd64,linux/arm64 --tag tjqq/powerjob-server:latest powerjob-server/docker/. --push || exit
+  echo "==================  powerjob-server LATEST (powerjob) =================="
+  docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-server:latest powerjob-server/docker/. --push || exit
+  echo "==================  powerjob-agent LATEST (tjqq) =================="
+  docker buildx build --platform=linux/amd64,linux/arm64 --tag tjqq/powerjob-agent:latest powerjob-worker-agent/. --push|| exit
+  echo "==================  powerjob-agent LATEST (powerjob) =================="
+  docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-agent:latest powerjob-worker-agent/. --push|| exit
+  echo "==================  powerjob-mysql LATEST =================="
+  docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-mysql:latest others/. --push|| exit
+  echo "==================  powerjob-worker-samples LATEST =================="
   docker buildx build --platform=linux/amd64,linux/arm64 --tag powerjob/powerjob-worker-samples:latest powerjob-worker-samples/. --push|| exit
 fi
