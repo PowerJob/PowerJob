@@ -60,8 +60,9 @@ public class InstanceDetailVO {
 
     /**
      * MR或BD任务专用
+     * 事实上为 instance 的 task 统计信息，命名为 instanceTaskStats 更合理，不过出于兼容性暂时不改名称了
      */
-    private InstanceDetailVO.InstanceTaskStats instanceTaskStats;
+    private InstanceDetailVO.InstanceTaskStats taskDetail;
     /**
      * 查询出来的 Task 详细结果
      */
@@ -122,7 +123,7 @@ public class InstanceDetailVO {
         if (origin.getTaskDetail() != null) {
             InstanceTaskStats voDetail = new InstanceTaskStats();
             BeanUtils.copyProperties(origin.getTaskDetail(), voDetail);
-            vo.setInstanceTaskStats(voDetail);
+            vo.setTaskDetail(voDetail);
         }
 
         // 拷贝秒级任务数据
