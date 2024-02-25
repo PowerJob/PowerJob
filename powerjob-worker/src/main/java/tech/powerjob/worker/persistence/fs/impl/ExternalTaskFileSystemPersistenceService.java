@@ -3,7 +3,9 @@ package tech.powerjob.worker.persistence.fs.impl;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CollectionUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.persistence.fs.ExternalTaskPersistenceService;
@@ -55,6 +57,9 @@ public class ExternalTaskFileSystemPersistenceService implements ExternalTaskPer
 
     @Override
     public boolean persistPendingTask(List<TaskDO> tasks) {
+        if (CollectionUtils.isEmpty(tasks)) {
+            return true;
+        }
         try {
             String content = JsonUtils.toJSONString(tasks);
             pendingFsService.writeLine(content);
@@ -69,15 +74,19 @@ public class ExternalTaskFileSystemPersistenceService implements ExternalTaskPer
     @SneakyThrows
     public List<TaskDO> readPendingTask() {
         String pendingTaskStr = pendingFsService.readLine();
-        TaskDO[] taskDOS = JsonUtils.parseObject(pendingTaskStr, TaskDO[].class);
-        if (taskDOS != null) {
-            return Lists.newArrayList(taskDOS);
-        }
-        return Collections.emptyList();
+        return str2TaskDoList(pendingTaskStr);
     }
 
     @Override
     public boolean persistFinishedTask(List<TaskDO> tasks) {
+
+        if (CollectionUtils.isEmpty(tasks)) {
+            return true;
+        }
+
+        // 移除无用的参数列
+        tasks.forEach(t -> t.setTaskContent(null));
+
         try {
             String content = JsonUtils.toJSONString(tasks);
             resultFsService.writeLine(content);
@@ -91,8 +100,16 @@ public class ExternalTaskFileSystemPersistenceService implements ExternalTaskPer
     @Override
     @SneakyThrows
     public List<TaskDO> readFinishedTask() {
-        String pendingTaskStr = resultFsService.readLine();
-        TaskDO[] taskDOS = JsonUtils.parseObject(pendingTaskStr, TaskDO[].class);
+        String finishedStr = resultFsService.readLine();
+        return str2TaskDoList(finishedStr);
+    }
+
+
+    private static List<TaskDO> str2TaskDoList(String finishedStr) throws Exception {
+        if (StringUtils.isEmpty(finishedStr)) {
+            return Collections.emptyList();
+        }
+        TaskDO[] taskDOS = JsonUtils.parseObject(finishedStr, TaskDO[].class);
         if (taskDOS != null) {
             return Lists.newArrayList(taskDOS);
         }

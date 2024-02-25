@@ -32,6 +32,7 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
 
     private final Long instanceId;
     private final long maxActiveTaskNum;
+    private final long scheduleRateMs;
     /**
      * 数据库记录数量，不要求完全精确，仅用于控制存哪里，有一定容忍度
      */
@@ -63,9 +64,10 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
         this.needResult = ExecuteType.MAP_REDUCE.name().equalsIgnoreCase(instanceInfo.getExecuteType());
         this.canUseSwap = ExecuteType.MAP.name().equalsIgnoreCase(instanceInfo.getExecuteType()) || ExecuteType.MAP_REDUCE.name().equalsIgnoreCase(instanceInfo.getExecuteType());
         this.dbTaskPersistenceService = dbTaskPersistenceService;
-        this.maxActiveTaskNum = Long.parseLong(System.getProperty(PowerJobDKey.WORKER_RUNTIME_MAX_ACTIVE_TASK_NUM, String.valueOf(DEFAULT_RUNTIME_MAX_ACTIVE_TASK_NUM)));
-
-        log.info("[SwapTaskPersistenceService-{}] initialized SwapTaskPersistenceService, canUseSwap: {}, needResult: {}, maxActiveTaskNum: {}", instanceId, canUseSwap, needResult, maxActiveTaskNum);
+        this.maxActiveTaskNum = Long.parseLong(System.getProperty(PowerJobDKey.WORKER_RUNTIME_SWAP_MAX_ACTIVE_TASK_NUM, String.valueOf(DEFAULT_RUNTIME_MAX_ACTIVE_TASK_NUM)));
+        this.scheduleRateMs = Long.parseLong(System.getProperty(PowerJobDKey.WORKER_RUNTIME_SWAP_TASK_SCHEDULE_INTERVAL_MS, String.valueOf(DEFAULT_SCHEDULE_TIME)));
+        PersistenceServiceManager.register(this.instanceId, this);
+        log.info("[SwapTaskPersistenceService-{}] initialized SwapTaskPersistenceService, canUseSwap: {}, needResult: {}, maxActiveTaskNum: {}, scheduleRateMs: {}", instanceId, canUseSwap, needResult, maxActiveTaskNum, scheduleRateMs);
     }
 
     @Override
@@ -139,7 +141,7 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
                 externalPendingRecordNum.add(tasks.size());
             }
 
-            log.info("[SwapTaskPersistenceService-{}] too many tasks at runtime(dbRecordNum: {}), SWAP enabled, persistence result: {}, externalPendingRecordNum: {}", instanceId, dbNum, persistPendingTaskRes, externalPendingRecordNum);
+            log.debug("[SwapTaskPersistenceService-{}] too many tasks at runtime(dbRecordNum: {}), SWAP enabled, persistence result: {}, externalPendingRecordNum: {}", instanceId, dbNum, persistPendingTaskRes, externalPendingRecordNum);
             return persistPendingTaskRes;
         } else {
             return persistTask2Db(tasks);
@@ -214,10 +216,11 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
                     return;
                 }
 
-                CommonUtils.easySleep(DEFAULT_SCHEDULE_TIME);
+                CommonUtils.easySleep(scheduleRateMs);
 
-                moveInPendingTask();
+                // 顺序很关键，先移出才有空间移入
                 moveOutFinishedTask();
+                moveInPendingTask();
             }
         }
 
@@ -247,7 +250,7 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
                 externalPendingRecordNum.add(-taskDOS.size());
 
                 boolean persistTask2Db = persistTask2Db(taskDOS);
-                log.info("[SwapTaskPersistenceService-{}] [moveInPendingTask] readPendingTask size: {}, persistResult: {}, currentDbRecordNum: {}, remainExternalPendingRecordNum: {}", instanceId, taskDOS.size(), persistTask2Db, dbRecordNum, externalPendingRecordNum);
+                log.debug("[SwapTaskPersistenceService-{}] [moveInPendingTask] readPendingTask size: {}, persistResult: {}, currentDbRecordNum: {}, remainExternalPendingRecordNum: {}", instanceId, taskDOS.size(), persistTask2Db, dbRecordNum, externalPendingRecordNum);
 
                 // 持久化失败的情况，及时跳出本次循环，防止损失扩大，等待下次扫描
                 if (!persistTask2Db) {
@@ -261,7 +264,7 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
 
             while (true) {
 
-                // 一旦启动 SWAP，需要移出更多的数据来灌入，最多允许
+                // 一旦启动 SWAP，需要移出更多的数据来灌入
                 long maxRemainNum = maxActiveTaskNum / 2;
                 if (dbRecordNum.sum() <= maxRemainNum) {
                     return;
@@ -306,10 +309,10 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
 
             if (deleteTasksByTaskIdsResult) {
                 dbRecordNum.add(-moveOutNum);
-                log.info("{} move task to external successfully(movedNum: {}, currentExternalRecordNum: {}, currentDbRecordNum: {})", logKey, moveOutNum, externalRecord, dbRecordNum);
+                log.debug("{} move task to external successfully(movedNum: {}, currentExternalSucceedNum: {}, currentExternalFailedNum: {}, currentDbRecordNum: {})", logKey, moveOutNum, externalSucceedRecordNum, externalFailedRecordNum, dbRecordNum);
             } else {
                 // DB 删除失败影响不大，reduce 重复而已
-                log.warn("{} persistFinishedTask to external successfully but delete in runtime failed(movedNum: {}, currentExternalRecordNum: {}, currentDbRecordNum: {}), these taskIds may have duplicate results in reduce stage: {}", logKey, moveOutNum, externalRecord, dbRecordNum, deleteTaskIds);
+                log.warn("{} persistFinishedTask to external successfully but delete in runtime failed(movedNum: {}, currentExternalSucceedNum: {}, currentExternalFailedNum: {}, currentDbRecordNum: {}), these taskIds may have duplicate results in reduce stage: {}", logKey, moveOutNum, externalSucceedRecordNum, externalFailedRecordNum, dbRecordNum, deleteTaskIds);
             }
         }
     }

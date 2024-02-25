@@ -470,7 +470,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
 
             // 2. 没有可用 ProcessorTracker，本次不派发
             if (availablePtIps.isEmpty()) {
-                log.debug("[TaskTracker-{}] no available ProcessorTracker now.", instanceId);
+                log.warn("[TaskTracker-{}] no available ProcessorTracker now, skip dispatch", instanceId);
                 return;
             }
 

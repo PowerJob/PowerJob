@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 2020/4/17
  */
 @Slf4j
-@Component("testMapReduceProcessor")
+@Component("demoMapReduceProcessor")
 public class MapReduceProcessorDemo implements MapReduceProcessor {
 
     @Override
