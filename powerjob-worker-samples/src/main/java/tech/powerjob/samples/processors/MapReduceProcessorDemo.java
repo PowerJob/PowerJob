@@ -173,7 +173,7 @@ public class MapReduceProcessorDemo implements MapReduceProcessor {
      */
     @Data
     @AllArgsConstructor
-    private static class SubTask implements Serializable {
+    public static class SubTask implements Serializable {
 
         /**
          * 再次强调，一定要有无参构造方法

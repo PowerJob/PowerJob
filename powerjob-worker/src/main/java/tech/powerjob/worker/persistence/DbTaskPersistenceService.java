@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
- * desc
+ * 基于内置数据库的任务持久化服务
  *
  * @author tjq
  * @since 2024/2/23

@@ -185,7 +185,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
             String result = null;
 
             // 2. 如果未完成任务数为0，判断是否真正结束，并获取真正结束任务的执行结果
-            if (unfinishedNum == 0) {
+            if (unfinishedNum <= 0) {
 
                 // 数据库中一个任务都没有，说明根任务创建失败，该任务实例失败
                 if (finishedNum == 0) {

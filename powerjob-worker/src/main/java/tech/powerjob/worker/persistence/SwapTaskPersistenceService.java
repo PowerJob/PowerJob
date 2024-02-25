@@ -52,6 +52,15 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
     private volatile boolean finished = false;
     private ExternalTaskPersistenceService externalTaskPersistenceService;
 
+    /**
+     * 保险措施，当外部数据长时间空时，至少能顺利结束任务，而不是一直卡着
+     */
+    private long lastExternalPendingEmptyTime = -1;
+    private static final long MAX_EXTERNAL_PENDING_WAIT_TIME = 600000;
+
+    /**
+     * 默认最大活跃任务数量
+     */
     private static final long DEFAULT_RUNTIME_MAX_ACTIVE_TASK_NUM = 100000;
 
     /**
@@ -156,6 +165,7 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
                 externalTaskPersistenceService.close();
             }
         });
+        PersistenceServiceManager.unregister(instanceId);
         return dbTaskPersistenceService.deleteAllTasks(instanceId);
     }
 
@@ -230,11 +240,17 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
 
                 // 外部存储无数据，无需扫描
                 if (externalPendingRecordNum.sum() <= 0) {
+                    lastExternalPendingEmptyTime = -1;
+                    if (externalPendingRecordNum.sum() < 0) {
+                        log.warn("[SwapTaskPersistenceService-{}] externalPendingRecordNum({}) < 0, maybe there's a bug!", instanceId, externalPendingRecordNum);
+                    }
                     return;
                 }
 
                 // 到达 DB 最大数量后跳出扫描
                 if (dbRecordNum.sum() > maxActiveTaskNum) {
+                    // DB为最大数量时，说明此时任务依然满载，不需要进行空超时统计
+                    lastExternalPendingEmptyTime = -1;
                     return;
                 }
 
@@ -242,9 +258,26 @@ public class SwapTaskPersistenceService implements TaskPersistenceService {
 
                 // 队列空则跳出循环，等待下一次扫描
                 if (CollectionUtils.isEmpty(taskDOS)) {
+
+                    // 走到此处，会满足 DB有可用空间，当文件一直空数据。如果这个过程长期维持，则说明某些地方产生了异常导致判定失准，需要及时止损
+                    if (lastExternalPendingEmptyTime < 0) {
+                        lastExternalPendingEmptyTime = System.currentTimeMillis();
+                    }
+
+                    // 超时机制，处理：DB 存在可导入空间但长期无法拉到数据，同时 externalPendingRecordNum 一直非0导致任务无法判定结束的情况
+                    long offset = System.currentTimeMillis() - lastExternalPendingEmptyTime;
+                    if (offset > MAX_EXTERNAL_PENDING_WAIT_TIME) {
+                        log.warn("[SwapTaskPersistenceService-{}] [moveInPendingTask] Unable to get tasks from external files for a long time, unexpected things may have happened(lastExternalPendingEmptyTime: {}, offsetFromNow: {}). System will reset externalPendingRecordNum so that the task can end(before reset externalPendingRecordNum: {}).", instanceId, lastExternalPendingEmptyTime, offset, externalPendingRecordNum);
+                        externalPendingRecordNum.reset();
+                        return;
+                    }
+
                     log.debug("[SwapTaskPersistenceService-{}] [moveInPendingTask] readPendingTask from external is empty, finished this loop!", instanceId);
                     return;
                 }
+
+                // 一旦读取到数据就重置计时器
+                lastExternalPendingEmptyTime = -1;
 
                 // 一旦读取，无论结果如何都直接减数量，无论后续结果如何
                 externalPendingRecordNum.add(-taskDOS.size());

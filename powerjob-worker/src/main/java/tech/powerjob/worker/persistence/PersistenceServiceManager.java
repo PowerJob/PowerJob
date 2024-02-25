@@ -18,6 +18,10 @@ public class PersistenceServiceManager {
         INSTANCE_ID_2_TASK_PERSISTENCE_SERVICE.put(instanceId, taskPersistenceService);
     }
 
+    public static void unregister(Long instanceId) {
+        INSTANCE_ID_2_TASK_PERSISTENCE_SERVICE.remove(instanceId);
+    }
+
     public static TaskPersistenceService fetchTaskPersistenceService(Long instanceId) {
         return INSTANCE_ID_2_TASK_PERSISTENCE_SERVICE.get(instanceId);
     }
