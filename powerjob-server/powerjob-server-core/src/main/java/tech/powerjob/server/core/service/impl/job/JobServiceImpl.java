@@ -116,6 +116,10 @@ public class JobServiceImpl implements JobService {
         if (request.getLogConfig() != null) {
             jobInfoDO.setLogConfig(JSONObject.toJSONString(request.getLogConfig()));
         }
+        // 日志配置
+        if (request.getAdvancedRuntimeConfig() != null) {
+            jobInfoDO.setAdvancedRuntimeConfig(JSONObject.toJSONString(request.getAdvancedRuntimeConfig()));
+        }
         JobInfoDO res = jobInfoRepository.saveAndFlush(jobInfoDO);
         return res.getId();
     }

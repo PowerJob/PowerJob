@@ -1,5 +1,8 @@
 package tech.powerjob.remote.http;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -58,6 +61,19 @@ public class HttpVertxCSInitializer implements CSInitializer {
     @Override
     public void init(CSInitializerConfig config) {
         this.config = config;
+
+        // 【Vertx 版本升级时必须注意】临时解决 vertx 自带的 jackson 序列化无法支持字段升级问题（默认特性居然是不支持增删字段的序列化方式，外国框架也是一坨...）
+        try {
+            io.vertx.core.json.jackson.DatabindCodec.mapper()
+                    .configure(com.fasterxml.jackson.databind.MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+                    .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+                    .configure(JsonParser.Feature.IGNORE_UNDEFINED, true)
+                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        } catch (Throwable t) {
+            log.warn("[HttpVertxCSInitializer] hack jackson failed!", t);
+        }
+
         vertx = VertxInitializer.buildVertx();
         httpServer = VertxInitializer.buildHttpServer(vertx);
         httpClient = VertxInitializer.buildHttpClient(vertx);

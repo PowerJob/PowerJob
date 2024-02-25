@@ -1,10 +1,10 @@
-package tech.powerjob.worker.persistence;
+package tech.powerjob.worker.persistence.db;
 
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.core.processor.TaskResult;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.AllArgsConstructor;
+import tech.powerjob.worker.persistence.TaskDO;
 
 import java.sql.*;
 import java.util.Collection;
@@ -99,6 +99,9 @@ public class TaskDAOImpl implements TaskDAO {
         String sql = "select * from task_info where " + query.getQueryCondition();
         List<TaskDO> result = Lists.newLinkedList();
         try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (query.isReadOnly()) {
+                conn.setReadOnly(true);
+            }
             rs = ps.executeQuery();
             while (rs.next()) {
                 result.add(convert(rs));
@@ -148,7 +151,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField) throws SQLException {
         String sqlFormat = "update task_info set %s where %s";
-        String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getQueryCondition());
+        String updateSQL = String.format(sqlFormat, updateField.fetchUpdateSQL(), condition.getQueryCondition());
         try (Connection conn = connectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
             stat.executeUpdate();
             return true;

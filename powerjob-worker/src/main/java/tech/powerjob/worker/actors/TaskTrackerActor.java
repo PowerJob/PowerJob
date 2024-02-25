@@ -202,7 +202,7 @@ public class TaskTrackerActor {
             log.warn("[TaskTrackerActor] receive ServerQueryInstanceStatusReq({}) but system can't find TaskTracker.", req);
             askResponse = AskResponse.failed("can't find TaskTracker");
         } else {
-            InstanceDetail instanceDetail = taskTracker.fetchRunningStatus();
+            InstanceDetail instanceDetail = taskTracker.fetchRunningStatus(req);
             askResponse = AskResponse.succeed(instanceDetail);
         }
         return askResponse;

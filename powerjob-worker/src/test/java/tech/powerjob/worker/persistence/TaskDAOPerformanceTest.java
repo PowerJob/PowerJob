@@ -2,12 +2,15 @@ package tech.powerjob.worker.persistence;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.core.processor.TaskResult;
+import tech.powerjob.worker.persistence.db.ConnectionFactory;
+import tech.powerjob.worker.persistence.db.SimpleTaskQuery;
+import tech.powerjob.worker.persistence.db.TaskDAO;
+import tech.powerjob.worker.persistence.db.TaskDAOImpl;
 
 import java.util.List;
 import java.util.Map;

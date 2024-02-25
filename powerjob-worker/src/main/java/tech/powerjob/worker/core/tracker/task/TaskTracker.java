@@ -5,14 +5,18 @@ import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.model.JobAdvancedRuntimeConfig;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
+import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.pojo.model.InstanceInfo;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -35,6 +39,8 @@ public abstract class TaskTracker {
      */
     protected final InstanceInfo instanceInfo;
     protected final ExecuteType executeType;
+
+    protected final JobAdvancedRuntimeConfig advancedRuntimeConfig;
     /**
      * 追加的工作流上下文数据
      *
@@ -76,9 +82,11 @@ public abstract class TaskTracker {
         instanceInfo.setTaskRetryNum(req.getTaskRetryNum());
         instanceInfo.setLogConfig(req.getLogConfig());
         instanceInfo.setInstanceTimeoutMS(req.getInstanceTimeoutMS());
+        instanceInfo.setAdvancedRuntimeConfig(req.getAdvancedRuntimeConfig());
 
         // 常用变量初始化
         executeType = ExecuteType.valueOf(req.getExecuteType());
+        advancedRuntimeConfig = Optional.ofNullable(req.getAdvancedRuntimeConfig()).map(x -> JsonUtils.parseObjectIgnoreException(x, JobAdvancedRuntimeConfig.class)).orElse(new JobAdvancedRuntimeConfig());
 
         // 特殊处理超时时间
         if (instanceInfo.getInstanceTimeoutMS() <= 0) {
@@ -105,7 +113,7 @@ public abstract class TaskTracker {
      *
      * @return 任务实例的详细运行状态
      */
-    public abstract InstanceDetail fetchRunningStatus();
+    public abstract InstanceDetail fetchRunningStatus(ServerQueryInstanceStatusReq req);
 
 
     public static void reportCreateErrorToServer(ServerScheduleJobReq req, WorkerRuntime workerRuntime, Exception e) {

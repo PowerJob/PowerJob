@@ -34,6 +34,7 @@ public class TaskTrackerStartTaskReq implements PowerSerializable {
 
     private String logConfig;
 
+    private String advancedRuntimeConfig;
 
     /**
      * 创建 TaskTrackerStartTaskReq，该构造方法必须在 TaskTracker 节点调用
@@ -51,5 +52,6 @@ public class TaskTrackerStartTaskReq implements PowerSerializable {
         this.subInstanceId = task.getSubInstanceId();
 
         this.logConfig = instanceInfo.getLogConfig();
+        this.advancedRuntimeConfig = instanceInfo.getAdvancedRuntimeConfig();
     }
 }

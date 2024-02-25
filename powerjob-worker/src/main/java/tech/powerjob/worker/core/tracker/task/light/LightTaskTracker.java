@@ -7,6 +7,7 @@ import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.enhance.SafeRunnableWrapper;
@@ -179,7 +180,7 @@ public class LightTaskTracker extends TaskTracker {
     }
 
     @Override
-    public InstanceDetail fetchRunningStatus() {
+    public InstanceDetail fetchRunningStatus(ServerQueryInstanceStatusReq req) {
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
         detail.setActualTriggerTime(createTime);

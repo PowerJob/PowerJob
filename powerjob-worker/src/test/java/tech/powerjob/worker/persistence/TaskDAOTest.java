@@ -3,14 +3,16 @@ package tech.powerjob.worker.persistence;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.core.processor.TaskResult;
+import tech.powerjob.worker.persistence.db.ConnectionFactory;
+import tech.powerjob.worker.persistence.db.SimpleTaskQuery;
+import tech.powerjob.worker.persistence.db.TaskDAO;
+import tech.powerjob.worker.persistence.db.TaskDAOImpl;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Map;

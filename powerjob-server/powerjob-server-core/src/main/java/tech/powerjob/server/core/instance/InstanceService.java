@@ -265,7 +265,7 @@ public class InstanceService {
      * @return 详细运行状态
      */
     @DesignateServer
-    public InstanceDetail getInstanceDetail(Long appId, Long instanceId) {
+    public InstanceDetail getInstanceDetail(Long appId, Long instanceId, String customQuery) {
 
         InstanceInfoDO instanceInfoDO = fetchInstanceInfo(instanceId);
 
@@ -283,7 +283,7 @@ public class InstanceService {
         Optional<WorkerInfo> workerInfoOpt = workerClusterQueryService.getWorkerInfoByAddress(instanceInfoDO.getAppId(), instanceInfoDO.getTaskTrackerAddress());
         if (workerInfoOpt.isPresent()) {
             WorkerInfo workerInfo = workerInfoOpt.get();
-            ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);
+            ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId, customQuery);
             try {
                 final URL url = ServerURLFactory.queryInstance2Worker(workerInfo.getAddress());
                 AskResponse askResponse = transportService.ask(workerInfo.getProtocol(), url, req, AskResponse.class)

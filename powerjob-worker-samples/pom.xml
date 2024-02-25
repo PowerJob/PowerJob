@@ -5,18 +5,18 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.7</version>
+        <version>4.3.8</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-worker-samples</artifactId>
-    <version>4.3.7</version>
+    <version>4.3.8</version>
 
     <properties>
         <springboot.version>2.7.18</springboot.version>
-        <powerjob.worker.starter.version>4.3.7</powerjob.worker.starter.version>
+        <powerjob.worker.starter.version>4.3.8</powerjob.worker.starter.version>
         <fastjson.version>1.2.83</fastjson.version>
-        <powerjob.official.processors.version>4.3.7</powerjob.official.processors.version>
+        <powerjob.official.processors.version>4.3.8</powerjob.official.processors.version>
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>

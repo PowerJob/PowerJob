@@ -53,4 +53,6 @@ public class InstanceInfo implements Serializable {
     private int taskRetryNum;
 
     private String logConfig;
+
+    private String advancedRuntimeConfig;
 }
