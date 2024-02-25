@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.SystemInstanceResult;
@@ -113,11 +114,12 @@ public class CommonTaskTracker extends HeavyTaskTracker {
         detail.setTaskDetail(taskDetail);
 
         // 填充最近的任务结果
-        String customQuery = Optional.ofNullable(req.getCustomQuery()).orElse(" status in (5, 6) order by last_modified_time ");
-        customQuery = customQuery.concat(" limit 10");
-        List<TaskDO> queriedTaskDos = taskPersistenceService.getTaskByQuery(instanceId, customQuery);
-        List<TaskDetailInfo> taskDetailInfoList = Optional.ofNullable(queriedTaskDos).orElse(Collections.emptyList()).stream().map(TaskConverter::taskDo2TaskDetail).collect(Collectors.toList());
-        detail.setQueriedTaskDetailInfoList(taskDetailInfoList);
+        if (StringUtils.isNotEmpty(req.getCustomQuery())) {
+            String customQuery = req.getCustomQuery().concat(" limit 10");
+            List<TaskDO> queriedTaskDos = taskPersistenceService.getTaskByQuery(instanceId, customQuery);
+            List<TaskDetailInfo> taskDetailInfoList = Optional.ofNullable(queriedTaskDos).orElse(Collections.emptyList()).stream().map(TaskConverter::taskDo2TaskDetail).collect(Collectors.toList());
+            detail.setQueriedTaskDetailInfoList(taskDetailInfoList);
+        }
 
         return detail;
     }

@@ -99,6 +99,9 @@ public class TaskDAOImpl implements TaskDAO {
         String sql = "select * from task_info where " + query.getQueryCondition();
         List<TaskDO> result = Lists.newLinkedList();
         try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (query.isReadOnly()) {
+                conn.setReadOnly(true);
+            }
             rs = ps.executeQuery();
             while (rs.next()) {
                 result.add(convert(rs));

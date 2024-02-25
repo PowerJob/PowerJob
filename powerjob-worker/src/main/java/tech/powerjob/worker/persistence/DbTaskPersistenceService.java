@@ -250,6 +250,7 @@ public class DbTaskPersistenceService implements TaskPersistenceService {
         SimpleTaskQuery simpleTaskQuery = new SimpleTaskQuery();
         simpleTaskQuery.setInstanceId(instanceId);
         simpleTaskQuery.setFullCustomQueryCondition(customQuery);
+        simpleTaskQuery.setReadOnly(true);
         try {
             return execute(() -> taskDAO.simpleQuery(simpleTaskQuery), cost -> log.warn("[TaskPersistenceService] [Slow] [{}] getTaskByQuery cost {}ms", instanceId, cost));
         }catch (Exception e) {

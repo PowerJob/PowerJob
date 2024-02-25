@@ -12,6 +12,15 @@ import java.util.Map;
  */
 public class MapUtils {
 
+    public static <K> Long getLong(Map<? super K, ?> map, K key, Long defaultValue) {
+        Long answer = getLong(map, key);
+        if (answer == null) {
+            answer = defaultValue;
+        }
+
+        return answer;
+    }
+
     public static <K> long getLongValue(Map<? super K, ?> map, K key) {
         Long longObject = getLong(map, key);
         return longObject == null ? 0L : longObject;

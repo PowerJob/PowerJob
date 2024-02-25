@@ -44,6 +44,12 @@ public class SimpleTaskQuery {
      */
     private String fullCustomQueryCondition;
 
+    /**
+     * 是否设置为只读模式
+     * 理论上全部查询均可设置，不过出于最小改动原则，仅针对新功能添加 readOnly
+     */
+    private boolean readOnly = false;
+
     public String getQueryCondition() {
 
         StringBuilder sb = new StringBuilder();

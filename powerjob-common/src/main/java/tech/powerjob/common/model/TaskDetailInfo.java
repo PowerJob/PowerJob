@@ -17,6 +17,10 @@ public class TaskDetailInfo implements PowerSerializable {
     private String taskId;
     private String taskName;
     /**
+     * 任务对象（map 的 subTask）
+     */
+    private String taskContent;
+    /**
      * 处理器地址
      */
     private String processorAddress;
