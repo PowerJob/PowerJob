@@ -1,8 +1,13 @@
 package tech.powerjob.server.persistence.storage.impl;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.minio.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -16,8 +21,6 @@ import tech.powerjob.server.extension.dfs.*;
 import tech.powerjob.server.persistence.storage.AbstractDFsService;
 
 import javax.annotation.Priority;
-import java.nio.file.Files;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,19 +47,19 @@ public class MinioOssService extends AbstractDFsService {
     private static final String KEY_BUCKET_NAME = "bucketName";
     private static final String ACCESS_KEY = "accessKey";
     private static final String SECRET_KEY = "secretKey";
-    private MinioClient minioClient;
+    private AmazonS3 amazonS3;
     private String bucket;
-    private static final String NO_SUCH_KEY = "NoSuchKey";
+    private static final String NOT_FOUNT = "404 Not Found";
 
     @Override
     public void store(StoreRequest storeRequest) {
         try {
-            minioClient.uploadObject(UploadObjectArgs.builder()
-                    .bucket(this.bucket)
-                    .object(parseFileName(storeRequest.getFileLocation()))
-                    .filename(storeRequest.getLocalFile().getPath())
-                    .contentType(Files.probeContentType(storeRequest.getLocalFile().toPath()))
-                    .build());
+
+            String fileName = parseFileName(storeRequest.getFileLocation());
+            // 创建 PutObjectRequest 对象
+            PutObjectRequest request = new PutObjectRequest(this.bucket, fileName, storeRequest.getLocalFile());
+
+            amazonS3.putObject(request);
         } catch (Throwable t) {
             ExceptionUtils.rethrow(t);
         }
@@ -66,13 +69,11 @@ public class MinioOssService extends AbstractDFsService {
     public void download(DownloadRequest downloadRequest) {
         try {
             FileUtils.forceMkdirParent(downloadRequest.getTarget());
-            // 下载文件
-            minioClient.downloadObject(
-                    DownloadObjectArgs.builder()
-                            .bucket(this.bucket)
-                            .object(parseFileName(downloadRequest.getFileLocation()))
-                            .filename(downloadRequest.getTarget().getAbsolutePath())
-                            .build());
+
+            String fileName = parseFileName(downloadRequest.getFileLocation());
+            GetObjectRequest getObjectRequest = new GetObjectRequest(this.bucket, fileName);
+            amazonS3.getObject(getObjectRequest, downloadRequest.getTarget());
+
         } catch (Throwable t) {
             ExceptionUtils.rethrow(t);
         }
@@ -86,26 +87,28 @@ public class MinioOssService extends AbstractDFsService {
     @Override
     public Optional<FileMeta> fetchFileMeta(FileLocation fileLocation) {
         try {
-            StatObjectResponse stat = minioClient.statObject(StatObjectArgs.builder()
-                    .bucket(this.bucket)
-                    .object(parseFileName(fileLocation))
-                    .build());
-            return Optional.ofNullable(stat).map(minioStat -> {
+
+            String fileName = parseFileName(fileLocation);
+            ObjectMetadata objectMetadata = amazonS3.getObjectMetadata(this.bucket, fileName);
+
+            return Optional.ofNullable(objectMetadata).map(minioStat -> {
 
                 Map<String, Object> metaInfo = Maps.newHashMap();
-                if (stat.userMetadata() != null) {
-                    metaInfo.putAll(stat.userMetadata());
+
+                if (objectMetadata.getRawMetadata() != null) {
+                    metaInfo.putAll(objectMetadata.getRawMetadata());
                 }
                 return new FileMeta()
-                        .setLastModifiedTime(Date.from(stat.lastModified().toInstant()))
-                        .setLength(stat.size())
+                        .setLastModifiedTime(objectMetadata.getLastModified())
+                        .setLength(objectMetadata.getContentLength())
                         .setMetaInfo(metaInfo);
             });
-        } catch (Exception oe) {
-            String errorCode = oe.getMessage();
-            if (NO_SUCH_KEY.equalsIgnoreCase(errorCode)) {
+        } catch (AmazonS3Exception s3Exception) {
+            String errorCode = s3Exception.getErrorCode();
+            if (NOT_FOUNT.equalsIgnoreCase(errorCode)) {
                 return Optional.empty();
             }
+        } catch (Exception oe) {
             ExceptionUtils.rethrow(oe);
         }
         return Optional.empty();
@@ -170,8 +173,18 @@ public class MinioOssService extends AbstractDFsService {
         if (StringUtils.isEmpty(bucketName)) {
             throw new IllegalArgumentException("'oms.storage.dfs.minio.bucketName' can't be empty, please creat a bucket in minio oss console then config it to powerjob");
         }
+
+        // 创建凭证对象
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+
+        // 创建AmazonS3客户端并指定终端节点和凭证
+        this.amazonS3 = AmazonS3ClientBuilder.standard()
+                // 当使用 AWS Java SDK 连接到非AWS服务（如MinIO）时，指定区域（Region）是必需的，即使这个区域对于你的MinIO实例并不真正适用。原因在于AWS SDK的客户端构建器需要一个区域来配置其服务端点，即使在连接到本地或第三方S3兼容服务时也是如此。使用 "us-east-1" 作为占位符是很常见的做法，因为它是AWS最常用的区域之一。这不会影响到实际的连接或数据传输，因为真正的服务地址是由你提供的终端节点URL决定的。如果你的代码主要是与MinIO交互，并且不涉及AWS服务，那么这个区域设置只是形式上的要求。
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, "us-east-1"))
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .withPathStyleAccessEnabled(true) // 重要：启用路径样式访问
+                .build();
         this.bucket = bucketName;
-        minioClient = MinioClient.builder().endpoint(endpoint).credentials(accessKey, secretKey).build();
         createBucket(bucketName);
         log.info("[Minio] initialize OSS successfully!");
     }
@@ -183,10 +196,13 @@ public class MinioOssService extends AbstractDFsService {
      */
     @SneakyThrows(Exception.class)
     public void createBucket(String bucketName) {
-        if (!bucketExists(bucketName)) {
-            minioClient.makeBucket(MakeBucketArgs.builder()
-                    .bucket(bucketName).build());
+        if (bucketExists(bucketName)) {
+           return;
         }
+
+        Bucket createBucketResult = amazonS3.createBucket(bucketName);
+        log.info("[Minio] createBucket successfully, bucketName: {}, createResult: {}", bucketName, createBucketResult);
+
         String policy = "{\n" +
                 "    \"Version\": \"2012-10-17\",\n" +
                 "    \"Statement\": [\n" +
@@ -206,7 +222,11 @@ public class MinioOssService extends AbstractDFsService {
                 "        }\n" +
                 "    ]\n" +
                 "}";
-        minioClient.setBucketPolicy(SetBucketPolicyArgs.builder().bucket(bucketName).config(policy).build());
+        try {
+            amazonS3.setBucketPolicy(bucketName, policy);
+        } catch (Exception e) {
+            log.warn("[Minio] setBucketPolicy failed, maybe you need to setBucketPolicy by yourself!", e);
+        }
     }
 
     /**
@@ -217,7 +237,8 @@ public class MinioOssService extends AbstractDFsService {
      */
     @SneakyThrows(Exception.class)
     public boolean bucketExists(String bucketName) {
-        return minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+
+        return amazonS3.doesBucketExistV2(bucketName);
     }
 
     public static class MinioOssCondition extends PropertyAndOneBeanCondition {
