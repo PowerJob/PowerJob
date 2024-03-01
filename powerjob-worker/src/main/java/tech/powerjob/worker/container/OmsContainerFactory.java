@@ -92,6 +92,7 @@ public class OmsContainerFactory {
 
         try {
             if (!jarFile.exists()) {
+                log.info("[OmsContainer-{}] container not exist(path={}), try to download from server!", containerId, jarFile.getPath());
                 FileUtils.forceMkdirParent(jarFile);
                 FileUtils.copyURLToFile(new URL(request.getDownloadURL()), jarFile, 5000, 300000);
                 log.info("[OmsContainer-{}] download jar successfully, path={}", containerId, jarFile.getPath());
@@ -107,6 +108,7 @@ public class OmsContainerFactory {
 
             if (oldContainer != null) {
                 // 销毁旧容器
+                log.info("[OmsContainer-{}] start to destroy old container(version={})", containerId, oldContainer.getVersion());
                 oldContainer.destroy();
             }
 
