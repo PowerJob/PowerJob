@@ -46,7 +46,9 @@ public class JarContainerProcessorFactory implements ProcessorFactory {
         if (omsContainer != null) {
             return new ProcessorBean()
                     .setProcessor(omsContainer.getProcessor(className))
-                    .setClassLoader(omsContainer.getContainerClassLoader());
+                    .setClassLoader(omsContainer.getContainerClassLoader())
+                    .setStable(false)
+                    ;
         } else {
             log.warn("[ProcessorFactory] load container failed. processor info : {}", processorInfo);
         }

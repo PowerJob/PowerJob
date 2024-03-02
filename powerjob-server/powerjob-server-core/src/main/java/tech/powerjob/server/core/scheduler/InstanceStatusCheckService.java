@@ -145,7 +145,11 @@ public class InstanceStatusCheckService {
         log.info("[InstanceStatusChecker] RunningInstance status check using {}.", stopwatch.stop());
     }
 
-    private void handleWaitingDispatchInstance(List<Long> partAppIds) {
+    private void handleWaitingDispatchInstance(List<Long> appIds) {
+
+        // 存在移除操作，需要重新创建集合，否则会导致外层抛出 NoSuchElementException: null
+        List<Long> partAppIds = Lists.newArrayList(appIds);
+
         // 1. 检查等待 WAITING_DISPATCH 状态的任务
         long threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
         List<InstanceInfoDO> waitingDispatchInstances = instanceInfoRepository.findAllByAppIdInAndStatusAndExpectedTriggerTimeLessThan(partAppIds, InstanceStatus.WAITING_DISPATCH.getV(), threshold, PageRequest.of(0, MAX_BATCH_NUM_INSTANCE));

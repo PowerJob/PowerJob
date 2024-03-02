@@ -1,7 +1,7 @@
 package tech.powerjob.server.remote.worker.selector.impl;
 
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.enums.DispatchStrategy;

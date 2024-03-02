@@ -317,40 +317,39 @@ public class ContainerService {
                 .collect(Collectors.toSet());
 
         Set<String> deployedList = Sets.newLinkedHashSet();
-        List<String> unDeployedList = Lists.newLinkedList();
-        Multimap<String, String> version2Address = ArrayListMultimap.create();
+        Multimap<String, DeployedContainerInfo> version2DeployedContainerInfoList = ArrayListMultimap.create();
         infoList.forEach(info -> {
             String targetWorkerAddress = info.getWorkerAddress();
             if (aliveWorkers.contains(targetWorkerAddress)) {
                 deployedList.add(targetWorkerAddress);
-                version2Address.put(info.getVersion(), targetWorkerAddress);
-            }else {
-                unDeployedList.add(targetWorkerAddress);
+                version2DeployedContainerInfoList.put(info.getVersion(), info);
             }
         });
 
+        Set<String> unDeployedList = Sets.newHashSet(aliveWorkers);
+        unDeployedList.removeAll(deployedList);
+
         StringBuilder sb = new StringBuilder("========== DeployedInfo ==========").append(System.lineSeparator());
+
         // 集群分裂，各worker版本不统一，问题很大
-        if (version2Address.keySet().size() > 1) {
+        if (version2DeployedContainerInfoList.keySet().size() > 1) {
             sb.append("WARN: there exists multi version container now, please redeploy to fix this problem").append(System.lineSeparator());
-            sb.append("divisive version ==> ").append(System.lineSeparator());
-            version2Address.forEach((v, addressList) -> {
-                sb.append("version: ").append(v).append(System.lineSeparator());
-                sb.append(addressList);
-            });
-            sb.append(System.lineSeparator());
         }
+
+        sb.append("divisive version ==> ").append(System.lineSeparator());
+        version2DeployedContainerInfoList.asMap().forEach((version, deployedContainerInfos) -> {
+            sb.append("[version] ").append(version).append(System.lineSeparator());
+            deployedContainerInfos.forEach(deployedContainerInfo -> sb.append(String.format("Address: %s, DeployedTime: %s", deployedContainerInfo.getWorkerAddress(), CommonUtils.formatTime(deployedContainerInfo.getDeployedTime()))).append(System.lineSeparator()));
+        });
+
         // 当前在线未部署机器
         if (!CollectionUtils.isEmpty(unDeployedList)) {
-            sb.append("WARN: there exists unDeployed worker(OhMyScheduler will auto fix when some job need to process)").append(System.lineSeparator());
-            sb.append("unDeployed worker list ==> ").append(System.lineSeparator());
+            sb.append("WARN: there exists unDeployed worker(PowerJob will auto fix when some job need to process)").append(System.lineSeparator());
+            sb.append("unDeployed worker list ==> ").append(unDeployedList).append(System.lineSeparator());
         }
-        // 当前部署机器
-        sb.append("deployed worker list ==> ").append(System.lineSeparator());
+
         if (CollectionUtils.isEmpty(deployedList)) {
-            sb.append("no worker deployed now~");
-        }else {
-            sb.append(deployedList);
+            sb.append("no worker deployed this container now~");
         }
 
         return sb.toString();
