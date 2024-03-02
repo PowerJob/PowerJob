@@ -3,11 +3,11 @@ package tech.powerjob.server.web.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.OpenAPIConstant;
-import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
+import tech.powerjob.common.request.query.InstanceInfoQuery;
 import tech.powerjob.common.request.query.JobInfoQuery;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
@@ -153,7 +153,7 @@ public class OpenAPIController {
     }
 
     @PostMapping(OpenAPIConstant.QUERY_INSTANCE)
-    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody PowerQuery powerQuery) {
+    public ResultDTO<List<InstanceInfoDTO>> queryInstance(@RequestBody InstanceInfoQuery powerQuery) {
         return ResultDTO.success(instanceService.queryInstanceInfo(powerQuery));
     }
 

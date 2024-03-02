@@ -8,6 +8,7 @@ import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
+import tech.powerjob.common.request.query.InstanceInfoQuery;
 import tech.powerjob.common.request.query.JobInfoQuery;
 import tech.powerjob.common.response.*;
 import tech.powerjob.common.utils.CommonUtils;
@@ -350,6 +351,20 @@ public class PowerJobClient implements IPowerJobClient {
                 .build();
         String post = postHA(OpenAPIConstant.FETCH_INSTANCE_INFO, body);
         return JSON.parseObject(post, INSTANCE_RESULT_TYPE);
+    }
+
+    /**
+     * Query instance info list by PowerQuery
+     * @param powerQuery
+     * @return instance info list
+     */
+    @Override
+    public ResultDTO<List<InstanceInfoDTO>> queryInstance(InstanceInfoQuery powerQuery) {
+        powerQuery.setAppIdEq(appId);
+        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
+        String json = JsonUtils.toJSONStringUnsafe(powerQuery);
+        String post = postHA(OpenAPIConstant.QUERY_INSTANCE, RequestBody.create(jsonType, json));
+        return JSON.parseObject(post, LIST_INSTANCE_RESULT_TYPE);
     }
 
     /* ************* Workflow API list ************* */
