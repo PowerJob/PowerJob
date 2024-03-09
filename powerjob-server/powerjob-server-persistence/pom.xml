@@ -5,7 +5,7 @@
     <parent>
         <artifactId>powerjob-server</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.0.0-beta2</version>
+        <version>5.0.1-beta</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -41,8 +41,8 @@
             <artifactId>aliyun-sdk-oss</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.minio</groupId>
-            <artifactId>minio</artifactId>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
         </dependency>
     </dependencies>
 

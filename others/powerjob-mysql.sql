@@ -1,20 +1,22 @@
 /*
- 官方 SQL 仅基于特定版本（MySQL8）导出，不一定兼容其他数据库，也不一定兼容其他版本。此 SQL 仅供参考。
- 如果您的数据库无法使用此 SQL，建议使用 SpringDataJPA 自带的建表能力，先在开发环境直连测试库自动建表，然后自行导出相关的 SQL 即可。
+官方 SQL 仅基于特定版本（MySQL8）导出，不一定兼容其他数据库，也不一定兼容其他版本。此 SQL 仅供参考。
+如果您的数据库无法使用此 SQL，建议使用 SpringDataJPA 自带的建表能力，先在开发环境直连测试库自动建表，然后自行导出相关的 SQL 即可。
+ */
 
+/*
  Navicat Premium Data Transfer
 
  Source Server         : Local@3306
  Source Server Type    : MySQL
  Source Server Version : 80300 (8.3.0)
  Source Host           : localhost:3306
- Source Schema         : powerjob500
+ Source Schema         : powerjob5
 
  Target Server Type    : MySQL
  Target Server Version : 80300 (8.3.0)
  File Encoding         : 65001
 
- Date: 17/02/2024 22:20:07
+ Date: 09/03/2024 15:52:04
 */
 
 SET NAMES utf8mb4;
@@ -95,11 +97,13 @@ CREATE TABLE `instance_info` (
 DROP TABLE IF EXISTS `job_info`;
 CREATE TABLE `job_info` (
                             `id` bigint NOT NULL AUTO_INCREMENT,
+                            `advanced_runtime_config` varchar(255) DEFAULT NULL,
                             `alarm_config` varchar(255) DEFAULT NULL,
                             `app_id` bigint DEFAULT NULL,
                             `concurrency` int DEFAULT NULL,
                             `designated_workers` varchar(255) DEFAULT NULL,
                             `dispatch_strategy` int DEFAULT NULL,
+                            `dispatch_strategy_config` varchar(255) DEFAULT NULL,
                             `execute_type` int DEFAULT NULL,
                             `extra` varchar(255) DEFAULT NULL,
                             `gmt_create` datetime(6) DEFAULT NULL,
@@ -163,26 +167,7 @@ CREATE TABLE `oms_lock` (
                             `ownerip` varchar(255) DEFAULT NULL,
                             PRIMARY KEY (`id`),
                             UNIQUE KEY `uidx01_oms_lock` (`lock_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ----------------------------
--- Table structure for powerjob_files
--- ----------------------------
-DROP TABLE IF EXISTS `powerjob_files`;
-CREATE TABLE `powerjob_files` (
-                                  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'ID',
-                                  `bucket` varchar(255) NOT NULL COMMENT '分桶',
-                                  `name` varchar(255) NOT NULL COMMENT '文件名称',
-                                  `version` varchar(255) NOT NULL COMMENT '版本',
-                                  `meta` varchar(255) DEFAULT NULL COMMENT '元数据',
-                                  `length` bigint NOT NULL COMMENT '长度',
-                                  `status` int NOT NULL COMMENT '状态',
-                                  `data` longblob NOT NULL COMMENT '文件内容',
-                                  `extra` varchar(255) DEFAULT NULL COMMENT '其他信息',
-                                  `gmt_create` datetime NOT NULL COMMENT '创建时间',
-                                  `gmt_modified` datetime DEFAULT NULL COMMENT '更新时间',
-                                  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for pwjb_user_info
@@ -340,4 +325,3 @@ CREATE TABLE `workflow_node_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
-

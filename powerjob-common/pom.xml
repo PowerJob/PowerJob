@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.0.0-beta2</version>
+        <version>5.0.1-beta</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-common</artifactId>
-    <version>5.0.0-beta2</version>
+    <version>5.0.1-beta</version>
     <packaging>jar</packaging>
 
     <properties>
