@@ -1,12 +1,19 @@
 package tech.powerjob.common.exception;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * PowerJob 运行时异常
  *
  * @author tjq
  * @since 2020/5/26
  */
+@Setter
+@Getter
 public class PowerJobException extends RuntimeException {
+
+    protected String code;
 
     public PowerJobException() {
     }

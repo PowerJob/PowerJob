@@ -86,7 +86,7 @@ public class QueryConvertUtils {
         };
     }
 
-    private static String convertLikeParams(Object o) {
+    public static String convertLikeParams(Object o) {
         String s = (String) o;
         if (!s.startsWith("%")) {
             s = "%" + s;

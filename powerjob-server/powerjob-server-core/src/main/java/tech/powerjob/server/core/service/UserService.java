@@ -1,14 +1,13 @@
 package tech.powerjob.server.core.service;
 
-import tech.powerjob.server.persistence.remote.model.UserInfoDO;
-import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import org.springframework.stereotype.Service;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import tech.powerjob.server.persistence.remote.model.UserInfoDO;
+import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,16 +23,6 @@ public class UserService {
 
     @Resource
     private UserInfoRepository userInfoRepository;
-
-    /**
-     * 保存/修改 用户
-     * @param userInfoDO user
-     */
-    public void save(UserInfoDO userInfoDO) {
-        userInfoDO.setGmtCreate(new Date());
-        userInfoDO.setGmtModified(userInfoDO.getGmtCreate());
-        userInfoRepository.saveAndFlush(userInfoDO);
-    }
 
     /**
      * 根据用户ID字符串获取用户信息详细列表

@@ -14,6 +14,13 @@ public interface ServerInfoService {
      * fetch current server info
      * @return ServerInfo
      */
-    ServerInfo fetchServiceInfo();
+    ServerInfo fetchCurrentServerInfo();
+
+    /**
+     * fetch schedule server info
+     * @param appId appId
+     * @return ServerInfo
+     */
+    ServerInfo fetchAppServerInfo(Long appId);
 
 }

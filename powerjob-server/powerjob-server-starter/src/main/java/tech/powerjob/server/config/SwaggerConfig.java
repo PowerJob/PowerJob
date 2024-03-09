@@ -41,7 +41,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info().title("PowerJob")
                         .description("Distributed scheduling and computing framework.")
-                        .version(serverInfoService.fetchServiceInfo().getVersion())
+                        .version(serverInfoService.fetchCurrentServerInfo().getVersion())
                         .contact(contact)
                         .license(new License().name("Apache License 2.0").url("https://github.com/PowerJob/PowerJob/blob/master/LICENSE")));
     }

@@ -1,7 +1,6 @@
 package tech.powerjob.server.core.uid;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.remote.server.self.ServerInfoService;
 
@@ -22,7 +21,7 @@ public class IdGenerateService {
     private static final int DATA_CENTER_ID = 0;
 
     public IdGenerateService(ServerInfoService serverInfoService) {
-        long id = serverInfoService.fetchServiceInfo().getId();
+        long id = serverInfoService.fetchCurrentServerInfo().getId();
         snowFlakeIdGenerator = new SnowFlakeIdGenerator(DATA_CENTER_ID, id);
         log.info("[IdGenerateService] initialize IdGenerateService successfully, ID:{}", id);
     }
