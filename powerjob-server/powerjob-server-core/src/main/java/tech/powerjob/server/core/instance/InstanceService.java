@@ -65,6 +65,8 @@ public class InstanceService {
 
     private final WorkerClusterQueryService workerClusterQueryService;
 
+    private final InstanceLogService instanceLogService;
+
     /**
      * 创建任务实例（注意，该方法并不调用 saveAndFlush，如果有需要立即同步到DB的需求，请在方法结束后手动调用 flush）
      * ********************************************
@@ -183,6 +185,13 @@ public class InstanceService {
         // 派发任务
         Long jobId = instanceInfo.getJobId();
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new PowerJobException("can't find job info by jobId: " + jobId));
+        //删除掉之前的日志文件
+        try {
+            instanceLogService.removeOldFile(instanceId);
+        } catch (Exception e) {
+            //不能影响主流程 若删除失败
+            log.error("[InstanceLogService] delete old logs for instance: "+instanceId+" failed.",e);
+        }
         dispatchService.dispatch(jobInfo, instanceId,Optional.of(instanceInfo),Optional.empty());
     }
 
