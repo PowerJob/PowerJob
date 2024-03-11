@@ -392,4 +392,43 @@ public class InstanceLogService {
         return String.format("oms-%d.log", instanceId);
     }
 
+    /**
+     * description  在重跑之前移除老的文件，避免重跑后还看到的是之前的示例日志。
+     * 因为当重跑完读取稳定日志的时候 目前逻辑会先判断本地文件是否存在 若存在则直接返回了 故需要先移除掉
+     * 参考：tech.powerjob.server.core.instance.InstanceLogService#genStableLogFile(long)
+     * @author jian chen jiang
+     * date 2024/2/5 17:01
+     * @param instanceId
+     * @return void
+     */
+    public void removeOldFile(Long instanceId) {
+        //删除之前的数据库日志
+        try {
+            localInstanceLogRepository.deleteByInstanceId(instanceId);
+        } catch (Exception e) {
+            log.warn("[InstanceLogService] delete old logs for instance: "+instanceId+"failed.", e);
+        }
+        //删除本地缓存
+        String s = genLogFilePath(instanceId, true);
+        File file = new File(s);
+        if(!file.exists()){
+            return;
+        }
+        boolean delete = file.delete();
+        if(!delete){
+            log.warn("[InstanceLogService] delete old logs{} for instance: {} failed.", s,instanceId);
+        }
+        //删除临时文件
+        String tempFilePath = genLogFilePath(instanceId, false);
+        File tempFile = new File(tempFilePath);
+        if(!tempFile.exists()){
+            return;
+        }
+        delete = tempFile.delete();
+        if(!delete){
+            log.warn("[InstanceLogService] delete old temp logs{} for instance: {} failed.", s,instanceId);
+        }
+
+    }
+
 }
