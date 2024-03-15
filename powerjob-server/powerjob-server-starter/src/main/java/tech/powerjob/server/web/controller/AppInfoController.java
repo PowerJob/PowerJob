@@ -194,7 +194,8 @@ public class AppInfoController {
             return Lists.newLinkedList();
         }
 
-        return data.parallelStream().map(appInfoDO -> {
+        // app 界面使用频率不高，数据库操作 rt 也不会太长，展示不考虑性能问题，简单期间串行补全
+        return data.stream().map(appInfoDO -> {
             AppInfoVO appInfoVO = new AppInfoVO();
             BeanUtils.copyProperties(appInfoDO, appInfoVO);
 
