@@ -1,5 +1,6 @@
 package tech.powerjob.server.auth.service.impl;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class WebAuthServiceImpl implements WebAuthService {
     public void processPermissionOnSave(RoleScope roleScope, Long target, ComponentUserRoleInfo o) {
         ComponentUserRoleInfo componentUserRoleInfo = Optional.ofNullable(o).orElse(new ComponentUserRoleInfo());
         
-        Map<Role, List<Long>> role2Uids = powerJobPermissionService.fetchUserWithPermissions(roleScope, target);
+        Map<Role, Set<Long>> role2Uids = powerJobPermissionService.fetchUserWithPermissions(roleScope, target);
         diffGrant(roleScope, target, Role.OBSERVER, componentUserRoleInfo.getObserver(), role2Uids);
         diffGrant(roleScope, target, Role.QA, componentUserRoleInfo.getQa(), role2Uids);
         diffGrant(roleScope, target, Role.DEVELOPER, componentUserRoleInfo.getDeveloper(), role2Uids);
@@ -51,12 +52,12 @@ public class WebAuthServiceImpl implements WebAuthService {
 
     @Override
     public ComponentUserRoleInfo fetchComponentUserRoleInfo(RoleScope roleScope, Long target) {
-        Map<Role, List<Long>> role2Uids = powerJobPermissionService.fetchUserWithPermissions(roleScope, target);
+        Map<Role, Set<Long>> role2Uids = powerJobPermissionService.fetchUserWithPermissions(roleScope, target);
         return new ComponentUserRoleInfo()
-                .setObserver(role2Uids.getOrDefault(Role.OBSERVER, Collections.emptyList()))
-                .setQa(role2Uids.getOrDefault(Role.QA, Collections.emptyList()))
-                .setDeveloper(role2Uids.getOrDefault(Role.DEVELOPER, Collections.emptyList()))
-                .setAdmin(role2Uids.getOrDefault(Role.ADMIN, Collections.emptyList()));
+                .setObserver(Lists.newArrayList(role2Uids.getOrDefault(Role.OBSERVER, Collections.emptySet())))
+                .setQa(Lists.newArrayList(role2Uids.getOrDefault(Role.QA, Collections.emptySet())))
+                .setDeveloper(Lists.newArrayList(role2Uids.getOrDefault(Role.DEVELOPER, Collections.emptySet())))
+                .setAdmin(Lists.newArrayList(role2Uids.getOrDefault(Role.ADMIN, Collections.emptySet())));
     }
 
     @Override
@@ -82,9 +83,9 @@ public class WebAuthServiceImpl implements WebAuthService {
         return powerJobPermissionService.fetchUserHadPermissionTargets(roleScope, powerJobUser.getId());
     }
 
-    private void diffGrant(RoleScope roleScope, Long target, Role role, List<Long> uids, Map<Role, List<Long>> originRole2Uids) {
+    private void diffGrant(RoleScope roleScope, Long target, Role role, List<Long> uids, Map<Role, Set<Long>> originRole2Uids) {
 
-        Set<Long> originUids = Sets.newHashSet(Optional.ofNullable(originRole2Uids.get(role)).orElse(Collections.emptyList()));
+        Set<Long> originUids = Sets.newHashSet(Optional.ofNullable(originRole2Uids.get(role)).orElse(Collections.emptySet()));
         Set<Long> currentUids = Sets.newHashSet(Optional.ofNullable(uids).orElse(Collections.emptyList()));
 
         Map<String, Object> extraInfo = Maps.newHashMap();

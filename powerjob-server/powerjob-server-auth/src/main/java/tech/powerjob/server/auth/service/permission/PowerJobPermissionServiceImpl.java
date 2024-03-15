@@ -1,9 +1,6 @@
 package tech.powerjob.server.auth.service.permission;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.auth.Permission;
@@ -112,14 +109,15 @@ public class PowerJobPermissionServiceImpl implements PowerJobPermissionService 
     }
 
     @Override
-    public Map<Role, List<Long>> fetchUserWithPermissions(RoleScope roleScope, Long target) {
+    public Map<Role, Set<Long>> fetchUserWithPermissions(RoleScope roleScope, Long target) {
         List<UserRoleDO> permissionUserList = userRoleRepository.findAllByScopeAndTarget(roleScope.getV(), target);
-        Map<Role, List<Long>> ret = Maps.newHashMap();
+        Map<Role, Set<Long>> ret = Maps.newHashMap();
         Optional.ofNullable(permissionUserList).orElse(Collections.emptyList()).forEach(userRoleDO -> {
             Role role = Role.of(userRoleDO.getRole());
-            List<Long> userIds = ret.computeIfAbsent(role, ignore -> Lists.newArrayList());
+            Set<Long> userIds = ret.computeIfAbsent(role, ignore -> Sets.newHashSet());
             userIds.add(userRoleDO.getUserId());
         });
+
         return ret;
     }
 
