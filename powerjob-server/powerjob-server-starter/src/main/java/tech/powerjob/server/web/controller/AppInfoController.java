@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -11,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -27,11 +28,13 @@ import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveAppGrantPermissionPlugin;
 import tech.powerjob.server.auth.service.WebAuthService;
+import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.QueryConvertUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
+import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import tech.powerjob.server.web.converter.NamespaceConverter;
 import tech.powerjob.server.web.request.AppAssertRequest;
 import tech.powerjob.server.web.request.ComponentUserRoleInfo;
@@ -54,6 +57,7 @@ import java.util.stream.Collectors;
  * @author tjq
  * @since 2020/4/1
  */
+@Slf4j
 @RestController
 @RequestMapping("/appInfo")
 @RequiredArgsConstructor
@@ -66,6 +70,8 @@ public class AppInfoController {
     private final AppInfoRepository appInfoRepository;
 
     private final NamespaceWebService namespaceWebService;
+
+    private final WorkerClusterQueryService workerClusterQueryService;
 
     @PostMapping("/save")
     @ApiPermission(name = "App-Save", roleScope = RoleScope.APP, dynamicPermissionPlugin = ModifyOrCreateDynamicPermission.class, grandPermissionPlugin = SaveAppGrantPermissionPlugin.class)
@@ -106,10 +112,19 @@ public class AppInfoController {
         return ResultDTO.success(convert(Lists.newArrayList(savedAppInfo), false).get(0));
     }
 
-    @GetMapping("/delete")
+    @PostMapping("/delete")
     @ApiPermission(name = "App-Delete", roleScope = RoleScope.APP, requiredPermission = Permission.SU)
-    public ResultDTO<Void> deleteAppInfo(Long appId) {
+    public ResultDTO<Void> deleteApp(Long appId) {
+
+        log.warn("[AppInfoController] try to delete app: {}", appId);
+
+        List<WorkerInfo> allAliveWorkers = workerClusterQueryService.getAllAliveWorkers(appId);
+        if (CollectionUtils.isNotEmpty(allAliveWorkers)) {
+            return ResultDTO.failed("Unable to delete apps with live workers, Please remove the worker dependency first!");
+        }
+
         appInfoRepository.deleteById(appId);
+        log.warn("[AppInfoController] delete app[id={}] successfully!", appId);
         return ResultDTO.success(null);
     }
 
