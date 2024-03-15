@@ -28,6 +28,14 @@ public class NamespaceBaseVO implements Serializable {
      */
     protected String name;
 
+    private String dept;
+    private String tags;
+
+    /**
+     * 扩展字段
+     */
+    private String extra;
+
     private Integer status;
     private String statusStr;
 

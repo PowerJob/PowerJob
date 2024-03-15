@@ -16,7 +16,9 @@ public class NamespaceConverter {
 
     public static NamespaceBaseVO do2BaseVo(NamespaceDO d) {
         NamespaceBaseVO v = new NamespaceBaseVO();
+
         BeanUtils.copyProperties(d, v);
+
         v.setGmtCreateStr(CommonUtils.formatTime(d.getGmtCreate()));
         v.setGmtModifiedStr(CommonUtils.formatTime(d.getGmtModified()));
         v.setStatusStr(SwitchableStatus.of(d.getStatus()).name());

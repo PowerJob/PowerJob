@@ -16,14 +16,6 @@ import tech.powerjob.server.web.request.ComponentUserRoleInfo;
 @ToString
 public class NamespaceVO extends NamespaceBaseVO {
 
-    private String dept;
-    private String tags;
-
-    /**
-     * 扩展字段
-     */
-    private String extra;
-
     /**
      * 访问 token
      * 仅拥有当前 namespace 权限的访问者可见
