@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
  *  - vertx 唯一的缺点是其作为相对上层的框架，可能存在较为严重的包冲突问题，尤其是对于那些本身跑在 vertx-framework 上的用户
  *      - 不过该问题可以通过更换协议解决，预计后续提供一个基于 netty 和自定义协议的实现
  *
+ * 20240316 note：注意类名被强依赖，后续若有改动需要同步更改
+ *
  * @author tjq
  * @since 2022/12/31
  */
