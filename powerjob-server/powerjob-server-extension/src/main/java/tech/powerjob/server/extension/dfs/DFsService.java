@@ -1,6 +1,7 @@
 package tech.powerjob.server.extension.dfs;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Optional;
 
 /**
@@ -16,7 +17,7 @@ public interface DFsService {
      * @param storeRequest 存储请求
      * @throws IOException 异常
      */
-    void store(StoreRequest storeRequest) throws IOException;
+    void store(StoreRequest storeRequest) throws IOException, SQLException;
 
     /**
      * 下载文件

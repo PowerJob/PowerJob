@@ -28,6 +28,12 @@ public class StorageConfiguration {
     }
 
     @Bean
+    @Conditional(PostgresqlSeriesDfsService.PostgresqlSeriesCondition.class)
+    public DFsService initPGDbFs() {
+        return new PostgresqlSeriesDfsService();
+    }
+
+    @Bean
     @Conditional(AliOssService.AliOssCondition.class)
     public DFsService initAliOssFs() {
         return new AliOssService();
