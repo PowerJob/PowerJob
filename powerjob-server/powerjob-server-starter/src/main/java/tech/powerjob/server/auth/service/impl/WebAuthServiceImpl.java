@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.*;
+import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.common.AuthErrorCode;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.service.WebAuthService;
@@ -69,6 +70,11 @@ public class WebAuthServiceImpl implements WebAuthService {
         }
 
         return powerJobPermissionService.hasPermission(powerJobUser.getId(), roleScope, target, permission);
+    }
+
+    @Override
+    public boolean isGlobalAdmin() {
+        return hasPermission(RoleScope.GLOBAL, AuthConstants.GLOBAL_ADMIN_TARGET_ID, Permission.SU);
     }
 
     @Override

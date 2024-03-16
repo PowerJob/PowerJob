@@ -22,6 +22,7 @@ import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
 import tech.powerjob.server.common.Loggers;
+import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
@@ -108,9 +109,11 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
             powerJobUserOpt = userInfoRepository.findByUsername(dbUserName);
         } else {
 
-            // 更新二次校验的 TOKEN 信息
             UserInfoDO dbUserInfoDO = powerJobUserOpt.get();
 
+            checkUserStatus(dbUserInfoDO);
+
+            // 更新二次校验的 TOKEN 信息
             dbUserInfoDO.setTokenLoginVerifyInfo(JsonUtils.toJSONString(bizUser.getTokenLoginVerifyInfo()));
             dbUserInfoDO.setGmtModified(new Date());
 
@@ -147,6 +150,8 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
 
         UserInfoDO dbUser = dbUserInfoOpt.get();
 
+        checkUserStatus(dbUser);
+
         PowerJobUser powerJobUser = new PowerJobUser();
 
         String tokenLoginVerifyInfoStr = dbUser.getTokenLoginVerifyInfo();
@@ -172,6 +177,17 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         LoginUserHolder.set(powerJobUser);
 
         return Optional.of(powerJobUser);
+    }
+
+    /**
+     * 检查 user 状态
+     * @param dbUser user
+     */
+    private void checkUserStatus(UserInfoDO dbUser) {
+        int accountStatus = Optional.ofNullable(dbUser.getStatus()).orElse(SwitchableStatus.ENABLE.getV());
+        if (accountStatus == SwitchableStatus.DISABLE.getV()) {
+            throw new PowerJobAuthException(AuthErrorCode.USER_DISABLED);
+        }
     }
 
     private ThirdPartyLoginService fetchBizLoginService(String loginType) {

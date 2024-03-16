@@ -15,9 +15,31 @@ import org.apache.commons.lang3.StringUtils;
 @Setter
 @NoArgsConstructor
 public class UserBaseVO {
+
     protected Long id;
     protected String username;
     protected String nick;
+
+    /**
+     * 账户类型
+     */
+    private String accountType;
+
+    /**
+     * 手机号
+     */
+    private String phone;
+    /**
+     * 邮箱地址
+     */
+    private String email;
+
+    /**
+     * 账号当前状态
+     */
+    private Integer status;
+
+    private boolean enable;
 
     /**
      * 前端展示名称，更容易辨认

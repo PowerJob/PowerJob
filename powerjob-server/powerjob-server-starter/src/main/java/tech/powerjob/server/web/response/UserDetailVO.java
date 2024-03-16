@@ -18,23 +18,12 @@ import java.util.Map;
 @ToString
 public class UserDetailVO extends UserBaseVO {
 
-    /**
-     * 账户类型
-     */
-    private String accountType;
+
     /**
      * 密码
      */
     private String password;
 
-    /**
-     * 手机号
-     */
-    private String phone;
-    /**
-     * 邮箱地址
-     */
-    private String email;
     /**
      * webHook
      */

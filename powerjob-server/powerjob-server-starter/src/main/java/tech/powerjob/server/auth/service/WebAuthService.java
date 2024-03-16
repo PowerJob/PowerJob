@@ -52,5 +52,11 @@ public interface WebAuthService {
      */
     boolean hasPermission(RoleScope roleScope, Long target, Permission permission);
 
+    /**
+     * 是否为全局管理员
+     * @return true or false
+     */
+    boolean isGlobalAdmin();
+
     Map<Role, List<Long>> fetchMyPermissionTargets(RoleScope roleScope);
 }

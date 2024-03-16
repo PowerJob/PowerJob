@@ -71,6 +71,11 @@ public class UserInfoDO {
      */
     private String originUsername;
 
+    /**
+     * 账号当前状态
+     */
+    private Integer status;
+
     private Date gmtCreate;
 
     private Date gmtModified;

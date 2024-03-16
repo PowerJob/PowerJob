@@ -16,6 +16,10 @@ public enum AuthErrorCode {
     USER_NOT_LOGIN("-100", "UserNotLoggedIn"),
     USER_NOT_EXIST("-101", "UserNotExist"),
     USER_AUTH_FAILED("-102", "UserAuthFailed"),
+    /**
+     * 账户被停用
+     */
+    USER_DISABLED("-103", "UserDisabled"),
 
 
     NO_PERMISSION("-200", "NoPermission"),
