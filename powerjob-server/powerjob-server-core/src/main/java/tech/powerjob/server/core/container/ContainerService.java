@@ -336,7 +336,6 @@ public class ContainerService {
             sb.append("WARN: there exists multi version container now, please redeploy to fix this problem").append(System.lineSeparator());
         }
 
-        sb.append("divisive version ==> ").append(System.lineSeparator());
         version2DeployedContainerInfoList.asMap().forEach((version, deployedContainerInfos) -> {
             sb.append("[version] ").append(version).append(System.lineSeparator());
             deployedContainerInfos.forEach(deployedContainerInfo -> sb.append(String.format("Address: %s, DeployedTime: %s", deployedContainerInfo.getWorkerAddress(), CommonUtils.formatTime(deployedContainerInfo.getDeployedTime()))).append(System.lineSeparator()));

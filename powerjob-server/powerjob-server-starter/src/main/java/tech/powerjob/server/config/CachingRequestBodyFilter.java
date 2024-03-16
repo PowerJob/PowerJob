@@ -29,10 +29,18 @@ public class CachingRequestBodyFilter implements Filter {
      */
     private static final Set<String> IGNORE_CONTENT_TYPES = Sets.newHashSet("application/x-www-form-urlencoded", "multipart/form-data");
 
+    private static final Set<String> IGNORE_URIS = Sets.newHashSet("/container/jarUpload");
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         if (request instanceof HttpServletRequest) {
+            String uri = ((HttpServletRequest) request).getRequestURI();
+            // 忽略 jar 上传等处理路径
+            if (IGNORE_URIS.contains(uri)) {
+                chain.doFilter(request, response);
+                return;
+            }
             String contentType = request.getContentType();
             if (contentType != null && !IGNORE_CONTENT_TYPES.contains(contentType)) {
                 CustomHttpServletRequestWrapper wrappedRequest = new CustomHttpServletRequestWrapper((HttpServletRequest) request);
