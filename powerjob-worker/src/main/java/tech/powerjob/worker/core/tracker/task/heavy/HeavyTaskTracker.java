@@ -201,9 +201,9 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                         instanceId, subInstanceId, taskBriefInfo.getLastReportTime(), reportTime, taskId, newStatus);
                 return;
             }
-            // 检查状态转移是否合法，fix issue 404
+            // 检查状态转移是否合法，fix issue 404（20240306：无排队情况下，receive 和 running 几乎会在同一时间触发，导致这两个请求先后顺序几乎无法保证，大概率有此行输出，因此日志级别降级到 INFO）
             if (nTaskStatus.getValue() < taskBriefInfo.getStatus().getValue()) {
-                log.warn("[TaskTracker-{}-{}] receive invalid task status report(taskId={},currentStatus={},newStatus={}), TaskTracker will drop this report.",
+                log.info("[TaskTracker-{}-{}] receive invalid task status report(taskId={},currentStatus={},newStatus={}), TaskTracker will drop this report.",
                         instanceId, subInstanceId, taskId, taskBriefInfo.getStatus().getValue(), newStatus);
                 return;
             }
