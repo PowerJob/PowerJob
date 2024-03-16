@@ -16,7 +16,7 @@
  Target Server Version : 80300 (8.3.0)
  File Encoding         : 65001
 
- Date: 09/03/2024 15:52:04
+ Date: 16/03/2024 22:07:31
 */
 
 SET NAMES utf8mb4;
@@ -167,7 +167,7 @@ CREATE TABLE `oms_lock` (
                             `ownerip` varchar(255) DEFAULT NULL,
                             PRIMARY KEY (`id`),
                             UNIQUE KEY `uidx01_oms_lock` (`lock_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for pwjb_user_info
@@ -229,6 +229,7 @@ CREATE TABLE `user_info` (
                              `origin_username` varchar(255) DEFAULT NULL,
                              `password` varchar(255) DEFAULT NULL,
                              `phone` varchar(255) DEFAULT NULL,
+                             `status` int DEFAULT NULL,
                              `token_login_verify_info` varchar(255) DEFAULT NULL,
                              `username` varchar(255) DEFAULT NULL,
                              `web_hook` varchar(255) DEFAULT NULL,
