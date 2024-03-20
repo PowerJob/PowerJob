@@ -196,6 +196,8 @@ public class MinioOssService extends AbstractDFsService {
      */
     @SneakyThrows(Exception.class)
     public void createBucket(String bucketName) {
+
+        // 建议自行创建 bucket，设置好相关的策略
         if (bucketExists(bucketName)) {
            return;
         }

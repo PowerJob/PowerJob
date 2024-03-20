@@ -145,8 +145,8 @@ public abstract class AbstractSqlProcessor extends CommonBasicProcessor {
                     }
                     omsLogger.info("[Result-{}] [Columns] {}" + System.lineSeparator(), index, JOINER.join(columnNames));
                     int rowIndex = 0;
-                    List<Object> row = Lists.newLinkedList();
                     while (rs.next()) {
+                        List<Object> row = Lists.newLinkedList();
                         for (int i = 1; i <= columnCount; i++) {
                             row.add(rs.getObject(i));
                         }
