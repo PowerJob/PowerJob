@@ -102,4 +102,9 @@ public class ServerScheduleJobReq implements PowerSerializable {
      * 高级运行时配置
      */
     private String advancedRuntimeConfig;
+
+    /**
+     * 预计任务执行时间,当实例从跑的时候，这个时间为该实例首次被算出要调度的时间，即重跑实例次时间将不变
+     */
+    private Long expectTriggerTime;
 }
