@@ -1,11 +1,8 @@
 package tech.powerjob.server.test;
 
 import org.junit.jupiter.api.Disabled;
-import tech.powerjob.server.extension.defaultimpl.alarm.impl.DingTalkUtils;
-import com.google.common.collect.Lists;
+import tech.powerjob.server.core.alarm.impl.DingTalkUtils;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 /**
  * 测试钉钉消息工具

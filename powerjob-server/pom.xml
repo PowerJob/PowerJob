@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.1-bugfix</version>
+        <version>4.3.9</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.3.1-bugfix</version>
+    <version>4.3.9</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -26,20 +26,21 @@
 
 
     <properties>
-        <springboot.version>2.7.4</springboot.version>
+        <springboot.version>2.7.18</springboot.version>
 
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
-        <mysql.version>8.0.30</mysql.version>
+        <mysql.version>8.0.33</mysql.version>
         <ojdbc.version>19.7.0.0</ojdbc.version>
         <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
-        <postgresql.version>42.2.14</postgresql.version>
-        <h2.db.version>2.1.214</h2.db.version>
+        <postgresql.version>42.6.0</postgresql.version>
+        <h2.db.version>2.2.224</h2.db.version>
+        <mongodb-driver-sync.version>4.10.2</mongodb-driver-sync.version>
 
         <zip4j.version>2.11.2</zip4j.version>
-        <jgit.version>5.7.0.202003110725-r</jgit.version>
+        <jgit.version>5.13.2.202306221912-r</jgit.version>
         <mvn.invoker.version>3.0.1</mvn.invoker.version>
-        <commons.net.version>3.8.0</commons.net.version>
+        <commons.net.version>3.9.0</commons.net.version>
         <fastjson.version>1.2.83</fastjson.version>
         <dingding.version>1.0.1</dingding.version>
 
@@ -47,12 +48,15 @@
         <maven.deploy.skip>true</maven.deploy.skip>
 
         <groovy.version>3.0.10</groovy.version>
-        <cron-utils.version>9.1.6</cron-utils.version>
+        <cron-utils.version>9.2.1</cron-utils.version>
 
-        <powerjob-common.version>4.3.1-bugfix</powerjob-common.version>
-        <powerjob-remote-impl-http.version>4.3.1-bugfix</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>4.3.1-bugfix</powerjob-remote-impl-akka.version>
+        <powerjob-common.version>4.3.9</powerjob-common.version>
+        <powerjob-remote-impl-http.version>4.3.9</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>4.3.9</powerjob-remote-impl-akka.version>
         <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
+        <aliyun-sdk-oss.version>3.17.1</aliyun-sdk-oss.version>
+        <aws-java-sdk-s3.version>1.12.665</aws-java-sdk-s3.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
     </properties>
 
     <dependencyManagement>
@@ -97,6 +101,34 @@
                 <artifactId>powerjob-server-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- 存储扩展-MongoDB，未使用可移除 -->
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver-sync</artifactId>
+                <version>${mongodb-driver-sync.version}</version>
+            </dependency>
+            <!-- 存储扩展-阿里云OSS，未使用可移除 -->
+            <dependency>
+                <groupId>com.aliyun.oss</groupId>
+                <artifactId>aliyun-sdk-oss</artifactId>
+                <version>${aliyun-sdk-oss.version}</version>
+            </dependency>
+            <!-- 存储扩展-Minio/S3，未使用可移除（minio-client 依赖 OKHTTP4.x 版本，强制引入 kotlin 标准库，为了防止引入更多问题放弃） -->
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-s3</artifactId>
+                <version>${aws-java-sdk-s3.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
@@ -186,11 +218,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>${springboot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
             <version>${springboot.version}</version>
         </dependency>
         <dependency>

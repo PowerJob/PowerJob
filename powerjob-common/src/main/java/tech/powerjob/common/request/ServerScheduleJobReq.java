@@ -97,4 +97,9 @@ public class ServerScheduleJobReq implements PowerSerializable {
      * 日志配置
      */
     private String logConfig;
+
+    /**
+     * 高级运行时配置
+     */
+    private String advancedRuntimeConfig;
 }

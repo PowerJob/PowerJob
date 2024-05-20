@@ -1,6 +1,10 @@
 # [English](./README.md) | 简体中文
 
 <p align="center">
+🏮PowerJob 全体成员祝大家龙年腾飞，新的一年身体健康，万事如意，阖家欢乐，幸福安康！🏮
+</p>
+
+<p align="center">
 <img src="https://raw.githubusercontent.com/KFCFans/PowerJob/master/others/images/logo.png" alt="PowerJob" title="PowerJob" width="557"/>
 </p>
 
@@ -20,7 +24,7 @@ PowerJob（原OhMyScheduler）是全新一代分布式调度与计算框架，�
 * DAG工作流支持：支持在线配置任务依赖关系，可视化得对任务进行编排，同时还支持上下游任务间的数据传递
 * 执行器支持广泛：支持Spring Bean、内置/外置Java类、Shell、Python等处理器，应用范围广。
 * 运维便捷：支持在线日志功能，执行器产生的日志可以在前端控制台页面实时显示，降低debug成本，极大地提高开发效率。
-* 依赖精简：最小仅依赖关系型数据库（MySQL/Oracle/MS SQLServer...），扩展依赖为MongoDB（用于存储庞大的在线日志）。
+* 依赖精简：最小仅依赖关系型数据库（MySQL/Oracle/MS SQLServer...）。
 * 高可用&高性能：调度服务器经过精心设计，一改其他调度框架基于数据库锁的策略，实现了无锁化调度。部署多个调度服务器可以同时实现高可用和性能的提升（支持无限的水平扩展）。
 * 故障转移与恢复：任务执行失败后，可根据配置的重试策略完成重试，只要执行器集群有足够的计算节点，任务就能顺利完成。
 
@@ -69,4 +73,6 @@ PowerJob 的设计目标为企业级的分布式任务调度平台，即成为�
 * 欢迎共同参与本项目的贡献，PR和Issue都大大滴欢迎（求求了）～
 * 觉得还不错的话，可以点个Star支持一下哦～ =￣ω￣=
 * 联系方式@KFCFans -> `tengjiqi@gmail.com`
-* 用户交流QQ群（因广告信息泛滥，加群需要验证，请认真填写申请原因）：487453839
+* 用户交流QQ群（因广告信息泛滥，加群需要验证，请认真填写申请原因）：
+  * 一群（已满）：487453839
+  * 二群：834937813

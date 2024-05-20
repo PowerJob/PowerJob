@@ -9,6 +9,7 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.AlarmConfig;
+import tech.powerjob.common.model.JobAdvancedRuntimeConfig;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.model.LogConfig;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
@@ -40,6 +41,7 @@ public class JobConverter {
         saveJobInfoRequest.setLifeCycle(LifeCycle.parse(jobInfoDO.getLifecycle()));
         saveJobInfoRequest.setAlarmConfig(JsonUtils.parseObjectIgnoreException(jobInfoDO.getAlarmConfig(), AlarmConfig.class));
         saveJobInfoRequest.setLogConfig(JsonUtils.parseObjectIgnoreException(jobInfoDO.getLogConfig(), LogConfig.class));
+        saveJobInfoRequest.setAdvancedRuntimeConfig(JsonUtils.parseObjectIgnoreException(jobInfoDO.getAdvancedRuntimeConfig(), JobAdvancedRuntimeConfig.class));
         return saveJobInfoRequest;
     }
 
@@ -48,6 +50,14 @@ public class JobConverter {
         BeanUtils.copyProperties(jobInfoDO, jobInfoDTO);
         if (jobInfoDO.getAlarmConfig() != null) {
             jobInfoDTO.setAlarmConfig(JSON.parseObject(jobInfoDO.getAlarmConfig(), AlarmConfig.class));
+        }
+
+        if (StringUtils.isNotEmpty(jobInfoDO.getLogConfig())) {
+            jobInfoDTO.setLogConfig(JSON.parseObject(jobInfoDO.getLogConfig(), LogConfig.class));
+        }
+
+        if (StringUtils.isNotEmpty(jobInfoDO.getAdvancedRuntimeConfig())) {
+            jobInfoDTO.setAdvancedRuntimeConfig(JSON.parseObject(jobInfoDO.getAdvancedRuntimeConfig(), JobAdvancedRuntimeConfig.class));
         }
         return jobInfoDTO;
     }

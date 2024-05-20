@@ -260,10 +260,12 @@ public class InstanceService {
     /**
      * 获取任务实例的详细运行详细
      *
+     * @param appId 用于远程 server 路由，勿删！
      * @param instanceId 任务实例ID
      * @return 详细运行状态
      */
-    public InstanceDetail getInstanceDetail(Long instanceId) {
+    @DesignateServer
+    public InstanceDetail getInstanceDetail(Long appId, Long instanceId, String customQuery) {
 
         InstanceInfoDO instanceInfoDO = fetchInstanceInfo(instanceId);
 
@@ -281,7 +283,7 @@ public class InstanceService {
         Optional<WorkerInfo> workerInfoOpt = workerClusterQueryService.getWorkerInfoByAddress(instanceInfoDO.getAppId(), instanceInfoDO.getTaskTrackerAddress());
         if (workerInfoOpt.isPresent()) {
             WorkerInfo workerInfo = workerInfoOpt.get();
-            ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId);
+            ServerQueryInstanceStatusReq req = new ServerQueryInstanceStatusReq(instanceId, customQuery);
             try {
                 final URL url = ServerURLFactory.queryInstance2Worker(workerInfo.getAddress());
                 AskResponse askResponse = transportService.ask(workerInfo.getProtocol(), url, req, AskResponse.class)

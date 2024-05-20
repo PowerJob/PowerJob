@@ -20,6 +20,28 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
+    <!-- 性能测试专用，输出到本地文件，防止日志 IO 本身成为瓶颈 -->
+    <appender name="PERFORMANCE_TEST_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${user.home}/powerjob/worker/test/logs/performance_test.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}|%thread|%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${user.home}/powerjob/worker/test/logs/performance_test.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+    </appender>
+    <appender name="ASYNC_PERFORMANCE_TEST_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="PERFORMANCE_TEST_APPENDER"/>
+    </appender>
+    <logger name="PERFORMANCE_TEST_LOGGER" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_PERFORMANCE_TEST_APPENDER"/>
+    </logger>
+
     <!-- 控制台输出日志级别 -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

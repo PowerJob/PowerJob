@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 640M
+          memory: 768M
     restart: always
     container_name: powerjob-mysql
     image: powerjob/powerjob-mysql:test_env
@@ -20,38 +20,38 @@ services:
     volumes:
       - ~/powerjob-data/powerjob-mysql:/var/lib/mysql
     command: --lower_case_table_names=1
-  powerjob-mongodb:
-    image: mongo:latest
-    container_name: powerjob-mongodb
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: "root"
-      MONGO_INITDB_ROOT_PASSWORD: "No1Bug2Please3!"
-      MONGO_INITDB_DATABASE: "powerjob_daily"
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./testenv/init_mongodb.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      - ~/powerjob-data/powerjob-mongodb:/data/db
+#  powerjob-mongodb:
+#    image: mongo:latest
+#    container_name: powerjob-mongodb
+#    restart: always
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 256M
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: "root"
+#      MONGO_INITDB_ROOT_PASSWORD: "No1Bug2Please3!"
+#      MONGO_INITDB_DATABASE: "powerjob_daily"
+#    ports:
+#      - "27017:27017"
+#    volumes:
+#      - ./testenv/init_mongodb.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+#      - ~/powerjob-data/powerjob-mongodb:/data/db
   powerjob-server:
     build:
       context: ../../powerjob-server/docker
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 896M
     container_name: powerjob-server
     image: powerjob/powerjob-server:test_env
     restart: always
     depends_on:
       - powerjob-mysql
-      - powerjob-mongodb
+#      - powerjob-mongodb
     environment:
-      PARAMS: "--spring.profiles.active=product --oms.mongodb.enable=true --spring.data.mongodb.uri=mongodb://zqq:No1Bug2Please3!@powerjob-mongodb/powerjob_daily?retryWrites=true&w=majority --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+      PARAMS: "--spring.profiles.active=daily --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai --oms.storage.dfs.mysql_series.url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
       JVMOPTIONS: "-server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log"
     ports:
       - "7700:7700"

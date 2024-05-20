@@ -17,4 +17,11 @@ import tech.powerjob.common.PowerSerializable;
 public class ServerQueryInstanceStatusReq implements PowerSerializable {
     private Long instanceId;
 
+    /**
+     * 自定义查询
+     * 针对高阶用户，直接开放底库查询，便于运维和排查问题
+     * 此处只传递查询条件，前置拼接 select *，后置拼接 limit
+     */
+    private String customQuery;
+
 }

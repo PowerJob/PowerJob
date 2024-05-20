@@ -139,7 +139,14 @@ public class JobInfoDO {
      */
     private String extra;
 
+    /**
+     * 派发策略
+     */
     private Integer dispatchStrategy;
+    /**
+     * 某种派发策略背后的具体配置，值取决于 dispatchStrategy
+     */
+    private String dispatchStrategyConfig;
 
     private String lifecycle;
     /**
@@ -156,4 +163,10 @@ public class JobInfoDO {
      * 日志配置，包括日志级别、日志方式等配置信息
      */
     private String logConfig;
+
+    /**
+     * 高级运行时配置
+     * 不需要用于索引的高级运行参数，后续统一存储到这里，便于版本升级（尽可能保证数据库表结构稳定）
+     */
+    private String advancedRuntimeConfig;
 }

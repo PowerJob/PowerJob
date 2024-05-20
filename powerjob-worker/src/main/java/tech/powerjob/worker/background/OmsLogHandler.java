@@ -1,5 +1,6 @@
 package tech.powerjob.worker.background;
 
+import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.enums.LogLevel;
 import tech.powerjob.common.model.InstanceLogContent;
 import tech.powerjob.common.request.WorkerLogReportReq;
@@ -8,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.common.utils.TransportUtils;
 
 import java.util.List;
@@ -68,10 +70,10 @@ public class OmsLogHandler {
 
 
 
-    private class LogSubmitter implements Runnable {
+    private class LogSubmitter extends SafeRunnable {
 
         @Override
-        public void run() {
+        public void run0() {
 
             boolean lockResult = reportLock.tryLock();
             if (!lockResult) {

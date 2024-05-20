@@ -3,12 +3,10 @@ package tech.powerjob.worker;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.PowerJobDKey;
+import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.HttpUtils;
-import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.utils.PropertyUtils;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.ServerType;
 import tech.powerjob.remote.framework.engine.EngineConfig;
@@ -19,13 +17,16 @@ import tech.powerjob.worker.actors.ProcessorTrackerActor;
 import tech.powerjob.worker.actors.TaskTrackerActor;
 import tech.powerjob.worker.actors.WorkerActor;
 import tech.powerjob.worker.background.OmsLogHandler;
-import tech.powerjob.worker.background.ServerDiscoveryService;
 import tech.powerjob.worker.background.WorkerHealthReporter;
+import tech.powerjob.worker.background.discovery.PowerJobServerDiscoveryService;
+import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.common.PowerBannerPrinter;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.worker.common.utils.WorkerNetUtils;
 import tech.powerjob.worker.core.executor.ExecutorManager;
 import tech.powerjob.worker.extension.processor.ProcessorFactory;
+import tech.powerjob.worker.persistence.DbTaskPersistenceService;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
 import tech.powerjob.worker.processor.PowerJobProcessorLoader;
 import tech.powerjob.worker.processor.ProcessorLoader;
@@ -34,7 +35,6 @@ import tech.powerjob.worker.processor.impl.JarContainerProcessorFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -70,18 +70,25 @@ public class PowerJobWorker {
         PowerJobWorkerConfig config = workerRuntime.getWorkerConfig();
         CommonUtils.requireNonNull(config, "can't find PowerJobWorkerConfig, please set PowerJobWorkerConfig first");
 
+        ServerDiscoveryService serverDiscoveryService = new PowerJobServerDiscoveryService(config);
+        workerRuntime.setServerDiscoveryService(serverDiscoveryService);
+
         try {
             PowerBannerPrinter.print();
-            // 校验 appName
-            if (!config.isEnableTestMode()) {
-                assertAppName();
-            } else {
-                log.warn("[PowerJobWorker] using TestMode now, it's dangerous if this is production env.");
-            }
 
-            // 初始化元数据
-            String workerAddress = NetUtils.getLocalHost() + ":" + config.getPort();
-            workerRuntime.setWorkerAddress(workerAddress);
+            // 在发第一个请求之前，完成真正 IP 的解析
+            int localBindPort = config.getPort();
+            String localBindIp = WorkerNetUtils.parseLocalBindIp(localBindPort, config.getServerAddress());
+
+            // 校验 appName
+            WorkerAppInfo appInfo = serverDiscoveryService.assertApp();
+            workerRuntime.setAppInfo(appInfo);
+
+            // 初始化网络数据，区别对待上报地址和本机绑定地址（对外统一使用上报地址）
+            String externalIp = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_ADDRESS, localBindIp);
+            String externalPort = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_PORT, String.valueOf(localBindPort));
+            log.info("[PowerJobWorker] [ADDRESS_INFO] localBindIp: {}, localBindPort: {}; externalIp: {}, externalPort: {}", localBindIp, localBindPort, externalIp, externalPort);
+            workerRuntime.setWorkerAddress(Address.toFullAddress(externalIp, Integer.parseInt(externalPort)));
 
             // 初始化 线程池
             final ExecutorManager executorManager = new ExecutorManager(workerRuntime.getWorkerConfig());
@@ -100,26 +107,23 @@ public class PowerJobWorker {
             EngineConfig engineConfig = new EngineConfig()
                     .setType(config.getProtocol().name())
                     .setServerType(ServerType.WORKER)
-                    .setBindAddress(new Address().setHost(NetUtils.getLocalHost()).setPort(config.getPort()))
+                    .setBindAddress(new Address().setHost(localBindIp).setPort(localBindPort))
                     .setActorList(Lists.newArrayList(taskTrackerActor, processorTrackerActor, workerActor));
 
             EngineOutput engineOutput = remoteEngine.start(engineConfig);
             workerRuntime.setTransporter(engineOutput.getTransporter());
 
             // 连接 server
-            ServerDiscoveryService serverDiscoveryService = new ServerDiscoveryService(workerRuntime.getAppId(), workerRuntime.getWorkerConfig());
-
-            serverDiscoveryService.start(workerRuntime.getExecutorManager().getCoreExecutor());
-            workerRuntime.setServerDiscoveryService(serverDiscoveryService);
+            serverDiscoveryService.timingCheck(workerRuntime.getExecutorManager().getCoreExecutor());
 
             log.info("[PowerJobWorker] PowerJobRemoteEngine initialized successfully.");
 
             // 初始化日志系统
-            OmsLogHandler omsLogHandler = new OmsLogHandler(workerAddress, workerRuntime.getTransporter(), serverDiscoveryService);
+            OmsLogHandler omsLogHandler = new OmsLogHandler(workerRuntime.getWorkerAddress(), workerRuntime.getTransporter(), serverDiscoveryService);
             workerRuntime.setOmsLogHandler(omsLogHandler);
 
             // 初始化存储
-            TaskPersistenceService taskPersistenceService = new TaskPersistenceService(workerRuntime.getWorkerConfig().getStoreStrategy());
+            TaskPersistenceService taskPersistenceService = new DbTaskPersistenceService(workerRuntime.getWorkerConfig().getStoreStrategy());
             taskPersistenceService.init();
             workerRuntime.setTaskPersistenceService(taskPersistenceService);
             log.info("[PowerJobWorker] local storage initialized successfully.");
@@ -134,38 +138,6 @@ public class PowerJobWorker {
             log.error("[PowerJobWorker] initialize PowerJobWorker failed, using {}.", stopwatch, e);
             throw e;
         }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private void assertAppName() {
-
-        PowerJobWorkerConfig config = workerRuntime.getWorkerConfig();
-        String appName = config.getAppName();
-        Objects.requireNonNull(appName, "appName can't be empty!");
-
-        String url = "http://%s/server/assert?appName=%s";
-        for (String server : config.getServerAddress()) {
-            String realUrl = String.format(url, server, appName);
-            try {
-                String resultDTOStr = CommonUtils.executeWithRetry0(() -> HttpUtils.get(realUrl));
-                ResultDTO resultDTO = JsonUtils.parseObject(resultDTOStr, ResultDTO.class);
-                if (resultDTO.isSuccess()) {
-                    Long appId = Long.valueOf(resultDTO.getData().toString());
-                    log.info("[PowerJobWorker] assert appName({}) succeed, the appId for this application is {}.", appName, appId);
-                    workerRuntime.setAppId(appId);
-                    return;
-                }else {
-                    log.error("[PowerJobWorker] assert appName failed, this appName is invalid, please register the appName {} first.", appName);
-                    throw new PowerJobException(resultDTO.getMessage());
-                }
-            }catch (PowerJobException oe) {
-                throw oe;
-            }catch (Exception ignore) {
-                log.warn("[PowerJobWorker] assert appName by url({}) failed, please check the server address.", realUrl);
-            }
-        }
-        log.error("[PowerJobWorker] no available server in {}.", config.getServerAddress());
-        throw new PowerJobException("no server available!");
     }
 
     private ProcessorLoader buildProcessorLoader(WorkerRuntime runtime) {

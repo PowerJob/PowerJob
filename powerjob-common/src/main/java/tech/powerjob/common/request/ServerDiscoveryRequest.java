@@ -30,7 +30,10 @@ public class ServerDiscoveryRequest implements Serializable {
 
     public Map<String, Object> toMap() {
         Map<String, Object> ret = new HashMap<>();
-        ret.put("appId", appId);
+        // testMode 下 appId 可能为空，此处不判断会导致 testMode 无法启动 #580
+        if (appId != null) {
+            ret.put("appId", appId);
+        }
         ret.put("protocol", protocol);
         if (StringUtils.isNotEmpty(currentServer)) {
             ret.put("currentServer", currentServer);

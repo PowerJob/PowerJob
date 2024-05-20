@@ -14,6 +14,7 @@ import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -22,6 +23,7 @@ import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.LRUCache;
 import tech.powerjob.worker.common.utils.TransportUtils;
+import tech.powerjob.worker.core.processor.TaskResult;
 import tech.powerjob.worker.persistence.TaskDO;
 
 import java.util.*;
@@ -124,7 +126,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
     }
 
     @Override
-    public InstanceDetail fetchRunningStatus() {
+    public InstanceDetail fetchRunningStatus(ServerQueryInstanceStatusReq req) {
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
         detail.setActualTriggerTime(createTime);
@@ -203,7 +205,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
             }
 
             // 必须先持久化，持久化成功才能 dispatch，否则会导致后续报错（因为DB中没有这个taskId对应的记录，会各种报错）
-            if (!taskPersistenceService.save(newRootTask)) {
+            if (!taskPersistenceService.batchSave(Lists.newArrayList(newRootTask))) {
                 log.error("[FQTaskTracker-{}] Launcher create new root task failed.", instanceId);
                 processFinishedSubInstance(subInstanceId, false, "LAUNCH_FAILED");
                 return;
@@ -298,9 +300,8 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
                         // STANDALONE 代表任务确实已经执行完毕了
                         case STANDALONE:
                             // 查询数据库获取结果（STANDALONE每个SubInstance只会有一条Task记录）
-                            TaskDO resultTask = taskPersistenceService.getAllTask(instanceId, subInstanceId).get(0);
-                            boolean success = resultTask.getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
-                            onFinished(subInstanceId, success, resultTask.getResult(), iterator);
+                            TaskResult resultTask = taskPersistenceService.getAllTaskResult(instanceId, subInstanceId).get(0);
+                            onFinished(subInstanceId, resultTask.isSuccess(), resultTask.getResult(), iterator);
                             continue;
                             // MAP 不关心结果，最简单
                         case MAP:

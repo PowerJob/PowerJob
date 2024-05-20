@@ -1,16 +1,21 @@
 package tech.powerjob.common.serialize;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import tech.powerjob.common.exception.ImpossibleException;
 import tech.powerjob.common.exception.PowerJobException;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * JSON工具类
@@ -25,13 +30,26 @@ public class JsonUtils {
             .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
             .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
             .configure(JsonParser.Feature.IGNORE_UNDEFINED, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .build();
+
+    static {
+        JSON_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    private static final TypeReference<Map<String, Object>>  MAP_TYPE_REFERENCE  = new TypeReference<Map<String, Object>> () {};
 
     private JsonUtils(){
 
     }
 
     public static String toJSONString(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof String) {
+            return (String) obj;
+        }
         try {
             return JSON_MAPPER.writeValueAsString(obj);
         }catch (Exception e) {
@@ -41,6 +59,9 @@ public class JsonUtils {
     }
 
     public static String toJSONStringUnsafe(Object obj) {
+        if (obj instanceof String) {
+            return (String) obj;
+        }
         try {
             return JSON_MAPPER.writeValueAsString(obj);
         }catch (Exception e) {
@@ -59,6 +80,18 @@ public class JsonUtils {
 
     public static <T> T parseObject(String json, Class<T> clz) throws JsonProcessingException {
         return JSON_MAPPER.readValue(json, clz);
+    }
+
+    public static Map<String, Object> parseMap(String json) {
+        if (StringUtils.isEmpty(json)) {
+            return new HashMap<>();
+        }
+        try {
+            return JSON_MAPPER.readValue(json, MAP_TYPE_REFERENCE);
+        } catch (Exception e) {
+            ExceptionUtils.rethrow(e);
+        }
+        throw new ImpossibleException();
     }
 
     public static <T> T parseObject(byte[] b, Class<T> clz) throws IOException {

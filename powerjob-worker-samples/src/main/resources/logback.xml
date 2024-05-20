@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+    <!-- 不同 worker 区分不同日志 参考参数： spring.profiles.active=local log.name=worker1 -->
+    <springProperty name="LOG_NAME" source="log.name" defaultValue="INFO"/>
+    <property name="LOG_PATH" value="${user.home}/powerjob-worker-samples/${LOG_NAME}/logs"/>
+
     <!-- %m输出的信息,%p日志级别,%t线程名,%d日期,%c类的全名,%i索引【从数字0开始递增】,,, -->
     <!-- appender是configuration的子节点，是负责写日志的组件。 -->
     <!-- ConsoleAppender：把日志输出到控制台 -->
@@ -12,16 +17,56 @@
         </encoder>
     </appender>
 
-    <logger name="com.zaxxer.hikari" level="INFO">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+    <springProfile name="default">
+        <!-- 默认环境时激活，全部输出到控制台 -->
+        <logger name="com.zaxxer.hikari" level="INFO">
+            <appender-ref ref="STDOUT"/>
+        </logger>
 
-    <logger name="tech.powerjob" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+        <logger name="tech.powerjob" level="DEBUG" additivity="false">
+            <appender-ref ref="STDOUT"/>
+        </logger>
+        <!-- 控制台输出日志级别 -->
+        <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+        </root>
+    </springProfile>
 
-    <!-- 控制台输出日志级别 -->
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    <springProfile name="local">
+        <!-- 传入 local 的时候，全部使用本地日志 -->
+
+        <appender name="APPLICATION_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${LOG_PATH}/application.log</file>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <!-- 每天滚动日志文件 -->
+                <fileNamePattern>${LOG_PATH}/application.log.%d{yyyy-MM-dd}.%i</fileNamePattern>
+                <!-- 日志文件总大小限制为3GB -->
+                <maxFileSize>500MB</maxFileSize>
+                <!-- 设置最大历史记录为10天 -->
+                <maxHistory>7</maxHistory>
+                <!-- 设置总大小限制 -->
+                <totalSizeCap>3GB</totalSizeCap>
+            </rollingPolicy>
+        </appender>
+
+        <!-- 异步输出 -->
+        <appender name="ASYNC_APPLICATION_APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+            <!-- 不丢失日志，默认的，如果队列的 80% 已满，则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+            <discardingThreshold>0</discardingThreshold>
+            <!-- 更改默认的队列的深度，该值会影响性能，默认值为256 -->
+            <queueSize>256</queueSize>
+            <!-- 添加附加的appender，最多只能添加一个 -->
+            <appender-ref ref="APPLICATION_APPENDER"/>
+        </appender>
+
+        <!-- 控制台输出日志级别 -->
+        <root level="INFO">
+            <appender-ref ref="ASYNC_APPLICATION_APPENDER"/>
+        </root>
+    </springProfile>
+
 </configuration>

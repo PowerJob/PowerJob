@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.exception.ImpossibleException;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.model.GitRepoInfo;
 import tech.powerjob.common.request.ServerDeployContainerRequest;
@@ -40,9 +41,10 @@ import tech.powerjob.server.common.constants.SwitchableStatus;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.extension.LockService;
-import tech.powerjob.server.persistence.mongodb.GridFsManager;
+import tech.powerjob.server.extension.dfs.*;
 import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
+import tech.powerjob.server.persistence.storage.Constants;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.transporter.TransportService;
@@ -74,7 +76,7 @@ public class ContainerService {
     @Resource
     private ContainerInfoRepository containerInfoRepository;
     @Resource
-    private GridFsManager gridFsManager;
+    private DFsService dFsService;
     @Resource
     private TransportService transportService;
 
@@ -149,6 +151,8 @@ public class ContainerService {
      */
     public String uploadContainerJarFile(MultipartFile file) throws IOException {
 
+        log.info("[ContainerService] start to uploadContainerJarFile, fileName={},size={}", file.getName(), file.getSize());
+
         String workerDirStr = OmsFileUtils.genTemporaryWorkPath();
         String tmpFileStr = workerDirStr + "tmp.jar";
 
@@ -164,8 +168,10 @@ public class ContainerService {
             String md5 = OmsFileUtils.md5(tmpFile);
             String fileName = genContainerJarName(md5);
 
-            // 上传到 mongoDB，这兄弟耗时也有点小严重，导致这个接口整体比较慢...不过也没必要开线程去处理
-            gridFsManager.store(tmpFile, GridFsManager.CONTAINER_BUCKET, fileName);
+            // 上传到 DFS，这兄弟耗时也有点小严重，导致这个接口整体比较慢...不过也没必要开线程去处理
+            FileLocation fl = new FileLocation().setBucket(Constants.CONTAINER_BUCKET).setName(fileName);
+            StoreRequest storeRequest = new StoreRequest().setLocalFile(tmpFile).setFileLocation(fl);
+            dFsService.store(storeRequest);
 
             // 将文件拷贝到正确的路径
             String finalFileStr = OmsFileUtils.genContainerJarPath() + fileName;
@@ -175,9 +181,14 @@ public class ContainerService {
             }
             FileUtils.moveFile(tmpFile, finalFile);
 
+            log.info("[ContainerService] uploadContainerJarFile successfully,md5={}", md5);
             return md5;
 
-        }finally {
+        } catch (Throwable t) {
+            log.error("[ContainerService] uploadContainerJarFile failed!", t);
+            ExceptionUtils.rethrow(t);
+            throw new ImpossibleException();
+        } finally {
             CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(workerDir));
         }
     }
@@ -196,9 +207,17 @@ public class ContainerService {
         if (localFile.exists()) {
             return localFile;
         }
-        if (gridFsManager.available()) {
-            downloadJarFromGridFS(fileName, localFile);
+
+        FileLocation fileLocation = new FileLocation().setBucket(Constants.CONTAINER_BUCKET).setName(fileName);
+        try {
+            Optional<FileMeta> fileMetaOpt = dFsService.fetchFileMeta(fileLocation);
+            if (fileMetaOpt.isPresent()) {
+                dFsService.download(new DownloadRequest().setFileLocation(fileLocation).setTarget(localFile));
+            }
+        } catch (Exception e) {
+            log.warn("[ContainerService] fetchContainerJarFile from dsf failed, version: {}", version, e);
         }
+
         return localFile;
     }
 
@@ -298,40 +317,39 @@ public class ContainerService {
                 .collect(Collectors.toSet());
 
         Set<String> deployedList = Sets.newLinkedHashSet();
-        List<String> unDeployedList = Lists.newLinkedList();
-        Multimap<String, String> version2Address = ArrayListMultimap.create();
+        Multimap<String, DeployedContainerInfo> version2DeployedContainerInfoList = ArrayListMultimap.create();
         infoList.forEach(info -> {
             String targetWorkerAddress = info.getWorkerAddress();
             if (aliveWorkers.contains(targetWorkerAddress)) {
                 deployedList.add(targetWorkerAddress);
-                version2Address.put(info.getVersion(), targetWorkerAddress);
-            }else {
-                unDeployedList.add(targetWorkerAddress);
+                version2DeployedContainerInfoList.put(info.getVersion(), info);
             }
         });
 
+        Set<String> unDeployedList = Sets.newHashSet(aliveWorkers);
+        unDeployedList.removeAll(deployedList);
+
         StringBuilder sb = new StringBuilder("========== DeployedInfo ==========").append(System.lineSeparator());
+
         // 集群分裂，各worker版本不统一，问题很大
-        if (version2Address.keySet().size() > 1) {
+        if (version2DeployedContainerInfoList.keySet().size() > 1) {
             sb.append("WARN: there exists multi version container now, please redeploy to fix this problem").append(System.lineSeparator());
-            sb.append("divisive version ==> ").append(System.lineSeparator());
-            version2Address.forEach((v, addressList) -> {
-                sb.append("version: ").append(v).append(System.lineSeparator());
-                sb.append(addressList);
-            });
-            sb.append(System.lineSeparator());
         }
+
+        sb.append("divisive version ==> ").append(System.lineSeparator());
+        version2DeployedContainerInfoList.asMap().forEach((version, deployedContainerInfos) -> {
+            sb.append("[version] ").append(version).append(System.lineSeparator());
+            deployedContainerInfos.forEach(deployedContainerInfo -> sb.append(String.format("Address: %s, DeployedTime: %s", deployedContainerInfo.getWorkerAddress(), CommonUtils.formatTime(deployedContainerInfo.getDeployedTime()))).append(System.lineSeparator()));
+        });
+
         // 当前在线未部署机器
         if (!CollectionUtils.isEmpty(unDeployedList)) {
-            sb.append("WARN: there exists unDeployed worker(OhMyScheduler will auto fix when some job need to process)").append(System.lineSeparator());
-            sb.append("unDeployed worker list ==> ").append(System.lineSeparator());
+            sb.append("WARN: there exists unDeployed worker(PowerJob will auto fix when some job need to process)").append(System.lineSeparator());
+            sb.append("unDeployed worker list ==> ").append(unDeployedList).append(System.lineSeparator());
         }
-        // 当前部署机器
-        sb.append("deployed worker list ==> ").append(System.lineSeparator());
+
         if (CollectionUtils.isEmpty(deployedList)) {
-            sb.append("no worker deployed now~");
-        }else {
-            sb.append(deployedList);
+            sb.append("no worker deployed this container now~");
         }
 
         return sb.toString();
@@ -404,12 +422,14 @@ public class ContainerService {
 
                 String jarFileName = genContainerJarName(container.getVersion());
 
-                if (!gridFsManager.exists(GridFsManager.CONTAINER_BUCKET, jarFileName)) {
-                    remote.sendText("SYSTEM: can't find the jar resource in remote, maybe this is a new version, start to upload new version.");
-                    gridFsManager.store(jarWithDependency, GridFsManager.CONTAINER_BUCKET, jarFileName);
-                    remote.sendText("SYSTEM: upload to GridFS successfully~");
-                }else {
+                FileLocation dfsFL = new FileLocation().setBucket(Constants.CONTAINER_BUCKET).setName(jarFileName);
+                Optional<FileMeta> dfsMetaOpt = dFsService.fetchFileMeta(dfsFL);
+                if (dfsMetaOpt.isPresent()) {
                     remote.sendText("SYSTEM: find the jar resource in remote successfully, so it's no need to upload anymore.");
+                } else {
+                    remote.sendText("SYSTEM: can't find the jar resource in remote, maybe this is a new version, start to upload new version.");
+                    dFsService.store(new StoreRequest().setFileLocation(dfsFL).setLocalFile(jarWithDependency));
+                    remote.sendText("SYSTEM: upload to GridFS successfully~");
                 }
 
                 // 将文件从临时工作目录移动到正式目录
@@ -455,13 +475,19 @@ public class ContainerService {
             if (targetFile.exists()) {
                 return;
             }
-            if (!gridFsManager.exists(GridFsManager.CONTAINER_BUCKET, mongoFileName)) {
-                log.warn("[ContainerService] can't find container's jar file({}) in gridFS.", mongoFileName);
-                return;
-            }
+
             try {
+
+                FileLocation dfsFL = new FileLocation().setBucket(Constants.CONTAINER_BUCKET).setName(mongoFileName);
+                Optional<FileMeta> dfsMetaOpt = dFsService.fetchFileMeta(dfsFL);
+                if (!dfsMetaOpt.isPresent()) {
+                    log.warn("[ContainerService] can't find container's jar file({}) in gridFS.", mongoFileName);
+                    return;
+                }
+
                 FileUtils.forceMkdirParent(targetFile);
-                gridFsManager.download(targetFile, GridFsManager.CONTAINER_BUCKET, mongoFileName);
+
+                dFsService.download(new DownloadRequest().setTarget(targetFile).setFileLocation(dfsFL));
             }catch (Exception e) {
                 CommonUtils.executeIgnoreException(() -> FileUtils.forceDelete(targetFile));
                 ExceptionUtils.rethrow(e);

@@ -5,7 +5,6 @@ import java.net.NetworkInterface;
 /**
  * 通过 JVM 启动参数传入的配置信息
  *
- *
  * @author tjq
  * @since 2020/8/8
  */
@@ -16,7 +15,15 @@ public class PowerJobDKey {
      */
     public static final String PREFERRED_NETWORK_INTERFACE = "powerjob.network.interface.preferred";
 
+    /**
+     * 绑定地址，一般填写本机网卡地址
+     */
     public static final String BIND_LOCAL_ADDRESS = "powerjob.network.local.address";
+    /**
+     * 外部地址，可选，默认与绑定地址相同。当存在 NAT 等场景时可通过单独传递外部地址来实现通讯
+     */
+    public static final String NT_EXTERNAL_ADDRESS = "powerjob.network.external.address";
+    public static final String NT_EXTERNAL_PORT = "powerjob.network.external.port";
 
     /**
      * Java regular expressions for network interfaces that will be ignored.
@@ -47,5 +54,14 @@ public class PowerJobDKey {
      * ms
      */
     public static final String FREQUENCY_JOB_MAX_INTERVAL = "powerjob.server.frequency-job.max-interval";
+
+    /* ******************* 不太可能有人用的参数，主要方便内部测试 ******************* */
+
+    /**
+     * 最大活跃任务数量，超出部分 SWAP 到磁盘以提升性能
+     */
+    public static final String WORKER_RUNTIME_SWAP_MAX_ACTIVE_TASK_NUM = "powerjob.worker.swap.max-active-task-num";
+
+    public static final String WORKER_RUNTIME_SWAP_TASK_SCHEDULE_INTERVAL_MS = "powerjob.worker.swap.scan-interval";
 
 }

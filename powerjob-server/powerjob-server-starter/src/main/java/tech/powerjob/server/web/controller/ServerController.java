@@ -7,10 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.common.utils.net.PingPongUtils;
 import tech.powerjob.server.common.aware.ServerInfoAware;
 import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
@@ -50,15 +51,36 @@ public class ServerController implements ServerInfoAware {
                 orElseGet(() -> ResultDTO.failed(String.format("app(%s) is not registered! Please register the app in oms-console first.", appName)));
     }
 
+    @GetMapping("/assertV2")
+    public ResultDTO<WorkerAppInfo> assertAppNameV2(String appName) {
+        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
+        return appInfoOpt.map(appInfoDO -> {
+                    WorkerAppInfo workerAppInfo = new WorkerAppInfo().setAppId(appInfoDO.getId());
+                    return ResultDTO.success(workerAppInfo);
+                }).
+                orElseGet(() -> ResultDTO.failed(String.format("app(%s) is not registered! Please register the app in oms-console first.", appName)));
+    }
+
     @GetMapping("/acquire")
     public ResultDTO<String> acquireServer(ServerDiscoveryRequest request) {
         return ResultDTO.success(serverElectionService.elect(request));
     }
 
+    @GetMapping("/checkConnectivity")
+    public ResultDTO<Boolean> checkConnectivity(String targetIp, Integer targetPort) {
+        try {
+            boolean ret = PingPongUtils.checkConnectivity(targetIp, targetPort);
+            return ResultDTO.success(ret);
+        } catch (Throwable t) {
+            return ResultDTO.failed(t);
+        }
+    }
+
+
     @GetMapping("/hello")
     public ResultDTO<JSONObject> ping(@RequestParam(required = false) boolean debug) {
         JSONObject res = new JSONObject();
-        res.put("localHost", NetUtils.getLocalHost());
+        res.put("localHost", serverInfo.getIp());
         res.put("serverInfo", serverInfo);
         res.put("serverTime", CommonUtils.formatTime(System.currentTimeMillis()));
         res.put("serverTimeTs", System.currentTimeMillis());

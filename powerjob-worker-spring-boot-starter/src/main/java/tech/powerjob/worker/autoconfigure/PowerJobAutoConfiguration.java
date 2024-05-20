@@ -72,7 +72,7 @@ public class PowerJobAutoConfiguration {
          * When enabledTestMode is set as true, PowerJob-worker no longer connects to PowerJob-server
          * or validate appName.
          */
-        config.setEnableTestMode(worker.isEnableTestMode());
+        config.setAllowLazyConnectServer(worker.isAllowLazyConnectServer());
         /*
          * Max length of appended workflow context . Appended workflow context value that is longer than the value will be ignored.
          */

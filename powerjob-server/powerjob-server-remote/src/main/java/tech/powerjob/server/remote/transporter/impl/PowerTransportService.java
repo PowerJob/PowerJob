@@ -120,7 +120,7 @@ public class PowerTransportService implements TransportService, InitializingBean
         log.info("[PowerTransportService] start RemoteEngine[type={},address={}] successfully", protocol, address);
 
         this.engines.add(re);
-        this.protocolName2Info.put(protocol, new ProtocolInfo(protocol, address.toFullAddress(), engineOutput.getTransporter()));
+        this.protocolName2Info.put(protocol, new ProtocolInfo(protocol, address.getHost(), address.getPort(), engineOutput.getTransporter()));
     }
 
     @Override
