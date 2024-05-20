@@ -3,6 +3,7 @@ package tech.powerjob.worker.test;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.common.utils.NetUtils;
+import tech.powerjob.worker.persistence.DbTaskPersistenceService;
 import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
 import com.google.common.collect.Lists;
@@ -21,7 +22,7 @@ import static tech.powerjob.worker.core.tracker.task.heavy.CommonTaskTracker.ROO
  */
 public class PersistenceServiceTest {
 
-    private static TaskPersistenceService taskPersistenceService = new TaskPersistenceService(StoreStrategy.DISK);
+    private static final TaskPersistenceService taskPersistenceService = new DbTaskPersistenceService(StoreStrategy.DISK);
 
     @BeforeAll
     public static void initTable() throws Exception {
@@ -40,7 +41,7 @@ public class PersistenceServiceTest {
             task.setFailedCnt(0);
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
-            task.setAddress(NetUtils.getLocalHost());
+            task.setAddress(NetUtils.getLocalHost4Test());
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
             task.setLastReportTime(System.currentTimeMillis());
@@ -54,14 +55,6 @@ public class PersistenceServiceTest {
     @AfterAll
     public static void stop() throws Exception {
         Thread.sleep(60000);
-    }
-
-    @AfterEach
-    public void listData() {
-        System.out.println("============= listData =============");
-        List<TaskDO> result = taskPersistenceService.listAll();
-        System.out.println("size: " + result.size());
-        result.forEach(System.out::println);
     }
 
 
@@ -78,7 +71,7 @@ public class PersistenceServiceTest {
             task.setFailedCnt(0);
             task.setStatus(TaskStatus.WORKER_RECEIVED.getValue());
             task.setTaskName("ROOT_TASK");
-            task.setAddress(NetUtils.getLocalHost());
+            task.setAddress(NetUtils.getLocalHost4Test());
             task.setLastModifiedTime(System.currentTimeMillis());
             task.setCreatedTime(System.currentTimeMillis());
             task.setLastReportTime(System.currentTimeMillis());
@@ -101,14 +94,14 @@ public class PersistenceServiceTest {
     @Test
     public void testUpdateLostTasks() throws Exception {
         Thread.sleep(1000);
-        boolean success = taskPersistenceService.updateLostTasks(10086L, Lists.newArrayList(NetUtils.getLocalHost()), true);
+        boolean success = taskPersistenceService.updateLostTasks(10086L, Lists.newArrayList(NetUtils.getLocalHost4Test()), true);
         System.out.println("updateLostTasks: " + success);
     }
 
     @Test
     public void testGetAllUnFinishedTaskByAddress() throws Exception {
         System.out.println("=============== testGetAllUnFinishedTaskByAddress ===============");
-        List<TaskDO> res = taskPersistenceService.getAllUnFinishedTaskByAddress(10086L, NetUtils.getLocalHost());
+        List<TaskDO> res = taskPersistenceService.getAllUnFinishedTaskByAddress(10086L, NetUtils.getLocalHost4Test());
         System.out.println(res);
     }
 

@@ -44,7 +44,7 @@ public class MailAlarmService implements Alarmable {
         SimpleMailMessage sm = new SimpleMailMessage();
         try {
             sm.setFrom(from);
-            sm.setTo(targetUserList.stream().map(AlarmTarget::getEmail).filter(Objects::nonNull).toArray(String[]::new));
+            sm.setTo(targetUserList.stream().map(AlarmTarget::getEmail).filter(Objects::nonNull).filter(email -> !email.isEmpty()).toArray(String[]::new));
             sm.setSubject(alarm.fetchTitle());
             sm.setText(alarm.fetchContent());
 

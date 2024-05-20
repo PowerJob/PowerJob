@@ -55,4 +55,13 @@ public class PowerJobDKey {
      */
     public static final String FREQUENCY_JOB_MAX_INTERVAL = "powerjob.server.frequency-job.max-interval";
 
+    /* ******************* 不太可能有人用的参数，主要方便内部测试 ******************* */
+
+    /**
+     * 最大活跃任务数量，超出部分 SWAP 到磁盘以提升性能
+     */
+    public static final String WORKER_RUNTIME_SWAP_MAX_ACTIVE_TASK_NUM = "powerjob.worker.swap.max-active-task-num";
+
+    public static final String WORKER_RUNTIME_SWAP_TASK_SCHEDULE_INTERVAL_MS = "powerjob.worker.swap.scan-interval";
+
 }

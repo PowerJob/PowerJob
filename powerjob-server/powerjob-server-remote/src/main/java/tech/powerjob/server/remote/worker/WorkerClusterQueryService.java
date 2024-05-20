@@ -3,12 +3,11 @@ package tech.powerjob.server.remote.worker;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import tech.powerjob.common.enums.DispatchStrategy;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.server.common.module.WorkerInfo;
-import tech.powerjob.server.remote.worker.filter.WorkerFilter;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
+import tech.powerjob.server.remote.worker.filter.WorkerFilter;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,23 +36,12 @@ public class WorkerClusterQueryService {
      * @param jobInfo job
      * @return worker cluster info, sorted by metrics desc
      */
-    public List<WorkerInfo> getSuitableWorkers(JobInfoDO jobInfo) {
+    public List<WorkerInfo> geAvailableWorkers(JobInfoDO jobInfo) {
 
         List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(jobInfo.getAppId()).values());
 
+        // 过滤不符合要求的机器
         workers.removeIf(workerInfo -> filterWorker(workerInfo, jobInfo));
-
-        DispatchStrategy dispatchStrategy = DispatchStrategy.of(jobInfo.getDispatchStrategy());
-        switch (dispatchStrategy) {
-            case RANDOM:
-                Collections.shuffle(workers);
-                break;
-            case HEALTH_FIRST:
-                workers.sort((o1, o2) -> o2.getSystemMetrics().calculateScore() - o1.getSystemMetrics().calculateScore());
-                break;
-            default:
-                // do nothing
-        }
 
         // 限定集群大小（0代表不限制）
         if (!workers.isEmpty() && jobInfo.getMaxWorkerCount() > 0 && workers.size() > jobInfo.getMaxWorkerCount()) {

@@ -134,7 +134,7 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
             if (!jobInfo.getAppId().equals(appId)) {
                 askResponse = AskResponse.failed("Permission Denied!");
             }else {
-                List<String> sortedAvailableWorker = workerClusterQueryService.getSuitableWorkers(jobInfo)
+                List<String> sortedAvailableWorker = workerClusterQueryService.geAvailableWorkers(jobInfo)
                         .stream().map(WorkerInfo::getAddress).collect(Collectors.toList());
                 askResponse = AskResponse.succeed(sortedAvailableWorker);
             }

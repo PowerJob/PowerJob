@@ -67,7 +67,7 @@ public class TaskDO {
      */
     private Long lastReportTime;
 
-    public String getUpdateSQL() {
+    public String fetchUpdateSQL() {
         StringBuilder sb = new StringBuilder();
 
         // address 有置空需求，仅判断 NULL

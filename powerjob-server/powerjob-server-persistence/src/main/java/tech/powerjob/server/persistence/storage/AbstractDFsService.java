@@ -6,6 +6,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.env.Environment;
+import tech.powerjob.server.common.aware.ServerInfoAware;
+import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.extension.dfs.DFsService;
 
 /**
@@ -15,8 +17,9 @@ import tech.powerjob.server.extension.dfs.DFsService;
  * @since 2023/7/28
  */
 @Slf4j
-public abstract class AbstractDFsService implements DFsService, ApplicationContextAware, DisposableBean {
+public abstract class AbstractDFsService implements DFsService, ApplicationContextAware, ServerInfoAware, DisposableBean {
 
+    protected ServerInfo serverInfo;
     protected ApplicationContext applicationContext;
 
     public AbstractDFsService() {
@@ -37,5 +40,10 @@ public abstract class AbstractDFsService implements DFsService, ApplicationConte
         this.applicationContext = applicationContext;
         log.info("[DFsService] invoke [{}]'s setApplicationContext", this.getClass().getName());
         init(applicationContext);
+    }
+
+    @Override
+    public void setServerInfo(ServerInfo serverInfo) {
+        this.serverInfo = serverInfo;
     }
 }

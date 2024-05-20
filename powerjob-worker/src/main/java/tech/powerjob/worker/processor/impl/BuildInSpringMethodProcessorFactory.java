@@ -3,6 +3,7 @@ package tech.powerjob.worker.processor.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 import tech.powerjob.worker.annotation.PowerJobHandler;
 import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.extension.processor.ProcessorDefinition;
@@ -51,6 +52,12 @@ public class BuildInSpringMethodProcessorFactory extends AbstractBuildInSpringPr
             Method[] methods = bean.getClass().getDeclaredMethods();
             for (Method method : methods) {
                 PowerJobHandler powerJob = method.getAnnotation(PowerJobHandler.class);
+
+                // CGLib代理对象拿不到该注解, 通过 AnnotationUtils.findAnnotation()可以获取到注解 by GitHub@zhangxiang0907 https://github.com/PowerJob/PowerJob/issues/770
+                if (powerJob == null) {
+                    powerJob = AnnotationUtils.findAnnotation(method, PowerJobHandler.class);
+                }
+
                 if (powerJob == null) {
                     continue;
                 }

@@ -1,10 +1,10 @@
-package tech.powerjob.worker.persistence;
+package tech.powerjob.worker.persistence.db;
 
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.core.processor.TaskResult;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.AllArgsConstructor;
+import tech.powerjob.worker.persistence.TaskDO;
 
 import java.sql.*;
 import java.util.Collection;
@@ -17,10 +17,19 @@ import java.util.Map;
  * @author tjq
  * @since 2020/3/17
  */
-@AllArgsConstructor
 public class TaskDAOImpl implements TaskDAO {
-    
+
+    private final boolean useIndex;
     private final ConnectionFactory connectionFactory;
+
+    public TaskDAOImpl(ConnectionFactory connectionFactory) {
+        this(false, connectionFactory);
+    }
+
+    public TaskDAOImpl(boolean useIndex, ConnectionFactory connectionFactory) {
+        this.useIndex = useIndex;
+        this.connectionFactory = connectionFactory;
+    }
 
     @Override
     public void initTable() throws Exception {
@@ -30,9 +39,14 @@ public class TaskDAOImpl implements TaskDAO {
         // bigint(20) 与 Java Long 取值范围完全一致
         String createTableSQL = "create table task_info (task_id varchar(255), instance_id bigint, sub_instance_id bigint, task_name varchar(255), task_content blob, address varchar(255), status int, result text, failed_cnt int, created_time bigint, last_modified_time bigint, last_report_time bigint, constraint pkey unique (instance_id, task_id))";
 
+        String createIndexSQL = "create INDEX idx_status ON task_info (status)";
+
         try (Connection conn = connectionFactory.getConnection(); Statement stat = conn.createStatement()) {
             stat.execute(delTableSQL);
             stat.execute(createTableSQL);
+            if (useIndex) {
+                stat.execute(createIndexSQL);
+            }
         }
     }
 
@@ -85,6 +99,9 @@ public class TaskDAOImpl implements TaskDAO {
         String sql = "select * from task_info where " + query.getQueryCondition();
         List<TaskDO> result = Lists.newLinkedList();
         try (Connection conn = connectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (query.isReadOnly()) {
+                conn.setReadOnly(true);
+            }
             rs = ps.executeQuery();
             while (rs.next()) {
                 result.add(convert(rs));
@@ -134,7 +151,7 @@ public class TaskDAOImpl implements TaskDAO {
     @Override
     public boolean simpleUpdate(SimpleTaskQuery condition, TaskDO updateField) throws SQLException {
         String sqlFormat = "update task_info set %s where %s";
-        String updateSQL = String.format(sqlFormat, updateField.getUpdateSQL(), condition.getQueryCondition());
+        String updateSQL = String.format(sqlFormat, updateField.fetchUpdateSQL(), condition.getQueryCondition());
         try (Connection conn = connectionFactory.getConnection(); PreparedStatement stat = conn.prepareStatement(updateSQL)) {
             stat.executeUpdate();
             return true;
