@@ -216,6 +216,9 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     private Optional<JwtBody> parseJwt(HttpServletRequest httpServletRequest) {
         // header、cookie 都能获取
         String jwtStr = HttpServletUtils.fetchFromHeader(AuthConstants.JWT_NAME, httpServletRequest);
+        if (StringUtils.isEmpty(jwtStr)) {
+            jwtStr = HttpServletUtils.fetchFromHeader(AuthConstants.OLD_JWT_NAME, httpServletRequest);
+        }
 
         /*
 
