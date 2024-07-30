@@ -13,8 +13,19 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum DispatchStrategy {
 
+    /**
+     * 健康度优先
+     */
     HEALTH_FIRST(1),
-    RANDOM(2);
+    /**
+     * 随机
+     */
+    RANDOM(2),
+    /**
+     * 指定执行
+     */
+    SPECIFY(11)
+    ;
 
     private final int v;
 

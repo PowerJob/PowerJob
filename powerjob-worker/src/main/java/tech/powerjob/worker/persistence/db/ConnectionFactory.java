@@ -1,4 +1,4 @@
-package tech.powerjob.worker.persistence;
+package tech.powerjob.worker.persistence.db;
 
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.JavaUtils;

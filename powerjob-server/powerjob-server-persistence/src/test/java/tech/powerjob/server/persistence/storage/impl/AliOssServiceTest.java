@@ -1,8 +1,8 @@
 package tech.powerjob.server.persistence.storage.impl;
 
 import com.aliyun.oss.common.utils.AuthUtils;
-import com.aliyun.oss.common.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.powerjob.server.extension.dfs.DFsService;
 
@@ -33,7 +33,7 @@ class AliOssServiceTest extends AbstractDfsServiceTest {
 
         log.info("[AliOssServiceTest] ak: {}, sk: {}", accessKeyId, secretAccessKey);
 
-        if (org.apache.commons.lang3.StringUtils.isAnyEmpty(accessKeyId, secretAccessKey)) {
+        if (StringUtils.isAnyEmpty(accessKeyId, secretAccessKey)) {
             return Optional.empty();
         }
 

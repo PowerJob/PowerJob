@@ -33,7 +33,7 @@ public class CommonTest {
 
         TaskTrackerStartTaskReq req = new TaskTrackerStartTaskReq();
 
-        req.setTaskTrackerAddress(NetUtils.getLocalHost() + ":27777");
+        req.setTaskTrackerAddress(NetUtils.getLocalHost4Test() + ":27777");
         req.setInstanceInfo(instanceInfo);
 
         req.setTaskId("0");

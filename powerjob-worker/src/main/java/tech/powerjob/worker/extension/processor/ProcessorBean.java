@@ -25,4 +25,10 @@ public class ProcessorBean {
      */
     private transient ClassLoader classLoader;
 
+    /**
+     * Bean 是否稳定
+     * SpringBean / 普通Java 对象，在整个 JVM 生命周期内都不会变，可声明为稳定，在上层缓存，避免每次都要重现 build processor
+     * 对于动态容器，可能在部署后改变，则需要声明为不稳定
+     */
+    private boolean stable = true;
 }

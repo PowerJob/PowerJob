@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.SystemInstanceResult;
@@ -11,6 +12,8 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.model.TaskDetailInfo;
+import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
 import tech.powerjob.common.utils.CollectionUtils;
@@ -18,13 +21,20 @@ import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.TransportUtils;
+import tech.powerjob.worker.core.processor.TaskResult;
+import tech.powerjob.worker.persistence.SwapTaskPersistenceService;
 import tech.powerjob.worker.persistence.TaskDO;
+import tech.powerjob.worker.persistence.TaskPersistenceService;
+import tech.powerjob.worker.pojo.converter.TaskConverter;
+import tech.powerjob.worker.pojo.model.InstanceInfo;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 负责管理 JobInstance 的运行，主要包括任务的派发（MR可能存在大量的任务）和状态的更新
@@ -48,6 +58,11 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
     protected CommonTaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
         super(req, workerRuntime);
+    }
+
+    @Override
+    protected TaskPersistenceService initTaskPersistenceService(InstanceInfo instanceInfo, WorkerRuntime workerRuntime) {
+        return new SwapTaskPersistenceService(instanceInfo, workerRuntime.getTaskPersistenceService());
     }
 
     @Override
@@ -76,7 +91,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
     }
 
     @Override
-    public InstanceDetail fetchRunningStatus() {
+    public InstanceDetail fetchRunningStatus(ServerQueryInstanceStatusReq req) {
 
         InstanceDetail detail = new InstanceDetail();
         // 填充基础信息
@@ -86,15 +101,28 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
         // 填充详细信息
         InstanceStatisticsHolder holder = getInstanceStatisticsHolder(instanceId);
+
         InstanceDetail.TaskDetail taskDetail = new InstanceDetail.TaskDetail();
-        taskDetail.setSucceedTaskNum(holder.succeedNum);
-        taskDetail.setFailedTaskNum(holder.failedNum);
+        taskDetail.setSucceedTaskNum(holder.getSucceedNum());
+        taskDetail.setFailedTaskNum(holder.getFailedNum());
         taskDetail.setTotalTaskNum(holder.getTotalTaskNum());
+        taskDetail.setWaitingDispatchTaskNum(holder.getWaitingDispatchNum());
+        taskDetail.setWorkerUnreceivedTaskNum(holder.getWorkerUnreceivedNum());
+        taskDetail.setReceivedTaskNum(holder.getReceivedNum());
+        taskDetail.setRunningTaskNum(holder.getRunningNum());
+
         detail.setTaskDetail(taskDetail);
+
+        // 填充最近的任务结果
+        if (StringUtils.isNotEmpty(req.getCustomQuery())) {
+            String customQuery = req.getCustomQuery().concat(" limit 10");
+            List<TaskDO> queriedTaskDos = taskPersistenceService.getTaskByQuery(instanceId, customQuery);
+            List<TaskDetailInfo> taskDetailInfoList = Optional.ofNullable(queriedTaskDos).orElse(Collections.emptyList()).stream().map(TaskConverter::taskDo2TaskDetail).collect(Collectors.toList());
+            detail.setQueriedTaskDetailInfoList(taskDetailInfoList);
+        }
 
         return detail;
     }
-
 
 
 
@@ -115,7 +143,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
         rootTask.setLastReportTime(-1L);
         rootTask.setSubInstanceId(instanceId);
 
-        if (taskPersistenceService.save(rootTask)) {
+        if (taskPersistenceService.batchSave(Lists.newArrayList(rootTask))) {
             log.info("[TaskTracker-{}] create root task successfully.", instanceId);
         } else {
             log.error("[TaskTracker-{}] create root task failed.", instanceId);
@@ -157,7 +185,7 @@ public class CommonTaskTracker extends HeavyTaskTracker {
             String result = null;
 
             // 2. 如果未完成任务数为0，判断是否真正结束，并获取真正结束任务的执行结果
-            if (unfinishedNum == 0) {
+            if (unfinishedNum <= 0) {
 
                 // 数据库中一个任务都没有，说明根任务创建失败，该任务实例失败
                 if (finishedNum == 0) {
@@ -171,13 +199,13 @@ public class CommonTaskTracker extends HeavyTaskTracker {
                         // STANDALONE 只有一个任务，完成即结束
                         case STANDALONE:
                             finished.set(true);
-                            List<TaskDO> allTask = taskPersistenceService.getAllTask(instanceId, instanceId);
-                            if (CollectionUtils.isEmpty(allTask) || allTask.size() > 1) {
+                            List<TaskResult> allTaskResult = taskPersistenceService.getAllTaskResult(instanceId, instanceId);
+                            if (CollectionUtils.isEmpty(allTaskResult) || allTaskResult.size() > 1) {
                                 result = SystemInstanceResult.UNKNOWN_BUG;
                                 log.warn("[TaskTracker-{}] there must have some bug in TaskTracker.", instanceId);
                             } else {
-                                result = allTask.get(0).getResult();
-                                success = allTask.get(0).getStatus() == TaskStatus.WORKER_PROCESS_SUCCESS.getValue();
+                                result = allTaskResult.get(0).getResult();
+                                success = allTaskResult.get(0).isSuccess();
                             }
                             break;
                         // MAP 不关心结果，最简单

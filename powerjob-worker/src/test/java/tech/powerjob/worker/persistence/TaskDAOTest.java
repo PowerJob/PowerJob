@@ -3,14 +3,16 @@ package tech.powerjob.worker.persistence;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.core.processor.TaskResult;
+import tech.powerjob.worker.persistence.db.ConnectionFactory;
+import tech.powerjob.worker.persistence.db.SimpleTaskQuery;
+import tech.powerjob.worker.persistence.db.TaskDAO;
+import tech.powerjob.worker.persistence.db.TaskDAOImpl;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since 2022/10/23
  */
 @Slf4j
-class TaskDAOTest {
+class TaskDAOTest extends AbstractTaskDAOTest {
 
     private static TaskDAO taskDAO;
 
@@ -93,23 +95,5 @@ class TaskDAOTest {
         log.info("[testCRUD] allTaskResult: {}", allTaskResult);
         assert allTaskResult.size() == 2;
     }
-
-    private static TaskDO buildTaskDO(String taskId, Long instanceId, TaskStatus taskStatus) {
-        TaskDO taskDO = new TaskDO();
-        taskDO.setTaskId(taskId);
-        taskDO.setInstanceId(instanceId);
-        taskDO.setSubInstanceId(instanceId);
-        taskDO.setTaskName("TEST_TASK");
-        taskDO.setTaskContent("TEST_CONTENT".getBytes(StandardCharsets.UTF_8));
-        taskDO.setAddress("127.0.0.1:10086");
-        taskDO.setStatus(taskStatus.getValue());
-        taskDO.setResult("SUCCESS");
-        taskDO.setFailedCnt(0);
-        taskDO.setLastModifiedTime(System.currentTimeMillis());
-        taskDO.setLastReportTime(System.currentTimeMillis());
-        taskDO.setCreatedTime(System.currentTimeMillis());
-        return taskDO;
-    }
-
 
 }

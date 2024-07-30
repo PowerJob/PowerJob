@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.6</version>
+        <version>4.3.9</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.3.6</version>
+    <version>4.3.9</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -26,7 +26,7 @@
 
 
     <properties>
-        <springboot.version>2.7.14</springboot.version>
+        <springboot.version>2.7.18</springboot.version>
 
         <!-- MySQL version that corresponds to spring-boot-dependencies version. -->
         <mysql.version>8.0.33</mysql.version>
@@ -34,7 +34,7 @@
         <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
         <postgresql.version>42.6.0</postgresql.version>
-        <h2.db.version>2.2.220</h2.db.version>
+        <h2.db.version>2.2.224</h2.db.version>
         <mongodb-driver-sync.version>4.10.2</mongodb-driver-sync.version>
 
         <zip4j.version>2.11.2</zip4j.version>
@@ -50,12 +50,12 @@
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.2.1</cron-utils.version>
 
-        <powerjob-common.version>4.3.6</powerjob-common.version>
-        <powerjob-remote-impl-http.version>4.3.6</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>4.3.6</powerjob-remote-impl-akka.version>
+        <powerjob-common.version>4.3.9</powerjob-common.version>
+        <powerjob-remote-impl-http.version>4.3.9</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>4.3.9</powerjob-remote-impl-akka.version>
         <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
         <aliyun-sdk-oss.version>3.17.1</aliyun-sdk-oss.version>
-        <minio.version>8.5.2</minio.version>
+        <aws-java-sdk-s3.version>1.12.665</aws-java-sdk-s3.version>
         <commons-collections4.version>4.4</commons-collections4.version>
     </properties>
 
@@ -114,12 +114,13 @@
                 <artifactId>aliyun-sdk-oss</artifactId>
                 <version>${aliyun-sdk-oss.version}</version>
             </dependency>
-            <!-- 存储扩展-Minio，未使用可移除 -->
+            <!-- 存储扩展-Minio/S3，未使用可移除（minio-client 依赖 OKHTTP4.x 版本，强制引入 kotlin 标准库，为了防止引入更多问题放弃） -->
             <dependency>
-                <groupId>io.minio</groupId>
-                <artifactId>minio</artifactId>
-                <version>${minio.version}</version>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-s3</artifactId>
+                <version>${aws-java-sdk-s3.version}</version>
             </dependency>
+
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>

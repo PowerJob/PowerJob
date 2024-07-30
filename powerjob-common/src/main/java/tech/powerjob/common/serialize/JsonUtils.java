@@ -1,8 +1,10 @@
 package tech.powerjob.common.serialize;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +30,12 @@ public class JsonUtils {
             .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
             .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
             .configure(JsonParser.Feature.IGNORE_UNDEFINED, true)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .build();
+
+    static {
+        JSON_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
 
     private static final TypeReference<Map<String, Object>>  MAP_TYPE_REFERENCE  = new TypeReference<Map<String, Object>> () {};
 
@@ -37,6 +44,9 @@ public class JsonUtils {
     }
 
     public static String toJSONString(Object obj) {
+        if (obj == null) {
+            return null;
+        }
         if (obj instanceof String) {
             return (String) obj;
         }

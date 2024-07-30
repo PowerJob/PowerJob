@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.PropertyUtils;
 import tech.powerjob.remote.framework.base.Address;
 import tech.powerjob.remote.framework.base.ServerType;
@@ -24,8 +23,10 @@ import tech.powerjob.worker.background.discovery.ServerDiscoveryService;
 import tech.powerjob.worker.common.PowerBannerPrinter;
 import tech.powerjob.worker.common.PowerJobWorkerConfig;
 import tech.powerjob.worker.common.WorkerRuntime;
+import tech.powerjob.worker.common.utils.WorkerNetUtils;
 import tech.powerjob.worker.core.executor.ExecutorManager;
 import tech.powerjob.worker.extension.processor.ProcessorFactory;
+import tech.powerjob.worker.persistence.DbTaskPersistenceService;
 import tech.powerjob.worker.persistence.TaskPersistenceService;
 import tech.powerjob.worker.processor.PowerJobProcessorLoader;
 import tech.powerjob.worker.processor.ProcessorLoader;
@@ -74,13 +75,16 @@ public class PowerJobWorker {
 
         try {
             PowerBannerPrinter.print();
+
+            // 在发第一个请求之前，完成真正 IP 的解析
+            int localBindPort = config.getPort();
+            String localBindIp = WorkerNetUtils.parseLocalBindIp(localBindPort, config.getServerAddress());
+
             // 校验 appName
             WorkerAppInfo appInfo = serverDiscoveryService.assertApp();
             workerRuntime.setAppInfo(appInfo);
 
             // 初始化网络数据，区别对待上报地址和本机绑定地址（对外统一使用上报地址）
-            String localBindIp = NetUtils.getLocalHost();
-            int localBindPort = config.getPort();
             String externalIp = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_ADDRESS, localBindIp);
             String externalPort = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_PORT, String.valueOf(localBindPort));
             log.info("[PowerJobWorker] [ADDRESS_INFO] localBindIp: {}, localBindPort: {}; externalIp: {}, externalPort: {}", localBindIp, localBindPort, externalIp, externalPort);
@@ -119,7 +123,7 @@ public class PowerJobWorker {
             workerRuntime.setOmsLogHandler(omsLogHandler);
 
             // 初始化存储
-            TaskPersistenceService taskPersistenceService = new TaskPersistenceService(workerRuntime.getWorkerConfig().getStoreStrategy());
+            TaskPersistenceService taskPersistenceService = new DbTaskPersistenceService(workerRuntime.getWorkerConfig().getStoreStrategy());
             taskPersistenceService.init();
             workerRuntime.setTaskPersistenceService(taskPersistenceService);
             log.info("[PowerJobWorker] local storage initialized successfully.");
