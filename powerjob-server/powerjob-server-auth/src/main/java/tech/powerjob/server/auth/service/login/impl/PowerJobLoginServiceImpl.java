@@ -14,7 +14,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.common.AuthConstants;
-import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.common.utils.HttpServletUtils;
 import tech.powerjob.server.auth.jwt.JwtService;
@@ -145,7 +145,7 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
 
         Optional<UserInfoDO> dbUserInfoOpt = userInfoRepository.findByUsername(jwtBody.getUsername());
         if (!dbUserInfoOpt.isPresent()) {
-            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_EXIST);
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_EXIST);
         }
 
         UserInfoDO dbUser = dbUserInfoOpt.get();
@@ -160,14 +160,14 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         // DB 中的 encryptedToken 存在，代表需要二次校验
         if (StringUtils.isNotEmpty(tokenLoginVerifyInfo.getEncryptedToken())) {
             if (!StringUtils.equals(jwtBody.getEncryptedToken(), tokenLoginVerifyInfo.getEncryptedToken())) {
-                throw new PowerJobAuthException(AuthErrorCode.INVALID_TOKEN);
+                throw new PowerJobAuthException(ErrorCodes.INVALID_TOKEN);
             }
 
             ThirdPartyLoginService thirdPartyLoginService = code2ThirdPartyLoginService.get(dbUser.getAccountType());
             boolean tokenLoginVerifyOk = thirdPartyLoginService.tokenLoginVerify(dbUser.getOriginUsername(), tokenLoginVerifyInfo);
 
             if (!tokenLoginVerifyOk) {
-                throw new PowerJobAuthException(AuthErrorCode.USER_AUTH_FAILED);
+                throw new PowerJobAuthException(ErrorCodes.USER_AUTH_FAILED);
             }
         }
 
@@ -186,14 +186,14 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     private void checkUserStatus(UserInfoDO dbUser) {
         int accountStatus = Optional.ofNullable(dbUser.getStatus()).orElse(SwitchableStatus.ENABLE.getV());
         if (accountStatus == SwitchableStatus.DISABLE.getV()) {
-            throw new PowerJobAuthException(AuthErrorCode.USER_DISABLED);
+            throw new PowerJobAuthException(ErrorCodes.USER_DISABLED);
         }
     }
 
     private ThirdPartyLoginService fetchBizLoginService(String loginType) {
         final ThirdPartyLoginService loginService = code2ThirdPartyLoginService.get(loginType);
         if (loginService == null) {
-            throw new PowerJobAuthException(AuthErrorCode.INVALID_REQUEST, "can't find ThirdPartyLoginService by type: " + loginType);
+            throw new PowerJobAuthException(ErrorCodes.INVALID_REQUEST, "can't find ThirdPartyLoginService by type: " + loginType);
         }
         return loginService;
     }

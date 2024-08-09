@@ -7,7 +7,9 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.server.auth.interceptor.PowerJobAuthInterceptor;
+import tech.powerjob.server.openapi.OpenApiInterceptor;
 
 import javax.annotation.Resource;
 
@@ -21,6 +23,8 @@ import javax.annotation.Resource;
 @EnableWebSocket
 public class WebConfig implements WebMvcConfigurer {
 
+    @Resource
+    private OpenApiInterceptor openApiInterceptor;
     @Resource
     private PowerJobAuthInterceptor powerJobAuthInterceptor;
 
@@ -48,5 +52,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns("/css/**", "/js/**", "/images/**", "/img/**", "/fonts/**", "/favicon.ico")
                 .order(0);
+
+        registry.addInterceptor(openApiInterceptor)
+                .addPathPatterns(OpenAPIConstant.WEB_PATH.concat("/**"))
+                .order(1);
     }
 }

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.utils.DigestUtils;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
@@ -51,12 +50,8 @@ public class AppInfoServiceImpl implements AppInfoService {
     }
 
     @Override
-    public Long assertAppWithEncryptedPassword(String appName, String encryptedPassword) {
-        AppInfoDO appInfo = appInfoRepository.findByAppName(appName).orElseThrow(() -> new PowerJobException("can't find appInfo by appName: " + appName));
-        if (Objects.equals(DigestUtils.md5(appInfo.getPassword()), encryptedPassword)) {
-            return appInfo.getId();
-        }
-        throw new PowerJobException("password error!");
+    public Optional<AppInfoDO> findByAppName(String appName) {
+        return appInfoRepository.findByAppName(appName);
     }
 
     @Override

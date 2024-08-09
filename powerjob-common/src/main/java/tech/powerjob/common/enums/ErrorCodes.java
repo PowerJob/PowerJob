@@ -1,4 +1,4 @@
-package tech.powerjob.server.auth.common;
+package tech.powerjob.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum AuthErrorCode {
+public enum ErrorCodes {
 
     USER_NOT_LOGIN("-100", "UserNotLoggedIn"),
     USER_NOT_EXIST("-101", "UserNotExist"),
@@ -33,7 +33,18 @@ public enum AuthErrorCode {
 
     INVALID_TOKEN("-401", "INVALID_TOKEN"),
 
-    OPEN_API_AUTH_FAILED("-1001", "OPEN_API_AUTH_FAILED"),
+    INVALID_APP("-402", "INVALID_APP"),
+
+    /**
+     * 系统内部异常
+     */
+    SYSTEM_UNKNOWN_ERROR("-500", "SYS_UNKNOWN_ERROR"),
+
+    /**
+     * OPENAPI 错误码号段 -10XX
+     */
+    OPEN_API_PASSWORD_ERROR("-1001", "OPEN_API_PASSWORD_ERROR"),
+    OPEN_API_AUTH_FAILED("-1002", "OPEN_API_AUTH_FAILED"),
 
     ;
 

@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * App 鉴权响应
@@ -21,5 +22,9 @@ public class AppAuthResult implements Serializable {
 
     private String token;
 
-    private String extra;
+    /**
+     * 额外参数
+     * 有安全需求的开发者可执行扩展
+     */
+    private Map<String, Object> extra;
 }

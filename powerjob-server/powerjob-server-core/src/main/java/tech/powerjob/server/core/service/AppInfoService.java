@@ -20,7 +20,7 @@ public interface AppInfoService {
      */
     Long assertApp(String appName, String password);
 
-    Long assertAppWithEncryptedPassword(String appName, String encryptedPassword);
+    Optional<AppInfoDO> findByAppName(String appName);
 
     /**
      * 获取 AppInfo（带缓存）

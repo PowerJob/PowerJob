@@ -22,7 +22,7 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.common.AuthConstants;
-import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
@@ -193,7 +193,7 @@ public class AppInfoController {
             throw new IllegalArgumentException("can't find app by appName: " + appName);
         }
         if (!StringUtils.equals(appInfoOpt.get().getPassword(), appAssertRequest.getPassword())) {
-            throw new PowerJobAuthException(AuthErrorCode.INCORRECT_PASSWORD);
+            throw new PowerJobAuthException(ErrorCodes.INCORRECT_PASSWORD);
         }
 
         Map<String, Object> extra = Maps.newHashMap();

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.*;
 import tech.powerjob.server.auth.common.AuthConstants;
-import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
@@ -35,7 +35,7 @@ public class WebAuthServiceImpl implements WebAuthService {
     public void grantRole2LoginUser(RoleScope roleScope, Long target, Role role, String extra) {
         Long userId = LoginUserHolder.getUserId();
         if (userId == null) {
-            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_LOGIN);
         }
         powerJobPermissionService.grantRole(roleScope, target, userId, role, extra);
     }
@@ -82,7 +82,7 @@ public class WebAuthServiceImpl implements WebAuthService {
 
         PowerJobUser powerJobUser = LoginUserHolder.get();
         if (powerJobUser == null) {
-            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_LOGIN);
         }
 
         // 展示不考虑穿透权限的问题（即拥有 namespace 权限也可以看到全部的 apps）

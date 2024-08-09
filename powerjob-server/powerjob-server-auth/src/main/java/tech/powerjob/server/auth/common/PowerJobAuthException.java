@@ -1,6 +1,7 @@
 package tech.powerjob.server.auth.common;
 
 import lombok.Getter;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.exception.PowerJobException;
 
 /**
@@ -12,12 +13,11 @@ import tech.powerjob.common.exception.PowerJobException;
 @Getter
 public class PowerJobAuthException extends PowerJobException {
 
-    public PowerJobAuthException(AuthErrorCode errorCode) {
+    public PowerJobAuthException(ErrorCodes errorCode) {
         this(errorCode, null);
     }
 
-    public PowerJobAuthException(AuthErrorCode errorCode, String extraMsg) {
-        super(extraMsg == null ? errorCode.getMsg() : errorCode.getMsg().concat(":").concat(extraMsg));
-        this.code = errorCode.getCode();
+    public PowerJobAuthException(ErrorCodes errorCode, String extraMsg) {
+        super(errorCode, extraMsg);
     }
 }

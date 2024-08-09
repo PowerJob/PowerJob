@@ -2,6 +2,7 @@ package tech.powerjob.common.exception;
 
 import lombok.Getter;
 import lombok.Setter;
+import tech.powerjob.common.enums.ErrorCodes;
 
 /**
  * PowerJob 运行时异常
@@ -20,6 +21,11 @@ public class PowerJobException extends RuntimeException {
 
     public PowerJobException(String message) {
         super(message);
+    }
+
+    public PowerJobException(ErrorCodes errorCode, String extraMsg) {
+        super(extraMsg == null ? errorCode.getMsg() : errorCode.getMsg().concat(":").concat(extraMsg));
+        this.code = errorCode.getCode();
     }
 
     public PowerJobException(String message, Throwable cause) {

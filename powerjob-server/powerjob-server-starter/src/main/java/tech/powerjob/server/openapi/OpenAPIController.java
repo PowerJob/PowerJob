@@ -1,12 +1,16 @@
 package tech.powerjob.server.openapi;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.client.module.AppAuthRequest;
 import tech.powerjob.client.module.AppAuthResult;
 import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -31,6 +35,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/15
  */
+@Slf4j
 @RestController
 @RequestMapping(OpenAPIConstant.WEB_PATH)
 @RequiredArgsConstructor
@@ -63,7 +68,20 @@ public class OpenAPIController {
      */
     @PostMapping(OpenAPIConstant.AUTH_APP)
     public PowerResultDTO<AppAuthResult> auth(@RequestBody AppAuthRequest appAuthRequest) {
-        return PowerResultDTO.s(openApiSecurityService.authAppByParam(appAuthRequest));
+        try {
+            return PowerResultDTO.s(openApiSecurityService.authAppByParam(appAuthRequest));
+        } catch (PowerJobException pje) {
+            PowerResultDTO<AppAuthResult> f = PowerResultDTO.f(pje.getMessage());
+            f.setCode(pje.getCode());
+            return f;
+        } catch (Throwable t) {
+
+            log.error("[OpenAPIController] auth failed for request: {}", appAuthRequest, t);
+
+            PowerResultDTO<AppAuthResult> f = PowerResultDTO.f(ExceptionUtils.getMessage(t));
+            f.setCode(ErrorCodes.SYSTEM_UNKNOWN_ERROR.getCode());
+            return f;
+        }
     }
 
     /* ************* Job 区 ************* */

@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.common.utils.DigestUtils;
 import tech.powerjob.server.persistence.remote.model.PwjbUserInfoDO;
@@ -84,7 +84,7 @@ public class PwjbUserWebServiceImplImpl implements PwjbUserWebService {
         String oldPasswordInDb = dbUser.getPassword();
         String oldPasswordInReq = DigestUtils.rePassword(changePasswordRequest.getOldPassword(), dbUser.getUsername());
         if (!StringUtils.equals(oldPasswordInDb, oldPasswordInReq)) {
-            throw new PowerJobAuthException(AuthErrorCode.INCORRECT_PASSWORD);
+            throw new PowerJobAuthException(ErrorCodes.INCORRECT_PASSWORD);
         }
 
         // 测试账号特殊处理

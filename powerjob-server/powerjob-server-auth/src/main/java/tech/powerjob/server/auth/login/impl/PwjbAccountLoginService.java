@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.common.AuthConstants;
-import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.common.Loggers;
@@ -64,13 +64,13 @@ public class PwjbAccountLoginService implements ThirdPartyLoginService {
 
         if (StringUtils.isAnyEmpty(username, password)) {
             Loggers.WEB.debug("[PowerJobLoginService] username or password is empty, login failed!");
-            throw new PowerJobAuthException(AuthErrorCode.INVALID_REQUEST);
+            throw new PowerJobAuthException(ErrorCodes.INVALID_REQUEST);
         }
 
         final Optional<PwjbUserInfoDO> userInfoOpt = pwjbUserInfoRepository.findByUsername(username);
         if (!userInfoOpt.isPresent()) {
             Loggers.WEB.debug("[PowerJobLoginService] can't find user by username: {}", username);
-            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_EXIST);
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_EXIST);
         }
 
         final PwjbUserInfoDO dbUser = userInfoOpt.get();

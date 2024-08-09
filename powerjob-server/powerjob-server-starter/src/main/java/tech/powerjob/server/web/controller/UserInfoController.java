@@ -15,7 +15,7 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
-import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.service.WebAuthService;
@@ -133,7 +133,7 @@ public class UserInfoController {
     public ResultDTO<UserDetailVO> getUserDetail(HttpServletRequest httpServletRequest) {
         Optional<PowerJobUser> powerJobUserOpt = powerJobLoginService.ifLogin(httpServletRequest);
         if (!powerJobUserOpt.isPresent()) {
-            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_LOGIN);
         }
         Optional<UserInfoDO> userinfoDoOpt = userInfoRepository.findById(powerJobUserOpt.get().getId());
         if (!userinfoDoOpt.isPresent()) {
@@ -226,7 +226,7 @@ public class UserInfoController {
     private void checkModifyUserPermission(Long uid, HttpServletRequest httpServletRequest) {
         Optional<PowerJobUser> powerJobUserOpt = powerJobLoginService.ifLogin(httpServletRequest);
         if (!powerJobUserOpt.isPresent()) {
-            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_LOGIN);
         }
         PowerJobUser currentLoginUser = powerJobUserOpt.get();
 

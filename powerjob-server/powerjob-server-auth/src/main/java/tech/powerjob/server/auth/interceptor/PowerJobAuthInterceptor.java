@@ -13,7 +13,7 @@ import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.RoleScope;
-import tech.powerjob.server.auth.common.AuthErrorCode;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.common.utils.HttpServletUtils;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
@@ -59,7 +59,7 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
 
         // 未登录直接报错，返回固定状态码，前端拦截后跳转到登录页
         if (!loginUserOpt.isPresent()) {
-            throw new PowerJobAuthException(AuthErrorCode.USER_NOT_LOGIN);
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_LOGIN);
         }
 
         // 登陆用户进行权限校验
