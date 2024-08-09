@@ -10,7 +10,7 @@ import tech.powerjob.server.auth.common.AuthErrorCode;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.common.Loggers;
-import tech.powerjob.server.common.utils.DigestUtils;
+import tech.powerjob.common.utils.DigestUtils;
 import tech.powerjob.server.persistence.remote.model.PwjbUserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.PwjbUserInfoRepository;
 

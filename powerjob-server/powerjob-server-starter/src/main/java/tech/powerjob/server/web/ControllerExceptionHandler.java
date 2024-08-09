@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.web.response.WebResultDTO;
+import tech.powerjob.common.response.PowerResultDTO;
 
 /**
  * 统一处理 web 层异常信息
@@ -24,9 +23,9 @@ public class ControllerExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(Exception.class)
-    public WebResultDTO<Void> exceptionHandler(Exception e) {
+    public PowerResultDTO<Void> exceptionHandler(Exception e) {
 
-        WebResultDTO<Void> ret = new WebResultDTO<>(ResultDTO.failed(ExceptionUtils.getMessage(e)));
+        PowerResultDTO<Void> ret = PowerResultDTO.f(ExceptionUtils.getMessage(e));
 
         // 不是所有异常都需要打印完整堆栈，后续可以定义内部的Exception，便于判断
         if (e instanceof PowerJobException) {

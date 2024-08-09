@@ -1,7 +1,9 @@
-package tech.powerjob.server.web.controller;
+package tech.powerjob.server.openapi;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.client.module.AppAuthRequest;
+import tech.powerjob.client.module.AppAuthResult;
 import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.enums.InstanceStatus;
@@ -9,16 +11,14 @@ import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
 import tech.powerjob.common.request.query.JobInfoQuery;
-import tech.powerjob.common.response.InstanceInfoDTO;
-import tech.powerjob.common.response.JobInfoDTO;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
+import tech.powerjob.common.response.*;
 import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.core.service.CacheService;
 import tech.powerjob.server.core.service.JobService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceService;
 import tech.powerjob.server.core.workflow.WorkflowService;
+import tech.powerjob.server.openapi.security.OpenApiSecurityService;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
@@ -46,12 +46,24 @@ public class OpenAPIController {
 
     private final WorkflowInstanceService workflowInstanceService;
 
+    private final OpenApiSecurityService openApiSecurityService;
+
     private final CacheService cacheService;
 
 
     @PostMapping(OpenAPIConstant.ASSERT)
     public ResultDTO<Long> assertAppName(String appName, @RequestParam(required = false) String password) {
         return ResultDTO.success(appInfoService.assertApp(appName, password));
+    }
+
+    /**
+     * APP 鉴权
+     * @param appAuthRequest 鉴权请求
+     * @return 鉴权响应
+     */
+    @PostMapping(OpenAPIConstant.AUTH_APP)
+    public PowerResultDTO<AppAuthResult> auth(@RequestBody AppAuthRequest appAuthRequest) {
+        return PowerResultDTO.s(openApiSecurityService.authAppByParam(appAuthRequest));
     }
 
     /* ************* Job 区 ************* */

@@ -16,6 +16,8 @@ public class OpenAPIConstant {
 
     public static final String ASSERT = "/assert";
 
+    public static final String AUTH_APP = "/authApp";
+
     /* ************* JOB 区 ************* */
 
     public static final String SAVE_JOB = "/saveJob";
@@ -56,4 +58,10 @@ public class OpenAPIConstant {
     public static final String RETRY_WORKFLOW_INSTANCE = "/retryWfInstance";
     public static final String FETCH_WORKFLOW_INSTANCE_INFO = "/fetchWfInstanceInfo";
     public static final String MARK_WORKFLOW_NODE_AS_SUCCESS = "/markWorkflowNodeAsSuccess";
+
+    /* ************* 鉴权 ************* */
+
+    public static final String HEADER_ACCESS_TOKEN = "X-POWERJOB-ACCESS-TOKEN";
+
+    public static final String HEADER_APP_ID = "X-POWERJOB-APP-ID";
 }

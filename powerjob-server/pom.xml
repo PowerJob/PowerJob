@@ -108,6 +108,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- 存储扩展-MongoDB，未使用可移除 -->
             <dependency>
                 <groupId>org.mongodb</groupId>

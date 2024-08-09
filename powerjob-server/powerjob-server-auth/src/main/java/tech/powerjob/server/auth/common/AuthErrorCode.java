@@ -33,6 +33,8 @@ public enum AuthErrorCode {
 
     INVALID_TOKEN("-401", "INVALID_TOKEN"),
 
+    OPEN_API_AUTH_FAILED("-1001", "OPEN_API_AUTH_FAILED"),
+
     ;
 
     private final String code;

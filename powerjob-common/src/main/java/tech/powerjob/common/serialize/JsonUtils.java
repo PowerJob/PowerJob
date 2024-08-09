@@ -72,8 +72,9 @@ public class JsonUtils {
         try {
             return JSON_MAPPER.writeValueAsString(obj);
         }catch (Exception e) {
-            throw new PowerJobException(e);
+            ExceptionUtils.rethrow(e);
         }
+        throw new ImpossibleException();
     }
 
     public static byte[] toBytes(Object obj) {

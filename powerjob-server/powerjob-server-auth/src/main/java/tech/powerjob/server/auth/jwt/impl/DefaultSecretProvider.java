@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import tech.powerjob.server.auth.jwt.SecretProvider;
-import tech.powerjob.server.common.utils.DigestUtils;
+import tech.powerjob.common.utils.DigestUtils;
 
 import javax.annotation.Resource;
 

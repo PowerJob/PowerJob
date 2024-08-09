@@ -1,6 +1,7 @@
-package tech.powerjob.server.common.utils;
+package tech.powerjob.common.utils;
 
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -20,6 +21,11 @@ public class DigestUtils {
      */
     @SneakyThrows
     public static String md5(String input) {
+
+        if (StringUtils.isEmpty(input)) {
+            return null;
+        }
+
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         md5.update(input.getBytes());
         byte[] byteArray = md5.digest();
