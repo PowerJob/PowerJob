@@ -1,11 +1,14 @@
 package tech.powerjob.server.openapi;
 
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.PowerResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
@@ -15,6 +18,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import java.util.Set;
 
 /**
  * OpenAPI 拦截器
@@ -36,6 +40,8 @@ public class OpenApiInterceptor implements HandlerInterceptor {
     @Value("${oms.auth.openapi.enable:false}")
     private boolean enableOpenApiAuth;
 
+    private static final Set<String> IGNORE_OPEN_API_PATH = Sets.newHashSet(OpenAPIConstant.ASSERT, OpenAPIConstant.AUTH_APP);
+
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
 
@@ -43,15 +49,27 @@ public class OpenApiInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // 鉴权类请求跳过拦截
+        String requestURI = request.getRequestURI();
+        for (String endPath : IGNORE_OPEN_API_PATH) {
+            if (requestURI.endsWith(endPath)) {
+                return true;
+            }
+        }
+
         try {
             openApiSecurityService.authAppByToken(request);
+            response.addHeader(OpenAPIConstant.RESPONSE_HEADER_AUTH_STATUS, Boolean.TRUE.toString());
         } catch (PowerJobException pje) {
-            PowerResultDTO<Object> ret = PowerResultDTO.f(pje);
-            writeResponse(JsonUtils.toJSONString(ret), response);
+            response.addHeader(OpenAPIConstant.RESPONSE_HEADER_AUTH_STATUS, Boolean.FALSE.toString());
+            writeResponse(PowerResultDTO.f(pje), response);
             return false;
         } catch (Exception e) {
-            PowerResultDTO<Object> ret = PowerResultDTO.f(e);
-            writeResponse(JsonUtils.toJSONString(ret), response);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            writeResponse(PowerResultDTO.f(e), response);
+
+            log.error("[OpenApiInterceptor] unknown exception when auth app by token", e);
+
             return false;
         }
 
@@ -59,16 +77,14 @@ public class OpenApiInterceptor implements HandlerInterceptor {
     }
 
     @SneakyThrows
-    private void writeResponse(String content, HttpServletResponse response) {
-        // 设置响应状态码，通常是 400, 401, 403 等错误码
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    private void writeResponse( PowerResultDTO<Object> powerResult, HttpServletResponse response) {
 
         // 设置响应的 Content-Type
-        response.setContentType("application/json;charset=UTF-8");
+        response.setContentType(OmsConstant.JSON_MEDIA_TYPE);
 
         // 将 JSON 写入响应
         PrintWriter writer = response.getWriter();
-        writer.write(content);
+        writer.write(JsonUtils.toJSONString(powerResult));
         writer.flush();
     }
 

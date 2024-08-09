@@ -46,6 +46,11 @@ public enum ErrorCodes {
     OPEN_API_PASSWORD_ERROR("-1001", "OPEN_API_PASSWORD_ERROR"),
     OPEN_API_AUTH_FAILED("-1002", "OPEN_API_AUTH_FAILED"),
 
+    /**
+     * PowerJobClient 错误码号段
+     */
+    CLIENT_HTTP_REQUEST_FAILED("-2001", "CLIENT_HTTP_REQUEST_FAILED"),
+
     ;
 
     private final String code;

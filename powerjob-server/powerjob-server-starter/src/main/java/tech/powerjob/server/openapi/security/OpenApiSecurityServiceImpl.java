@@ -44,8 +44,8 @@ public class OpenApiSecurityServiceImpl implements OpenApiSecurityService {
     @Override
     public void authAppByToken(HttpServletRequest httpServletRequest) {
 
-        String token = HttpServletUtils.fetchFromHeader(OpenAPIConstant.HEADER_ACCESS_TOKEN, httpServletRequest);
-        String appIdFromHeader = HttpServletUtils.fetchFromHeader(OpenAPIConstant.HEADER_APP_ID, httpServletRequest);
+        String token = HttpServletUtils.fetchFromHeader(OpenAPIConstant.REQUEST_HEADER_ACCESS_TOKEN, httpServletRequest);
+        String appIdFromHeader = HttpServletUtils.fetchFromHeader(OpenAPIConstant.REQUEST_HEADER_APP_ID, httpServletRequest);
 
         if (StringUtils.isEmpty(appIdFromHeader)) {
             throw new PowerJobException(ErrorCodes.INVALID_REQUEST, "lack_of_appId_in_header");

@@ -1,6 +1,5 @@
 package tech.powerjob.client.service.impl;
 
-import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.client.ClientConfig;
@@ -32,10 +31,6 @@ abstract class ClusterRequestService implements RequestService {
      * 当前地址（上次请求成功的地址）
      */
     protected String currentAddress;
-    /**
-     * 鉴权相关 headers
-     */
-    protected Map<String, String> authHeaders = Maps.newHashMap();
 
     /**
      * 地址格式
@@ -54,10 +49,24 @@ abstract class ClusterRequestService implements RequestService {
         this.config = config;
     }
 
-    protected abstract String sendHttpRequest(String url, String body) throws IOException;
+    /**
+     * 具体某一次 HTTP 请求的实现
+     * @param url 完整请求地址
+     * @param body 请求体
+     * @param headers 请求头
+     * @return 响应
+     * @throws IOException 异常
+     */
+    protected abstract String sendHttpRequest(String url, String body, Map<String, String> headers) throws IOException;
 
-    @Override
-    public String request(String path, Object obj) {
+    /**
+     * 封装集群请求能力
+     * @param path 请求 PATH
+     * @param obj 请求体
+     * @param headers 请求头
+     * @return 响应
+     */
+    protected String clusterHaRequest(String path, Object obj, Map<String, String> headers) {
 
         String body = obj instanceof String ? (String) obj : JsonUtils.toJSONStringUnsafe(obj);
 
@@ -65,7 +74,7 @@ abstract class ClusterRequestService implements RequestService {
         // 先尝试默认地址
         String url = getUrl(path, currentAddress);
         try {
-            String res = sendHttpRequest(url, body);
+            String res = sendHttpRequest(url, body, headers);
             if (StringUtils.isNotEmpty(res)) {
                 return res;
             }
@@ -80,7 +89,7 @@ abstract class ClusterRequestService implements RequestService {
             }
             url = getUrl(path, addr);
             try {
-                String res = sendHttpRequest(url, body);
+                String res = sendHttpRequest(url, body, headers);
                 if (StringUtils.isNotEmpty(res)) {
                     log.warn("[ClusterRequestService] server change: from({}) -> to({}).", currentAddress, addr);
                     currentAddress = addr;

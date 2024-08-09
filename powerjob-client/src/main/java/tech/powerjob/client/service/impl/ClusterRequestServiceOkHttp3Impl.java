@@ -40,12 +40,21 @@ public class ClusterRequestServiceOkHttp3Impl extends ClusterRequestService {
     }
 
     @Override
-    protected String sendHttpRequest(String url, String payload) throws IOException {
+    public String request(String path, Object body) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    protected String sendHttpRequest(String url, String payload, Map<String, String> h) throws IOException {
 
         // 公共 header
         Map<String, String> headers = Maps.newHashMap();
         if (config.getDefaultHeaders() != null) {
             headers.putAll(config.getDefaultHeaders());
+        }
+        if (h != null) {
+            headers.putAll(h);
         }
 
         MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);

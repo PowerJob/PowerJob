@@ -61,7 +61,9 @@ public class OpenAPIConstant {
 
     /* ************* 鉴权 ************* */
 
-    public static final String HEADER_ACCESS_TOKEN = "X-POWERJOB-ACCESS-TOKEN";
+    public static final String REQUEST_HEADER_ACCESS_TOKEN = "X-POWERJOB-ACCESS-TOKEN";
 
-    public static final String HEADER_APP_ID = "X-POWERJOB-APP-ID";
+    public static final String REQUEST_HEADER_APP_ID = "X-POWERJOB-APP-ID";
+
+    public static final String RESPONSE_HEADER_AUTH_STATUS = "X-POWERJOB-AUTH-PASSED";
 }
