@@ -456,8 +456,6 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         // 数据库查询限制，每次最多查询几个任务
         private static final int DB_QUERY_LIMIT = 100;
 
-        private static final int STANDALONE_SIZE = 1;
-
         @Override
         public void run0() {
 
@@ -519,8 +517,12 @@ public abstract class HeavyTaskTracker extends TaskTracker {
          */
         private boolean taskNeedByPassTaskTracker(List<String> availablePtIps) {
             if (ExecuteType.MAP.equals(executeType) || ExecuteType.MAP_REDUCE.equals(executeType)) {
-                return TaskTrackerBehavior.PADDLING.getV().equals(advancedRuntimeConfig.getTaskTrackerBehavior()) &&
-                        availablePtIps.size() != STANDALONE_SIZE;
+
+                if (availablePtIps.size() <= 1) {
+                    return false;
+                }
+
+                return TaskTrackerBehavior.PADDLING.getV().equals(advancedRuntimeConfig.getTaskTrackerBehavior());
             }
             return false;
         }
