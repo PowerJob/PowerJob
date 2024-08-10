@@ -29,7 +29,7 @@ import java.util.List;
  */
 class TestWorkflow extends ClientInitializer {
 
-    private static final long WF_ID = 1;
+    private static final long WF_ID = 2;
 
     @Test
     void initTestData() {

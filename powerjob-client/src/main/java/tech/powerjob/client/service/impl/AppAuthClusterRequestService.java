@@ -1,16 +1,19 @@
 package tech.powerjob.client.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.client.ClientConfig;
+import tech.powerjob.client.TypeStore;
 import tech.powerjob.client.module.AppAuthRequest;
 import tech.powerjob.client.module.AppAuthResult;
+import tech.powerjob.client.service.HttpResponse;
+import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.common.OpenAPIConstant;
-import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.DigestUtils;
+import tech.powerjob.common.utils.MapUtils;
 
 import java.util.Map;
 
@@ -30,18 +33,41 @@ abstract class AppAuthClusterRequestService extends ClusterRequestService {
 
 
     @Override
-    public String request(String path, Object body) {
+    public String request(String path, PowerRequestBody powerRequestBody) {
         // 若不存在 appAuthResult，则首先进行鉴权
         if (appAuthResult == null) {
             refreshAppAuthResult();
         }
 
+        HttpResponse httpResponse = doRequest(path, powerRequestBody);
+
+        // 如果 auth 成功，则代表请求有效，直接返回
+        String authStatus = MapUtils.getString(httpResponse.getHeaders(), OpenAPIConstant.RESPONSE_HEADER_AUTH_STATUS);
+        if (Boolean.TRUE.toString().equalsIgnoreCase(authStatus)) {
+            return httpResponse.getResponse();
+        }
+
+        // 否则请求无效，刷新鉴权后重新请求
+        refreshAppAuthResult();
+        httpResponse = doRequest(path, powerRequestBody);
+
+        // 只要请求不失败，直接返回（如果鉴权失败则返回鉴权错误信息，server 保证 response 永远非空）
+        return httpResponse.getResponse();
+    }
+
+    private HttpResponse doRequest(String path, PowerRequestBody powerRequestBody) {
+
+        // 添加鉴权信息
         Map<String, String> authHeaders = buildAuthHeader();
-        String clusterResponse = clusterHaRequest(path, body, authHeaders);
+        powerRequestBody.addHeaders(authHeaders);
 
-        // TODO
+        HttpResponse httpResponse = clusterHaRequest(path, powerRequestBody);
 
-        return null;
+        // 任何请求不成功，都直接报错
+        if (!httpResponse.isSuccess()) {
+            throw new PowerJobException("REMOTE_SERVER_INNER_EXCEPTION");
+        }
+        return httpResponse;
     }
 
     private Map<String, String> buildAuthHeader() {
@@ -54,12 +80,15 @@ abstract class AppAuthClusterRequestService extends ClusterRequestService {
     @SneakyThrows
     private void refreshAppAuthResult() {
         AppAuthRequest appAuthRequest = buildAppAuthRequest();
-        String authResponse = clusterHaRequest(OpenAPIConstant.AUTH_APP, appAuthRequest, null);
-        if (StringUtils.isEmpty(authResponse)) {
-            throw new PowerJobException(ErrorCodes.CLIENT_HTTP_REQUEST_FAILED, "EMPTY_RESPONSE");
+        HttpResponse httpResponse = clusterHaRequest(OpenAPIConstant.AUTH_APP, PowerRequestBody.newJsonRequestBody(appAuthRequest));
+        if (!httpResponse.isSuccess()) {
+            throw new PowerJobException("auth_app_exception!");
         }
-
-        this.appAuthResult = JsonUtils.parseObject(authResponse, AppAuthResult.class);
+        ResultDTO<AppAuthResult> authResultDTO = JSONObject.parseObject(httpResponse.getResponse(), TypeStore.APP_AUTH_RESULT_TYPE);
+        if (!authResultDTO.isSuccess()) {
+            throw new PowerJobException("auth_failed:" + authResultDTO.getMessage());
+        }
+        this.appAuthResult = authResultDTO.getData();
     }
 
     protected AppAuthRequest buildAppAuthRequest() {

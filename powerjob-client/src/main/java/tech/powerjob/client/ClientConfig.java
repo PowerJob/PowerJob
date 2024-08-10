@@ -3,6 +3,7 @@ package tech.powerjob.client;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.Accessors;
 import tech.powerjob.client.common.Protocol;
 
 import java.io.Serializable;
@@ -18,6 +19,7 @@ import java.util.Map;
 @Getter
 @Setter
 @ToString
+@Accessors(chain = true)
 public class ClientConfig implements Serializable {
 
     /**

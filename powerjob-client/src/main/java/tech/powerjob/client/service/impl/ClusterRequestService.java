@@ -1,18 +1,17 @@
 package tech.powerjob.client.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.client.ClientConfig;
+import tech.powerjob.client.service.HttpResponse;
+import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.client.service.RequestService;
 import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.serialize.JsonUtils;
 
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -47,37 +46,32 @@ abstract class ClusterRequestService implements RequestService {
 
     public ClusterRequestService(ClientConfig config) {
         this.config = config;
+        this.currentAddress = config.getAddressList().get(0);
     }
 
     /**
      * 具体某一次 HTTP 请求的实现
      * @param url 完整请求地址
      * @param body 请求体
-     * @param headers 请求头
      * @return 响应
      * @throws IOException 异常
      */
-    protected abstract String sendHttpRequest(String url, String body, Map<String, String> headers) throws IOException;
+    protected abstract HttpResponse sendHttpRequest(String url, PowerRequestBody body) throws IOException;
 
     /**
      * 封装集群请求能力
      * @param path 请求 PATH
-     * @param obj 请求体
+     * @param powerRequestBody 请求体
      * @param headers 请求头
      * @return 响应
      */
-    protected String clusterHaRequest(String path, Object obj, Map<String, String> headers) {
-
-        String body = obj instanceof String ? (String) obj : JsonUtils.toJSONStringUnsafe(obj);
+    protected HttpResponse clusterHaRequest(String path, PowerRequestBody powerRequestBody) {
 
         List<String> addressList = config.getAddressList();
         // 先尝试默认地址
         String url = getUrl(path, currentAddress);
         try {
-            String res = sendHttpRequest(url, body, headers);
-            if (StringUtils.isNotEmpty(res)) {
-                return res;
-            }
+            return sendHttpRequest(url, powerRequestBody);
         } catch (IOException e) {
             log.warn("[ClusterRequestService] request url:{} failed, reason is {}.", url, e.toString());
         }
@@ -89,12 +83,10 @@ abstract class ClusterRequestService implements RequestService {
             }
             url = getUrl(path, addr);
             try {
-                String res = sendHttpRequest(url, body, headers);
-                if (StringUtils.isNotEmpty(res)) {
-                    log.warn("[ClusterRequestService] server change: from({}) -> to({}).", currentAddress, addr);
-                    currentAddress = addr;
-                    return res;
-                }
+                HttpResponse res = sendHttpRequest(url, powerRequestBody);
+                log.warn("[ClusterRequestService] server change: from({}) -> to({}).", currentAddress, addr);
+                currentAddress = addr;
+                return res;
             } catch (IOException e) {
                 log.warn("[ClusterRequestService] request url:{} failed, reason is {}.", url, e.toString());
             }

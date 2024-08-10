@@ -1,6 +1,7 @@
 package tech.powerjob.client;
 
 import com.alibaba.fastjson.TypeReference;
+import tech.powerjob.client.module.AppAuthResult;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 public class TypeStore {
 
+    public static final TypeReference<ResultDTO<AppAuthResult>> APP_AUTH_RESULT_TYPE = new TypeReference<ResultDTO<AppAuthResult>>(){};
     public static final TypeReference<ResultDTO<Void>> VOID_RESULT_TYPE = new TypeReference<ResultDTO<Void>>(){};
 
     public static final TypeReference<ResultDTO<Integer>> INTEGER_RESULT_TYPE = new TypeReference<ResultDTO<Integer>>(){};

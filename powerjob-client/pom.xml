@@ -15,6 +15,7 @@
 
     <properties>
         <junit.version>5.9.1</junit.version>
+        <logback.version>1.2.13</logback.version>
         <fastjson.version>1.2.83</fastjson.version>
         <powerjob.common.version>5.0.1-beta</powerjob.common.version>
 
@@ -42,6 +43,13 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- log for test stage -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

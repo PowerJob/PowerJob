@@ -9,5 +9,5 @@ package tech.powerjob.client.service;
 public interface RequestService {
 
 
-    String request(String path, Object body);
+    String request(String path, PowerRequestBody powerRequestBody);
 }

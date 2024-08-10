@@ -6,14 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import tech.powerjob.client.ClientConfig;
 import tech.powerjob.client.common.Protocol;
+import tech.powerjob.client.service.HttpResponse;
+import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.serialize.JsonUtils;
 
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2024/2/20
  */
 @Slf4j
-public class ClusterRequestServiceOkHttp3Impl extends ClusterRequestService {
+public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestService {
 
     private final OkHttpClient okHttpClient;
 
@@ -40,42 +43,55 @@ public class ClusterRequestServiceOkHttp3Impl extends ClusterRequestService {
     }
 
     @Override
-    public String request(String path, Object body) {
-        // TODO
-        return null;
-    }
+    protected HttpResponse sendHttpRequest(String url, PowerRequestBody powerRequestBody) throws IOException {
 
-    @Override
-    protected String sendHttpRequest(String url, String payload, Map<String, String> h) throws IOException {
+        // 添加公共 header
+        powerRequestBody.addHeaders(config.getDefaultHeaders());
 
-        // 公共 header
-        Map<String, String> headers = Maps.newHashMap();
-        if (config.getDefaultHeaders() != null) {
-            headers.putAll(config.getDefaultHeaders());
+        Object obj = powerRequestBody.getPayload();
+
+        RequestBody requestBody = null;
+
+        switch (powerRequestBody.getMime()) {
+            case APPLICATION_JSON:
+                MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
+                String body = obj instanceof String ? (String) obj : JsonUtils.toJSONStringUnsafe(obj);
+                requestBody = RequestBody.create(jsonType, body);
+
+                break;
+            case APPLICATION_FORM:
+                FormBody.Builder formBuilder = new FormBody.Builder();
+                Map<String, String> formObj = (Map<String, String>) obj;
+                formObj.forEach(formBuilder::add);
+                requestBody = formBuilder.build();
         }
-        if (h != null) {
-            headers.putAll(h);
-        }
 
-        MediaType jsonType = MediaType.parse(OmsConstant.JSON_MEDIA_TYPE);
-        RequestBody requestBody = RequestBody.create(jsonType, payload);
         Request request = new Request.Builder()
                 .post(requestBody)
+                .headers(Headers.of(powerRequestBody.getHeaders()))
                 .url(url)
-                .headers(Headers.of(headers))
                 .build();
 
         try (Response response = okHttpClient.newCall(request).execute()) {
-            int responseCode = response.code();
-            if (responseCode == HTTP_SUCCESS_CODE) {
-                ResponseBody body = response.body();
-                if (body == null) {
-                    return null;
-                }else {
-                    return body.string();
-                }
+
+            int code = response.code();
+            HttpResponse httpResponse = new HttpResponse()
+                    .setCode(code)
+                    .setSuccess(code == HTTP_SUCCESS_CODE);
+
+            ResponseBody body = response.body();
+            if (body != null) {
+                httpResponse.setResponse(body.string());
             }
-            throw new PowerJobException(String.format("http request failed,code=%d", responseCode));
+
+            Headers respHeaders = response.headers();
+            Set<String> headerNames = respHeaders.names();
+            Map<String, String> respHeaderMap = Maps.newHashMap();
+            headerNames.forEach(hdKey -> respHeaderMap.put(hdKey, respHeaders.get(hdKey)));
+
+            httpResponse.setHeaders(respHeaderMap);
+
+            return httpResponse;
         }
     }
 
