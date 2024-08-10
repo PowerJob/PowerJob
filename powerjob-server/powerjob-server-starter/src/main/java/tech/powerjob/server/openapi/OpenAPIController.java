@@ -58,7 +58,7 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.ASSERT)
     public ResultDTO<Long> assertAppName(String appName, @RequestParam(required = false) String password) {
-        return ResultDTO.success(appInfoService.assertApp(appName, password));
+        return ResultDTO.success(appInfoService.assertApp(appName, password, null));
     }
 
     /**

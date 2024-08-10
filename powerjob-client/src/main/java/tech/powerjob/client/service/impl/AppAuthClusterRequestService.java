@@ -10,6 +10,7 @@ import tech.powerjob.client.module.AppAuthResult;
 import tech.powerjob.client.service.HttpResponse;
 import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.common.OpenAPIConstant;
+import tech.powerjob.common.enums.EncryptType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.utils.DigestUtils;
@@ -95,6 +96,7 @@ abstract class AppAuthClusterRequestService extends ClusterRequestService {
         AppAuthRequest appAuthRequest = new AppAuthRequest();
         appAuthRequest.setAppName(config.getAppName());
         appAuthRequest.setEncryptedPassword(DigestUtils.md5(config.getPassword()));
+        appAuthRequest.setEncryptType(EncryptType.MD5.getCode());
         return appAuthRequest;
     }
 }

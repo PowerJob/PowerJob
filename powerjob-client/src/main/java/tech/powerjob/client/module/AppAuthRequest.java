@@ -26,6 +26,12 @@ public class AppAuthRequest implements Serializable {
      * 加密后密码
      */
     private String encryptedPassword;
+
+    /**
+     * 加密类型
+     */
+    private String encryptType;
+
     /**
      * 额外参数，方便开发者传递其他参数
      */

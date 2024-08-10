@@ -11,6 +11,7 @@ import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.client.service.RequestService;
 import tech.powerjob.client.service.impl.ClusterRequestServiceOkHttp3Impl;
 import tech.powerjob.common.OpenAPIConstant;
+import tech.powerjob.common.enums.EncryptType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
@@ -53,6 +54,7 @@ public class PowerJobClient implements IPowerJobClient {
         AppAuthRequest appAuthRequest = new AppAuthRequest();
         appAuthRequest.setAppName(appName);
         appAuthRequest.setEncryptedPassword(DigestUtils.md5(config.getPassword()));
+        appAuthRequest.setEncryptType(EncryptType.MD5.getCode());
 
         String assertResponse = requestService.request(OpenAPIConstant.AUTH_APP, PowerRequestBody.newJsonRequestBody(appAuthRequest));
 

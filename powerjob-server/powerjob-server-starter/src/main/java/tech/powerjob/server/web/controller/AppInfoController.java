@@ -13,7 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
@@ -22,13 +25,12 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.common.AuthConstants;
-import tech.powerjob.common.enums.ErrorCodes;
-import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveAppGrantPermissionPlugin;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.common.module.WorkerInfo;
+import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.QueryConvertUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
@@ -67,6 +69,7 @@ public class AppInfoController {
 
     private final UserWebService userWebService;
 
+    private final AppInfoService appInfoService;
     private final AppInfoRepository appInfoRepository;
 
     private final NamespaceWebService namespaceWebService;
@@ -86,7 +89,7 @@ public class AppInfoController {
             appInfoDO.setGmtCreate(new Date());
             appInfoDO.setCreator(LoginUserHolder.getUserId());
         } else {
-            appInfoDO = appInfoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by id:" + id));
+            appInfoDO = appInfoService.findById(id, false).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by id:" + id));
 
             // 不允许修改 appName
             if (!appInfoDO.getAppName().equalsIgnoreCase(req.getAppName())) {
@@ -104,7 +107,7 @@ public class AppInfoController {
         appInfoDO.setGmtModified(new Date());
         appInfoDO.setModifier(LoginUserHolder.getUserId());
 
-        AppInfoDO savedAppInfo = appInfoRepository.saveAndFlush(appInfoDO);
+        AppInfoDO savedAppInfo = appInfoService.save(appInfoDO);
 
         // 重现授权
         webAuthService.processPermissionOnSave(RoleScope.APP, savedAppInfo.getId(), req.getComponentUserRoleInfo());
@@ -123,7 +126,7 @@ public class AppInfoController {
             return ResultDTO.failed("Unable to delete apps with live workers, Please remove the worker dependency first!");
         }
 
-        appInfoRepository.deleteById(appId);
+        appInfoService.deleteById(appId);
         log.warn("[AppInfoController] delete app[id={}] successfully!", appId);
         return ResultDTO.success(null);
     }
@@ -188,18 +191,13 @@ public class AppInfoController {
     @ApiPermission(name = "App-BecomeAdmin", roleScope = RoleScope.GLOBAL, requiredPermission = Permission.NONE)
     public ResultDTO<Void> becomeAdminByAppNameAndPassword(@RequestBody AppAssertRequest appAssertRequest) {
         String appName = appAssertRequest.getAppName();
-        Optional<AppInfoDO> appInfoOpt = appInfoRepository.findByAppName(appName);
-        if (!appInfoOpt.isPresent()) {
-            throw new IllegalArgumentException("can't find app by appName: " + appName);
-        }
-        if (!StringUtils.equals(appInfoOpt.get().getPassword(), appAssertRequest.getPassword())) {
-            throw new PowerJobAuthException(ErrorCodes.INCORRECT_PASSWORD);
-        }
+
+        Long appId = appInfoService.assertApp(appName, appAssertRequest.getPassword(), appAssertRequest.getEncryptType());
 
         Map<String, Object> extra = Maps.newHashMap();
         extra.put("source", "becomeAdminByAppNameAndPassword");
 
-        webAuthService.grantRole2LoginUser(RoleScope.APP, appInfoOpt.get().getId(), Role.ADMIN, JsonUtils.toJSONString(extra));
+        webAuthService.grantRole2LoginUser(RoleScope.APP, appId, Role.ADMIN, JsonUtils.toJSONString(extra));
 
         return ResultDTO.success(null);
     }
@@ -224,7 +222,8 @@ public class AppInfoController {
 
                 // 密码
                 boolean hasPermission = webAuthService.hasPermission(RoleScope.APP, appInfoDO.getId(), Permission.READ);
-                appInfoVO.setPassword(hasPermission ? appInfoDO.getPassword() : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
+                String originPassword = appInfoService.fetchOriginAppPassword(appInfoDO);
+                appInfoVO.setPassword(hasPermission ? originPassword : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
 
                 // namespace
                 Optional<NamespaceDO> namespaceOpt = namespaceWebService.findById(appInfoDO.getNamespaceId());

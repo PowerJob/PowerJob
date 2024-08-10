@@ -43,7 +43,6 @@ public enum ErrorCodes {
     /**
      * OPENAPI 错误码号段 -10XX
      */
-    OPEN_API_PASSWORD_ERROR("-1001", "OPEN_API_PASSWORD_ERROR"),
     OPEN_API_AUTH_FAILED("-1002", "OPEN_API_AUTH_FAILED"),
 
     /**
