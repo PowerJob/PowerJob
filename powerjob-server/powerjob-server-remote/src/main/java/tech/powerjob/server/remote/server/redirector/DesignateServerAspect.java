@@ -14,14 +14,13 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.RemoteConstant;
-import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
-import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.transporter.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -100,7 +99,7 @@ public class DesignateServerAspect {
 
         final URL friendUrl = ServerURLFactory.process2Friend(targetServer);
 
-        CompletionStage<AskResponse> askCS = transportService.ask(Protocol.HTTP.name(), friendUrl, remoteProcessReq, AskResponse.class);
+        CompletionStage<AskResponse> askCS = transportService.ask(transportService.defaultProtocol().getProtocol(), friendUrl, remoteProcessReq, AskResponse.class);
         AskResponse askResponse = askCS.toCompletableFuture().get(RemoteConstant.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
 
         if (!askResponse.isSuccess()) {

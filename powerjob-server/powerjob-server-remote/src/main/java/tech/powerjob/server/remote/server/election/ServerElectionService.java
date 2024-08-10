@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.request.ServerDiscoveryRequest;
 import tech.powerjob.common.response.AskResponse;
@@ -16,8 +15,8 @@ import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.repository.AppInfoRepository;
 import tech.powerjob.server.remote.transporter.ProtocolInfo;
-import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 import tech.powerjob.server.remote.transporter.TransportService;
+import tech.powerjob.server.remote.transporter.impl.ServerURLFactory;
 
 import java.util.Date;
 import java.util.Optional;
@@ -150,7 +149,7 @@ public class ServerElectionService {
 
         URL targetUrl = ServerURLFactory.ping2Friend(serverAddress);
         try {
-            AskResponse response = transportService.ask(Protocol.HTTP.name(), targetUrl, ping, AskResponse.class)
+            AskResponse response = transportService.ask(transportService.defaultProtocol().getProtocol(), targetUrl, ping, AskResponse.class)
                     .toCompletableFuture()
                     .get(PING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             if (response.isSuccess()) {
