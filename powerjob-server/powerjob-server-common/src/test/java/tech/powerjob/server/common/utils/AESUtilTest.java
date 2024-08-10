@@ -13,7 +13,7 @@ class AESUtilTest {
     @Test
     void testAes() throws Exception {
 
-        String sk = "cmxzjzty";
+        String sk = "ChinaNo.1_ChinaNo.1_ChinaNo.1";
 
         String txt = "kyksjdfh";
 

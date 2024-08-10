@@ -37,9 +37,9 @@ public class AppInfoServiceImpl implements AppInfoService {
 
     private final AppInfoRepository appInfoRepository;
 
-    private static final String ENCRYPT_KEY = "ChinaNo.1";
+    private static final String ENCRYPT_KEY = "ChinaNo.1_ChinaNo.1_ChinaNo.1AAA";
 
-    private static final String ENCRYPT_PWD_PREFIX = "aes:";
+    private static final String ENCRYPT_PWD_PREFIX = "sys_encrypt_aes:";
 
     @Override
     public Optional<AppInfoDO> findByAppName(String appName) {
