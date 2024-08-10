@@ -23,6 +23,8 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.DigestUtils;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +37,7 @@ import static tech.powerjob.client.TypeStore.*;
  * @since 2020/4/15
  */
 @Slf4j
-public class PowerJobClient implements IPowerJobClient {
+public class PowerJobClient implements IPowerJobClient, Closeable {
 
     private Long appId;
     
@@ -545,5 +547,9 @@ public class PowerJobClient implements IPowerJobClient {
         String post = requestService.request(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO, PowerRequestBody.newFormRequestBody(param));
         return JSON.parseObject(post, WF_INSTANCE_RESULT_TYPE);
     }
-    
+
+    @Override
+    public void close() throws IOException {
+        requestService.close();
+    }
 }

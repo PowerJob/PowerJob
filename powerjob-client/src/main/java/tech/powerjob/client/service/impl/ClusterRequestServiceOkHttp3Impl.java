@@ -131,4 +131,17 @@ public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestServi
                 .connectTimeout(Optional.ofNullable(config.getReadTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS);
     }
 
+    @Override
+    public void close() throws IOException {
+
+        // 关闭 Dispatcher
+        okHttpClient.dispatcher().executorService().shutdown();
+        // 清理连接池
+        okHttpClient.connectionPool().evictAll();
+        // 清理缓存（如果有使用）
+        Cache cache = okHttpClient.cache();
+        if (cache != null) {
+            cache.close();
+        }
+    }
 }
