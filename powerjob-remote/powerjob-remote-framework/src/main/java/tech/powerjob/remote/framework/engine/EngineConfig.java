@@ -31,6 +31,10 @@ public class EngineConfig implements Serializable {
      */
     private Address bindAddress;
     /**
+     * 外部地址（需要 NAT 等情况存在）
+     */
+    private Address externalAddress;
+    /**
      * actor实例，交由使用侧自己实例化以便自行注入各种 bean
      */
     private List<Object> actorList;

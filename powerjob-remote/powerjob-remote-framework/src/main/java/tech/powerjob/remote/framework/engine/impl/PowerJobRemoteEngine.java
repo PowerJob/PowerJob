@@ -41,6 +41,7 @@ public class PowerJobRemoteEngine implements RemoteEngine {
 
         csInitializer.init(new CSInitializerConfig()
                 .setBindAddress(engineConfig.getBindAddress())
+                .setExternalAddress(engineConfig.getExternalAddress())
                 .setServerType(engineConfig.getServerType())
         );
 

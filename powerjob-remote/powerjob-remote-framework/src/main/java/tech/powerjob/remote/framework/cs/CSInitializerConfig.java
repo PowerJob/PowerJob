@@ -19,7 +19,14 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class CSInitializerConfig implements Serializable {
 
+    /**
+     * 需要绑定的地址（本地）
+     */
     private Address bindAddress;
+    /**
+     * 外部地址（需要 NAT 等情况存在）
+     */
+    private Address externalAddress;
 
     private ServerType serverType;
 }
