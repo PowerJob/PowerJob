@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import tech.powerjob.client.common.Protocol;
+import tech.powerjob.client.extension.ClientExtension;
 
 import java.io.Serializable;
 import java.util.List;
@@ -62,4 +63,9 @@ public class ClientConfig implements Serializable {
      * 用于流量被基础设施识别
      */
     private Map<String, String> defaultHeaders;
+
+    /**
+     * 客户端行为扩展
+     */
+    private ClientExtension clientExtension;
 }

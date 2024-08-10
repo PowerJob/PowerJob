@@ -2,11 +2,14 @@ package tech.powerjob.client.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.client.ClientConfig;
+import tech.powerjob.client.extension.ClientExtension;
+import tech.powerjob.client.extension.ExtensionContext;
 import tech.powerjob.client.service.HttpResponse;
 import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.client.service.RequestService;
 import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.utils.CollectionUtils;
 
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
@@ -62,12 +65,10 @@ abstract class ClusterRequestService implements RequestService {
      * 封装集群请求能力
      * @param path 请求 PATH
      * @param powerRequestBody 请求体
-     * @param headers 请求头
      * @return 响应
      */
     protected HttpResponse clusterHaRequest(String path, PowerRequestBody powerRequestBody) {
 
-        List<String> addressList = config.getAddressList();
         // 先尝试默认地址
         String url = getUrl(path, currentAddress);
         try {
@@ -75,6 +76,8 @@ abstract class ClusterRequestService implements RequestService {
         } catch (IOException e) {
             log.warn("[ClusterRequestService] request url:{} failed, reason is {}.", url, e.toString());
         }
+
+        List<String> addressList = fetchAddressList();
 
         // 失败，开始重试
         for (String addr : addressList) {
@@ -94,6 +97,19 @@ abstract class ClusterRequestService implements RequestService {
 
         log.error("[ClusterRequestService] do post for path: {} failed because of no server available in {}.", path, addressList);
         throw new PowerJobException("no server available when send post request");
+    }
+
+    private List<String> fetchAddressList() {
+
+        ClientExtension clientExtension = config.getClientExtension();
+        if (clientExtension != null) {
+            List<String> addressList = clientExtension.addressProvider(new ExtensionContext());
+            if (!CollectionUtils.isEmpty(addressList)) {
+                return addressList;
+            }
+        }
+
+        return config.getAddressList();
     }
 
     /**

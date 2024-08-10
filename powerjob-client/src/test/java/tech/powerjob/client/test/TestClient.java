@@ -1,6 +1,7 @@
 package tech.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.client.PowerJobClient;
@@ -19,6 +20,7 @@ import tech.powerjob.common.response.ResultDTO;
  * @author Echo009
  * @since 2020/4/15
  */
+@Slf4j
 class TestClient extends ClientInitializer {
 
     public static final long JOB_ID = 1L;
@@ -42,8 +44,10 @@ class TestClient extends ClientInitializer {
         newJobInfo.setMinMemorySpace(1.2);
         newJobInfo.setMinDiskSpace(1.3);
 
+        log.info("[TestClient] [testSaveJob] SaveJobInfoRequest: {}", JSONObject.toJSONString(newJobInfo));
+
         ResultDTO<Long> resultDTO = powerJobClient.saveJob(newJobInfo);
-        System.out.println(JSONObject.toJSONString(resultDTO));
+        log.info("[TestClient] [testSaveJob] result: {}", JSONObject.toJSONString(resultDTO));
         Assertions.assertNotNull(resultDTO);
     }
 
