@@ -144,6 +144,11 @@ public class AppInfoController {
             Set<Long> targetIds = Sets.newHashSet();
             webAuthService.fetchMyPermissionTargets(RoleScope.APP).values().forEach(targetIds::addAll);
             queryAppIds = targetIds;
+
+            if (CollectionUtils.isEmpty(queryAppIds)) {
+                return ResultDTO.success(new PageResult<>());
+            }
+
         } else {
             queryAppIds = Collections.emptySet();
         }
