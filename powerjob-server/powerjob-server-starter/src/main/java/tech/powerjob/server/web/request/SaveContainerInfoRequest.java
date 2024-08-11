@@ -2,7 +2,7 @@ package tech.powerjob.server.web.request;
 
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import lombok.Data;
 
 /**

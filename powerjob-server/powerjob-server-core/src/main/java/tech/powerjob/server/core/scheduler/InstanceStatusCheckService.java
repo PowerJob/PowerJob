@@ -12,7 +12,7 @@ import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.server.common.Holder;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.core.DispatchService;
 import tech.powerjob.server.core.instance.InstanceManager;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;

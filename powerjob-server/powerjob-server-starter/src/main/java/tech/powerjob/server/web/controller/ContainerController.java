@@ -12,7 +12,7 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.core.container.ContainerService;
 import tech.powerjob.server.core.container.ContainerTemplateGenerator;

@@ -1,6 +1,6 @@
 package tech.powerjob.server.web.converter;
 
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.web.response.UserBaseVO;
 

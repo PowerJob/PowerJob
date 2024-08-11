@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.core.env.Environment;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
 import tech.powerjob.server.extension.dfs.DFsService;
 import tech.powerjob.server.extension.dfs.DownloadRequest;

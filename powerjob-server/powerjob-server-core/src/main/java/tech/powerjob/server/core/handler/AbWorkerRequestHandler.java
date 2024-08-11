@@ -12,7 +12,7 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.remote.framework.actor.Handler;
 import tech.powerjob.remote.framework.actor.ProcessType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.monitor.MonitorService;

@@ -1,4 +1,4 @@
-package tech.powerjob.server.common.constants;
+package tech.powerjob.common.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,10 +13,16 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SwitchableStatus {
     /**
-     *
+     * 启用
      */
     ENABLE(1),
+    /**
+     * 关闭
+     */
     DISABLE(2),
+    /**
+     * 软删除
+     */
     DELETED(99);
 
     private final int v;

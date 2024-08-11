@@ -37,7 +37,7 @@ import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.extension.LockService;

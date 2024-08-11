@@ -11,7 +11,7 @@ import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
 import tech.powerjob.server.core.workflow.algorithm.WorkflowDAGUtils;

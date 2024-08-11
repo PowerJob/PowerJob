@@ -13,7 +13,7 @@ import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.common.SJ;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.persistence.QueryConvertUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;

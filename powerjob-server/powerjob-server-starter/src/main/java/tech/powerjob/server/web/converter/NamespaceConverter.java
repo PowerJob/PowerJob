@@ -2,7 +2,7 @@ package tech.powerjob.server.web.converter;
 
 import org.springframework.beans.BeanUtils;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 import tech.powerjob.server.web.response.NamespaceBaseVO;
 

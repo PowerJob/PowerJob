@@ -20,6 +20,7 @@
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>
+        <powerjob-client.version>5.1.0</powerjob-client.version>
     </properties>
 
     <dependencies>
@@ -57,6 +58,12 @@
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-official-processors</artifactId>
             <version>${powerjob.official.processors.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-client</artifactId>
+            <version>${powerjob-client.version}</version>
         </dependency>
 
         <!-- 高版本 JDK 移除了 JavaEE 的包，需要手动引入 -->
