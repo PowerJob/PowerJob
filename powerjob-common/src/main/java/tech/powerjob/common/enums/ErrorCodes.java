@@ -31,9 +31,19 @@ public enum ErrorCodes {
 
     INCORRECT_PASSWORD("-400", "INCORRECT_PASSWORD"),
 
+    /**
+     * 非法令牌
+     */
     INVALID_TOKEN("-401", "INVALID_TOKEN"),
-
+    /**
+     * 无效 APP（无法找到 app）
+     */
     INVALID_APP("-402", "INVALID_APP"),
+
+    /**
+     * 令牌过期
+     */
+    TOKEN_EXPIRED("-403", "TOKEN_EXPIRED"),
 
     /**
      * 系统内部异常

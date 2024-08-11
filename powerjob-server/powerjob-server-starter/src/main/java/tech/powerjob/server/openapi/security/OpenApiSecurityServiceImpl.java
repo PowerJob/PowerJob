@@ -12,6 +12,7 @@ import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.auth.common.utils.HttpServletUtils;
 import tech.powerjob.server.auth.jwt.JwtService;
+import tech.powerjob.server.auth.jwt.ParseResult;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 
@@ -53,7 +54,15 @@ public class OpenApiSecurityServiceImpl implements OpenApiSecurityService {
             throw new PowerJobException(ErrorCodes.OPEN_API_AUTH_FAILED, "token_is_empty");
         }
 
-        Map<String, Object> jwtResult = jwtService.parse(token, null);
+        ParseResult parseResult = jwtService.parse(token, null);
+        switch (parseResult.getStatus()) {
+            case EXPIRED:
+                throw new PowerJobException(ErrorCodes.TOKEN_EXPIRED, parseResult.getMsg());
+            case FAILED:
+                throw new PowerJobException(ErrorCodes.INVALID_TOKEN, parseResult.getMsg());
+        }
+
+        Map<String, Object> jwtResult = parseResult.getResult();
 
         Long appIdFromJwt = MapUtils.getLong(jwtResult, JWT_KEY_APP_ID);
         String passwordFromJwt = MapUtils.getString(jwtResult, JWT_KEY_APP_PASSWORD);

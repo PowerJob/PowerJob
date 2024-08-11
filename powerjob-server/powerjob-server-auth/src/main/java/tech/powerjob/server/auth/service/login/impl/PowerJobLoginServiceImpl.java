@@ -236,7 +236,7 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         if (StringUtils.isEmpty(jwtStr)) {
             return Optional.empty();
         }
-        final Map<String, Object> jwtBodyMap = jwtService.parse(jwtStr, null);
+        final Map<String, Object> jwtBodyMap = jwtService.parse(jwtStr, null).getResult();
 
         if (MapUtils.isEmpty(jwtBodyMap)) {
             return Optional.empty();

@@ -126,10 +126,10 @@ public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestServi
                 // 设置读取超时时间
                 .readTimeout(Optional.ofNullable(config.getReadTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS)
                 // 设置写的超时时间
-                .writeTimeout(Optional.ofNullable(config.getReadTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS)
+                .writeTimeout(Optional.ofNullable(config.getWriteTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS)
                 // 设置连接超时时间
-                .connectTimeout(Optional.ofNullable(config.getReadTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS)
-                .callTimeout(Optional.ofNullable(config.getReadTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS);
+                .connectTimeout(Optional.ofNullable(config.getConnectionTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS)
+                .callTimeout(Optional.ofNullable(config.getConnectionTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS);
     }
 
     @Override

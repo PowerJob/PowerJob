@@ -3,6 +3,7 @@ package tech.powerjob.client.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.client.ClientConfig;
 import tech.powerjob.client.TypeStore;
 import tech.powerjob.client.module.AppAuthRequest;
@@ -24,6 +25,7 @@ import java.util.Map;
  * @author tjq
  * @since 2024/2/21
  */
+@Slf4j
 abstract class AppAuthClusterRequestService extends ClusterRequestService {
 
     protected AppAuthResult appAuthResult;
@@ -49,6 +51,7 @@ abstract class AppAuthClusterRequestService extends ClusterRequestService {
         }
 
         // 否则请求无效，刷新鉴权后重新请求
+        log.warn("[PowerJobClient] auth failed[authStatus: {}], try to refresh the auth info", authStatus);
         refreshAppAuthResult();
         httpResponse = doRequest(path, powerRequestBody);
 
@@ -83,12 +86,14 @@ abstract class AppAuthClusterRequestService extends ClusterRequestService {
         AppAuthRequest appAuthRequest = buildAppAuthRequest();
         HttpResponse httpResponse = clusterHaRequest(OpenAPIConstant.AUTH_APP, PowerRequestBody.newJsonRequestBody(appAuthRequest));
         if (!httpResponse.isSuccess()) {
-            throw new PowerJobException("auth_app_exception!");
+            throw new PowerJobException("AUTH_APP_EXCEPTION!");
         }
         ResultDTO<AppAuthResult> authResultDTO = JSONObject.parseObject(httpResponse.getResponse(), TypeStore.APP_AUTH_RESULT_TYPE);
         if (!authResultDTO.isSuccess()) {
-            throw new PowerJobException("auth_failed:" + authResultDTO.getMessage());
+            throw new PowerJobException("AUTH_FAILED_" + authResultDTO.getMessage());
         }
+
+        log.warn("[PowerJobClient] refresh auth info successfully!");
         this.appAuthResult = authResultDTO.getData();
     }
 

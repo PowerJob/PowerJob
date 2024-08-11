@@ -12,5 +12,5 @@ public interface JwtService {
 
     String build(Map<String, Object> body, String extraSk);
 
-    Map<String, Object> parse(String jwt, String extraSk);
+    ParseResult parse(String jwt, String extraSk);
 }

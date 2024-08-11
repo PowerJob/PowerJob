@@ -4,10 +4,13 @@ import com.google.common.collect.Maps;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.auth.jwt.JwtService;
+import tech.powerjob.server.auth.jwt.ParseResult;
 import tech.powerjob.server.auth.jwt.SecretProvider;
 
 import javax.annotation.Resource;
@@ -22,6 +25,7 @@ import java.util.UUID;
  * @author tjq
  * @since 2023/3/20
  */
+@Slf4j
 @Service
 public class JwtServiceImpl implements JwtService {
 
@@ -63,8 +67,16 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public Map<String, Object> parse(String jwt, String extraSk) {
-        return innerParse(fetchSk(extraSk), jwt);
+    public ParseResult parse(String jwt, String extraSk) {
+        try {
+            Map<String, Object> parseResult = innerParse(fetchSk(extraSk), jwt);
+            return new ParseResult().setStatus(ParseResult.Status.SUCCESS).setResult(parseResult);
+        } catch (ExpiredJwtException expiredJwtException) {
+            return new ParseResult().setStatus(ParseResult.Status.EXPIRED).setMsg(expiredJwtException.getMessage());
+        } catch (Exception e) {
+            log.warn("[JwtService] parse jwt[{}] with extraSk[{}] failed", jwt, extraSk, e);
+            return new ParseResult().setStatus(ParseResult.Status.FAILED).setMsg(ExceptionUtils.getMessage(e));
+        }
     }
 
     private String fetchSk(String extraSk) {
