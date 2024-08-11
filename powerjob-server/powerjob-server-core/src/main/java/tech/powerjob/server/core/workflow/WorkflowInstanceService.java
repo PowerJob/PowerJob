@@ -12,7 +12,7 @@ import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.lock.UseCacheLock;

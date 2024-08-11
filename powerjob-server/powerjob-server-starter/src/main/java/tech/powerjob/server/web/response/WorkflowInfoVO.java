@@ -6,7 +6,7 @@ import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.server.common.SJ;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

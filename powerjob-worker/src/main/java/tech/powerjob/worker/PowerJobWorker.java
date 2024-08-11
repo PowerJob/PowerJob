@@ -3,6 +3,7 @@ package tech.powerjob.worker;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.model.WorkerAppInfo;
 import tech.powerjob.common.utils.CommonUtils;
@@ -54,7 +55,7 @@ public class PowerJobWorker {
     public PowerJobWorker(PowerJobWorkerConfig config) {
         this.workerRuntime = new WorkerRuntime();
         this.remoteEngine = new PowerJobRemoteEngine();
-        workerRuntime.setWorkerConfig(config);
+        workerRuntime.setWorkerConfig(reConfig(config));
     }
 
     public void init() throws Exception {
@@ -85,10 +86,10 @@ public class PowerJobWorker {
             workerRuntime.setAppInfo(appInfo);
 
             // 初始化网络数据，区别对待上报地址和本机绑定地址（对外统一使用上报地址）
-            String externalIp = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_ADDRESS, localBindIp);
+            String externalIp = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_ADDRESS, null);
             String externalPort = PropertyUtils.readProperty(PowerJobDKey.NT_EXTERNAL_PORT, String.valueOf(localBindPort));
             log.info("[PowerJobWorker] [ADDRESS_INFO] localBindIp: {}, localBindPort: {}; externalIp: {}, externalPort: {}", localBindIp, localBindPort, externalIp, externalPort);
-            workerRuntime.setWorkerAddress(Address.toFullAddress(externalIp, Integer.parseInt(externalPort)));
+            workerRuntime.setWorkerAddress(Address.toFullAddress(Optional.ofNullable(externalIp).orElse(localBindIp), Integer.parseInt(externalPort)));
 
             // 初始化 线程池
             final ExecutorManager executorManager = new ExecutorManager(workerRuntime.getWorkerConfig());
@@ -109,6 +110,12 @@ public class PowerJobWorker {
                     .setServerType(ServerType.WORKER)
                     .setBindAddress(new Address().setHost(localBindIp).setPort(localBindPort))
                     .setActorList(Lists.newArrayList(taskTrackerActor, processorTrackerActor, workerActor));
+
+            if (StringUtils.isNotEmpty(externalIp)) {
+                Address externalAddress = new Address().setHost(externalIp).setPort(Integer.parseInt(externalPort));
+                engineConfig.setExternalAddress(externalAddress);
+                log.info("[PowerJobWorker] [ADDRESS_INFO] exist externalIp, add external address to engine config: {}", externalAddress);
+            }
 
             EngineOutput engineOutput = remoteEngine.start(engineConfig);
             workerRuntime.setTransporter(engineOutput.getTransporter());
@@ -138,6 +145,12 @@ public class PowerJobWorker {
             log.error("[PowerJobWorker] initialize PowerJobWorker failed, using {}.", stopwatch, e);
             throw e;
         }
+    }
+
+    private PowerJobWorkerConfig reConfig(PowerJobWorkerConfig config) {
+        CommonUtils.requireNonNull(config.getServerAddress(), "ServerAddress can't be null or empty!");
+        Collections.shuffle(config.getServerAddress());
+        return config;
     }
 
     private ProcessorLoader buildProcessorLoader(WorkerRuntime runtime) {

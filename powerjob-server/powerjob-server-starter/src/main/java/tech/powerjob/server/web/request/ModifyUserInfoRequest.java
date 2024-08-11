@@ -14,6 +14,7 @@ public class ModifyUserInfoRequest {
     private Long id;
 
     private String username;
+    private String nick;
     private String password;
     private String webHook;
 
@@ -25,4 +26,6 @@ public class ModifyUserInfoRequest {
      * 邮箱地址
      */
     private String email;
+
+    private String extra;
 }

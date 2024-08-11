@@ -1,24 +1,28 @@
-package tech.powerjob.server.web.controller;
+package tech.powerjob.server.openapi;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.client.module.AppAuthRequest;
+import tech.powerjob.client.module.AppAuthResult;
 import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
 import tech.powerjob.common.request.query.JobInfoQuery;
-import tech.powerjob.common.response.InstanceInfoDTO;
-import tech.powerjob.common.response.JobInfoDTO;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.common.response.WorkflowInstanceInfoDTO;
+import tech.powerjob.common.response.*;
 import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.core.service.CacheService;
 import tech.powerjob.server.core.service.JobService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceService;
 import tech.powerjob.server.core.workflow.WorkflowService;
+import tech.powerjob.server.openapi.security.OpenApiSecurityService;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
@@ -31,6 +35,7 @@ import java.util.List;
  * @author tjq
  * @since 2020/4/15
  */
+@Slf4j
 @RestController
 @RequestMapping(OpenAPIConstant.WEB_PATH)
 @RequiredArgsConstructor
@@ -46,12 +51,37 @@ public class OpenAPIController {
 
     private final WorkflowInstanceService workflowInstanceService;
 
+    private final OpenApiSecurityService openApiSecurityService;
+
     private final CacheService cacheService;
 
 
     @PostMapping(OpenAPIConstant.ASSERT)
     public ResultDTO<Long> assertAppName(String appName, @RequestParam(required = false) String password) {
-        return ResultDTO.success(appInfoService.assertApp(appName, password));
+        return ResultDTO.success(appInfoService.assertApp(appName, password, null));
+    }
+
+    /**
+     * APP 鉴权
+     * @param appAuthRequest 鉴权请求
+     * @return 鉴权响应
+     */
+    @PostMapping(OpenAPIConstant.AUTH_APP)
+    public PowerResultDTO<AppAuthResult> auth(@RequestBody AppAuthRequest appAuthRequest) {
+        try {
+            return PowerResultDTO.s(openApiSecurityService.authAppByParam(appAuthRequest));
+        } catch (PowerJobException pje) {
+            PowerResultDTO<AppAuthResult> f = PowerResultDTO.f(pje.getMessage());
+            f.setCode(pje.getCode());
+            return f;
+        } catch (Throwable t) {
+
+            log.error("[OpenAPIController] auth failed for request: {}", appAuthRequest, t);
+
+            PowerResultDTO<AppAuthResult> f = PowerResultDTO.f(ExceptionUtils.getMessage(t));
+            f.setCode(ErrorCodes.SYSTEM_UNKNOWN_ERROR.getCode());
+            return f;
+        }
     }
 
     /* ************* Job 区 ************* */

@@ -201,9 +201,9 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                         instanceId, subInstanceId, taskBriefInfo.getLastReportTime(), reportTime, taskId, newStatus);
                 return;
             }
-            // 检查状态转移是否合法，fix issue 404
+            // 检查状态转移是否合法，fix issue 404（20240306：无排队情况下，receive 和 running 几乎会在同一时间触发，导致这两个请求先后顺序几乎无法保证，大概率有此行输出，因此日志级别降级到 INFO）
             if (nTaskStatus.getValue() < taskBriefInfo.getStatus().getValue()) {
-                log.warn("[TaskTracker-{}-{}] receive invalid task status report(taskId={},currentStatus={},newStatus={}), TaskTracker will drop this report.",
+                log.info("[TaskTracker-{}-{}] receive invalid task status report(taskId={},currentStatus={},newStatus={}), TaskTracker will drop this report.",
                         instanceId, subInstanceId, taskId, taskBriefInfo.getStatus().getValue(), newStatus);
                 return;
             }
@@ -490,7 +490,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                     // 获取 ProcessorTracker 地址，如果 Task 中自带了 Address，则使用该 Address
                     String ptAddress = task.getAddress();
                     if (StringUtils.isEmpty(ptAddress) || RemoteConstant.EMPTY_ADDRESS.equals(ptAddress)) {
-                        if (taskNeedByPassTaskTracker()) {
+                        if (taskNeedByPassTaskTracker(availablePtIps)) {
                             do {
                                 ptAddress = availablePtIps.get(index.getAndIncrement() % availablePtIps.size());
                             } while (workerRuntime.getWorkerAddress().equals(ptAddress));
@@ -510,8 +510,18 @@ public abstract class HeavyTaskTracker extends TaskTracker {
             log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch.stop());
         }
 
-        private boolean taskNeedByPassTaskTracker() {
+        /**
+         * padding的生效条件： 在map || mapReduce 的情况下， 且是该appId的worker是 非单机运行时，才生效。
+         * fix: 当该appId的worker是单机运行 且 padding时， 导致Dispatcher分发任务处于死循环中， 致使无法分发任务，状态一直为运行中，
+         *      且该线程不能通过停止任务的方式去停止，只能通过重启该work实例的方式释放该线程。
+         */
+        private boolean taskNeedByPassTaskTracker(List<String> availablePtIps) {
             if (ExecuteType.MAP.equals(executeType) || ExecuteType.MAP_REDUCE.equals(executeType)) {
+
+                if (availablePtIps.size() <= 1) {
+                    return false;
+                }
+
                 return TaskTrackerBehavior.PADDLING.getV().equals(advancedRuntimeConfig.getTaskTrackerBehavior());
             }
             return false;

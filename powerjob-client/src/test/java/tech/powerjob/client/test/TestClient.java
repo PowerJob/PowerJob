@@ -1,6 +1,9 @@
 package tech.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import tech.powerjob.client.PowerJobClient;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
@@ -9,11 +12,6 @@ import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.common.response.ResultDTO;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Test cases for {@link PowerJobClient}
@@ -22,17 +20,18 @@ import java.util.concurrent.TimeUnit;
  * @author Echo009
  * @since 2020/4/15
  */
+@Slf4j
 class TestClient extends ClientInitializer {
 
-    public static final long JOB_ID = 4L;
+    public static final long JOB_ID = 1L;
 
     @Test
     void testSaveJob() {
 
         SaveJobInfoRequest newJobInfo = new SaveJobInfoRequest();
         newJobInfo.setId(JOB_ID);
-        newJobInfo.setJobName("omsOpenAPIJobccccc");
-        newJobInfo.setJobDescription("test OpenAPI");
+        newJobInfo.setJobName("omsOpenAPIJobccccc" + System.currentTimeMillis());
+        newJobInfo.setJobDescription("test OpenAPI" + System.currentTimeMillis());
         newJobInfo.setJobParams("{'aa':'bb'}");
         newJobInfo.setTimeExpressionType(TimeExpressionType.CRON);
         newJobInfo.setTimeExpression("0 0 * * * ? ");
@@ -45,8 +44,10 @@ class TestClient extends ClientInitializer {
         newJobInfo.setMinMemorySpace(1.2);
         newJobInfo.setMinDiskSpace(1.3);
 
+        log.info("[TestClient] [testSaveJob] SaveJobInfoRequest: {}", JSONObject.toJSONString(newJobInfo));
+
         ResultDTO<Long> resultDTO = powerJobClient.saveJob(newJobInfo);
-        System.out.println(JSONObject.toJSONString(resultDTO));
+        log.info("[TestClient] [testSaveJob] result: {}", JSONObject.toJSONString(resultDTO));
         Assertions.assertNotNull(resultDTO);
     }
 
@@ -107,21 +108,21 @@ class TestClient extends ClientInitializer {
 
     @Test
     void testFetchInstanceInfo() {
-        ResultDTO<InstanceInfoDTO> res = powerJobClient.fetchInstanceInfo(205436386851946560L);
+        ResultDTO<InstanceInfoDTO> res = powerJobClient.fetchInstanceInfo(702482902331424832L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testStopInstance() {
-        ResultDTO<Void> res = powerJobClient.stopInstance(205436995885858880L);
+        ResultDTO<Void> res = powerJobClient.stopInstance(702482902331424832L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
 
     @Test
     void testFetchInstanceStatus() {
-        ResultDTO<Integer> res = powerJobClient.fetchInstanceStatus(205436995885858880L);
+        ResultDTO<Integer> res = powerJobClient.fetchInstanceStatus(702482902331424832L);
         System.out.println(res);
         Assertions.assertNotNull(res);
     }
@@ -135,19 +136,19 @@ class TestClient extends ClientInitializer {
         Assertions.assertTrue(cancelRes.isSuccess());
     }
 
-    @Test
-    @SneakyThrows
-    void testCancelInstanceInDatabase() {
-        ResultDTO<Long> startRes = powerJobClient.runJob(15L, "start by OhMyClient", 2000000);
-        System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
-
-        // Restart server manually and clear all the data in time wheeler.
-        TimeUnit.MINUTES.sleep(1);
-
-        ResultDTO<Void> cancelRes = powerJobClient.cancelInstance(startRes.getData());
-        System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
-        Assertions.assertTrue(cancelRes.isSuccess());
-    }
+//    @Test
+//    @SneakyThrows
+//    void testCancelInstanceInDatabase() {
+//        ResultDTO<Long> startRes = powerJobClient.runJob(15L, "start by OhMyClient", 2000000);
+//        System.out.println("runJob result: " + JSONObject.toJSONString(startRes));
+//
+//        // Restart server manually and clear all the data in time wheeler.
+//        TimeUnit.MINUTES.sleep(1);
+//
+//        ResultDTO<Void> cancelRes = powerJobClient.cancelInstance(startRes.getData());
+//        System.out.println("cancelJob result: " + JSONObject.toJSONString(cancelRes));
+//        Assertions.assertTrue(cancelRes.isSuccess());
+//    }
 
     @Test
     void testRetryInstance() {

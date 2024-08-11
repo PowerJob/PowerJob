@@ -5,24 +5,24 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.9</version>
+        <version>5.1.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-agent</artifactId>
-    <version>4.3.9</version>
+    <version>5.1.0</version>
     <packaging>jar</packaging>
 
 
     <properties>
-        <powerjob.worker.version>4.3.9</powerjob.worker.version>
+        <powerjob.worker.version>5.1.0</powerjob.worker.version>
         <logback.version>1.2.13</logback.version>
         <picocli.version>4.3.2</picocli.version>
         <spring.version>5.3.31</spring.version>
 
         <spring.boot.version>2.3.4.RELEASE</spring.boot.version>
 
-        <powerjob.official.processors.version>4.3.9</powerjob.official.processors.version>
+        <powerjob.official.processors.version>5.1.0</powerjob.official.processors.version>
 
         <!-- dependency for dynamic sql processor -->
         <mysql.version>8.0.28</mysql.version>

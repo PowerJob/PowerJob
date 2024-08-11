@@ -37,7 +37,7 @@ import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.common.utils.SegmentLock;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.extension.LockService;
@@ -336,7 +336,6 @@ public class ContainerService {
             sb.append("WARN: there exists multi version container now, please redeploy to fix this problem").append(System.lineSeparator());
         }
 
-        sb.append("divisive version ==> ").append(System.lineSeparator());
         version2DeployedContainerInfoList.asMap().forEach((version, deployedContainerInfos) -> {
             sb.append("[version] ").append(version).append(System.lineSeparator());
             deployedContainerInfos.forEach(deployedContainerInfo -> sb.append(String.format("Address: %s, DeployedTime: %s", deployedContainerInfo.getWorkerAddress(), CommonUtils.formatTime(deployedContainerInfo.getDeployedTime()))).append(System.lineSeparator()));

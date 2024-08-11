@@ -1,20 +1,22 @@
 /*
- 官方 SQL 仅基于特定版本（MySQL8）导出，不一定兼容其他数据库，也不一定兼容其他版本。此 SQL 仅供参考。
- 如果您的数据库无法使用此 SQL，建议使用 SpringDataJPA 自带的建表能力，先在开发环境直连测试库自动建表，然后自行导出相关的 SQL 即可
+官方 SQL 仅基于特定版本（MySQL8）导出，不一定兼容其他数据库，也不一定兼容其他版本。此 SQL 仅供参考。
+如果您的数据库无法使用此 SQL，建议使用 SpringDataJPA 自带的建表能力，先在开发环境直连测试库自动建表，然后自行导出相关的 SQL 即可。
+ */
 
+/*
  Navicat Premium Data Transfer
 
  Source Server         : Local@3306
  Source Server Type    : MySQL
  Source Server Version : 80300 (8.3.0)
  Source Host           : localhost:3306
- Source Schema         : powerjob4
+ Source Schema         : powerjob5
 
  Target Server Type    : MySQL
  Target Server Version : 80300 (8.3.0)
  File Encoding         : 65001
 
- Date: 02/03/2024 18:51:36
+ Date: 11/08/2024 23:23:30
 */
 
 SET NAMES utf8mb4;
@@ -27,10 +29,16 @@ DROP TABLE IF EXISTS `app_info`;
 CREATE TABLE `app_info` (
                             `id` bigint NOT NULL AUTO_INCREMENT,
                             `app_name` varchar(255) DEFAULT NULL,
+                            `creator` bigint DEFAULT NULL,
                             `current_server` varchar(255) DEFAULT NULL,
+                            `extra` varchar(255) DEFAULT NULL,
                             `gmt_create` datetime(6) DEFAULT NULL,
                             `gmt_modified` datetime(6) DEFAULT NULL,
+                            `modifier` bigint DEFAULT NULL,
+                            `namespace_id` bigint DEFAULT NULL,
                             `password` varchar(255) DEFAULT NULL,
+                            `tags` varchar(255) DEFAULT NULL,
+                            `title` varchar(255) DEFAULT NULL,
                             PRIMARY KEY (`id`),
                             UNIQUE KEY `uidx01_app_info` (`app_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -126,6 +134,27 @@ CREATE TABLE `job_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
+-- Table structure for namespace
+-- ----------------------------
+DROP TABLE IF EXISTS `namespace`;
+CREATE TABLE `namespace` (
+                             `id` bigint NOT NULL AUTO_INCREMENT,
+                             `code` varchar(255) DEFAULT NULL,
+                             `creator` bigint DEFAULT NULL,
+                             `dept` varchar(255) DEFAULT NULL,
+                             `extra` varchar(255) DEFAULT NULL,
+                             `gmt_create` datetime(6) DEFAULT NULL,
+                             `gmt_modified` datetime(6) DEFAULT NULL,
+                             `modifier` bigint DEFAULT NULL,
+                             `name` varchar(255) DEFAULT NULL,
+                             `status` int DEFAULT NULL,
+                             `tags` varchar(255) DEFAULT NULL,
+                             `token` varchar(255) DEFAULT NULL,
+                             PRIMARY KEY (`id`),
+                             UNIQUE KEY `uidx01_namespace` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
 -- Table structure for oms_lock
 -- ----------------------------
 DROP TABLE IF EXISTS `oms_lock`;
@@ -138,6 +167,21 @@ CREATE TABLE `oms_lock` (
                             `ownerip` varchar(255) DEFAULT NULL,
                             PRIMARY KEY (`id`),
                             UNIQUE KEY `uidx01_oms_lock` (`lock_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Table structure for pwjb_user_info
+-- ----------------------------
+DROP TABLE IF EXISTS `pwjb_user_info`;
+CREATE TABLE `pwjb_user_info` (
+                                  `id` bigint NOT NULL AUTO_INCREMENT,
+                                  `extra` varchar(255) DEFAULT NULL,
+                                  `gmt_create` datetime(6) DEFAULT NULL,
+                                  `gmt_modified` datetime(6) DEFAULT NULL,
+                                  `password` varchar(255) DEFAULT NULL,
+                                  `username` varchar(255) DEFAULT NULL,
+                                  PRIMARY KEY (`id`),
+                                  UNIQUE KEY `uidx01_username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
@@ -155,23 +199,61 @@ CREATE TABLE `server_info` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
+-- Table structure for sundry
+-- ----------------------------
+DROP TABLE IF EXISTS `sundry`;
+CREATE TABLE `sundry` (
+                          `id` bigint NOT NULL AUTO_INCREMENT,
+                          `content` varchar(255) DEFAULT NULL,
+                          `extra` varchar(255) DEFAULT NULL,
+                          `gmt_create` datetime(6) DEFAULT NULL,
+                          `gmt_modified` datetime(6) DEFAULT NULL,
+                          `pkey` varchar(255) DEFAULT NULL,
+                          `skey` varchar(255) DEFAULT NULL,
+                          PRIMARY KEY (`id`),
+                          UNIQUE KEY `uidx01_sundry` (`pkey`,`skey`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
 -- Table structure for user_info
 -- ----------------------------
 DROP TABLE IF EXISTS `user_info`;
 CREATE TABLE `user_info` (
                              `id` bigint NOT NULL AUTO_INCREMENT,
+                             `account_type` varchar(255) DEFAULT NULL,
                              `email` varchar(255) DEFAULT NULL,
                              `extra` varchar(255) DEFAULT NULL,
                              `gmt_create` datetime(6) DEFAULT NULL,
                              `gmt_modified` datetime(6) DEFAULT NULL,
+                             `nick` varchar(255) DEFAULT NULL,
+                             `origin_username` varchar(255) DEFAULT NULL,
                              `password` varchar(255) DEFAULT NULL,
                              `phone` varchar(255) DEFAULT NULL,
+                             `status` int DEFAULT NULL,
+                             `token_login_verify_info` varchar(255) DEFAULT NULL,
                              `username` varchar(255) DEFAULT NULL,
                              `web_hook` varchar(255) DEFAULT NULL,
                              PRIMARY KEY (`id`),
-                             KEY `uidx01_user_info` (`username`),
+                             UNIQUE KEY `uidx01_user_name` (`username`),
                              KEY `uidx02_user_info` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Table structure for user_role
+-- ----------------------------
+DROP TABLE IF EXISTS `user_role`;
+CREATE TABLE `user_role` (
+                             `id` bigint NOT NULL AUTO_INCREMENT,
+                             `extra` varchar(255) DEFAULT NULL,
+                             `gmt_create` datetime(6) DEFAULT NULL,
+                             `gmt_modified` datetime(6) DEFAULT NULL,
+                             `role` int DEFAULT NULL,
+                             `scope` int DEFAULT NULL,
+                             `target` bigint DEFAULT NULL,
+                             `user_id` bigint DEFAULT NULL,
+                             PRIMARY KEY (`id`),
+                             KEY `uidx01_user_id` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Table structure for workflow_info
@@ -244,4 +326,3 @@ CREATE TABLE `workflow_node_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
-

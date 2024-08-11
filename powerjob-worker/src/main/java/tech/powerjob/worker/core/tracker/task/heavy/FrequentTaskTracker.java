@@ -1,6 +1,5 @@
 package tech.powerjob.worker.core.tracker.task.heavy;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -411,8 +410,8 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
                 log.debug("[FQTaskTracker-{}] alert config:{}", instanceId, req.getAlarmConfig());
                 AlarmConfig alarmConfig = JsonUtils.parseObject(req.getAlarmConfig(), AlarmConfig.class);
                 return new AlertManager(alarmConfig);
-            } catch (JsonProcessingException ignore) {
-                //
+            } catch (Exception e) {
+                log.warn("[FQTaskTracker-{}] constructAlertManager failed, will use default config!", instanceId);
             }
         }
         // 默认配置，失败一次就告警，沉默窗口 5 分钟

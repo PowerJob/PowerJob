@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.9</version>
+        <version>5.1.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-server</artifactId>
-    <version>4.3.9</version>
+    <version>5.1.0</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -22,6 +22,7 @@
         <module>powerjob-server-migrate</module>
         <module>powerjob-server-core</module>
         <module>powerjob-server-monitor</module>
+        <module>powerjob-server-auth</module>
     </modules>
 
 
@@ -50,9 +51,9 @@
         <groovy.version>3.0.10</groovy.version>
         <cron-utils.version>9.2.1</cron-utils.version>
 
-        <powerjob-common.version>4.3.9</powerjob-common.version>
-        <powerjob-remote-impl-http.version>4.3.9</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>4.3.9</powerjob-remote-impl-akka.version>
+        <powerjob-common.version>5.1.0</powerjob-common.version>
+        <powerjob-remote-impl-http.version>5.1.0</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>5.1.0</powerjob-remote-impl-akka.version>
         <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
         <aliyun-sdk-oss.version>3.17.1</aliyun-sdk-oss.version>
         <aws-java-sdk-s3.version>1.12.665</aws-java-sdk-s3.version>
@@ -98,7 +99,18 @@
             </dependency>
             <dependency>
                 <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-auth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -120,7 +132,6 @@
                 <artifactId>aws-java-sdk-s3</artifactId>
                 <version>${aws-java-sdk-s3.version}</version>
             </dependency>
-
             <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>

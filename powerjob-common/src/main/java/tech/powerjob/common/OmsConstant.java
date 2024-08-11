@@ -30,4 +30,6 @@ public class OmsConstant {
 
     public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
     public static final String JSON_MEDIA_TYPE = "application/json; charset=utf-8";
+
+    public static final String NULL = "null";
 }

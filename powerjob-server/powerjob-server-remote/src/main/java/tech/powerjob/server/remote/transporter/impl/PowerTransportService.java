@@ -104,23 +104,35 @@ public class PowerTransportService implements TransportService, InitializingBean
 
         // 从构造器注入改为从 applicationContext 获取来避免循环依赖
         final Map<String, Object> beansWithAnnotation = applicationContext.getBeansWithAnnotation(Actor.class);
-        log.info("[PowerTransportService] find Actor num={},names={}", beansWithAnnotation.size(), beansWithAnnotation.keySet());
+        log.info("[PowerTransportService] [{}] find Actor num={},names={}", protocol, beansWithAnnotation.size(), beansWithAnnotation.keySet());
 
         Address address = new Address()
                 .setHost(NetUtils.getLocalHost())
                 .setPort(port);
+
+        ProtocolInfo protocolInfo = new ProtocolInfo(protocol, address.getHost(), address.getPort(), null);
+
         EngineConfig engineConfig = new EngineConfig()
                 .setServerType(ServerType.SERVER)
                 .setType(protocol.toUpperCase())
                 .setBindAddress(address)
                 .setActorList(Lists.newArrayList(beansWithAnnotation.values()));
-        log.info("[PowerTransportService] start to initialize RemoteEngine[type={},address={}]", protocol, address);
+
+        if (!StringUtils.equalsIgnoreCase(protocolInfo.getExternalAddress(), protocolInfo.getAddress())) {
+            Address externalAddress = Address.fromIpv4(protocolInfo.getExternalAddress());
+            engineConfig.setExternalAddress(externalAddress);
+            log.info("[PowerTransportService] [{}] exist externalAddress: {}", protocol, externalAddress);
+        }
+
+        log.info("[PowerTransportService] [{}] start to initialize RemoteEngine[address={}]", protocol, address);
         RemoteEngine re = new PowerJobRemoteEngine();
         final EngineOutput engineOutput = re.start(engineConfig);
-        log.info("[PowerTransportService] start RemoteEngine[type={},address={}] successfully", protocol, address);
+        log.info("[PowerTransportService] [{}] start RemoteEngine[address={}] successfully", protocol, address);
 
         this.engines.add(re);
-        this.protocolName2Info.put(protocol, new ProtocolInfo(protocol, address.getHost(), address.getPort(), engineOutput.getTransporter()));
+
+        protocolInfo.setTransporter(engineOutput.getTransporter());
+        this.protocolName2Info.put(protocol, protocolInfo);
     }
 
     @Override

@@ -16,14 +16,14 @@ public interface DFsService {
      * @param storeRequest 存储请求
      * @throws IOException 异常
      */
-    void store(StoreRequest storeRequest) throws IOException;
+    void store(StoreRequest storeRequest) throws Exception;
 
     /**
      * 下载文件
      * @param downloadRequest 文件下载请求
      * @throws IOException 异常
      */
-    void download(DownloadRequest downloadRequest) throws IOException;
+    void download(DownloadRequest downloadRequest) throws Exception;
 
     /**
      * 获取文件元信息
@@ -31,7 +31,7 @@ public interface DFsService {
      * @return 存在则返回文件元信息
      * @throws IOException 异常
      */
-    Optional<FileMeta> fetchFileMeta(FileLocation fileLocation) throws IOException;
+    Optional<FileMeta> fetchFileMeta(FileLocation fileLocation) throws Exception;
 
     /**
      * 清理 powerjob 认为“过期”的文件

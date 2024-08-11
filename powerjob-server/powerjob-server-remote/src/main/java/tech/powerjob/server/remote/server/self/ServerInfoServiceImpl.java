@@ -15,6 +15,7 @@ import tech.powerjob.server.common.module.ServerInfo;
 import tech.powerjob.server.extension.LockService;
 import tech.powerjob.server.persistence.remote.model.ServerInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ServerInfoRepository;
+import tech.powerjob.server.remote.server.redirector.DesignateServer;
 
 import java.util.Date;
 import java.util.List;
@@ -138,7 +139,13 @@ public class ServerInfoServiceImpl implements ServerInfoService {
     }
 
     @Override
-    public ServerInfo fetchServiceInfo() {
+    public ServerInfo fetchCurrentServerInfo() {
+        return serverInfo;
+    }
+
+    @Override
+    @DesignateServer
+    public ServerInfo fetchAppServerInfo(Long appId) {
         return serverInfo;
     }
 }

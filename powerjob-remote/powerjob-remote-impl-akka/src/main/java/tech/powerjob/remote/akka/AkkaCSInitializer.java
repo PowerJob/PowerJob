@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.remote.framework.actor.ActorInfo;
 import tech.powerjob.remote.framework.base.Address;
@@ -47,8 +48,22 @@ public class AkkaCSInitializer implements CSInitializer {
 
         // 初始化 ActorSystem（macOS上 new ServerSocket 检测端口占用的方法并不生效，可能是AKKA是Scala写的缘故？没办法...只能靠异常重试了）
         Map<String, Object> overrideConfig = Maps.newHashMap();
-        overrideConfig.put("akka.remote.artery.canonical.hostname", bindAddress.getHost());
-        overrideConfig.put("akka.remote.artery.canonical.port", bindAddress.getPort());
+
+        Address externalAddress = config.getExternalAddress();
+
+        if (externalAddress == null || StringUtils.equalsIgnoreCase(externalAddress.toFullAddress(), bindAddress.toFullAddress())) {
+            overrideConfig.put("akka.remote.artery.canonical.hostname", bindAddress.getHost());
+            overrideConfig.put("akka.remote.artery.canonical.port", bindAddress.getPort());
+            log.info("[PowerJob-AKKA] not exist externalIp, overrideConfig: {}", overrideConfig);
+        } else {
+            overrideConfig.put("akka.remote.artery.canonical.hostname", externalAddress.getHost());
+            overrideConfig.put("akka.remote.artery.canonical.port", externalAddress.getPort());
+
+            overrideConfig.put("akka.remote.artery.bind.hostname", "0.0.0.0");
+            overrideConfig.put("akka.remote.artery.bind.port", bindAddress.getPort());
+
+            log.info("[PowerJob-AKKA] exist externalAddress[{}], final overrideConfig: {}", externalAddress, overrideConfig);
+        }
 
         Config akkaBasicConfig = ConfigFactory.load(AkkaConstant.AKKA_CONFIG);
         Config akkaFinalConfig = ConfigFactory.parseMap(overrideConfig).withFallback(akkaBasicConfig);

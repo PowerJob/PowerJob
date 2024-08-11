@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -128,6 +130,16 @@ public class CommonUtils {
                 throw new PowerJobException(msg);
             }
         }
+        if (obj instanceof Collection) {
+            if (CollectionUtils.isEmpty((Collection<?>) obj)) {
+                throw new PowerJobException(msg);
+            }
+        }
+        if (obj instanceof Map) {
+            if (MapUtils.isEmpty((Map<?, ?>) obj)) {
+                throw new PowerJobException(msg);
+            }
+        }
         return obj;
     }
 
@@ -145,6 +157,13 @@ public class CommonUtils {
         }catch (Exception ignore) {
         }
         return OmsConstant.NONE;
+    }
+
+    public static String formatTime(Date date) {
+        if (date == null) {
+            return OmsConstant.NONE;
+        }
+        return formatTime(date.getTime());
     }
 
     /**

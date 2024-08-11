@@ -4,13 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.server.common.constants.SwitchableStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.core.container.ContainerService;
 import tech.powerjob.server.core.container.ContainerTemplateGenerator;
@@ -39,22 +41,25 @@ import java.util.stream.Collectors;
 @RequestMapping("/container")
 public class ContainerController {
 
-
-    private final int port;
-
     private final ContainerService containerService;
 
     private final AppInfoRepository appInfoRepository;
 
     private final ContainerInfoRepository containerInfoRepository;
 
-    public ContainerController(@Value("${server.port}") int port, ContainerService containerService, AppInfoRepository appInfoRepository, ContainerInfoRepository containerInfoRepository) {
-        this.port = port;
+    public ContainerController(ContainerService containerService, AppInfoRepository appInfoRepository, ContainerInfoRepository containerInfoRepository) {
         this.containerService = containerService;
         this.appInfoRepository = appInfoRepository;
         this.containerInfoRepository = containerInfoRepository;
     }
 
+    /**
+     * 暴露给 worker 的下载端口，制品本身 version 不可枚举，不单独鉴权
+     * 如果对此有安全性需求，可自行实现加密鉴权逻辑，或者干脆走自己的下载通道下载制品
+     * @param version 容器版本
+     * @param response 响应
+     * @throws IOException 异常
+     */
     @GetMapping("/downloadJar")
     public void downloadJar(String version, HttpServletResponse response) throws IOException {
         File file = containerService.fetchContainerJarFile(version);
@@ -66,12 +71,14 @@ public class ContainerController {
     }
 
     @PostMapping("/downloadContainerTemplate")
+    @ApiPermission(name = "Container-DownloadContainerTemplate", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public void downloadContainerTemplate(@RequestBody GenerateContainerTemplateRequest req, HttpServletResponse response) throws IOException {
         File zipFile = ContainerTemplateGenerator.generate(req.getGroup(), req.getArtifact(), req.getName(), req.getPackageName(), req.getJavaVersion());
         OmsFileUtils.file2HttpResponse(zipFile, response);
     }
 
     @PostMapping("/jarUpload")
+    @ApiPermission(name = "Container-JarUpload", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<String> fileUpload(@RequestParam("file") MultipartFile file) throws Exception {
         if (file == null || file.isEmpty()) {
             return ResultDTO.failed("empty file");
@@ -80,6 +87,7 @@ public class ContainerController {
     }
 
     @PostMapping("/save")
+    @ApiPermission(name = "Container-Save", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<Void> saveContainer(@RequestBody SaveContainerInfoRequest request) {
         request.valid();
 
@@ -93,12 +101,14 @@ public class ContainerController {
     }
 
     @GetMapping("/delete")
+    @ApiPermission(name = "Container-Delete", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<Void> deleteContainer(Long appId, Long containerId) {
         containerService.delete(appId, containerId);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/list")
+    @ApiPermission(name = "Container-List", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<List<ContainerInfoVO>> listContainers(Long appId) {
         List<ContainerInfoVO> res = containerInfoRepository.findByAppIdAndStatusNot(appId, SwitchableStatus.DELETED.getV())
                 .stream().map(ContainerController::convert).collect(Collectors.toList());
@@ -106,6 +116,7 @@ public class ContainerController {
     }
 
     @GetMapping("/listDeployedWorker")
+    @ApiPermission(name = "Container-ListDeployedWorker", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<String> listDeployedWorker(Long appId, Long containerId, HttpServletResponse response) {
         AppInfoDO appInfoDO = appInfoRepository.findById(appId).orElseThrow(() -> new IllegalArgumentException("can't find app by id:" + appId));
         String targetServer = appInfoDO.getCurrentServer();

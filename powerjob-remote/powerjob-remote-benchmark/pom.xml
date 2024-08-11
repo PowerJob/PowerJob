@@ -5,7 +5,7 @@
     <parent>
         <artifactId>powerjob-remote</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.9</version>
+        <version>5.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,8 +21,8 @@
 
         <logback.version>1.2.13</logback.version>
         <springboot.version>2.7.18</springboot.version>
-        <powerjob-remote-impl-http.version>4.3.9</powerjob-remote-impl-http.version>
-        <powerjob-remote-impl-akka.version>4.3.9</powerjob-remote-impl-akka.version>
+        <powerjob-remote-impl-http.version>5.1.0</powerjob-remote-impl-http.version>
+        <powerjob-remote-impl-akka.version>5.1.0</powerjob-remote-impl-akka.version>
 
         <gatling.version>3.9.0</gatling.version>
         <gatling-maven-plugin.version>4.2.9</gatling-maven-plugin.version>

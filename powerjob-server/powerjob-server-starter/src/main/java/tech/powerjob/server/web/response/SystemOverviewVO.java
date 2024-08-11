@@ -1,8 +1,6 @@
 package tech.powerjob.server.web.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import tech.powerjob.server.common.module.ServerInfo;
 
 /**
@@ -13,6 +11,10 @@ import tech.powerjob.server.common.module.ServerInfo;
  */
 @Data
 public class SystemOverviewVO {
+
+    private Long appId;
+
+    private String appName;
 
     private long jobCount;
     private long runningInstanceCount;
@@ -26,5 +28,12 @@ public class SystemOverviewVO {
      */
     private String serverTime;
 
-    private ServerInfo serverInfo;
+    /**
+     * 处理当前 WEB 服务的 server 信息
+     */
+    private ServerInfo webServerInfo;
+    /**
+     * 调度服务器信息
+     */
+    private ServerInfo scheduleServerInfo;
 }

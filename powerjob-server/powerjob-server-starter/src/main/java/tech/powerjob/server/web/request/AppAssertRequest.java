@@ -12,4 +12,6 @@ import lombok.Data;
 public class AppAssertRequest {
     private String appName;
     private String password;
+
+    private String encryptType;
 }

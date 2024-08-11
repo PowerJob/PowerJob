@@ -5,12 +5,12 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.9</version>
+        <version>5.1.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-common</artifactId>
-    <version>4.3.9</version>
+    <version>5.1.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -20,7 +20,7 @@
         <guava.version>31.1-jre</guava.version>
         <okhttp.version>3.14.9</okhttp.version>
         <kryo.version>5.3.0</kryo.version>
-        <jackson.version>2.14.0-rc1</jackson.version>
+        <jackson.version>2.14.3</jackson.version>
         <junit.version>5.9.0</junit.version>
     </properties>
 
@@ -77,6 +77,13 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        <!-- 解决 Java8 data/time 类型处理问题 #869 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
 
         <!-- Junit tests -->
         <dependency>

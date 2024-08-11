@@ -12,6 +12,26 @@ import java.util.Map;
  */
 public class MapUtils {
 
+    public static <K> String getString(Map<? super K, ?> map, K key) {
+        if (map != null) {
+            Object answer = map.get(key);
+            if (answer != null) {
+                return answer.toString();
+            }
+        }
+
+        return null;
+    }
+
+    public static <K> String getString(Map<? super K, ?> map, K key, String defaultValue) {
+        String answer = getString(map, key);
+        if (answer == null) {
+            answer = defaultValue;
+        }
+
+        return answer;
+    }
+
     public static <K> Long getLong(Map<? super K, ?> map, K key, Long defaultValue) {
         Long answer = getLong(map, key);
         if (answer == null) {
@@ -54,5 +74,13 @@ public class MapUtils {
         }
 
         return null;
+    }
+
+    public static boolean isEmpty(Map<?, ?> map) {
+        return map == null || map.isEmpty();
+    }
+
+    public static boolean isNotEmpty(Map<?, ?> map) {
+        return !isEmpty(map);
     }
 }

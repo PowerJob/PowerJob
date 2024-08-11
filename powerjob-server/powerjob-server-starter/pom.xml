@@ -5,7 +5,7 @@
     <parent>
         <artifactId>powerjob-server</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>4.3.9</version>
+        <version>5.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -45,7 +45,16 @@
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-migrate</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-client</artifactId>
         </dependency>
     </dependencies>
 
