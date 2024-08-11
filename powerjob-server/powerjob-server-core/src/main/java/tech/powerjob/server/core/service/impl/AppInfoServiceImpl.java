@@ -49,7 +49,9 @@ public class AppInfoServiceImpl implements AppInfoService {
     @Override
     public Optional<AppInfoDO> findById(Long appId, boolean useCache) {
         if (!useCache) {
-            return appInfoRepository.findById(appId);
+            Optional<AppInfoDO> appInfoOpt = appInfoRepository.findById(appId);
+            appInfoOpt.ifPresent(appInfo -> appId2AppInfoDO.put(appId, appInfo));
+            return appInfoOpt;
         }
         try {
             AppInfoDO appInfoDO = appId2AppInfoDO.get(appId, () -> {
