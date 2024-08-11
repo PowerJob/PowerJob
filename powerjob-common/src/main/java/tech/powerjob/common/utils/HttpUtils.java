@@ -21,6 +21,7 @@ public class HttpUtils {
         client = new OkHttpClient.Builder()
                 .connectTimeout(1, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
                 .build();
     }
 

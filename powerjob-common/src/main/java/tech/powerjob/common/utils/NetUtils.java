@@ -217,9 +217,10 @@ public class NetUtils {
         if (networkInterfaceChecker == null) {
             return false;
         }
-        log.info("[Net] try to choose NetworkInterface by NetworkInterfaceChecker, current NetworkInterface: {}", networkInterface);
         try {
-            return networkInterfaceChecker.ok(networkInterface, getFirstReachableInetAddress(networkInterface));
+            boolean ok = networkInterfaceChecker.ok(networkInterface, getFirstReachableInetAddress(networkInterface));
+            log.info("[Net] try to choose NetworkInterface by NetworkInterfaceChecker, current NetworkInterface[{}], ok: {}", networkInterface, ok);
+            return ok;
         } catch (Exception e) {
             log.warn("[Net] isPassedCheckerNetworkInterface failed, current networkInterface: {}", networkInterface, e);
         }

@@ -35,42 +35,47 @@ public class WorkerNetUtils {
             pingPongServer = new PingPongSocketServer();
             pingPongServer.initialize(port);
             log.info("[WorkerNetUtils] initialize PingPongSocketServer successfully~");
+
+            return NetUtils.getLocalHostWithNetworkInterfaceChecker(((networkInterface, inetAddress) -> {
+
+                if (inetAddress == null) {
+                    log.info("[WorkerNetUtils] [networkInterface:{}] skip due to inetAddress is null!", networkInterface);
+                    return false;
+                }
+
+                String workerIp = inetAddress.getHostAddress();
+                for (String address : serverAddress) {
+                    String url = String.format(SERVER_CONNECTIVITY_CHECK_URL_PATTERN, address, workerIp, port);
+                    try {
+                        String resp = HttpUtils.get(url);
+                        log.info("[WorkerNetUtils] [networkInterface:{},inetAddress:{}] check connectivity by url[{}], response: {}", networkInterface, inetAddress, url, resp);
+                        if (StringUtils.isNotEmpty(resp)) {
+                            ResultDTO<?> resultDTO = JsonUtils.parseObject(resp, ResultDTO.class);
+                            boolean ret = Boolean.TRUE.toString().equalsIgnoreCase(String.valueOf(resultDTO.getData()));
+                            if (ret) {
+                                return true;
+                            }
+                        }
+                    } catch (Exception ignore) {
+                    }
+                }
+                return false;
+            }));
+
         } catch (Exception e) {
             log.warn("[WorkerNetUtils] PingPongSocketServer failed to start, which may result in an incorrectly bound IP, please pay attention to the initialize log.", e);
-        }
-
-        String localHostWithNetworkInterfaceChecker = NetUtils.getLocalHostWithNetworkInterfaceChecker(((networkInterface, inetAddress) -> {
-
-            if (inetAddress == null) {
-                return false;
-            }
-
-            String workerIp = inetAddress.getHostAddress();
-            for (String address : serverAddress) {
-                String url = String.format(SERVER_CONNECTIVITY_CHECK_URL_PATTERN, address, workerIp, port);
+        } finally {
+            if (pingPongServer != null) {
                 try {
-                    String resp = HttpUtils.get(url);
-                    log.info("[WorkerNetUtils] check connectivity by url[{}], response: {}", url, resp);
-                    if (StringUtils.isNotEmpty(resp)) {
-                        ResultDTO<?> resultDTO = JsonUtils.parseObject(resp, ResultDTO.class);
-                        return Boolean.TRUE.toString().equalsIgnoreCase(String.valueOf(resultDTO.getData()));
-                    }
-                } catch (Exception ignore) {
+                    pingPongServer.close();
+                    log.info("[WorkerNetUtils] close PingPongSocketServer successfully~");
+                } catch (Exception e) {
+                    log.warn("[WorkerNetUtils] close PingPongSocketServer failed!", e);
                 }
             }
-            return false;
-        }));
-
-        if (pingPongServer != null) {
-            try {
-                pingPongServer.close();
-                log.info("[WorkerNetUtils] close PingPongSocketServer successfully~");
-            } catch (Exception e) {
-                log.warn("[WorkerNetUtils] close PingPongSocketServer failed!", e);
-            }
         }
 
-        return localHostWithNetworkInterfaceChecker;
+        return NetUtils.getLocalHostWithNetworkInterfaceChecker(null);
     }
 
 }

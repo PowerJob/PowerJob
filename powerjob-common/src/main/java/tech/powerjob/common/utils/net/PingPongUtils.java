@@ -30,6 +30,9 @@ public class PingPongUtils {
 
         try (Socket s = new Socket(targetIp, targetPort);InputStream is = s.getInputStream();OutputStream os = s.getOutputStream();BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
+            s.setSoTimeout(2000);
+            s.setKeepAlive(false);
+
             // 发送 PING 请求
             os.write(PING.getBytes(StandardCharsets.UTF_8));
             os.flush();
