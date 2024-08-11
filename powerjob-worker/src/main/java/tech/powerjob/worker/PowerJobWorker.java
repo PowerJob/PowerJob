@@ -55,7 +55,7 @@ public class PowerJobWorker {
     public PowerJobWorker(PowerJobWorkerConfig config) {
         this.workerRuntime = new WorkerRuntime();
         this.remoteEngine = new PowerJobRemoteEngine();
-        workerRuntime.setWorkerConfig(config);
+        workerRuntime.setWorkerConfig(reConfig(config));
     }
 
     public void init() throws Exception {
@@ -145,6 +145,12 @@ public class PowerJobWorker {
             log.error("[PowerJobWorker] initialize PowerJobWorker failed, using {}.", stopwatch, e);
             throw e;
         }
+    }
+
+    private PowerJobWorkerConfig reConfig(PowerJobWorkerConfig config) {
+        CommonUtils.requireNonNull(config.getServerAddress(), "ServerAddress can't be null or empty!");
+        Collections.shuffle(config.getServerAddress());
+        return config;
     }
 
     private ProcessorLoader buildProcessorLoader(WorkerRuntime runtime) {
