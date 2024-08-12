@@ -64,4 +64,9 @@ public class PowerJobDKey {
 
     public static final String WORKER_RUNTIME_SWAP_TASK_SCHEDULE_INTERVAL_MS = "powerjob.worker.swap.scan-interval";
 
+    /**
+     * DebugLevel
+     */
+    public static final String DEBUG_LEVEL = "powerjob.debug.level";
+
 }

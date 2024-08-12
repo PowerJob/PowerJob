@@ -1,6 +1,7 @@
 package tech.powerjob.worker.persistence.db;
 
 import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.DebugUtils;
 import tech.powerjob.common.utils.JavaUtils;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import com.zaxxer.hikari.HikariConfig;
@@ -36,6 +37,11 @@ public class ConnectionFactory {
 
     public synchronized void initDatasource(StoreStrategy strategy) {
 
+        if (dataSource != null) {
+            log.warn("[PowerDatasource] ConnectionFactory already initialized!");
+            return;
+        }
+
         // H2 兼容性问题较多，前置输出版本方便排查
         log.info("[PowerDatasource] H2 database version: {}", JavaUtils.determinePackageVersion(Driver.class));
 
@@ -46,10 +52,20 @@ public class ConnectionFactory {
         config.setDriverClassName(Driver.class.getName());
         config.setJdbcUrl(strategy == StoreStrategy.DISK ? DISK_JDBC_URL : MEMORY_JDBC_URL);
         config.setAutoCommit(true);
+        // 连接空闲超过此时间后将被回收，单位为毫秒
+        config.setIdleTimeout(300000);
         // 池中最小空闲连接数量
         config.setMinimumIdle(2);
         // 池中最大连接数量
         config.setMaximumPoolSize(32);
+        // 使用线程安全的连接检查机制
+        config.setConnectionTestQuery("SELECT 1");
+
+        // 检测连接泄漏的阈值，单位为毫秒
+        if (DebugUtils.inDebugMode()) {
+            config.setLeakDetectionThreshold(10000);
+        }
+
         dataSource = new HikariDataSource(config);
 
         log.info("[PowerDatasource] init h2 datasource successfully, use url: {}", config.getJdbcUrl());
