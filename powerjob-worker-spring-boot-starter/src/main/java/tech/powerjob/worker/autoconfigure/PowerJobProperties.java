@@ -1,14 +1,14 @@
 package tech.powerjob.worker.autoconfigure;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.Protocol;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.WorkflowContext;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 
 /**
  * PowerJob properties configuration class.
@@ -16,14 +16,12 @@ import org.springframework.boot.context.properties.DeprecatedConfigurationProper
  * @author songyinyin
  * @since 2020/7/26 16:37
  */
+@Getter
 @ConfigurationProperties(prefix = "powerjob")
 public class PowerJobProperties {
 
     private final Worker worker = new Worker();
-
-    public Worker getWorker() {
-        return worker;
-    }
+    private final Registry registry = new Registry();
 
     @Deprecated
     @DeprecatedConfigurationProperty(replacement = "powerjob.worker.app-name")
@@ -169,6 +167,24 @@ public class PowerJobProperties {
          * Interval(s) of worker health report
          */
         private Integer healthReportInterval = 10;
+
+    }
+
+
+    @Setter
+    @Getter
+    public static class Registry {
+
+        /**
+         * 开启自动注册job
+         */
+        private boolean enableAutoRegistry = true;
+
+        /**
+         * 自动注册
+         * app密码 默认1No2Bug3Thanks
+         */
+        private String appPassword = "1No2Bug3Thanks";
 
     }
 }
