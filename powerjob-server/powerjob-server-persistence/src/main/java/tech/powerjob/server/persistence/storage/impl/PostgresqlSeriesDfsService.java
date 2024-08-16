@@ -19,31 +19,23 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
-import tech.powerjob.server.extension.dfs.DFsService;
-import tech.powerjob.server.extension.dfs.DownloadRequest;
-import tech.powerjob.server.extension.dfs.FileLocation;
-import tech.powerjob.server.extension.dfs.FileMeta;
-import tech.powerjob.server.extension.dfs.StoreRequest;
+import tech.powerjob.server.extension.dfs.*;
 import tech.powerjob.server.persistence.storage.AbstractDFsService;
 
+import javax.annotation.Priority;
+import javax.sql.DataSource;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Priority;
-import javax.sql.DataSource;
 
 /**
- * postgresql 数据库存储，使用的版本是14
+ * postgresql 特性类似的数据库存储
  * ********************* 配置项 *********************
  *  oms.storage.dfs.postgresql_series.driver
  *  oms.storage.dfs.postgresql_series.url
@@ -246,8 +238,8 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
                 return;
             }
 
-            Blob dataBlob = resultSet.getBlob("data");
-            FileUtils.copyInputStreamToFile(new BufferedInputStream(dataBlob.getBinaryStream()), downloadRequest.getTarget());
+            byte[] data = resultSet.getBytes("data");
+            FileUtils.copyInputStreamToFile(new ByteArrayInputStream(data), downloadRequest.getTarget());
 
             log.info("[PostgresqlSeriesDfsService] download [{}] successfully, cost: {}", fileLocation, sw);
 
@@ -259,7 +251,7 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
     }
 
     @Override
-    public Optional<FileMeta> fetchFileMeta(FileLocation fileLocation) {
+    public Optional<FileMeta> fetchFileMeta(FileLocation fileLocation) throws IOException {
 
         String querySQL = fullSQL(QUERY_META_SQL);
 
