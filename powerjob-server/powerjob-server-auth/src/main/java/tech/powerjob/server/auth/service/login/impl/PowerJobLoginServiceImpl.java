@@ -18,6 +18,7 @@ import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.common.utils.HttpServletUtils;
 import tech.powerjob.server.auth.jwt.JwtService;
+import tech.powerjob.server.auth.jwt.ParseResult;
 import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
@@ -236,7 +237,11 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         if (StringUtils.isEmpty(jwtStr)) {
             return Optional.empty();
         }
-        final Map<String, Object> jwtBodyMap = jwtService.parse(jwtStr, null).getResult();
+        ParseResult parseResult = jwtService.parse(jwtStr, null);
+        if (ParseResult.Status.EXPIRED.equals(parseResult.getStatus())) {
+            throw new PowerJobAuthException(ErrorCodes.USER_NOT_LOGIN, "LoginExpired");
+        }
+        final Map<String, Object> jwtBodyMap = parseResult.getResult();
 
         if (MapUtils.isEmpty(jwtBodyMap)) {
             return Optional.empty();

@@ -2,6 +2,7 @@ package tech.powerjob.client.service;
 
 import com.google.common.collect.Maps;
 import lombok.Getter;
+import lombok.ToString;
 import tech.powerjob.common.enums.MIME;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
  * @since 2024/8/10
  */
 @Getter
+@ToString
 public class PowerRequestBody {
 
     private MIME mime;

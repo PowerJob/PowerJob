@@ -27,6 +27,7 @@ import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -67,9 +68,12 @@ public class OpenAPIController {
      * @return 鉴权响应
      */
     @PostMapping(OpenAPIConstant.AUTH_APP)
-    public PowerResultDTO<AppAuthResult> auth(@RequestBody AppAuthRequest appAuthRequest) {
+    public PowerResultDTO<AppAuthResult> auth(@RequestBody AppAuthRequest appAuthRequest, HttpServletResponse response) {
         try {
-            return PowerResultDTO.s(openApiSecurityService.authAppByParam(appAuthRequest));
+            AppAuthResult appAuthResult = openApiSecurityService.authAppByParam(appAuthRequest);
+            // 能顺利返回代表通过了鉴权
+            response.addHeader(OpenAPIConstant.RESPONSE_HEADER_AUTH_STATUS, Boolean.TRUE.toString());
+            return PowerResultDTO.s(appAuthResult);
         } catch (PowerJobException pje) {
             PowerResultDTO<AppAuthResult> f = PowerResultDTO.f(pje.getMessage());
             f.setCode(pje.getCode());

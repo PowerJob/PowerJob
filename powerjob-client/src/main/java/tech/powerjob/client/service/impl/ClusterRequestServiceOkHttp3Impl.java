@@ -4,12 +4,14 @@ import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.powerjob.client.ClientConfig;
 import tech.powerjob.client.common.Protocol;
 import tech.powerjob.client.service.HttpResponse;
 import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.DebugUtils;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -44,6 +46,11 @@ public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestServi
 
     @Override
     protected HttpResponse sendHttpRequest(String url, PowerRequestBody powerRequestBody) throws IOException {
+
+        boolean debugMode = DebugUtils.inDebugMode();
+        if (debugMode) {
+            log.info("[ClusterRequestService] try to sendHttpRequest, url: {}, powerRequestBody: {}", url, powerRequestBody);
+        }
 
         // 添加公共 header
         powerRequestBody.addHeaders(config.getDefaultHeaders());
@@ -91,7 +98,19 @@ public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestServi
 
             httpResponse.setHeaders(respHeaderMap);
 
+            if (debugMode) {
+                log.info("[ClusterRequestService] originHttpResponse: {}, convertedResponse: {}", response, httpResponse);
+            }
+
             return httpResponse;
+        } catch (Exception e) {
+
+            if (debugMode) {
+                log.warn("[ClusterRequestService] request[{}] failed!", url, e);
+            }
+
+            ExceptionUtils.rethrow(e);
+            throw new RuntimeException(e);
         }
     }
 

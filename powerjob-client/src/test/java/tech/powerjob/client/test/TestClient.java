@@ -5,9 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tech.powerjob.client.PowerJobClient;
-import tech.powerjob.common.enums.ExecuteType;
-import tech.powerjob.common.enums.ProcessorType;
-import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.client.test.utils.TestUtils;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
@@ -27,26 +25,8 @@ class TestClient extends ClientInitializer {
 
     @Test
     void testSaveJob() {
-
-        SaveJobInfoRequest newJobInfo = new SaveJobInfoRequest();
-        newJobInfo.setId(JOB_ID);
-        newJobInfo.setJobName("omsOpenAPIJobccccc" + System.currentTimeMillis());
-        newJobInfo.setJobDescription("test OpenAPI" + System.currentTimeMillis());
-        newJobInfo.setJobParams("{'aa':'bb'}");
-        newJobInfo.setTimeExpressionType(TimeExpressionType.CRON);
-        newJobInfo.setTimeExpression("0 0 * * * ? ");
-        newJobInfo.setExecuteType(ExecuteType.STANDALONE);
-        newJobInfo.setProcessorType(ProcessorType.BUILT_IN);
-        newJobInfo.setProcessorInfo("tech.powerjob.samples.processors.StandaloneProcessorDemo");
-        newJobInfo.setDesignatedWorkers("");
-
-        newJobInfo.setMinCpuCores(1.1);
-        newJobInfo.setMinMemorySpace(1.2);
-        newJobInfo.setMinDiskSpace(1.3);
-
-        log.info("[TestClient] [testSaveJob] SaveJobInfoRequest: {}", JSONObject.toJSONString(newJobInfo));
-
-        ResultDTO<Long> resultDTO = powerJobClient.saveJob(newJobInfo);
+        SaveJobInfoRequest saveJobInfoRequest = TestUtils.newSaveJobRequest(JOB_ID, null);
+        ResultDTO<Long> resultDTO = powerJobClient.saveJob(saveJobInfoRequest);
         log.info("[TestClient] [testSaveJob] result: {}", JSONObject.toJSONString(resultDTO));
         Assertions.assertNotNull(resultDTO);
     }

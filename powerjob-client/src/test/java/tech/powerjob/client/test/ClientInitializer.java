@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeAll;
 import tech.powerjob.client.IPowerJobClient;
 import tech.powerjob.client.PowerJobClient;
+import tech.powerjob.common.PowerJobDKey;
 
 /**
  * Initialize OhMyClient
@@ -17,6 +18,7 @@ public class ClientInitializer {
 
     @BeforeAll
     public static void initClient() throws Exception {
+        System.setProperty(PowerJobDKey.DEBUG_LEVEL, "INFO");
         powerJobClient = new PowerJobClient(Lists.newArrayList("127.0.0.1:7700", "127.0.0.1:7701"), "powerjob-worker-samples", "powerjob123");
     }
 }
