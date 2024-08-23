@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.server.common.module.WorkerInfo;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.remote.server.redirector.DesignateServer;
 import tech.powerjob.server.remote.worker.filter.WorkerFilter;
@@ -34,14 +35,15 @@ public class WorkerClusterQueryService {
      * get worker for job
      *
      * @param jobInfo job
+     * @param instanceInfo instanceInfo
      * @return worker cluster info, sorted by metrics desc
      */
-    public List<WorkerInfo> geAvailableWorkers(JobInfoDO jobInfo) {
+    public List<WorkerInfo> geAvailableWorkers(JobInfoDO jobInfo, InstanceInfoDO instanceInfo) {
 
         List<WorkerInfo> workers = Lists.newLinkedList(getWorkerInfosByAppId(jobInfo.getAppId()).values());
 
         // 过滤不符合要求的机器
-        workers.removeIf(workerInfo -> filterWorker(workerInfo, jobInfo));
+        workers.removeIf(workerInfo -> filterWorker(workerInfo, jobInfo, instanceInfo));
 
         // 限定集群大小（0代表不限制）
         if (!workers.isEmpty() && jobInfo.getMaxWorkerCount() > 0 && workers.size() > jobInfo.getMaxWorkerCount()) {
@@ -120,11 +122,12 @@ public class WorkerClusterQueryService {
      *
      * @param workerInfo worker info
      * @param jobInfo    job info
+     * @param instanceInfoDO instanceInfo
      * @return filter this worker when return true
      */
-    private boolean filterWorker(WorkerInfo workerInfo, JobInfoDO jobInfo) {
+    private boolean filterWorker(WorkerInfo workerInfo, JobInfoDO jobInfo, InstanceInfoDO instanceInfoDO) {
         for (WorkerFilter filter : workerFilters) {
-            if (filter.filter(workerInfo, jobInfo)) {
+            if (filter.filter(workerInfo, jobInfo, instanceInfoDO)) {
                 return true;
             }
         }

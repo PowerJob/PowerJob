@@ -32,6 +32,8 @@ public class OpenAPIConstant {
     public static final String DELETE_JOB = "/deleteJob";
     public static final String RUN_JOB = "/runJob";
 
+    public static final String RUN_JOB_PLUS = "/runJobPlus";
+
     /* ************* Instance 区 ************* */
 
     public static final String STOP_INSTANCE = "/stopInstance";

@@ -17,4 +17,6 @@ import lombok.NoArgsConstructor;
 public class WorkerQueryExecutorClusterReq implements PowerSerializable {
     private Long appId;
     private Long jobId;
+
+    private Long instanceId;
 }

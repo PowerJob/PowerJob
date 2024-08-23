@@ -1,6 +1,7 @@
 package tech.powerjob.server.web.controller;
 
 import org.apache.commons.lang3.StringUtils;
+import tech.powerjob.common.request.common.RunJobRequest;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.auth.Permission;
@@ -75,13 +76,16 @@ public class JobController {
     }
 
     @GetMapping("/run")
-    @ApiPermission(name = "Job-Copy", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
+    @ApiPermission(name = "Job-Run", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<Long> runImmediately(String appId, String jobId, @RequestParam(required = false) String instanceParams) {
-        return ResultDTO.success(jobService.runJob(Long.valueOf(appId), Long.valueOf(jobId), instanceParams, 0L));
+        RunJobRequest runJobRequest = new RunJobRequest();
+        runJobRequest.setJobId(Long.valueOf(jobId));
+        runJobRequest.setInstanceParams(instanceParams);
+        return ResultDTO.success(jobService.runJob(Long.valueOf(appId), runJobRequest));
     }
 
     @PostMapping("/list")
-    @ApiPermission(name = "Job-Copy", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
+    @ApiPermission(name = "Job-List", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<PageResult<JobInfoVO>> listJobs(@RequestBody QueryJobInfoRequest request) {
 
         Sort sort = Sort.by(Sort.Direction.ASC, "id");

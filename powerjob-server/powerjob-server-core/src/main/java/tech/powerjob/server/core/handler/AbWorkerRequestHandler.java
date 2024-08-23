@@ -6,13 +6,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.common.request.*;
 import tech.powerjob.common.response.AskResponse;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.NetUtils;
 import tech.powerjob.remote.framework.actor.Handler;
 import tech.powerjob.remote.framework.actor.ProcessType;
-import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.common.utils.SpringUtils;
 import tech.powerjob.server.monitor.MonitorService;
@@ -20,8 +20,10 @@ import tech.powerjob.server.monitor.events.w2s.TtReportInstanceStatusEvent;
 import tech.powerjob.server.monitor.events.w2s.WorkerHeartbeatEvent;
 import tech.powerjob.server.monitor.events.w2s.WorkerLogReportEvent;
 import tech.powerjob.server.persistence.remote.model.ContainerInfoDO;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.ContainerInfoRepository;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
 import tech.powerjob.server.persistence.remote.repository.JobInfoRepository;
 import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 
@@ -129,18 +131,26 @@ public abstract class AbWorkerRequestHandler implements IWorkerRequestHandler {
 
         JobInfoRepository jobInfoRepository = SpringUtils.getBean(JobInfoRepository.class);
         Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(jobId);
-        if (jobInfoOpt.isPresent()) {
-            JobInfoDO jobInfo = jobInfoOpt.get();
-            if (!jobInfo.getAppId().equals(appId)) {
-                askResponse = AskResponse.failed("Permission Denied!");
-            }else {
-                List<String> sortedAvailableWorker = workerClusterQueryService.geAvailableWorkers(jobInfo)
-                        .stream().map(WorkerInfo::getAddress).collect(Collectors.toList());
-                askResponse = AskResponse.succeed(sortedAvailableWorker);
-            }
-        }else {
-            askResponse = AskResponse.failed("can't find jobInfo by jobId: " + jobId);
+
+        if (!jobInfoOpt.isPresent()) {
+            return AskResponse.failed("can't find jobInfo by jobId: " + jobId);
         }
+
+        InstanceInfoRepository instanceInfoRepository = SpringUtils.getBean(InstanceInfoRepository.class);
+        InstanceInfoDO instanceInfoDO = instanceInfoRepository.findByInstanceId(req.getInstanceId());
+        if (instanceInfoDO == null) {
+            return AskResponse.failed("can't find instanceInfo by instanceId: " + req.getInstanceId());
+        }
+
+        JobInfoDO jobInfo = jobInfoOpt.get();
+        if (!jobInfo.getAppId().equals(appId)) {
+            askResponse = AskResponse.failed("Permission Denied!");
+        }else {
+            List<String> sortedAvailableWorker = workerClusterQueryService.geAvailableWorkers(jobInfo, instanceInfoDO)
+                    .stream().map(WorkerInfo::getAddress).collect(Collectors.toList());
+            askResponse = AskResponse.succeed(sortedAvailableWorker);
+        }
+
         return askResponse;
     }
 

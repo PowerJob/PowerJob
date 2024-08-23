@@ -14,6 +14,7 @@ import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.enums.EncryptType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.request.http.RunJobOpenApiRequest;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -237,21 +238,28 @@ public class PowerJobClient implements IPowerJobClient, Closeable {
      */
     @Override
     public ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS) {
-
-        Map<String, String> param = Maps.newHashMap();
-        param.put("jobId", jobId.toString());
-        param.put("appId", appId.toString());
-        param.put("delay", String.valueOf(delayMS));
-
-        if (StringUtils.isNotEmpty(instanceParams)) {
-            param.put("instanceParams", instanceParams);
-        }
-        String post = requestService.request(OpenAPIConstant.RUN_JOB, PowerRequestBody.newFormRequestBody(param));
-        return JSON.parseObject(post, LONG_RESULT_TYPE);
+        RunJobOpenApiRequest runJobOpenApiRequest = new RunJobOpenApiRequest();
+        runJobOpenApiRequest.setJobId(jobId);
+        runJobOpenApiRequest.setInstanceParams(instanceParams);
+        runJobOpenApiRequest.setDelay(delayMS);
+        return runJob(runJobOpenApiRequest);
     }
 
     public ResultDTO<Long> runJob(Long jobId) {
-        return runJob(jobId, null, 0);
+        RunJobOpenApiRequest runJobOpenApiRequest = new RunJobOpenApiRequest();
+        runJobOpenApiRequest.setJobId(jobId);
+        return runJob(runJobOpenApiRequest);
+    }
+
+    @Override
+    public PowerResultDTO<Long> runJob(RunJobOpenApiRequest request) {
+
+        request.setAppId(appId);
+
+        // 中坑记录：用 FastJSON 序列化会导致 Server 接收时 pEWorkflowDAG 为 null，无语.jpg
+        String json = JsonUtils.toJSONStringUnsafe(request);
+        String post = requestService.request(OpenAPIConstant.RUN_JOB_PLUS, PowerRequestBody.newJsonRequestBody(json));
+        return JSON.parseObject(post, LONG_POWER_RESULT_TYPE);
     }
 
     /* ************* Instance API list ************* */

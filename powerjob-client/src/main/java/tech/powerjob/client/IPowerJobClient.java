@@ -1,5 +1,6 @@
 package tech.powerjob.client;
 
+import tech.powerjob.common.request.http.RunJobOpenApiRequest;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -37,6 +38,8 @@ public interface IPowerJobClient {
     ResultDTO<Void> deleteJob(Long jobId);
 
     ResultDTO<Long> runJob(Long jobId, String instanceParams, long delayMS);
+
+    PowerResultDTO<Long> runJob(RunJobOpenApiRequest request);
 
     /* ************* Instance API list ************* */
 

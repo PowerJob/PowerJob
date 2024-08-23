@@ -148,7 +148,7 @@ public class DispatchService {
         }
 
         // 获取当前最合适的 worker 列表
-        List<WorkerInfo> suitableWorkers = workerClusterQueryService.geAvailableWorkers(jobInfo);
+        List<WorkerInfo> suitableWorkers = workerClusterQueryService.geAvailableWorkers(jobInfo, instanceInfo);
 
         if (CollectionUtils.isEmpty(suitableWorkers)) {
             log.warn("[Dispatcher-{}|{}] cancel dispatch job due to no worker available", jobId, instanceId);

@@ -12,6 +12,7 @@ import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.enums.SwitchableStatus;
+import tech.powerjob.common.request.common.RunJobRequest;
 import tech.powerjob.server.common.timewheel.holder.InstanceTimeWheelService;
 import tech.powerjob.server.core.DispatchService;
 import tech.powerjob.server.core.instance.InstanceService;
@@ -167,7 +168,7 @@ public class PowerScheduleService {
                 log.info("[NormalScheduler] These {} jobs will be scheduled: {}.", timeExpressionType.name(), jobInfos);
 
                 jobInfos.forEach(jobInfo -> {
-                    Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), jobInfo.getJobParams(), null, null, jobInfo.getNextTriggerTime()).getInstanceId();
+                    Long instanceId = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), jobInfo.getJobParams(), null, null, jobInfo.getNextTriggerTime(), jobInfo.getDesignatedWorkers()).getInstanceId();
                     jobId2InstanceId.put(jobInfo.getId(), instanceId);
                 });
                 instanceInfoRepository.flush();
@@ -276,7 +277,10 @@ public class PowerScheduleService {
                             log.info("[FrequentScheduler] disable frequent job,id:{}.", jobInfoDO.getId());
                         } else if (lifeCycle.getStart() == null || lifeCycle.getStart() < System.currentTimeMillis() + SCHEDULE_RATE * 2) {
                             log.info("[FrequentScheduler] schedule frequent job,id:{}.", jobInfoDO.getId());
-                            jobService.runJob(jobInfoDO.getAppId(), jobId, null, Optional.ofNullable(lifeCycle.getStart()).orElse(0L) - System.currentTimeMillis());
+                            RunJobRequest runJobRequest = new RunJobRequest();
+                            runJobRequest.setJobId(jobId);
+                            runJobRequest.setDelay(Optional.ofNullable(lifeCycle.getStart()).orElse(0L) - System.currentTimeMillis());
+                            jobService.runJob(jobInfoDO.getAppId(), runJobRequest);
                         }
                     });
                 });

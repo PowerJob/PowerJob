@@ -6,8 +6,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.common.module.WorkerInfo;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -21,9 +23,10 @@ import java.util.Set;
 public class DesignatedWorkerFilter implements WorkerFilter {
 
     @Override
-    public boolean filter(WorkerInfo workerInfo, JobInfoDO jobInfo) {
+    public boolean filter(WorkerInfo workerInfo, JobInfoDO jobInfo, InstanceInfoDO instanceInfoDO) {
 
-        String designatedWorkers = jobInfo.getDesignatedWorkers();
+        // 优先取 instance 上的指定运行时配置
+        String designatedWorkers = Optional.ofNullable(instanceInfoDO.getDesignatedWorkers()).orElse(jobInfo.getDesignatedWorkers());
 
         // no worker is specified, no filter of any
         if (StringUtils.isEmpty(designatedWorkers)) {

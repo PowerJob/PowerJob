@@ -104,4 +104,12 @@ public class InstanceInfoDO {
 
     private Date gmtModified;
 
+    /**
+     * 指定机器运行，空代表不限，非空则只会使用其中的机器运行（多值逗号分割）
+     */
+    private String designatedWorkers;
+    /**
+     * 扩展参数
+     */
+    private String extra;
 }

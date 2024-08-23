@@ -1,6 +1,7 @@
 package tech.powerjob.server.core.service;
 
 import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.request.common.RunJobRequest;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
@@ -25,7 +26,7 @@ public interface JobService {
 
     List<JobInfoDTO> queryJob(PowerQuery powerQuery);
 
-    long runJob(Long appId, Long jobId, String instanceParams, Long delay);
+    long runJob(Long appId, RunJobRequest runJobRequest);
 
     void deleteJob(Long jobId);
 

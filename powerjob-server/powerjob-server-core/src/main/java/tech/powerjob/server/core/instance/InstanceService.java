@@ -80,7 +80,7 @@ public class InstanceService {
      * @param expectTriggerTime 预期执行时间
      * @return 任务实例ID
      */
-    public InstanceInfoDO create(Long jobId, Long appId, String jobParams, String instanceParams, Long wfInstanceId, Long expectTriggerTime) {
+    public InstanceInfoDO create(Long jobId, Long appId, String jobParams, String instanceParams, Long wfInstanceId, Long expectTriggerTime, String designatedWorkers) {
 
         Long instanceId = idGenerateService.allocate();
         Date now = new Date();
@@ -93,6 +93,7 @@ public class InstanceService {
         newInstanceInfo.setInstanceParams(instanceParams);
         newInstanceInfo.setType(wfInstanceId == null ? InstanceType.NORMAL.getV() : InstanceType.WORKFLOW.getV());
         newInstanceInfo.setWfInstanceId(wfInstanceId);
+        newInstanceInfo.setDesignatedWorkers(designatedWorkers);
 
         newInstanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
         newInstanceInfo.setRunningTimes(0L);

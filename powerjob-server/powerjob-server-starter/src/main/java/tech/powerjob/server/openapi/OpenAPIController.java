@@ -11,6 +11,7 @@ import tech.powerjob.common.PowerQuery;
 import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.request.http.RunJobOpenApiRequest;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
 import tech.powerjob.common.request.http.SaveWorkflowNodeRequest;
 import tech.powerjob.common.request.http.SaveWorkflowRequest;
@@ -146,10 +147,25 @@ public class OpenAPIController {
         return ResultDTO.success(null);
     }
 
+    @Deprecated
     @PostMapping(OpenAPIConstant.RUN_JOB)
     public ResultDTO<Long> runJob(Long appId, Long jobId, @RequestParam(required = false) String instanceParams, @RequestParam(required = false) Long delay) {
         checkJobIdValid(jobId, appId);
-        return ResultDTO.success(jobService.runJob(appId, jobId, instanceParams, delay));
+
+        RunJobOpenApiRequest runJobOpenApiRequest = new RunJobOpenApiRequest();
+        runJobOpenApiRequest.setAppId(appId);
+        runJobOpenApiRequest.setJobId(jobId);
+        runJobOpenApiRequest.setInstanceParams(instanceParams);
+        runJobOpenApiRequest.setDelay(delay);
+
+        return ResultDTO.success(jobService.runJob(appId, runJobOpenApiRequest));
+    }
+
+    @PostMapping(OpenAPIConstant.RUN_JOB_PLUS)
+    public PowerResultDTO<Long> runJob(@RequestBody RunJobOpenApiRequest runJobOpenApiRequest) {
+        checkJobIdValid(runJobOpenApiRequest.getJobId(), runJobOpenApiRequest.getAppId());
+        long instanceId = jobService.runJob(runJobOpenApiRequest.getAppId(), runJobOpenApiRequest);
+        return PowerResultDTO.s(instanceId);
     }
 
     /* ************* Instance 区 ************* */

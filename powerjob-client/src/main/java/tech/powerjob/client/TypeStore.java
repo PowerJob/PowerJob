@@ -22,6 +22,8 @@ public class TypeStore {
 
     public static final TypeReference<ResultDTO<Long>> LONG_RESULT_TYPE = new TypeReference<ResultDTO<Long>>(){};
 
+    public static final TypeReference<PowerResultDTO<Long>> LONG_POWER_RESULT_TYPE = new TypeReference<PowerResultDTO<Long>>(){};
+
     public static final TypeReference<ResultDTO<JobInfoDTO>> JOB_RESULT_TYPE = new TypeReference<ResultDTO<JobInfoDTO>>(){};
 
     public static final TypeReference<ResultDTO<SaveJobInfoRequest>> SAVE_JOB_INFO_REQUEST_RESULT_TYPE = new TypeReference<ResultDTO<SaveJobInfoRequest>>(){};

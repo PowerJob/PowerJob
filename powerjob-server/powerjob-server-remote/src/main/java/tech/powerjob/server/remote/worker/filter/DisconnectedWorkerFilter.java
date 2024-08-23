@@ -1,5 +1,6 @@
 package tech.powerjob.server.remote.worker.filter;
 
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.common.module.WorkerInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class DisconnectedWorkerFilter implements WorkerFilter {
 
     @Override
-    public boolean filter(WorkerInfo workerInfo, JobInfoDO jobInfo) {
+    public boolean filter(WorkerInfo workerInfo, JobInfoDO jobInfo, InstanceInfoDO instanceInfoDO) {
         boolean timeout = workerInfo.timeout();
         if (timeout) {
             log.info("[Job-{}] filter worker[{}] due to timeout(lastActiveTime={})", jobInfo.getId(), workerInfo.getAddress(), workerInfo.getLastActiveTime());
