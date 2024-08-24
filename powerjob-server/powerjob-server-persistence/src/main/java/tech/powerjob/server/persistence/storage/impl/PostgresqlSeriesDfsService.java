@@ -15,32 +15,24 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.core.env.Environment;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.spring.condition.PropertyAndOneBeanCondition;
-import tech.powerjob.server.extension.dfs.DFsService;
-import tech.powerjob.server.extension.dfs.DownloadRequest;
-import tech.powerjob.server.extension.dfs.FileLocation;
-import tech.powerjob.server.extension.dfs.FileMeta;
-import tech.powerjob.server.extension.dfs.StoreRequest;
+import tech.powerjob.server.extension.dfs.*;
 import tech.powerjob.server.persistence.storage.AbstractDFsService;
 
+import javax.annotation.Priority;
+import javax.sql.DataSource;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Priority;
-import javax.sql.DataSource;
 
 /**
  * postgresql 数据库存储，使用的版本是14
@@ -93,13 +85,13 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
 
     private static final String DEFAULT_TABLE_NAME = "powerjob_files";
 
-    private static final String POWERJOB_FILES_ID_SEQ = "CREATE SEQUENCE powerjob_files_id_seq\n" +
+    private static final String POWERJOB_FILES_ID_SEQ = "CREATE SEQUENCE if not exists powerjob_files_id_seq\n" +
             "    START WITH 1\n" +
             "    INCREMENT BY 1\n" +
             "    NO MINVALUE\n" +
             "    NO MAXVALUE\n" +
             "    CACHE 1;" ;
-    private static final String CREATE_TABLE_SQL = "CREATE TABLE powerjob_files (\n" +
+    private static final String CREATE_TABLE_SQL = "CREATE TABLE if not exists powerjob_files (\n" +
             "  id bigint NOT NULL DEFAULT nextval('powerjob_files_id_seq') PRIMARY KEY,\n" +
             "  bucket varchar(255) NOT NULL,\n" +
             "  name varchar(255) NOT NULL,\n" +
@@ -160,7 +152,6 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
             con = dataSource.getConnection();
             //pg库提示报错：org.postgresql.util.PSQLException: Large Objects may not be used in auto-commit mode.
             con.setAutoCommit(false);
-            log.info("[PostgresqlSeriesDfsService] set autocommit false.");
 
             pst = con.prepareStatement(insertSQL);
 
@@ -185,13 +176,12 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
             if(con != null){
                 con.rollback();
             }
-            log.error("[PostgresqlSeriesDfsService] store [{}] failed!", fileLocation);
+            log.error("[PostgresqlSeriesDfsService] store [{}] failed!", fileLocation, e);
             ExceptionUtils.rethrow(e);
         }finally {
             if(con != null){
                 //设置回来，恢复自动提交模式
                 con.setAutoCommit(true);
-                log.info("[PostgresqlSeriesDfsService] set autocommit true.");
                 con.close();
             }
             if(null != pst){
@@ -246,8 +236,17 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
                 return;
             }
 
-            Blob dataBlob = resultSet.getBlob("data");
-            FileUtils.copyInputStreamToFile(new BufferedInputStream(dataBlob.getBinaryStream()), downloadRequest.getTarget());
+            // 在 PostgreSQL 中，bytea 类型的数据并不直接映射为 JDBC 的 Blob 类型。相反，bytea 数据应当被处理为字节数组 (byte[]) 而不是 Blob 对象
+            try {
+                byte[] dataBytes = resultSet.getBytes("data");
+                try (FileOutputStream fos = new FileOutputStream(downloadRequest.getTarget())) {
+                    fos.write(dataBytes);
+                }
+            } catch (Exception ignore) {
+                // 测试发现会报错 报错“不良的类型值 long”；但并未有用户反馈问题，暂时保留老写法，可能是不同DB获取方式不同？
+                Blob dataBlob = resultSet.getBlob("data");
+                FileUtils.copyInputStreamToFile(new BufferedInputStream(dataBlob.getBinaryStream()), downloadRequest.getTarget());
+            }
 
             log.info("[PostgresqlSeriesDfsService] download [{}] successfully, cost: {}", fileLocation, sw);
 
@@ -331,7 +330,7 @@ public class PostgresqlSeriesDfsService extends AbstractDFsService {
 
         HikariConfig config = new HikariConfig();
 
-        config.setDriverClassName(property.driver);
+        config.setDriverClassName(StringUtils.isEmpty(property.driver) ? "org.postgresql.Driver" : property.driver);
         config.setJdbcUrl(property.url);
         config.setUsername(property.username);
         config.setPassword(property.password);
