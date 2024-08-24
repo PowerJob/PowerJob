@@ -17,4 +17,6 @@ public interface SundryRepository extends JpaRepository<SundryDO, Long> {
     List<SundryDO> findAllByPkey(String pkey);
 
     Optional<SundryDO> findByPkeyAndSkey(String pkey, String skey);
+
+    Optional<SundryDO> deleteByPkeyAndSkey(String pkey, String skey);
 }

@@ -23,6 +23,7 @@
         <module>powerjob-server-core</module>
         <module>powerjob-server-monitor</module>
         <module>powerjob-server-auth</module>
+        <module>powerjob-server-infrastructure</module>
     </modules>
 
 
@@ -85,6 +86,11 @@
             <dependency>
                 <groupId>tech.powerjob</groupId>
                 <artifactId>powerjob-server-persistence</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>tech.powerjob</groupId>
+                <artifactId>powerjob-server-infrastructure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

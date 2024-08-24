@@ -13,6 +13,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCodes {
 
+    SYS_ACQUIRE_LOCK_FAILED("-10", "SYS_ACQUIRE_LOCK_FAILED"),
+
     USER_NOT_LOGIN("-100", "UserNotLoggedIn"),
     USER_NOT_EXIST("-101", "UserNotExist"),
     USER_AUTH_FAILED("-102", "UserAuthFailed"),
