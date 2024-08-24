@@ -2,7 +2,10 @@ package tech.powerjob.server.common;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,5 +25,12 @@ public class SJ {
 
     public static Map<String, String> splitKvString(String kvString) {
         return MAP_SPLITTER.split(kvString);
+    }
+
+    public static List<String> splitCommaStr2StringList(String str) {
+        if (StringUtils.isEmpty(str)) {
+            return Lists.newArrayList();
+        }
+        return Lists.newArrayList(COMMA_SPLITTER.split(str));
     }
 }

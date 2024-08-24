@@ -16,9 +16,19 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+
+        <springdoc-openapi-ui.version>1.6.14</springdoc-openapi-ui.version>
     </properties>
 
     <dependencies>
+
+        <!-- OPEN API -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-openapi-ui.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-extension</artifactId>
@@ -38,6 +48,10 @@
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-persistence</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-infrastructure</artifactId>
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>

@@ -2,6 +2,7 @@ package tech.powerjob.server.auth.service.login.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.enums.ErrorCodes;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.common.AuthConstants;
-import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.common.utils.HttpServletUtils;
 import tech.powerjob.server.auth.jwt.JwtService;
@@ -23,17 +25,15 @@ import tech.powerjob.server.auth.login.*;
 import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
 import tech.powerjob.server.common.Loggers;
-import tech.powerjob.common.enums.SwitchableStatus;
+import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.infrastructure.config.ConfigItem;
+import tech.powerjob.server.infrastructure.config.ConfigService;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.UserInfoRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * PowerJob 登录服务
@@ -45,14 +45,17 @@ import java.util.stream.Collectors;
 @Service
 public class PowerJobLoginServiceImpl implements PowerJobLoginService {
 
+
     private final JwtService jwtService;
+    private final ConfigService configService;
     private final UserInfoRepository userInfoRepository;
     private final Map<String, ThirdPartyLoginService> code2ThirdPartyLoginService;
 
     @Autowired
-    public PowerJobLoginServiceImpl(JwtService jwtService, UserInfoRepository userInfoRepository, List<ThirdPartyLoginService> thirdPartyLoginServices) {
+    public PowerJobLoginServiceImpl(JwtService jwtService, ConfigService configService, UserInfoRepository userInfoRepository, List<ThirdPartyLoginService> thirdPartyLoginServices) {
 
         this.jwtService = jwtService;
+        this.configService = configService;
         this.userInfoRepository = userInfoRepository;
 
         code2ThirdPartyLoginService = Maps.newHashMap();
@@ -64,7 +67,15 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
 
     @Override
     public List<LoginTypeInfo> fetchSupportLoginTypes() {
-        return Lists.newArrayList(code2ThirdPartyLoginService.values()).stream().map(ThirdPartyLoginService::loginType).collect(Collectors.toList());
+        Set<String> blacklistLoginTypes = fetchLoginTypeBlackList();
+        List<LoginTypeInfo> ret = Lists.newArrayList();
+        code2ThirdPartyLoginService.forEach((k ,s) -> {
+            if (blacklistLoginTypes.contains(s.loginType().getType())) {
+                return;
+            }
+            ret.add(s.loginType());
+        });
+        return ret;
     }
 
     @Override
@@ -76,6 +87,12 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     @Override
     public PowerJobUser doLogin(LoginRequest loginRequest) throws PowerJobAuthException {
         final String loginType = loginRequest.getLoginType();
+
+        Set<String> blacklistLoginTypes = fetchLoginTypeBlackList();
+        if (blacklistLoginTypes.contains(loginType)) {
+            throw new PowerJobAuthException(ErrorCodes.INVALID_REQUEST, "LoginTypeInBlackList");
+        }
+
         final ThirdPartyLoginService thirdPartyLoginService = fetchBizLoginService(loginType);
 
         ThirdPartyLoginRequest thirdPartyLoginRequest = new ThirdPartyLoginRequest()
@@ -248,6 +265,11 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
         }
 
         return Optional.ofNullable(JsonUtils.parseObject(JsonUtils.toJSONString(jwtBodyMap), JwtBody.class));
+    }
+
+    private Set<String> fetchLoginTypeBlackList() {
+        String loginTypeBlackListStr = configService.fetchConfig(ConfigItem.AUTH_LOGIN_TYPE_BLACKLIST.getCode(), null);
+        return Sets.newHashSet(SJ.splitCommaStr2StringList(loginTypeBlackListStr));
     }
 
     @Data

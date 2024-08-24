@@ -35,6 +35,11 @@
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-server-persistence</artifactId>
         </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-server-infrastructure</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>
