@@ -74,7 +74,7 @@ public class DynamicServerConfigCrudServiceImpl implements DynamicServerConfigCr
 
     @Override
     public void delete(String key) {
-        Optional<SundryDO> deletedOpt = sundryRepository.deleteByPkeyAndSkey(PKEY, key);
+        Optional<Long> deletedOpt = sundryRepository.deleteByPkeyAndSkey(PKEY, key);
         if (deletedOpt.isPresent()) {
             log.info("[DynamicServerConfigCrudService] delete config[{}] successfully, origin data: {}", key, deletedOpt.get());
         } else {

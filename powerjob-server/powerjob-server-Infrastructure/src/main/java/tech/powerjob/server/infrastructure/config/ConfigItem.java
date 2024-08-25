@@ -12,7 +12,7 @@ import tech.powerjob.server.common.options.WebOptionAbility;
 @AllArgsConstructor
 public enum ConfigItem implements WebOptionAbility {
 
-    AUTH_LOGIN_TYPE_BLACKLIST("oms.auth.login-type.blacklist", "禁用的登录方式")
+    AUTH_LOGIN_TYPE_BLACKLIST("oms.auth.login-type.blacklist", "需要禁用的登录方式，多值逗号分割")
     ;
 
 
@@ -27,6 +27,6 @@ public enum ConfigItem implements WebOptionAbility {
 
     @Override
     public String getLabel() {
-        return desc;
+        return String.format("%s（%s）", code, desc);
     }
 }

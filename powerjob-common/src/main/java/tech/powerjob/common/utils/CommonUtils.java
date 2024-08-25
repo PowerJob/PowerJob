@@ -1,6 +1,7 @@
 package tech.powerjob.common.utils;
 
 import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.exception.PowerJobException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -123,21 +124,21 @@ public class CommonUtils {
 
     public static <T> T requireNonNull(T obj, String msg) {
         if (obj == null) {
-            throw new PowerJobException(msg);
+            throw new PowerJobException(ErrorCodes.INVALID_REQUEST, msg);
         }
         if (obj instanceof String) {
             if (StringUtils.isEmpty((String) obj)) {
-                throw new PowerJobException(msg);
+                throw new PowerJobException(ErrorCodes.INVALID_REQUEST, msg);
             }
         }
         if (obj instanceof Collection) {
             if (CollectionUtils.isEmpty((Collection<?>) obj)) {
-                throw new PowerJobException(msg);
+                throw new PowerJobException(ErrorCodes.INVALID_REQUEST, msg);
             }
         }
         if (obj instanceof Map) {
             if (MapUtils.isEmpty((Map<?, ?>) obj)) {
-                throw new PowerJobException(msg);
+                throw new PowerJobException(ErrorCodes.INVALID_REQUEST, msg);
             }
         }
         return obj;

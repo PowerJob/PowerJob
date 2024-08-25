@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
@@ -31,6 +32,7 @@ public class SystemConfigController {
     @PostMapping("/save")
     @ApiPermission(name = "Config-Save", roleScope = RoleScope.GLOBAL, requiredPermission = Permission.SU)
     public ResultDTO<Void> saveConfig(@RequestBody Config config) {
+        CommonUtils.requireNonNull(config.getKey(), "ConfigKey can't be null or empty!");
         dynamicServerConfigCrudService.save(config);
         return ResultDTO.success(null);
     }
