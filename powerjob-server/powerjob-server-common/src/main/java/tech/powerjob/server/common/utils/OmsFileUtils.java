@@ -85,14 +85,14 @@ public class OmsFileUtils {
 
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(file.getName(), "UTF-8"));
-
+        int bytesRead;
         byte[] buffer = new byte[4096];
         try (BufferedOutputStream bos = new BufferedOutputStream(response.getOutputStream());
              BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-
-            while (bis.read(buffer) != -1) {
-                bos.write(buffer);
-            }
+           
+    		while ((bytesRead = bis.read(buffer)) != -1) {
+				bos.write(buffer,0,bytesRead);
+			}
         }
     }
 
