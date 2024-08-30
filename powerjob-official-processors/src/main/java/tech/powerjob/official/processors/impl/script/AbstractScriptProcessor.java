@@ -96,6 +96,9 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
             omsLogger.info("[SYSTEM] ScriptProcessor has been interrupted");
         } finally {
             result = String.format("[INPUT]: %s;[ERROR]: %s", inputBuilder, errorBuilder);
+            // 同步到在线日志
+            omsLogger.info(inputBuilder.toString());
+            omsLogger.info(errorBuilder.toString());
         }
         return new ProcessResult(success, result);
     }
@@ -144,8 +147,6 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(is, charset))) {
             while ((line = br.readLine()) != null) {
                 sb.append(line).append(System.lineSeparator());
-                // 同步到在线日志
-                omsLogger.info(line);
             }
         } catch (Exception e) {
             log.warn("[ScriptProcessor] copyStream failed.", e);
