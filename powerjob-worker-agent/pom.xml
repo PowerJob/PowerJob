@@ -29,7 +29,7 @@
         <ojdbc.version>19.7.0.0</ojdbc.version>
         <mssql-jdbc.version>7.4.1.jre8</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
-        <postgresql.version>42.2.14</postgresql.version>
+        <postgresql.version>42.4.1</postgresql.version>
     </properties>
 
     <dependencies>
