@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.model.LifeCycle;
 import tech.powerjob.common.request.ServerStopInstanceReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
@@ -20,6 +21,7 @@ import tech.powerjob.server.core.service.UserService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceManager;
 import tech.powerjob.server.core.alarm.AlarmCenter;
 import tech.powerjob.server.core.alarm.module.JobInstanceAlarm;
+import tech.powerjob.server.extension.alarm.Alarm;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.model.UserInfoDO;
@@ -32,6 +34,7 @@ import tech.powerjob.server.remote.worker.WorkerClusterQueryService;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +48,13 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class InstanceManager implements TransportServiceAware {
+
+    // 统计报错误次数
+    public static final ConcurrentHashMap<Long, Integer> alertThreshold = new ConcurrentHashMap<>();
+    // 上次开始统计的时间戳，秒
+    public static final ConcurrentHashMap<Long, Long> statisticWindow = new ConcurrentHashMap<>();
+    // 上次报警的时间戳，秒
+    public static final ConcurrentHashMap<Long, Long> silenceWindow = new ConcurrentHashMap<>();
 
     private final AlarmCenter alarmCenter;
 
@@ -240,11 +250,94 @@ public class InstanceManager implements TransportServiceAware {
         if (!StringUtils.isEmpty(alertContent)) {
             content.setResult(alertContent);
         }
+        if(userList.isEmpty()) return;
+        if(!canAlarm(content)) return ;
         alarmCenter.alarmFailed(content, AlarmUtils.convertUserInfoList2AlarmTargetList(userList));
     }
 
+    private boolean canAlarm(JobInstanceAlarm alarm){
+        /**
+         * public static final ConcurrentHashMap<Long, Integer> alertThreshold = new ConcurrentHashMap<>();
+         * 上次统计的时间戳，秒
+         *     public static final ConcurrentHashMap<Long, Long> statisticWindow = new ConcurrentHashMap<>();
+         * 上次报警的时间戳，秒
+         *     public static final ConcurrentHashMap<Long, Long> silenceWindow = new ConcurrentHashMap<>();
+         */
+        AlarmConfig alarmConfig = alarm.alarmConfigs();
+        if(alarmConfig.getSilenceWindowLen()==0 && alarmConfig.getStatisticWindowLen()==0 && alarmConfig.getAlertThreshold()<=1){
+            //未配置，直接发送报警
+            return true;
+        }
+        long nowTime=getTimeStamp();
+        // 配置了静默时间
+        if(alarmConfig.getSilenceWindowLen()!=0){
+            //
+            Long lastAlarmTime = silenceWindow.get(alarm.getJobId());
+            if(lastAlarmTime!=null && lastAlarmTime!=0){
+                //** 上次已经报警
+                long l = nowTime - lastAlarmTime;
+                if(l<alarmConfig.getStatisticWindowLen()){
+                    //还在静默期，不报警
+                    log.info("静默期，不报警");
+                    return false;
+                }
+            }
+            // 已经过了静默期，或从没有报警过，判断是否要报警
+            boolean b = checkAlarm(alarmConfig, nowTime, alarm);
+            if(b){
+                log.info("设置静默时间");
+                silenceWindow.put(alarm.getJobId(),nowTime);
+            }
+            return b;
+        }else{
+            return checkAlarm(alarmConfig,nowTime,alarm);
+        }
+    }
+
+    private boolean checkAlarm(AlarmConfig alarmConfig,long nowTime,JobInstanceAlarm alarm){
+        if(alarmConfig.getStatisticWindowLen()!=0 && alarmConfig.getAlertThreshold()>1){
+            // 有统计窗口
+            Long lastStatisticWindowTime = statisticWindow.get(alarm.getJobId());
+            if(lastStatisticWindowTime!=null && lastStatisticWindowTime!=0){
+                //** 已经设置过报警统计窗口
+                long l = nowTime - lastStatisticWindowTime;
+                if(l<alarmConfig.getStatisticWindowLen()){
+                    //还在时间窗口中
+                    Integer threshold = alertThreshold.get(alarm.getJobId());
+                    if((threshold+1)>=alarmConfig.getAlertThreshold()){
+                        alertThreshold.put(alarm.getJobId(),1);
+                        statisticWindow.put(alarm.getJobId(),nowTime);
+                        log.info("时间窗口内，已经到达阈值，报警");
+                        return true;
+                    }else{
+                        log.info("时间窗口内，未到达阈值，不报警");
+                        alertThreshold.put(alarm.getJobId(),threshold+1);
+                        return false;
+                    }
+
+                }
+            }
+            log.info("初始化时间窗口，不报警");
+            statisticWindow.put(alarm.getJobId(),nowTime);
+            alertThreshold.put(alarm.getJobId(),1);
+            return false;
+
+        }else{
+            log.info("为设置时间窗口或阈值小于1，报警");
+            // 未配置统计窗口，或阈值小于等于1
+            return true;
+        }
+    }
+    /**
+     * 获取精确到秒的时间戳
+     */
+    public static long getTimeStamp(){
+        return System.currentTimeMillis()/1000;
+    }
     @Override
     public void setTransportService(TransportService transportService) {
         this.transportService = transportService;
     }
+
+
 }
