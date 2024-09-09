@@ -3,12 +3,14 @@ package tech.powerjob.server.remote.worker.selector;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.enums.DispatchStrategy;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * TaskTrackerSelectorService
@@ -27,7 +29,8 @@ public class TaskTrackerSelectorService {
     }
 
     public WorkerInfo select(JobInfoDO jobInfoDO, InstanceInfoDO instanceInfoDO, List<WorkerInfo> availableWorkers) {
-        TaskTrackerSelector taskTrackerSelector = taskTrackerSelectorMap.get(jobInfoDO.getDispatchStrategy());
+        Integer strategy = Optional.ofNullable(jobInfoDO.getDispatchStrategy()).orElse(DispatchStrategy.HEALTH_FIRST.getV());
+        TaskTrackerSelector taskTrackerSelector = taskTrackerSelectorMap.get(strategy);
         return taskTrackerSelector.select(jobInfoDO, instanceInfoDO, availableWorkers);
     }
 }
