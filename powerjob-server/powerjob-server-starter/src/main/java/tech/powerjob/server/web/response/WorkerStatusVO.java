@@ -48,12 +48,15 @@ public class WorkerStatusVO {
      *  27.7%(2.9/8.0 GB)
      */
     private static final String OTHER_FORMAT = "%s%%（%s / %s GB）";
-    private static final DecimalFormat df = new DecimalFormat("#.#");
 
     private static final double THRESHOLD = 0.8;
 
-    public WorkerStatusVO(WorkerInfo workerInfo) {
+    // 使用 ThreadLocal 为每个线程提供独立的 DecimalFormat 实例
+    private static final ThreadLocal<DecimalFormat> DECIMAL_FORMAT_THREAD_LOCAL = ThreadLocal.withInitial(() -> new DecimalFormat("#.#"));
 
+    public WorkerStatusVO(WorkerInfo workerInfo) {
+        // 获取当前线程的 DecimalFormat 实例
+        DecimalFormat df = DECIMAL_FORMAT_THREAD_LOCAL.get();
         SystemMetrics systemMetrics = workerInfo.getSystemMetrics();
 
         this.status = 1;
