@@ -12,6 +12,9 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * powerjob-worker-agent entry
  *
@@ -56,7 +59,8 @@ public class MainApplication implements Runnable {
 
             cfg.setAppName(appName);
             cfg.setPort(port);
-            cfg.setServerAddress(Splitter.on(",").splitToList(server));
+            List<String> servers = new ArrayList<>(Splitter.on(",").splitToList(server));
+            cfg.setServerAddress(servers);
             cfg.setStoreStrategy(StoreStrategy.MEMORY.name().equals(storeStrategy) ? StoreStrategy.MEMORY : StoreStrategy.DISK);
             cfg.setMaxResultLength(length);
             cfg.setTag(tag);
