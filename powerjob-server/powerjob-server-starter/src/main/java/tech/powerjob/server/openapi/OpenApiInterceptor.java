@@ -46,6 +46,7 @@ public class OpenApiInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
 
         if (!enableOpenApiAuth) {
+            response.addHeader(OpenAPIConstant.RESPONSE_HEADER_AUTH_STATUS, Boolean.TRUE.toString());
             return true;
         }
 
