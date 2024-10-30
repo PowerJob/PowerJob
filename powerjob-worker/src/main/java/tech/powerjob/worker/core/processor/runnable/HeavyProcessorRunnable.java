@@ -113,6 +113,7 @@ public class HeavyProcessorRunnable implements Runnable {
         taskContext.setJobParams(instanceInfo.getJobParams());
         taskContext.setInstanceParams(instanceInfo.getInstanceParams());
         taskContext.setOmsLogger(omsLogger);
+        taskContext.setExpectTriggerTime(instanceInfo.getExpectTriggerTime());
         if (task.getTaskContent() != null && task.getTaskContent().length > 0) {
             taskContext.setSubTask(SerializerUtils.deSerialized(task.getTaskContent()));
         }

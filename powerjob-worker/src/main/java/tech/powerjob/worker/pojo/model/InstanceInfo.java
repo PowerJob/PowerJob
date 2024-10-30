@@ -19,6 +19,7 @@ public class InstanceInfo implements Serializable {
     private Long jobId;
     private Long instanceId;
     private Long wfInstanceId;
+    private Long expectTriggerTime;
 
     /**
      * 任务执行处理器信息

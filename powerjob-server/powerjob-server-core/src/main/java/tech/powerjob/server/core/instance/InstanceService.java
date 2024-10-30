@@ -173,7 +173,7 @@ public class InstanceService {
         }
 
         instanceInfo.setStatus(InstanceStatus.WAITING_DISPATCH.getV());
-        instanceInfo.setExpectedTriggerTime(System.currentTimeMillis());
+        instanceInfo.setExpectedTriggerTime(instanceInfo.getExpectedTriggerTime());
         instanceInfo.setFinishedTime(null);
         instanceInfo.setActualTriggerTime(null);
         instanceInfo.setTaskTrackerAddress(null);

@@ -363,6 +363,7 @@ public class LightTaskTracker extends TaskTracker {
         context.setMaxRetryTimes(req.getTaskRetryNum());
         context.setCurrentRetryTimes(0);
         context.setUserContext(workerRuntime.getWorkerConfig().getUserContext());
+        context.setExpectTriggerTime(req.getExpectTriggerTime());
         // 轻量级任务不会涉及到任务分片的处理，不需要处理子任务相关的信息
         return context;
     }
