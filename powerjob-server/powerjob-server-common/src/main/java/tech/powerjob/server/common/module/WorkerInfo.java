@@ -44,7 +44,7 @@ public class WorkerInfo {
 
     public void refresh(WorkerHeartbeat workerHeartbeat) {
         address = workerHeartbeat.getWorkerAddress();
-        lastActiveTime = workerHeartbeat.getHeartbeatTime();
+        lastActiveTime = System.currentTimeMillis();
         protocol = workerHeartbeat.getProtocol();
         client = workerHeartbeat.getClient();
         tag = workerHeartbeat.getTag();
