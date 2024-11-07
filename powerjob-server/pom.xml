@@ -37,6 +37,7 @@
         <postgresql.version>42.6.0</postgresql.version>
         <h2.db.version>2.2.224</h2.db.version>
         <mongodb-driver-sync.version>4.10.2</mongodb-driver-sync.version>
+        <opengauss.version>5.1.0-og</opengauss.version>
 
         <zip4j.version>2.11.2</zip4j.version>
         <jgit.version>5.13.2.202306221912-r</jgit.version>
@@ -202,6 +203,12 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>${h2.db.version}</version>
+        </dependency>
+        <!-- opengauss -->
+        <dependency>
+            <groupId>org.opengauss</groupId>
+            <artifactId>opengauss-jdbc</artifactId>
+            <version>${opengauss.version}</version>
         </dependency>
 
         <!-- SpringBoot -->
