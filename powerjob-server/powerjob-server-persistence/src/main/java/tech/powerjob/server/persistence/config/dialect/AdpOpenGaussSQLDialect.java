@@ -11,8 +11,7 @@ import java.sql.Types;
  * 拷贝自AdpPostgreSQLDialect，用来处理OpenGauss相关数据类型发言
  * 使用方自行通过配置文件激活：spring.datasource.remote.hibernate.properties.hibernate.dialect=tech.powerjob.server.persistence.config.dialect.AdpOpenGaussSQLDialect
  *
- * @author litong0531
- * @since 2024/8/11
+ * @since 2024/11/12
  */
 public class AdpOpenGaussSQLDialect extends PostgreSQL10Dialect {
 
