@@ -1,6 +1,7 @@
 package tech.powerjob.client.test;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.request.http.SaveJobInfoRequest;
+import tech.powerjob.common.request.query.InstancePageQuery;
 import tech.powerjob.common.response.InstanceInfoDTO;
 import tech.powerjob.common.response.JobInfoDTO;
 import tech.powerjob.common.response.ResultDTO;
@@ -111,6 +113,17 @@ class TestClient extends ClientInitializer {
         ResultDTO<InstanceInfoDTO> res = powerJobClient.fetchInstanceInfo(702482902331424832L);
         System.out.println(res);
         Assertions.assertNotNull(res);
+    }
+
+    @Test
+    void testQueryInstanceInfo() {
+        InstancePageQuery instancePageQuery = new InstancePageQuery();
+        instancePageQuery.setJobIdEq(11L);
+        instancePageQuery.setSortBy("actualTriggerTime");
+        instancePageQuery.setAsc(true);
+        instancePageQuery.setPageSize(3);
+        instancePageQuery.setStatusIn(Lists.newArrayList(1,2,5));
+        TestUtils.output(powerJobClient.queryInstanceInfo(instancePageQuery));
     }
 
     @Test
