@@ -298,7 +298,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      * @param heartbeatReq ProcessorTracker（任务的执行管理器）发来的心跳包，包含了其当前状态
      */
     public void receiveProcessorTrackerHeartbeat(ProcessorTrackerStatusReportReq heartbeatReq) {
-        log.debug("[TaskTracker-{}] receive heartbeat: {}", instanceId, heartbeatReq);
+        log.debug("[TaskTracker-{}] receive PT's heartbeat: {}", instanceId, heartbeatReq);
         ptStatusHolder.updateStatus(heartbeatReq);
 
         // 上报空闲，检查是否已经接收到全部该 ProcessorTracker 负责的任务

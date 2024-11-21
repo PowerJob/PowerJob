@@ -232,6 +232,8 @@ public class CommonTaskTracker extends HeavyTaskTracker {
 
                             } else {
 
+                                log.info("[TaskTracker-{}] all subTask has done, start to create final task", instanceId);
+
                                 // 不存在，代表前置任务刚刚执行完毕，需要创建 lastTask，最终任务必须在本机执行！
                                 TaskDO newLastTask = new TaskDO();
                                 newLastTask.setTaskName(TaskConstant.LAST_TASK_NAME);
