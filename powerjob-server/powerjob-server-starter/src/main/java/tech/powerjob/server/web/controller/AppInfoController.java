@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tech.powerjob.common.enums.ErrorCodes;
+import tech.powerjob.common.exception.PowerJobExceptionLauncher;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
@@ -85,9 +87,14 @@ public class AppInfoController {
 
         Long id = req.getId();
         if (id == null) {
+
+            // 前置校验，防止部分没加唯一索引的 DB 重复创建记录导致异常
+            appInfoRepository.findByAppName(req.getAppName()).ifPresent(x -> new PowerJobExceptionLauncher(ErrorCodes.ILLEGAL_ARGS_ERROR, String.format("App[%s] already exists", req.getAppName())));
+
             appInfoDO = new AppInfoDO();
             appInfoDO.setGmtCreate(new Date());
             appInfoDO.setCreator(LoginUserHolder.getUserId());
+
         } else {
             appInfoDO = appInfoService.findById(id, false).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by id:" + id));
 

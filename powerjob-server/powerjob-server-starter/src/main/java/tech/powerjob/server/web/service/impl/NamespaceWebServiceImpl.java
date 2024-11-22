@@ -8,12 +8,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.enums.ErrorCodes;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.exception.PowerJobExceptionLauncher;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.common.SJ;
-import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.persistence.QueryConvertUtils;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
@@ -57,6 +59,9 @@ public class NamespaceWebServiceImpl implements NamespaceWebService {
         boolean isCreate = id == null;
 
         if (isCreate) {
+
+            namespaceRepository.findByCode(req.getCode()).ifPresent(x -> new PowerJobExceptionLauncher(ErrorCodes.ILLEGAL_ARGS_ERROR, String.format("namespace[%s] already exists", req.getCode())));
+
             namespaceDO = new NamespaceDO();
             namespaceDO.setGmtCreate(new Date());
 
