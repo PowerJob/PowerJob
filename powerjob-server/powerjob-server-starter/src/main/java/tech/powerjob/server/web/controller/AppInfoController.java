@@ -82,6 +82,11 @@ public class AppInfoController {
     @ApiPermission(name = "App-Save", roleScope = RoleScope.APP, dynamicPermissionPlugin = ModifyOrCreateDynamicPermission.class, grandPermissionPlugin = SaveAppGrantPermissionPlugin.class)
     public ResultDTO<AppInfoVO> saveAppInfo(@RequestBody ModifyAppInfoRequest req) {
 
+        // 根据 ns code 填充 namespaceId（自动化创建过程中，固定的 namespace-code 对用户更友好）
+        if (StringUtils.isNotEmpty(req.getNamespaceCode())) {
+            namespaceWebService.findByCode(req.getNamespaceCode()).ifPresent(x -> req.setNamespaceId(x.getId()));
+        }
+
         req.valid();
         AppInfoDO appInfoDO;
 

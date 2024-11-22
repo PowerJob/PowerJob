@@ -22,6 +22,8 @@ public interface NamespaceWebService {
 
     Optional<NamespaceDO> findById(Long id);
 
+    Optional<NamespaceDO> findByCode(String code);
+
     Page<NamespaceDO> list(QueryNamespaceRequest queryNamespaceRequest);
 
     List<NamespaceDO> listAll();

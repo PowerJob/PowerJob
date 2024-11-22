@@ -115,6 +115,14 @@ public class NamespaceWebServiceImpl implements NamespaceWebService {
     }
 
     @Override
+    public Optional<NamespaceDO> findByCode(String code) {
+        if (StringUtils.isEmpty(code)) {
+            return Optional.empty();
+        }
+        return namespaceRepository.findByCode(code);
+    }
+
+    @Override
     public Page<NamespaceDO> list(QueryNamespaceRequest queryNamespaceRequest) {
         String codeLike = queryNamespaceRequest.getCodeLike();
         String nameLike = queryNamespaceRequest.getNameLike();
