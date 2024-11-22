@@ -24,6 +24,12 @@ class MethodBasicProcessor implements BasicProcessor {
     public ProcessResult process(TaskContext context) throws Exception {
         try {
             Object result = method.invoke(bean, context);
+
+            // 支持直接返回 ProcessResult  https://github.com/PowerJob/PowerJob/issues/798
+            if (result instanceof ProcessResult) {
+                return (ProcessResult) result;
+            }
+
             return new ProcessResult(true, JsonUtils.toJSONString(result));
         } catch (InvocationTargetException ite) {
             ExceptionUtils.rethrow(ite.getTargetException());
