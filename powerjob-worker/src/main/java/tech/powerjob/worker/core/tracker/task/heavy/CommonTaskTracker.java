@@ -296,8 +296,10 @@ public class CommonTaskTracker extends HeavyTaskTracker {
             // 6.2 定期检查 -> 重新执行被派发到宕机ProcessorTracker上的任务
             List<String> disconnectedPTs = ptStatusHolder.getAllDisconnectedProcessorTrackers();
             if (!disconnectedPTs.isEmpty()) {
-                log.warn("[TaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}.", instanceId, disconnectedPTs);
-                if (taskPersistenceService.updateLostTasks(instanceId, disconnectedPTs, true)) {
+                // 广播任务节点丢失后若直接移除 IP 重试，后续会派发到其他节点，导致重复执行，因此此处不能重试 https://github.com/PowerJob/PowerJob/issues/1003
+                boolean needRetry = !ExecuteType.BROADCAST.equals(executeType);
+                log.warn("[TaskTracker-{}] some ProcessorTracker disconnected from TaskTracker,their address is {}, needRetry: {}.", instanceId, disconnectedPTs, needRetry);
+                if (taskPersistenceService.updateLostTasks(instanceId, disconnectedPTs, needRetry)) {
                     ptStatusHolder.remove(disconnectedPTs);
                     log.warn("[TaskTracker-{}] removed these ProcessorTracker from StatusHolder: {}", instanceId, disconnectedPTs);
                 }
