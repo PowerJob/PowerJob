@@ -43,6 +43,7 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * 负责管理 JobInstance 的运行，主要包括任务的派发（MR可能存在大量的任务）和状态的更新
@@ -477,6 +478,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
 
             // 3. 避免大查询，分批派发任务
             long currentDispatchNum = 0;
+            LongAdder realDispatchNum = new LongAdder();
             long maxDispatchNum = availablePtIps.size() * instanceInfo.getThreadConcurrency() * 2L;
             AtomicInteger index = new AtomicInteger(0);
             AtomicBoolean skipThisRound = new AtomicBoolean(false);
@@ -496,7 +498,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                             int loopTime = 0;
                             do {
                                 loopTime++;
-                                if (loopTime > 3) {
+                                if (loopTime > 2) {
                                     log.warn("[TaskTracker-{}] The cluster has no available workers other than master, so this round dispatch is skipped.", instanceId);
                                     skipThisRound.set(true);
                                     return;
@@ -508,6 +510,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                         }
                     }
                     dispatchTask(task, ptAddress);
+                    realDispatchNum.increment();
                 });
 
                 if (skipThisRound.get()) {
@@ -520,7 +523,10 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                 }
             }
 
-            log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch.stop());
+            long realDispatchNumL = realDispatchNum.longValue();
+            if (realDispatchNumL > 0) {
+                log.info("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, realDispatchNum, stopwatch.stop());
+            }
         }
 
         private boolean taskNeedByPassTaskTracker() {
