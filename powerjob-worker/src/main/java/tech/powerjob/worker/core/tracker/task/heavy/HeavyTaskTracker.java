@@ -499,7 +499,6 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                             do {
                                 loopTime++;
                                 if (loopTime > 2) {
-                                    log.warn("[TaskTracker-{}] The cluster has no available workers other than master, so this round dispatch is skipped.", instanceId);
                                     skipThisRound.set(true);
                                     return;
                                 }
@@ -514,6 +513,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                 });
 
                 if (skipThisRound.get()) {
+                    log.warn("[TaskTracker-{}] The cluster has no available workers other than master, so this round dispatch is skipped.", instanceId);
                     break;
                 }
 
