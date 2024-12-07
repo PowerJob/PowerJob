@@ -53,6 +53,10 @@ public enum ErrorCodes {
      * 非法参数
      */
     ILLEGAL_ARGS_ERROR("-501", "ILLEGAL_ARGS_ERROR"),
+    /**
+     * 不允许操作
+     */
+    OPERATION_NOT_PERMITTED("-502", "OPERATION_NOT_PERMITTED"),
 
     /**
      * OPENAPI 错误码号段 -10XX

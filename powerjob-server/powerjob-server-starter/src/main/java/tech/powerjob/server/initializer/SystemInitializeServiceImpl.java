@@ -1,11 +1,13 @@
 package tech.powerjob.server.initializer;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.Role;
@@ -14,16 +16,23 @@ import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
 import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
+import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 import tech.powerjob.server.persistence.remote.model.PwjbUserInfoDO;
+import tech.powerjob.server.web.request.ComponentUserRoleInfo;
+import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import tech.powerjob.server.web.request.ModifyNamespaceRequest;
 import tech.powerjob.server.web.request.ModifyUserInfoRequest;
+import tech.powerjob.server.web.service.AppWebService;
 import tech.powerjob.server.web.service.NamespaceWebService;
 import tech.powerjob.server.web.service.PwjbUserWebService;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 初始化 PowerJob 首次部署相关的内容
@@ -38,6 +47,8 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
 
     @Value("${oms.auth.initiliaze.admin.password:#{null}}")
     private String defaultAdminPassword;
+    @Resource
+    private AppWebService appWebService;
     @Resource
     private PwjbUserWebService pwjbUserWebService;
     @Resource
@@ -54,36 +65,18 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
 
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public void initAdmin() {
+    public void initAdmin(SystemInitializerContext context) {
 
         String username = SYSTEM_ADMIN_NAME;
         String password = StringUtils.isEmpty(defaultAdminPassword) ? RandomStringUtils.randomAlphabetic(8) : defaultAdminPassword;
 
-        // STEP1: 创建 PWJB 用户
-        ModifyUserInfoRequest createUser = new ModifyUserInfoRequest();
-        createUser.setUsername(username);
-        createUser.setNick(username);
-        createUser.setPassword(password);
+        // 创建用户
+        PowerJobUser powerJobUser = createUser(username, password, true);
+        context.setAdminUserId(powerJobUser.getId());
 
-        log.info("[SystemInitializeService] [S1] create default PWJB user by request: {}", createUser);
-        PwjbUserInfoDO savedPwjbUser = pwjbUserWebService.save(createUser);
-        log.info("[SystemInitializeService] [S1] create default PWJB user successfully: {}", savedPwjbUser);
-
-        Map<String, Object> params = Maps.newHashMap();
-        params.put(AuthConstants.PARAM_KEY_USERNAME, username);
-        params.put(AuthConstants.PARAM_KEY_PASSWORD, password);
-
-        // STEP2: 创建 USER 对象
-        LoginRequest loginRequest = new LoginRequest()
-                .setLoginType(AuthConstants.ACCOUNT_TYPE_POWER_JOB)
-                .setOriginParams(JsonUtils.toJSONString(params));
-        log.info("[SystemInitializeService] [S2] createPowerJobUser user by request: {}", loginRequest);
-        PowerJobUser powerJobUser = powerJobLoginService.doLogin(loginRequest);
-        log.info("[SystemInitializeService] [S2] createPowerJobUser successfully: {}", powerJobUser);
-
-        // STEP3: 授予全局管理员权限
+        // 授予全局管理员权限
         powerJobPermissionService.grantRole(RoleScope.GLOBAL, AuthConstants.GLOBAL_ADMIN_TARGET_ID, powerJobUser.getId(), Role.ADMIN, null);
-        log.info("[SystemInitializeService] [S3] GRANT ADMIN successfully!");
+        log.info("[SystemInitializeService] GRANT ADMIN to user[{}] successfully!", powerJobUser);
 
         // 循环10遍，强提醒用户，第一次使用必须更改 admin 密码
         for (int i = 0; i < 10; i++) {
@@ -93,13 +86,99 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
 
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public void initNamespace() {
+    public void initNamespace(SystemInitializerContext context) {
         ModifyNamespaceRequest saveNamespaceReq = new ModifyNamespaceRequest();
         saveNamespaceReq.setName(SYSTEM_DEFAULT_NAMESPACE);
         saveNamespaceReq.setCode(SYSTEM_DEFAULT_NAMESPACE);
 
         log.info("[SystemInitializeService] create default namespace by request: {}", saveNamespaceReq);
         NamespaceDO savedNamespaceDO = namespaceWebService.save(saveNamespaceReq);
+        context.setDefaultNamespaceId(savedNamespaceDO.getId());
         log.info("[SystemInitializeService] create default namespace successfully: {}", savedNamespaceDO);
+    }
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public void initTestEnvironment(SystemInitializerContext context) {
+        String testMode = System.getProperty(PowerJobDKey.SERVER_TEST_MODE);
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(testMode)) {
+            return;
+        }
+        log.warn("[SystemInitializeService] [TestEnv] Detect test mode and start initializing the test environment");
+
+        // 初始化测试账号
+        String testAccountsStr = System.getProperty(PowerJobDKey.SERVER_TEST_ACCOUNT_USERNAME, "powerjob");
+        String testAccountsPwd = System.getProperty(PowerJobDKey.SERVER_TEST_ACCOUNT_PASSWORD, "powerjob");
+        List<String> testAccounts = Lists.newArrayList(SJ.COMMA_SPLITTER.split(testAccountsStr));
+
+        List<PowerJobUser> testUsers = testAccounts.stream().map(un -> createUser(un, testAccountsPwd, false)).collect(Collectors.toList());
+        List<Long> testUserIds = testUsers.stream().map(PowerJobUser::getId).collect(Collectors.toList());
+
+        log.info("[SystemInitializeService] [TestEnv] test user: {}", testUsers);
+
+        String testAppName = System.getProperty(PowerJobDKey.SERVER_TEST_APP_USERNAME, "powerjob-worker-samples");
+        String testAppPassword = System.getProperty(PowerJobDKey.SERVER_TEST_APP_PASSWORD, "powerjob123");
+
+        AppInfoDO testApp = createApp(testAppName, testAppPassword, context.getDefaultNamespaceId(), testUserIds);
+        log.info("[SystemInitializeService] [TestEnv] test app: {}", testApp);
+    }
+
+    private PowerJobUser createUser(String username, String password, boolean allowedChangePwd) {
+        // STEP1: 创建 PWJB 用户
+        ModifyUserInfoRequest createUser = new ModifyUserInfoRequest();
+        createUser.setUsername(username);
+        createUser.setNick(username);
+        createUser.setPassword(password);
+
+        if (!allowedChangePwd) {
+            Map<String, Object> extra = Maps.newHashMap();
+            extra.put("allowedChangePwd", false);
+            createUser.setExtra(JsonUtils.toJSONString(extra));
+        }
+
+        log.info("[SystemInitializeService] [username:{}] create PWJB user by request: {}", username, createUser);
+        PwjbUserInfoDO savedPwjbUser = pwjbUserWebService.save(createUser);
+        log.info("[SystemInitializeService] [username:{}]  create PWJB user successfully: {}", username, savedPwjbUser);
+
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(AuthConstants.PARAM_KEY_USERNAME, username);
+        params.put(AuthConstants.PARAM_KEY_PASSWORD, password);
+
+        // STEP2: 创建 USER 对象
+        LoginRequest loginRequest = new LoginRequest()
+                .setLoginType(AuthConstants.ACCOUNT_TYPE_POWER_JOB)
+                .setOriginParams(JsonUtils.toJSONString(params));
+        log.info("[SystemInitializeService] [username:{}] create PowerJobUser by request: {}", username, loginRequest);
+        PowerJobUser powerJobUser = powerJobLoginService.doLogin(loginRequest);
+        log.info("[SystemInitializeService] [username:{}] create PowerJobUser successfully: {}", username, powerJobUser);
+        return powerJobUser;
+    }
+
+    private AppInfoDO createApp(String appName, String password, Long namespaceId, List<Long> developers) {
+        ModifyAppInfoRequest modifyAppInfoRequest = new ModifyAppInfoRequest();
+
+        modifyAppInfoRequest.setAppName(appName);
+        modifyAppInfoRequest.setTitle(appName);
+
+        modifyAppInfoRequest.setPassword(password);
+        modifyAppInfoRequest.setNamespaceId(namespaceId);
+
+        modifyAppInfoRequest.setTags("test_app");
+
+        // 禁用靠密码成为管理员
+        Map<String, Object> extra = Maps.newHashMap();
+        extra.put("allowedBecomeAdminByPassword", false);
+        modifyAppInfoRequest.setExtra(JsonUtils.toJSONString(extra));
+
+        ComponentUserRoleInfo componentUserRoleInfo = new ComponentUserRoleInfo();
+        modifyAppInfoRequest.setComponentUserRoleInfo(componentUserRoleInfo);
+
+        componentUserRoleInfo.setDeveloper(developers);
+
+        log.info("[SystemInitializeService] [app:{}] create App by request: {}", appName, modifyAppInfoRequest);
+        AppInfoDO appInfoDO = appWebService.save(modifyAppInfoRequest);
+        log.info("[SystemInitializeService] [app:{}] create App successfully: {}", appName, appInfoDO);
+
+        return appInfoDO;
     }
 }

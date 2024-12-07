@@ -35,7 +35,7 @@ public class ModifyOrCreateDynamicPermission implements DynamicPermissionPlugin 
                 return Permission.NONE;
             }
 
-            return Permission.WRITE;
+            return Permission.SU;
         } catch (Exception e) {
             log.error("[ModifyOrCreateDynamicPermission] check permission failed, please fix the bug!!!", e);
         }

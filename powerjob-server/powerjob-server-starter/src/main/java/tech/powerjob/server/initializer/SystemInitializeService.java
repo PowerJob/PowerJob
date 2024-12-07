@@ -10,15 +10,21 @@ public interface SystemInitializeService {
 
     String GOAL_INIT_ADMIN = "goal_init_admin";
     String GOAL_INIT_NAMESPACE = "goal_init_namespace";
+    String GOAL_INIT_TEST_ENV = "goal_init_test_env";
 
 
     /**
      * 初始化超级管理员
      */
-    void initAdmin();
+    void initAdmin(SystemInitializerContext context);
 
     /**
      * 初始化 namespace
      */
-    void initNamespace();
+    void initNamespace(SystemInitializerContext context);
+
+    /**
+     * 初始化测试环境
+     */
+    void initTestEnvironment(SystemInitializerContext context);
 }

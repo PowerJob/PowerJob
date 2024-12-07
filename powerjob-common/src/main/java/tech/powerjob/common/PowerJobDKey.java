@@ -64,6 +64,10 @@ public class PowerJobDKey {
 
     public static final String WORKER_RUNTIME_SWAP_TASK_SCHEDULE_INTERVAL_MS = "powerjob.worker.swap.scan-interval";
 
-    public static final String SERVER_TEST_ACCOUNT_USERNAME = "powerjob.server.test-accounts";
+    public static final String SERVER_TEST_ACCOUNT_USERNAME = "powerjob.server.test.user.accounts";
+    public static final String SERVER_TEST_ACCOUNT_PASSWORD = "powerjob.server.test.user.password";
+    public static final String SERVER_TEST_APP_USERNAME = "powerjob.server.test.app.name";
+    public static final String SERVER_TEST_APP_PASSWORD = "powerjob.server.test.app.password";
+    public static final String SERVER_TEST_MODE = "powerjob.server.test.mode";
 
 }
