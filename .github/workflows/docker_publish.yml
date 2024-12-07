@@ -1,0 +1,69 @@
+name: build_docker
+
+on:
+  push:
+    branches: [master]
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build_docker:
+    name: Build docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Maven Project
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: Publish package
+        run: mvn clean package -Pdev -DskipTests -U -e && /bin/cp -rf powerjob-server/powerjob-server-starter/target/*.jar powerjob-server/docker/powerjob-server.jar && /bin/cp -rf powerjob-worker-agent/target/*.jar powerjob-worker-agent/powerjob-agent.jar && /bin/cp -rf powerjob-worker-samples/target/*.jar powerjob-worker-samples/powerjob-worker-samples.jar
+
+      # Login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build And Push [powerjob-server]
+        uses: docker/build-push-action@v6
+        with:
+          context: powerjob-server/docker/
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            tjqq/powerjob-server:latest
+            powerjob/powerjob-server:latest
+            tjqq/powerjob-server:${{ env.GITHUB_REF_NAME }}
+            powerjob/powerjob-server:${{ env.GITHUB_REF_NAME }}
+
+      - name: Build And Push [powerjob-agent]
+        uses: docker/build-push-action@v6
+        with:
+          context: powerjob-worker-agent/
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            tjqq/powerjob-agent:latest
+            powerjob/powerjob-agent:latest
+            tjqq/powerjob-agent:${{ env.GITHUB_REF_NAME }}
+            powerjob/powerjob-agent:${{ env.GITHUB_REF_NAME }}
+
+      - name: Build And Push [powerjob-worker-samples]
+        uses: docker/build-push-action@v6
+        with:
+          context: powerjob-worker-samples/
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            tjqq/powerjob-worker-samples:latest
+            powerjob/powerjob-worker-samples:latest
+            tjqq/powerjob-worker-samples:${{ env.GITHUB_REF_NAME }}
+            powerjob/powerjob-worker-samples:${{ env.GITHUB_REF_NAME }}
