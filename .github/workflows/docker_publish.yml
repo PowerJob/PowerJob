@@ -40,8 +40,8 @@ jobs:
           tags: |
             tjqq/powerjob-server:latest
             powerjob/powerjob-server:latest
-            tjqq/powerjob-server:${{ github.ref }}
-            powerjob/powerjob-server:${{ github.ref }}
+            tjqq/powerjob-server:${{ github.event.release.tag_name }}
+            powerjob/powerjob-server:${{ github.event.release.tag_name }}
 
       - name: Build And Push [powerjob-agent]
         uses: docker/build-push-action@v6
@@ -52,8 +52,8 @@ jobs:
           tags: |
             tjqq/powerjob-agent:latest
             powerjob/powerjob-agent:latest
-            tjqq/powerjob-agent:${{ github.ref }}
-            powerjob/powerjob-agent:${{ github.ref }}
+            tjqq/powerjob-agent:${{ github.event.release.tag_name }}
+            powerjob/powerjob-agent:${{ github.event.release.tag_name }}
 
       - name: Build And Push [powerjob-worker-samples]
         uses: docker/build-push-action@v6
@@ -64,5 +64,5 @@ jobs:
           tags: |
             tjqq/powerjob-worker-samples:latest
             powerjob/powerjob-worker-samples:latest
-            tjqq/powerjob-worker-samples:${{ github.ref }}
-            powerjob/powerjob-worker-samples:${{ github.ref }}
+            tjqq/powerjob-worker-samples:${{ github.event.release.tag_name }}
+            powerjob/powerjob-worker-samples:${{ github.event.release.tag_name }}
