@@ -1,14 +1,18 @@
 package tech.powerjob.server.persistence;
 
 import com.alibaba.fastjson.JSONArray;
-import tech.powerjob.common.exception.PowerJobException;
-import tech.powerjob.common.PowerQuery;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import tech.powerjob.common.PowerQuery;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.request.query.PowerPageQuery;
 
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.Predicate;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -84,6 +88,26 @@ public class QueryConvertUtils {
 
             return query.where(predicates.toArray(new Predicate[0])).getRestriction();
         };
+    }
+
+    public static Pageable toPageable(PowerPageQuery powerPageQuery) {
+
+        Sort sorter = null;
+        String sortBy = powerPageQuery.getSortBy();
+        if (StringUtils.isNoneEmpty(sortBy)) {
+            sorter = Sort.by(sortBy);
+            if (powerPageQuery.isAsc()) {
+                sorter.ascending();
+            } else {
+                sorter.descending();
+            }
+        }
+
+        if (sorter == null) {
+            return PageRequest.of(powerPageQuery.getIndex(), powerPageQuery.getPageSize());
+        }
+
+        return PageRequest.of(powerPageQuery.getIndex(), powerPageQuery.getPageSize(), sorter);
     }
 
     public static String convertLikeParams(Object o) {

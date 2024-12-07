@@ -17,7 +17,11 @@ public class ModifyAppInfoRequest {
     private Long id;
     private String appName;
 
+    /**
+     * namespace 唯一标识，任选其一传递即可
+     */
     private Long namespaceId;
+    private String namespaceCode;
 
     private String oldPassword;
     private String password;

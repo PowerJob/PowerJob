@@ -1,14 +1,17 @@
 package tech.powerjob.server.web.service.impl;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import tech.powerjob.common.PowerJobDKey;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
-import tech.powerjob.common.enums.ErrorCodes;
-import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.common.utils.DigestUtils;
+import tech.powerjob.server.auth.common.PowerJobAuthException;
+import tech.powerjob.server.common.SJ;
 import tech.powerjob.server.persistence.remote.model.PwjbUserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.PwjbUserInfoRepository;
 import tech.powerjob.server.web.request.ChangePasswordRequest;
@@ -88,7 +91,12 @@ public class PwjbUserWebServiceImplImpl implements PwjbUserWebService {
         }
 
         // 测试账号特殊处理
-        if (NOT_ALLOWED_CHANGE_PASSWORD_ACCOUNTS.contains(username)) {
+        Set<String> testAccounts = Sets.newHashSet(NOT_ALLOWED_CHANGE_PASSWORD_ACCOUNTS);
+        String testAccountsStr = System.getProperty(PowerJobDKey.SERVER_TEST_ACCOUNT_USERNAME);
+        if (StringUtils.isNotEmpty(testAccountsStr)) {
+            testAccounts.addAll(Lists.newArrayList(SJ.COMMA_SPLITTER.split(testAccountsStr)));
+        }
+        if (testAccounts.contains(username)) {
             throw new IllegalArgumentException("this account not allowed change the password");
         }
 

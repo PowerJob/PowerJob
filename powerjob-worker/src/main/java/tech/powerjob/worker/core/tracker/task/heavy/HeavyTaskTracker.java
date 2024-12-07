@@ -41,7 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * 负责管理 JobInstance 的运行，主要包括任务的派发（MR可能存在大量的任务）和状态的更新
@@ -298,7 +300,7 @@ public abstract class HeavyTaskTracker extends TaskTracker {
      * @param heartbeatReq ProcessorTracker（任务的执行管理器）发来的心跳包，包含了其当前状态
      */
     public void receiveProcessorTrackerHeartbeat(ProcessorTrackerStatusReportReq heartbeatReq) {
-        log.debug("[TaskTracker-{}] receive heartbeat: {}", instanceId, heartbeatReq);
+        log.debug("[TaskTracker-{}] receive PT's heartbeat: {}", instanceId, heartbeatReq);
         ptStatusHolder.updateStatus(heartbeatReq);
 
         // 上报空闲，检查是否已经接收到全部该 ProcessorTracker 负责的任务
@@ -476,8 +478,10 @@ public abstract class HeavyTaskTracker extends TaskTracker {
 
             // 3. 避免大查询，分批派发任务
             long currentDispatchNum = 0;
+            LongAdder realDispatchNum = new LongAdder();
             long maxDispatchNum = availablePtIps.size() * instanceInfo.getThreadConcurrency() * 2L;
             AtomicInteger index = new AtomicInteger(0);
+            AtomicBoolean skipThisRound = new AtomicBoolean(false);
 
             // 4. 循环查询数据库，获取需要派发的任务
             while (maxDispatchNum > currentDispatchNum) {
@@ -490,8 +494,14 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                     // 获取 ProcessorTracker 地址，如果 Task 中自带了 Address，则使用该 Address
                     String ptAddress = task.getAddress();
                     if (StringUtils.isEmpty(ptAddress) || RemoteConstant.EMPTY_ADDRESS.equals(ptAddress)) {
-                        if (taskNeedByPassTaskTracker(availablePtIps)) {
+                        if (taskNeedByPassTaskTracker()) {
+                            int loopTime = 0;
                             do {
+                                loopTime++;
+                                if (loopTime > 2) {
+                                    skipThisRound.set(true);
+                                    return;
+                                }
                                 ptAddress = availablePtIps.get(index.getAndIncrement() % availablePtIps.size());
                             } while (workerRuntime.getWorkerAddress().equals(ptAddress));
                         } else {
@@ -499,7 +509,13 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                         }
                     }
                     dispatchTask(task, ptAddress);
+                    realDispatchNum.increment();
                 });
+
+                if (skipThisRound.get()) {
+                    log.warn("[TaskTracker-{}] The cluster has no available workers other than master, so this round dispatch is skipped.", instanceId);
+                    break;
+                }
 
                 // 数量不足 或 查询失败，则终止循环
                 if (needDispatchTasks.size() < dbQueryLimit) {
@@ -507,21 +523,14 @@ public abstract class HeavyTaskTracker extends TaskTracker {
                 }
             }
 
-            log.debug("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, currentDispatchNum, stopwatch.stop());
+            long realDispatchNumL = realDispatchNum.longValue();
+            if (realDispatchNumL > 0) {
+                log.info("[TaskTracker-{}] dispatched {} tasks,using time {}.", instanceId, realDispatchNum, stopwatch.stop());
+            }
         }
 
-        /**
-         * padding的生效条件： 在map || mapReduce 的情况下， 且是该appId的worker是 非单机运行时，才生效。
-         * fix: 当该appId的worker是单机运行 且 padding时， 导致Dispatcher分发任务处于死循环中， 致使无法分发任务，状态一直为运行中，
-         *      且该线程不能通过停止任务的方式去停止，只能通过重启该work实例的方式释放该线程。
-         */
-        private boolean taskNeedByPassTaskTracker(List<String> availablePtIps) {
+        private boolean taskNeedByPassTaskTracker() {
             if (ExecuteType.MAP.equals(executeType) || ExecuteType.MAP_REDUCE.equals(executeType)) {
-
-                if (availablePtIps.size() <= 1) {
-                    return false;
-                }
-
                 return TaskTrackerBehavior.PADDLING.getV().equals(advancedRuntimeConfig.getTaskTrackerBehavior());
             }
             return false;

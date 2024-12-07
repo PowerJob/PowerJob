@@ -265,14 +265,21 @@ public class ProcessorTracker {
                 } else {
                     long idleTime = System.currentTimeMillis() - lastIdleTime;
                     if (idleTime > MAX_IDLE_TIME) {
-                        log.warn("[ProcessorTracker-{}] ProcessorTracker have been idle for {}ms, it's time to tell TaskTracker and then destroy self.", instanceId, idleTime);
 
-                        // 不可靠通知，如果该请求失败，则整个任务处理集群缺失一个 ProcessorTracker，影响可接受
-                        ProcessorTrackerStatusReportReq statusReportReq = ProcessorTrackerStatusReportReq.buildIdleReport(instanceId);
-                        statusReportReq.setAddress(workerRuntime.getWorkerAddress());
-                        TransportUtils.ptReportSelfStatus(statusReportReq, taskTrackerAddress, workerRuntime);
-                        destroy();
-                        return;
+                        boolean shouldDestroyWhenIdle = shouldDestroyWhenIdle();
+                        log.warn("[ProcessorTracker-{}] ProcessorTracker have been idle for {}ms, shouldDestroyWhenIdle: {}", instanceId, idleTime, shouldDestroyWhenIdle);
+
+                        if (shouldDestroyWhenIdle) {
+
+                            log.warn("[ProcessorTracker-{}] it's time to tell TaskTracker and then destroy self.", instanceId);
+
+                            // 不可靠通知，如果该请求失败，则整个任务处理集群缺失一个 ProcessorTracker，影响可接受
+                            ProcessorTrackerStatusReportReq statusReportReq = ProcessorTrackerStatusReportReq.buildIdleReport(instanceId);
+                            statusReportReq.setAddress(workerRuntime.getWorkerAddress());
+                            TransportUtils.ptReportSelfStatus(statusReportReq, taskTrackerAddress, workerRuntime);
+                            destroy();
+                            return;
+                        }
                     }
                 }
             }
@@ -298,6 +305,22 @@ public class ProcessorTracker {
             log.debug("[ProcessorTracker-{}] send heartbeat to TaskTracker, current waiting task num is {}.", instanceId, waitingNum);
         }
 
+    }
+
+    /**
+     * 空闲的时候是否需要自我销毁
+     * @return true or false
+     */
+    private boolean shouldDestroyWhenIdle() {
+        /*
+        https://github.com/PowerJob/PowerJob/issues/1033
+        map 情况下，如果子任务执行较长，任务末期可能出现某一个节点的任务仍在执行，其他机器都已经无任务可执行，被 idle 逻辑关闭节点。如果不幸在‘生成reduce任务后并派发前’关闭了 TaskTracker 所在节点的 PT，那 reduce 任务就会直接失败
+        解决方案：同 TT 节点的 PT，本身不存在分布式不一致问题，因此不需要 idle 直接关闭 PT 的机制
+        */
+        if (taskTrackerAddress.equalsIgnoreCase(workerRuntime.getWorkerAddress())) {
+            return false;
+        }
+        return true;
     }
 
 
