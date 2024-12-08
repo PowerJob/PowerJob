@@ -18,6 +18,7 @@ import tech.powerjob.server.auth.service.login.LoginRequest;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
 import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
 import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.common.constants.ExtensionKey;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.persistence.remote.model.NamespaceDO;
 import tech.powerjob.server.persistence.remote.model.PwjbUserInfoDO;
@@ -142,7 +143,7 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
 
             if (!allowedChangePwd) {
                 Map<String, Object> extra = Maps.newHashMap();
-                extra.put("allowedChangePwd", false);
+                extra.put(ExtensionKey.PwjbUser.allowedChangePwd, false);
                 createUser.setExtra(JsonUtils.toJSONString(extra));
             }
 
@@ -188,7 +189,7 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
 
         // 禁用靠密码成为管理员
         Map<String, Object> extra = Maps.newHashMap();
-        extra.put("allowedBecomeAdminByPassword", false);
+        extra.put(ExtensionKey.App.allowedBecomeAdminByPassword, false);
         modifyAppInfoRequest.setExtra(JsonUtils.toJSONString(extra));
 
         ComponentUserRoleInfo componentUserRoleInfo = new ComponentUserRoleInfo();

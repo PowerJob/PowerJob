@@ -7,11 +7,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.PowerJobDKey;
 import tech.powerjob.common.enums.ErrorCodes;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
 import tech.powerjob.common.utils.DigestUtils;
+import tech.powerjob.common.utils.MapUtils;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.common.SJ;
+import tech.powerjob.server.common.constants.ExtensionKey;
 import tech.powerjob.server.persistence.remote.model.PwjbUserInfoDO;
 import tech.powerjob.server.persistence.remote.repository.PwjbUserInfoRepository;
 import tech.powerjob.server.web.request.ChangePasswordRequest;
@@ -20,6 +23,7 @@ import tech.powerjob.server.web.service.PwjbUserWebService;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -95,6 +99,16 @@ public class PwjbUserWebServiceImplImpl implements PwjbUserWebService {
             throw new PowerJobAuthException(ErrorCodes.INCORRECT_PASSWORD);
         }
 
+        // 不允许修改密码判定
+        String extra = dbUser.getExtra();
+        if (StringUtils.isNotEmpty(extra)) {
+            Map<String, Object> extraMap = JsonUtils.parseMap(extra);
+            Boolean allowedChangePwd = MapUtils.getBoolean(extraMap, ExtensionKey.PwjbUser.allowedChangePwd, true);
+            if (!allowedChangePwd) {
+                throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "notAllowedChangePassword");
+            }
+        }
+
         // 测试账号特殊处理
         Set<String> testAccounts = Sets.newHashSet(NOT_ALLOWED_CHANGE_PASSWORD_ACCOUNTS);
         String testAccountsStr = System.getProperty(PowerJobDKey.SERVER_TEST_ACCOUNT_USERNAME);
@@ -102,7 +116,7 @@ public class PwjbUserWebServiceImplImpl implements PwjbUserWebService {
             testAccounts.addAll(Lists.newArrayList(SJ.COMMA_SPLITTER.split(testAccountsStr)));
         }
         if (testAccounts.contains(username)) {
-            throw new IllegalArgumentException("this account not allowed change the password");
+            throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "notAllowedChangePassword");
         }
 
         dbUser.setPassword(DigestUtils.rePassword(changePasswordRequest.getNewPassword(), dbUser.getUsername()));

@@ -5,15 +5,19 @@ import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tech.powerjob.common.enums.ErrorCodes;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.common.utils.CommonUtils;
+import tech.powerjob.common.utils.MapUtils;
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
@@ -22,6 +26,7 @@ import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveAppGrantPermissionPlugin;
 import tech.powerjob.server.auth.service.WebAuthService;
+import tech.powerjob.server.common.constants.ExtensionKey;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.persistence.PageResult;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
@@ -100,6 +105,20 @@ public class AppInfoController {
     @ApiPermission(name = "App-BecomeAdmin", roleScope = RoleScope.GLOBAL, requiredPermission = Permission.NONE)
     public ResultDTO<Void> becomeAdminByAppNameAndPassword(@RequestBody AppAssertRequest appAssertRequest) {
         String appName = appAssertRequest.getAppName();
+
+        Optional<AppInfoDO> appOpt = appWebService.findByAppName(appName);
+        if (!appOpt.isPresent()) {
+            throw new PowerJobException(ErrorCodes.ILLEGAL_ARGS_ERROR, "can't find appInfo by appName: " + appName);
+        }
+
+        String appExtra = appOpt.get().getExtra();
+        if (StringUtils.isNotBlank(appExtra)) {
+            Map<String, Object> appExtraMap = JsonUtils.parseMap(appExtra);
+            Boolean allowedBecomeAdminByPassword = MapUtils.getBoolean(appExtraMap, ExtensionKey.App.allowedBecomeAdminByPassword, true);
+            if (!allowedBecomeAdminByPassword) {
+                throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "allowedBecomeAdminByPassword=false");
+            }
+        }
 
         Long appId = appInfoService.assertApp(appName, appAssertRequest.getPassword(), appAssertRequest.getEncryptType());
 

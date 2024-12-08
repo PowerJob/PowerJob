@@ -52,7 +52,7 @@ services:
 #      - powerjob-mongodb
     environment:
       PARAMS: "--spring.profiles.active=daily --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai --oms.storage.dfs.mysql_series.url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
-      JVMOPTIONS: "-server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log -Dpowerjob.server.test.mode=true"
+      JVMOPTIONS: "-server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log -Dpowerjob.server.test.mode=true -Dpowerjob.server.test.user.accounts=powerjob"
     ports:
       - "7700:7700"
       - "10086:10086"

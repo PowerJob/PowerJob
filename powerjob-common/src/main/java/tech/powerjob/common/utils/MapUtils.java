@@ -12,6 +12,37 @@ import java.util.Map;
  */
 public class MapUtils {
 
+    public static <K> Boolean getBoolean(Map<? super K, ?> map, K key, Boolean defaultValue) {
+        Boolean answer = getBoolean(map, key);
+        if (answer == null) {
+            answer = defaultValue;
+        }
+
+        return answer;
+    }
+
+    public static <K> Boolean getBoolean(Map<? super K, ?> map, K key) {
+        if (map != null) {
+            Object answer = map.get(key);
+            if (answer != null) {
+                if (answer instanceof Boolean) {
+                    return (Boolean)answer;
+                }
+
+                if (answer instanceof String) {
+                    return Boolean.valueOf((String)answer);
+                }
+
+                if (answer instanceof Number) {
+                    Number n = (Number)answer;
+                    return n.intValue() != 0 ? Boolean.TRUE : Boolean.FALSE;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static <K> String getString(Map<? super K, ?> map, K key) {
         if (map != null) {
             Object answer = map.get(key);
