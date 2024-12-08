@@ -30,10 +30,7 @@ import tech.powerjob.server.web.service.AppWebService;
 import tech.powerjob.server.web.service.NamespaceWebService;
 
 import javax.persistence.criteria.Predicate;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AppWebService
@@ -112,6 +109,11 @@ public class AppWebServiceImpl implements AppWebService {
 
         appInfoService.deleteById(appId);
         log.warn("[AppInfoController] delete app[id={}] successfully!", appId);
+    }
+
+    @Override
+    public Optional<AppInfoDO> findByAppName(String appName) {
+        return appInfoRepository.findByAppName(appName);
     }
 
     @Override

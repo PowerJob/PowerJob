@@ -72,6 +72,11 @@ public class PwjbUserWebServiceImplImpl implements PwjbUserWebService {
     }
 
     @Override
+    public Optional<PwjbUserInfoDO> findByUsername(String username) {
+        return pwjbUserInfoRepository.findByUsername(username);
+    }
+
+    @Override
     public void changePassword(ChangePasswordRequest changePasswordRequest) {
         if (!StringUtils.equals(changePasswordRequest.getNewPassword(), changePasswordRequest.getNewPassword2())) {
             throw new IllegalArgumentException("Inconsistent passwords");

@@ -5,6 +5,8 @@ import tech.powerjob.server.persistence.remote.model.AppInfoDO;
 import tech.powerjob.server.web.request.ModifyAppInfoRequest;
 import tech.powerjob.server.web.request.QueryAppInfoRequest;
 
+import java.util.Optional;
+
 /**
  * AppWebService
  *
@@ -16,6 +18,8 @@ public interface AppWebService {
     AppInfoDO save(ModifyAppInfoRequest request);
 
     void delete(Long id);
+
+    Optional<AppInfoDO> findByAppName(String appName);
 
     Page<AppInfoDO> list(QueryAppInfoRequest queryAppInfoRequest);
 }

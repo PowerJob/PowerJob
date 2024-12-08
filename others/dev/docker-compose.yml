@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 1024M
     restart: always
     container_name: powerjob-mysql
     image: powerjob/powerjob-mysql:test_env
@@ -43,7 +43,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 896M
+          memory: 1024M
     container_name: powerjob-server
     image: powerjob/powerjob-server:test_env
     restart: always
@@ -52,7 +52,7 @@ services:
 #      - powerjob-mongodb
     environment:
       PARAMS: "--spring.profiles.active=daily --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai --oms.storage.dfs.mysql_series.url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
-      JVMOPTIONS: "-server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log"
+      JVMOPTIONS: "-server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log -Dpowerjob.server.test.mode=true"
     ports:
       - "7700:7700"
       - "10086:10086"
@@ -67,7 +67,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
     container_name: powerjob-worker-agent
     image: powerjob/powerjob-worker-agent:test_env
     restart: always
@@ -89,7 +89,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
     container_name: powerjob-worker-agent2
     image: powerjob/powerjob-worker-agent:test_env
     restart: always

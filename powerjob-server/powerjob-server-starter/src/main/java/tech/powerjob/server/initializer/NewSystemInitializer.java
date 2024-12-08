@@ -40,22 +40,23 @@ public class NewSystemInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        SystemInitializerContext context = new SystemInitializerContext();
-        initSystemAdmin(context);
-        initDefaultNamespace(context);
-        initTestEnvironment(context);
+        clusterInit(SystemInitializeService.GOAL_INIT_LOCK, Void -> {
+            initSystemAdmin();
+            initDefaultNamespace();
+            initTestEnvironment();
+        });
     }
 
-    private void initSystemAdmin(SystemInitializerContext context) {
-        clusterInit(SystemInitializeService.GOAL_INIT_ADMIN, Void -> systemInitializeService.initAdmin(context));
+    private void initSystemAdmin() {
+        clusterInit(SystemInitializeService.GOAL_INIT_ADMIN, Void -> systemInitializeService.initAdmin());
     }
 
-    private void initDefaultNamespace(SystemInitializerContext context) {
-        clusterInit(SystemInitializeService.GOAL_INIT_NAMESPACE, Void -> systemInitializeService.initNamespace(context));
+    private void initDefaultNamespace() {
+        clusterInit(SystemInitializeService.GOAL_INIT_NAMESPACE, Void -> systemInitializeService.initNamespace());
     }
 
-    private void initTestEnvironment(SystemInitializerContext context) {
-        clusterInit(SystemInitializeService.GOAL_INIT_TEST_ENV, Void -> systemInitializeService.initTestEnvironment(context));
+    private void initTestEnvironment() {
+        clusterInit(SystemInitializeService.GOAL_INIT_TEST_ENV, Void -> systemInitializeService.initTestEnvironment());
     }
 
     private void clusterInit(String name, Consumer<Void> initFunc) {
