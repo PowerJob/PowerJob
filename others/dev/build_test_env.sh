@@ -3,6 +3,8 @@
 
 echo "================== 关闭全部服务 =================="
 docker-compose down
+echo "================== 删除历史数据 =================="
+rm -rf ~/powerjob-data/
 echo "================== 构建 jar =================="
 cd `dirname $0`/../.. || exit
 # mvn clean package -Pdev -DskipTests -U -e -pl powerjob-server,powerjob-worker-agent -am
