@@ -18,4 +18,4 @@ ls -l powerjob-worker-agent/powerjob-agent.jar
 
 cd others/dev
 docker-compose build
-docker-compose --compatibility up
+docker-compose --compatibility -p powerjob_test_env up
