@@ -43,7 +43,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 1536M
     container_name: powerjob-server
     image: powerjob/powerjob-server:test_env
     restart: always
@@ -51,8 +51,8 @@ services:
       - powerjob-mysql
 #      - powerjob-mongodb
     environment:
-      PARAMS: "--spring.profiles.active=daily --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai --oms.storage.dfs.mysql_series.url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
-      JVMOPTIONS: "-server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log -Dpowerjob.server.test.mode=true -Dpowerjob.server.test.user.accounts=powerjob"
+      PARAMS: "--spring.profiles.active=daily --logging.config=classpath:logback-product.xml --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai --oms.storage.dfs.mysql_series.url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
+      JVMOPTIONS: "-server -XX:+UseG1GC -Xms768m -Xmx768m -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log -Dpowerjob.server.test.mode=true -Dpowerjob.server.test.user.accounts=powerjob"
     ports:
       - "7700:7700"
       - "10086:10086"
@@ -83,7 +83,7 @@ services:
     entrypoint:
       - "sh"
       - "-c"
-      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC Xms256m -Xmx256m -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
 
   powerjob-worker-agent2:
     deploy:
@@ -105,5 +105,5 @@ services:
     entrypoint:
       - "sh"
       - "-c"
-      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
+      - "./wait-for-it.sh powerjob-server:7700 --strict -- java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -server -XX:+UseG1GC -Xms256m -Xmx256m -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/gc.log -jar /powerjob-agent.jar --app powerjob-worker-samples --server powerjob-server:7700"
 
