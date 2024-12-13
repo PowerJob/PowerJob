@@ -16,6 +16,7 @@ import tech.powerjob.common.request.http.SaveWorkflowRequest;
 import tech.powerjob.common.request.query.InstancePageQuery;
 import tech.powerjob.common.request.query.JobInfoQuery;
 import tech.powerjob.common.response.*;
+import tech.powerjob.server.core.instance.InstanceLogService;
 import tech.powerjob.server.core.instance.InstanceService;
 import tech.powerjob.server.core.service.AppInfoService;
 import tech.powerjob.server.core.service.CacheService;
@@ -23,6 +24,7 @@ import tech.powerjob.server.core.service.JobService;
 import tech.powerjob.server.core.workflow.WorkflowInstanceService;
 import tech.powerjob.server.core.workflow.WorkflowService;
 import tech.powerjob.server.openapi.security.OpenApiSecurityService;
+import tech.powerjob.server.persistence.StringPage;
 import tech.powerjob.server.persistence.remote.model.WorkflowInfoDO;
 import tech.powerjob.server.persistence.remote.model.WorkflowNodeInfoDO;
 import tech.powerjob.server.web.response.WorkflowInfoVO;
@@ -46,6 +48,8 @@ public class OpenAPIController {
     private final JobService jobService;
 
     private final InstanceService instanceService;
+
+    private final InstanceLogService instanceLogService;
 
     private final WorkflowService workflowService;
 
@@ -180,6 +184,12 @@ public class OpenAPIController {
     @PostMapping(OpenAPIConstant.FETCH_INSTANCE_INFO)
     public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) {
         return ResultDTO.success(instanceService.getInstanceInfo(instanceId));
+    }
+
+    @PostMapping(OpenAPIConstant.FETCH_INSTANCE_LOG)
+    public ResultDTO<InstanceLogDTO> fetchInstanceLog(Long appId, Long instanceId, Long index) {
+        StringPage stringPage = instanceLogService.fetchInstanceLog(appId, instanceId, index);
+        return ResultDTO.success(new InstanceLogDTO(stringPage.getIndex(), stringPage.getTotalPages(), stringPage.getData()));
     }
 
     @PostMapping(OpenAPIConstant.QUERY_INSTANCE)
