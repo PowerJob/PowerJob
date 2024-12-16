@@ -229,6 +229,7 @@ public class DispatchService {
             req.setInstanceTimeoutMS(jobInfo.getInstanceTimeLimit());
         }
         req.setThreadConcurrency(jobInfo.getConcurrency());
+        req.setExpectTriggerTime(instanceInfo.getExpectedTriggerTime());
         return req;
     }
 }

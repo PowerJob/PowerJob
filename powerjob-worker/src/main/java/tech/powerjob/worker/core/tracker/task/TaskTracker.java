@@ -83,6 +83,7 @@ public abstract class TaskTracker {
         instanceInfo.setLogConfig(req.getLogConfig());
         instanceInfo.setInstanceTimeoutMS(req.getInstanceTimeoutMS());
         instanceInfo.setAdvancedRuntimeConfig(req.getAdvancedRuntimeConfig());
+        instanceInfo.setExpectTriggerTime(req.getExpectTriggerTime());
 
         // 常用变量初始化
         executeType = ExecuteType.valueOf(req.getExecuteType());
