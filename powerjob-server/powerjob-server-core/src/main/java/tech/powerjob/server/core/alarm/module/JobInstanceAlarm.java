@@ -1,7 +1,9 @@
 package tech.powerjob.server.core.alarm.module;
 
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.server.extension.alarm.Alarm;
 
 /**
@@ -78,9 +80,18 @@ public class JobInstanceAlarm implements Alarm {
      *
      */
     private String taskTrackerAddress;
+    /**
+     * 告警配置
+     */
+    String alarmConfig = null;
 
     @Override
     public String fetchTitle() {
         return "PowerJob AlarmService: Job Running Failed";
+    }
+
+    @Override
+    public AlarmConfig alarmConfigs() {
+        return JSON.parseObject(alarmConfig,AlarmConfig.class);
     }
 }
