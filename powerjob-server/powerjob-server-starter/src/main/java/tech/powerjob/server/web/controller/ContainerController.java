@@ -7,12 +7,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.common.utils.HttpHeaderUtils;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.common.constants.ContainerSourceType;
-import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.core.container.ContainerService;
 import tech.powerjob.server.core.container.ContainerTemplateGenerator;
@@ -24,6 +25,7 @@ import tech.powerjob.server.web.request.GenerateContainerTemplateRequest;
 import tech.powerjob.server.web.request.SaveContainerInfoRequest;
 import tech.powerjob.server.web.response.ContainerInfoVO;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +73,6 @@ public class ContainerController {
     }
 
     @PostMapping("/downloadContainerTemplate")
-    @ApiPermission(name = "Container-DownloadContainerTemplate", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public void downloadContainerTemplate(@RequestBody GenerateContainerTemplateRequest req, HttpServletResponse response) throws IOException {
         File zipFile = ContainerTemplateGenerator.generate(req.getGroup(), req.getArtifact(), req.getName(), req.getPackageName(), req.getJavaVersion());
         OmsFileUtils.file2HttpResponse(zipFile, response);
@@ -88,7 +89,11 @@ public class ContainerController {
 
     @PostMapping("/save")
     @ApiPermission(name = "Container-Save", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<Void> saveContainer(@RequestBody SaveContainerInfoRequest request) {
+    public ResultDTO<Void> saveContainer(@RequestBody SaveContainerInfoRequest request, HttpServletRequest hsr) {
+
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
+        request.setAppId(appId);
+
         request.valid();
 
         ContainerInfoDO container = new ContainerInfoDO();
@@ -102,14 +107,16 @@ public class ContainerController {
 
     @GetMapping("/delete")
     @ApiPermission(name = "Container-Delete", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<Void> deleteContainer(Long appId, Long containerId) {
+    public ResultDTO<Void> deleteContainer(Long containerId, HttpServletRequest hsr) {
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         containerService.delete(appId, containerId);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/list")
     @ApiPermission(name = "Container-List", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<List<ContainerInfoVO>> listContainers(Long appId) {
+    public ResultDTO<List<ContainerInfoVO>> listContainers(HttpServletRequest hsr) {
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         List<ContainerInfoVO> res = containerInfoRepository.findByAppIdAndStatusNot(appId, SwitchableStatus.DELETED.getV())
                 .stream().map(ContainerController::convert).collect(Collectors.toList());
         return ResultDTO.success(res);
@@ -117,7 +124,9 @@ public class ContainerController {
 
     @GetMapping("/listDeployedWorker")
     @ApiPermission(name = "Container-ListDeployedWorker", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<String> listDeployedWorker(Long appId, Long containerId, HttpServletResponse response) {
+    public ResultDTO<String> listDeployedWorker(Long containerId, HttpServletResponse response, HttpServletRequest hsr) {
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
+
         AppInfoDO appInfoDO = appInfoRepository.findById(appId).orElseThrow(() -> new IllegalArgumentException("can't find app by id:" + appId));
         String targetServer = appInfoDO.getCurrentServer();
 

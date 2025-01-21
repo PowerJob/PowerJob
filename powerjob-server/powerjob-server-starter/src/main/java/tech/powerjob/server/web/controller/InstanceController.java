@@ -1,35 +1,39 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.enums.InstanceStatus;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.auth.Permission;
-import tech.powerjob.server.auth.RoleScope;
-import tech.powerjob.server.auth.interceptor.ApiPermission;
-import tech.powerjob.server.common.utils.OmsFileUtils;
-import tech.powerjob.server.persistence.PageResult;
-import tech.powerjob.server.persistence.StringPage;
-import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
-import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
-import tech.powerjob.server.core.service.CacheService;
-import tech.powerjob.server.core.instance.InstanceLogService;
-import tech.powerjob.server.core.instance.InstanceService;
-import tech.powerjob.server.web.request.QueryInstanceDetailRequest;
-import tech.powerjob.server.web.request.QueryInstanceRequest;
-import tech.powerjob.server.web.response.InstanceDetailVO;
-import tech.powerjob.server.web.response.InstanceInfoVO;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.common.OmsConstant;
+import tech.powerjob.common.enums.ErrorCodes;
+import tech.powerjob.common.enums.InstanceStatus;
+import tech.powerjob.common.exception.PowerJobException;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.common.utils.HttpHeaderUtils;
+import tech.powerjob.server.auth.interceptor.ApiPermission;
+import tech.powerjob.server.common.utils.OmsFileUtils;
+import tech.powerjob.server.core.instance.InstanceLogService;
+import tech.powerjob.server.core.instance.InstanceService;
+import tech.powerjob.server.core.service.CacheService;
+import tech.powerjob.server.persistence.PageResult;
+import tech.powerjob.server.persistence.StringPage;
+import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
+import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
+import tech.powerjob.server.web.request.QueryInstanceDetailRequest;
+import tech.powerjob.server.web.request.QueryInstanceRequest;
+import tech.powerjob.server.web.response.InstanceDetailVO;
+import tech.powerjob.server.web.response.InstanceInfoVO;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.net.URL;
@@ -61,29 +65,38 @@ public class InstanceController {
 
     @GetMapping("/stop")
     @ApiPermission(name = "Instance-Stop", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<Void> stopInstance(Long appId,Long instanceId) {
-        instanceService.stopInstance(appId,instanceId);
+    public ResultDTO<Void> stopInstance(Long instanceId, HttpServletRequest hsr) {
+        preCheck(instanceId, hsr);
+
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
+        instanceService.stopInstance(appId, instanceId);
+
         return ResultDTO.success(null);
     }
 
     @GetMapping("/retry")
     @ApiPermission(name = "Instance-Retry", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<Void> retryInstance(String appId, Long instanceId) {
-        instanceService.retryInstance(Long.valueOf(appId), instanceId);
+    public ResultDTO<Void> retryInstance(Long instanceId, HttpServletRequest hsr) {
+
+        preCheck(instanceId, hsr);
+
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
+        instanceService.retryInstance(appId, instanceId);
         return ResultDTO.success(null);
     }
 
     @GetMapping("/detail")
     @ApiPermission(name = "Instance-Detail", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<InstanceDetailVO> getInstanceDetail(Long appId, Long instanceId) {
+    public ResultDTO<InstanceDetailVO> getInstanceDetail(Long instanceId, HttpServletRequest hsr) {
         QueryInstanceDetailRequest queryInstanceDetailRequest = new QueryInstanceDetailRequest();
-        queryInstanceDetailRequest.setAppId(appId);
+        queryInstanceDetailRequest.setAppId(Long.valueOf(HttpHeaderUtils.fetchAppId(hsr)));
         queryInstanceDetailRequest.setInstanceId(instanceId);
-        return getInstanceDetailPlus(queryInstanceDetailRequest);
+        return getInstanceDetailPlus(queryInstanceDetailRequest, hsr);
     }
 
     @PostMapping("/detailPlus")
-    public ResultDTO<InstanceDetailVO> getInstanceDetailPlus(@RequestBody QueryInstanceDetailRequest req) {
+    @ApiPermission(name = "Instance-DetailPlus", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
+    public ResultDTO<InstanceDetailVO> getInstanceDetailPlus(@RequestBody QueryInstanceDetailRequest req, HttpServletRequest hsr) {
 
         // 非法请求参数校验
         String customQuery = req.getCustomQuery();
@@ -95,6 +108,8 @@ public class InstanceController {
         // 兼容老版本前端不存在 appId 的场景
         if (req.getAppId() == null) {
             req.setAppId(instanceService.getInstanceInfo(req.getInstanceId()).getAppId());
+        } else {
+            req.setAppId(Long.valueOf(HttpHeaderUtils.fetchAppId(hsr)));
         }
 
         return ResultDTO.success(InstanceDetailVO.from(instanceService.getInstanceDetail(req.getAppId(), req.getInstanceId(), customQuery)));
@@ -102,13 +117,20 @@ public class InstanceController {
 
     @GetMapping("/log")
     @ApiPermission(name = "Instance-Log", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<StringPage> getInstanceLog(Long appId, Long instanceId, Long index) {
+    public ResultDTO<StringPage> getInstanceLog(Long instanceId, Long index, HttpServletRequest hsr) {
+
+        preCheck(instanceId, hsr);
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         return ResultDTO.success(instanceLogService.fetchInstanceLog(appId, instanceId, index));
     }
 
     @GetMapping("/downloadLogUrl")
     @ApiPermission(name = "Instance-FetchDownloadLogUrl", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<String> getDownloadUrl(Long appId, Long instanceId) {
+    public ResultDTO<String> getDownloadUrl(Long instanceId, HttpServletRequest hsr) {
+
+        preCheck(instanceId, hsr);
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
+
         return ResultDTO.success(instanceLogService.fetchDownloadUrl(appId, instanceId));
     }
 
@@ -140,7 +162,10 @@ public class InstanceController {
 
     @PostMapping("/list")
     @ApiPermission(name = "Instance-List", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<PageResult<InstanceInfoVO>> list(@RequestBody QueryInstanceRequest request) {
+    public ResultDTO<PageResult<InstanceInfoVO>> list(@RequestBody QueryInstanceRequest request, HttpServletRequest hsr) {
+
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
+        request.setAppId(appId);
 
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");
         PageRequest pageable = PageRequest.of(request.getIndex(), request.getPageSize(), sort);
@@ -164,6 +189,18 @@ public class InstanceController {
         PageResult<InstanceInfoVO> pageResult = new PageResult<>(page);
         pageResult.setData(content);
         return pageResult;
+    }
+
+    private void preCheck(Long instanceId, HttpServletRequest hsr) {
+        Optional<InstanceInfoDO> instanceInfoOpt = instanceInfoRepository.findById(instanceId);
+        if (!instanceInfoOpt.isPresent()) {
+            throw new PowerJobException(ErrorCodes.ILLEGAL_ARGS_ERROR, "Can'tFindInstanceInfoById:" + instanceId);
+        }
+        Long appId = instanceInfoOpt.get().getAppId();
+        String targetId = HttpHeaderUtils.fetchAppId(hsr);
+        if (!targetId.equalsIgnoreCase(String.valueOf(appId))) {
+            throw new PowerJobException(ErrorCodes.INVALID_REQUEST, String.format("AppIdNotMatch(%d!=%d)", targetId, appId));
+        }
     }
 
 }

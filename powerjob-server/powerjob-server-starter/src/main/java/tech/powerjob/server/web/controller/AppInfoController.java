@@ -22,6 +22,7 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.Role;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.common.AuthConstants;
+import tech.powerjob.server.auth.common.utils.HttpHeaderUtils;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
 import tech.powerjob.server.auth.plugin.ModifyOrCreateDynamicPermission;
 import tech.powerjob.server.auth.plugin.SaveAppGrantPermissionPlugin;
@@ -43,6 +44,7 @@ import tech.powerjob.server.web.service.AppWebService;
 import tech.powerjob.server.web.service.NamespaceWebService;
 import tech.powerjob.server.web.service.UserWebService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -81,9 +83,11 @@ public class AppInfoController {
 
     @PostMapping("/delete")
     @ApiPermission(name = "App-Delete", roleScope = RoleScope.APP, requiredPermission = Permission.SU)
-    public ResultDTO<Void> deleteApp(Long appId) {
+    public ResultDTO<Void> deleteApp(HttpServletRequest hsr) {
 
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         appWebService.delete(appId);
+
         return ResultDTO.success(null);
     }
 

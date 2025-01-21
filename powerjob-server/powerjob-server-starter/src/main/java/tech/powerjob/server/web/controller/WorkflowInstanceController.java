@@ -1,26 +1,28 @@
 package tech.powerjob.server.web.controller;
 
-import tech.powerjob.common.enums.WorkflowInstanceStatus;
-import tech.powerjob.common.response.ResultDTO;
-import tech.powerjob.server.auth.Permission;
-import tech.powerjob.server.auth.RoleScope;
-import tech.powerjob.server.auth.interceptor.ApiPermission;
-import tech.powerjob.server.persistence.PageResult;
-import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
-import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
-import tech.powerjob.server.core.service.CacheService;
-import tech.powerjob.server.core.workflow.WorkflowInstanceService;
-import tech.powerjob.server.web.request.QueryWorkflowInstanceRequest;
-import tech.powerjob.server.web.response.WorkflowInstanceInfoVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import tech.powerjob.common.enums.WorkflowInstanceStatus;
+import tech.powerjob.common.response.ResultDTO;
+import tech.powerjob.server.auth.Permission;
+import tech.powerjob.server.auth.RoleScope;
+import tech.powerjob.server.auth.common.utils.HttpHeaderUtils;
+import tech.powerjob.server.auth.interceptor.ApiPermission;
+import tech.powerjob.server.core.service.CacheService;
+import tech.powerjob.server.core.workflow.WorkflowInstanceService;
+import tech.powerjob.server.persistence.PageResult;
+import tech.powerjob.server.persistence.remote.model.WorkflowInstanceInfoDO;
+import tech.powerjob.server.persistence.remote.repository.WorkflowInstanceInfoRepository;
+import tech.powerjob.server.web.request.QueryWorkflowInstanceRequest;
+import tech.powerjob.server.web.response.WorkflowInstanceInfoVO;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.stream.Collectors;
 
 /**
@@ -42,21 +44,24 @@ public class WorkflowInstanceController {
 
     @GetMapping("/stop")
     @ApiPermission(name = "WorkflowInstance-Stop", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<Void> stopWfInstance(Long wfInstanceId, Long appId) {
+    public ResultDTO<Void> stopWfInstance(Long wfInstanceId, HttpServletRequest hsr) {
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         workflowInstanceService.stopWorkflowInstanceEntrance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
 
     @RequestMapping("/retry")
     @ApiPermission(name = "WorkflowInstance-Retry", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<Void> retryWfInstance(Long wfInstanceId, Long appId) {
+    public ResultDTO<Void> retryWfInstance(Long wfInstanceId, HttpServletRequest hsr) {
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         workflowInstanceService.retryWorkflowInstance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
 
     @RequestMapping("/markNodeAsSuccess")
     @ApiPermission(name = "WorkflowInstance-MarkNodeAsSuccess", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
-    public ResultDTO<Void> markNodeAsSuccess(Long wfInstanceId, Long appId, Long nodeId) {
+    public ResultDTO<Void> markNodeAsSuccess(Long wfInstanceId, Long nodeId, HttpServletRequest hsr) {
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         workflowInstanceService.markNodeAsSuccess(appId, wfInstanceId, nodeId);
         return ResultDTO.success(null);
     }
@@ -64,14 +69,15 @@ public class WorkflowInstanceController {
 
     @GetMapping("/info")
     @ApiPermission(name = "WorkflowInstance-Info", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<WorkflowInstanceInfoVO> getInfo(Long wfInstanceId, Long appId) {
+    public ResultDTO<WorkflowInstanceInfoVO> getInfo(Long wfInstanceId, HttpServletRequest hsr) {
+        Long appId = Long.valueOf(HttpHeaderUtils.fetchAppId(hsr));
         WorkflowInstanceInfoDO wfInstanceDO = workflowInstanceService.fetchWfInstance(wfInstanceId, appId);
         return ResultDTO.success(WorkflowInstanceInfoVO.from(wfInstanceDO, cacheService.getWorkflowName(wfInstanceDO.getWorkflowId())));
     }
 
     @PostMapping("/list")
     @ApiPermission(name = "WorkflowInstance-List", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<PageResult<WorkflowInstanceInfoVO>> listWfInstance(@RequestBody QueryWorkflowInstanceRequest req) {
+    public ResultDTO<PageResult<WorkflowInstanceInfoVO>> listWfInstance(@RequestBody QueryWorkflowInstanceRequest req, HttpServletRequest hsr) {
         Sort sort = Sort.by(Sort.Direction.DESC, "gmtModified");
         PageRequest pageable = PageRequest.of(req.getIndex(), req.getPageSize(), sort);
 
