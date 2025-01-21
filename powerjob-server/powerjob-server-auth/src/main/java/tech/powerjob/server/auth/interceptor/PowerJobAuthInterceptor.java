@@ -7,15 +7,15 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.common.exception.ImpossibleException;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.auth.LoginUserHolder;
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.PowerJobUser;
 import tech.powerjob.server.auth.RoleScope;
-import tech.powerjob.common.enums.ErrorCodes;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
-import tech.powerjob.server.auth.common.utils.HttpServletUtils;
+import tech.powerjob.server.auth.common.utils.HttpHeaderUtils;
 import tech.powerjob.server.auth.service.login.PowerJobLoginService;
 import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
 import tech.powerjob.server.common.Loggers;
@@ -74,14 +74,14 @@ public class PowerJobAuthInterceptor implements HandlerInterceptor {
 
         if (RoleScope.NAMESPACE.equals(roleScope)) {
 
-            final String namespaceIdStr = HttpServletUtils.fetchFromHeader("NamespaceId", request);
+            final String namespaceIdStr = HttpHeaderUtils.fetchNamespaceId(request);
             if (StringUtils.isNotEmpty(namespaceIdStr)) {
                 targetId = Long.valueOf(namespaceIdStr);
             }
         }
 
         if (RoleScope.APP.equals(roleScope)) {
-            final String appIdStr = HttpServletUtils.fetchFromHeader("AppId", request);
+            final String appIdStr = HttpHeaderUtils.fetchAppId(request);
             if (StringUtils.isNotEmpty(appIdStr)) {
                 targetId = Long.valueOf(appIdStr);
             }
