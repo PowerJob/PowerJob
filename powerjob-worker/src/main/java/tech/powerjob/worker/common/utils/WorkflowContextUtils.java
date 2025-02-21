@@ -1,6 +1,7 @@
 package tech.powerjob.worker.common.utils;
 
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.common.utils.CollectionUtils;
 
 import java.util.Map;
 
@@ -12,21 +13,12 @@ import java.util.Map;
  */
 public class WorkflowContextUtils {
 
-    private WorkflowContextUtils() {
-
-    }
-
-
     public static boolean isExceededLengthLimit(Map<String, String> appendedWfContext, int maxLength) {
-
-        String jsonString = JsonUtils.toJSONString(appendedWfContext);
-        if (jsonString == null) {
-            // impossible
-            return true;
+        if (CollectionUtils.isEmpty(appendedWfContext)) {
+            return false;
         }
-
+        String jsonString = JsonUtils.toJSONString(appendedWfContext);
         return maxLength < jsonString.length();
-
     }
 
 }
