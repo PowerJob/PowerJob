@@ -18,15 +18,11 @@ public class WorkflowContextUtils {
 
 
     public static boolean isExceededLengthLimit(Map<String, String> appendedWfContext, int maxLength) {
-
-        String jsonString = JsonUtils.toJSONString(appendedWfContext);
-        if (jsonString == null) {
-            // impossible
-            return true;
+        if (appendedWfContext == null) {
+            return false;
         }
-
+        String jsonString = JsonUtils.toJSONString(appendedWfContext);
         return maxLength < jsonString.length();
-
     }
 
 }
