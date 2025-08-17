@@ -109,6 +109,13 @@ public class InstanceManager implements TransportServiceAware {
         instanceInfo.setLastReportTime(req.getReportTime());
         instanceInfo.setGmtModified(new Date());
 
+        // 若API类型触发，同时实例状态已处于失败状态，说明worker曾失联，server已将任务判定为失败，为不影响其重试或后续执行，Kill实例并抛弃此次上报
+        if (timeExpressionType == TimeExpressionType.API.getV() && instanceInfo.getStatus() == InstanceStatus.FAILED.getV()) {
+            log.warn("[InstanceManager-{}] receive TaskTracker's report: {}, but current instance is already failed, this instance should be killed.", instanceId, req);
+            stopInstance(instanceId, instanceInfo);
+            return;
+        }
+        
         // FREQUENT 任务没有失败重试机制，TaskTracker一直运行即可，只需要将存活信息同步到DB即可
         // FREQUENT 任务的 newStatus 只有2中情况，一种是 RUNNING，一种是 FAILED（表示该机器 overload，需要重新选一台机器执行）
         // 综上，直接把 status 和 runningNum 同步到DB即可
