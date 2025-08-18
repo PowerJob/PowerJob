@@ -309,7 +309,7 @@ public class WorkflowInstanceManager {
         try {
             PEWorkflowDAG dag = JSON.parseObject(wfInstance.getDag(), PEWorkflowDAG.class);
             // 更新完成节点状态
-            boolean allFinished = true;
+            boolean allFinished = false;
             PEWorkflowDAG.Node instanceNode = null;
             for (PEWorkflowDAG.Node node : dag.getNodes()) {
                 if (instanceId.equals(node.getInstanceId())) {
@@ -318,9 +318,6 @@ public class WorkflowInstanceManager {
                     node.setFinishedTime(CommonUtils.formatTime(System.currentTimeMillis()));
                     instanceNode = node;
                     log.info("[Workflow-{}|{}] node(nodeId={},jobId={},instanceId={}) finished in workflowInstance, status={},result={}", wfId, wfInstanceId, node.getNodeId(), node.getJobId(), instanceId, status.name(), result);
-                }
-                if (InstanceStatus.GENERALIZED_RUNNING_STATUS.contains(node.getStatus())) {
-                    allFinished = false;
                 }
             }
             if (instanceNode == null) {
