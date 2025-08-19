@@ -7,6 +7,7 @@ import tech.powerjob.common.enums.WorkflowNodeType;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.PEWorkflowDAG;
 import tech.powerjob.common.serialize.JsonUtils;
+import tech.powerjob.server.core.validator.DecisionNodeValidator;
 
 import java.util.*;
 
@@ -101,7 +102,7 @@ public class WorkflowDAGUtils {
      * Add by Echo009 on 2021/02/08
      * 获取准备好的节点（非完成状态的节点且，前置依赖节点为空或者均处于完成状态）
      * 注意，这里会直接将当前 disable（enable = false）的节点的状态置为完成
-     *
+     * 工作流开始时、或工作流中某个任务运行完成往下游移动时都会调用这里
      * @param dag 点线表示法的DAG图
      * @return 当前可执行的节点
      */
@@ -115,7 +116,7 @@ public class WorkflowDAGUtils {
         }
         // 构建依赖树（下游任务需要哪些上游任务完成才能执行）
         Multimap<Long, Long> relyMap = LinkedListMultimap.create();
-        // 后继节点 Map
+        // 后继节点 Multi Map
         Multimap<Long, Long> successorMap = LinkedListMultimap.create();
         dag.getEdges().forEach(edge -> {
             relyMap.put(edge.getTo(), edge.getFrom());
@@ -128,7 +129,7 @@ public class WorkflowDAGUtils {
             if (!isReadyNode(currentNode.getNodeId(), nodeId2Node, relyMap)) {
                 continue;
             }
-            // 需要直接跳过的节点
+            // 需要直接跳过的节点（这里不会包括被disable的节点）
             if (currentNode.getEnable() != null && !currentNode.getEnable()) {
                 skipNodes.add(currentNode);
             } else {
@@ -156,7 +157,7 @@ public class WorkflowDAGUtils {
      */
     private static List<PEWorkflowDAG.Node> moveAndObtainReadySuccessor(PEWorkflowDAG.Node skippedNode, Map<Long, PEWorkflowDAG.Node> nodeId2Node, Multimap<Long, Long> relyMap, Multimap<Long, Long> successorMap) {
 
-        // 更新当前跳过节点的状态
+        // 更新当前跳过节点的状态, 否则可能会重复添加ready节点
         skippedNode.setStatus(InstanceStatus.SUCCEED.getV());
         skippedNode.setResult(SystemInstanceResult.DISABLE_NODE);
         // 有可能出现需要连续移动的情况
@@ -196,7 +197,7 @@ public class WorkflowDAGUtils {
     private static boolean isReadyNode(long nodeId, Map<Long, PEWorkflowDAG.Node> nodeId2Node, Multimap<Long, Long> relyMap) {
         PEWorkflowDAG.Node currentNode = nodeId2Node.get(nodeId);
         int currentNodeStatus = currentNode.getStatus() == null ? InstanceStatus.WAITING_DISPATCH.getV() : currentNode.getStatus();
-        // 跳过已完成节点（处理成功 或者 处理失败）和已派发节点（ 状态为运行中 ）
+        // 已完成节点（处理成功 或者 处理失败）和已派发节点（ 状态为运行中 ）
         if (InstanceStatus.FINISHED_STATUS.contains(currentNodeStatus)
                 || currentNodeStatus == InstanceStatus.RUNNING.getV()) {
             return false;
@@ -212,6 +213,10 @@ public class WorkflowDAGUtils {
             }
         }
         return true;
+    }
+
+    public static boolean isSkipNode(PEWorkflowDAG.Node node) {
+        return node.getEnable() != null && !node.getEnable();
     }
 
     public static boolean isNotAllowSkipWhenFailed(PEWorkflowDAG.Node node) {
@@ -238,7 +243,9 @@ public class WorkflowDAGUtils {
             Collection<PEWorkflowDAG.Edge> dependenceEdges = toNode.getDependenceEdgeMap().values();
             boolean shouldBeDisable = true;
             for (PEWorkflowDAG.Edge dependenceEdge : dependenceEdges) {
-                if (dependenceEdge.getEnable() == null || dependenceEdge.getEnable()) {
+                String property = dependenceEdge.getProperty();
+                boolean isCondition = property != null && DecisionNodeValidator.isValidBooleanStr(property);
+                if (isCondition && (dependenceEdge.getEnable() == null || dependenceEdge.getEnable())) {
                     shouldBeDisable = false;
                     break;
                 }
@@ -272,7 +279,7 @@ public class WorkflowDAGUtils {
      * 将点线表示法的DAG图转化为引用表达法的DAG图
      *
      * @param peWorkflowDAG 点线表示法的DAG图
-     * @return 引用表示法的DAG图
+     * @return 引用表示法的DAG图 —— 其实就是邻接表的形式
      */
     public static WorkflowDAG convert(PEWorkflowDAG peWorkflowDAG) {
         Set<Long> rootIds = Sets.newHashSet();
@@ -291,7 +298,7 @@ public class WorkflowDAGUtils {
             rootIds.add(nodeId);
         });
 
-        // 连接图像
+        // 连边
         peWorkflowDAG.getEdges().forEach(edge -> {
             WorkflowDAG.Node from = id2Node.get(edge.getFrom());
             WorkflowDAG.Node to = id2Node.get(edge.getTo());
