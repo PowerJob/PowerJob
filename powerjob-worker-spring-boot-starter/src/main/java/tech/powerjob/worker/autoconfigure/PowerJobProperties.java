@@ -169,6 +169,10 @@ public class PowerJobProperties {
          * Interval(s) of worker health report
          */
         private Integer healthReportInterval = 10;
+        /**
+         * Interval(ms) of worker subtask dispatch
+         */
+        private Long frequentTaskDispatchInterval = 2000L;
 
     }
 }
