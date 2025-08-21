@@ -88,5 +88,9 @@ public class PowerJobWorkerConfig {
      * Interval(s) of worker health report
      */
     private Integer healthReportInterval = 10;
+    /**
+     * Interval(ms) of worker frequent task dispatch
+     */
+    private Long frequentTaskDispatchInterval = 2000L;
 
 }
