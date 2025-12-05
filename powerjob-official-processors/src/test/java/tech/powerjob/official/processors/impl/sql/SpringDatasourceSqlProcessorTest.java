@@ -28,8 +28,8 @@ class SpringDatasourceSqlProcessorTest {
 
         EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
         EmbeddedDatabase database = builder.setType(EmbeddedDatabaseType.H2)
-                .addScript("classpath:db_init.sql")
-                .build();
+                                           .addScript("classpath:db_init.sql")
+                                           .build();
         springDatasourceSqlProcessor = new SpringDatasourceSqlProcessor(database);
         // do nothing
         springDatasourceSqlProcessor.registerSqlValidator("fakeSqlValidator", (sql) -> true);
@@ -98,6 +98,9 @@ class SpringDatasourceSqlProcessorTest {
 
     @Test
     public void testQuery() {
+        SpringDatasourceSqlProcessor.SqlParams deleteParams = constructSqlParam("delete from  test_table where id in ( 0, 1)");
+        springDatasourceSqlProcessor.process0(TestUtils.genTaskContext(JSON.toJSONString(deleteParams)));
+
         SpringDatasourceSqlProcessor.SqlParams insertParams = constructSqlParam("insert into test_table (id, content) values (1, '?');insert into test_table (id, content) values (0, 'Fight for a better tomorrow')");
         springDatasourceSqlProcessor.process0(TestUtils.genTaskContext(JSON.toJSONString(insertParams)));
 

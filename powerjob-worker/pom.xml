@@ -5,129 +5,136 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.2</version>
+        <version>5.1.2-jdk17</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker</artifactId>
     <name>powerjob-worker</name>
-    <version>5.1.2</version>
+    <version>5.1.2-jdk17</version>
     <packaging>jar</packaging>
 
     <properties>
-        <!-- Java 版本 -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-
-        <!-- Hibernate 7 -->
-        <hibernate.version>7.0.0.Final</hibernate.version>
-        <okhttp.version>5.2.1</okhttp.version>
-        <!-- PowerJob 模块版本 -->
         <powerjob-common.version>5.1.2</powerjob-common.version>
         <powerjob-remote-framework.version>5.1.2</powerjob-remote-framework.version>
-        <powerjob-remote-impl-akka.version>5.1.2</powerjob-remote-impl-akka.version>
         <powerjob-remote-impl-http.version>5.1.2</powerjob-remote-impl-http.version>
         <powerjob-remote-impl-mu.version>5.1.2</powerjob-remote-impl-mu.version>
+        <mvn.shade.plugin.version>3.6.1</mvn.shade.plugin.version>
+        <okhttp.version>5.2.1</okhttp.version>
+        <io.vertx.version>5.0.5</io.vertx.version>
     </properties>
 
     <dependencies>
-        <!-- PowerJob 依赖保持不变 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
             <version>${powerjob-common.version}</version>
         </dependency>
-
-        <!-- OKHttp -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${okhttp.version}</version>
-        </dependency>
-
-        <!-- OKHttp -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp-urlconnection</artifactId>
-            <version>${okhttp.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-framework</artifactId>
             <version>${powerjob-remote-framework.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>tech.powerjob</groupId>
-            <artifactId>powerjob-remote-impl-akka</artifactId>
-            <version>${powerjob-remote-impl-akka.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-http</artifactId>
             <version>${powerjob-remote-impl-http.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.vertx</groupId>
+                    <artifactId>vertx-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.vertx</groupId>
+                    <artifactId>vertx-web</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-mu</artifactId>
             <version>${powerjob-remote-impl-mu.version}</version>
         </dependency>
 
-        <!-- Spring Framework 6.2 核心依赖 -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>provided</scope>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
         </dependency>
-
-        <!-- Hibernate 7 -->
         <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
-            <optional>true</optional>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-urlconnection</artifactId>
+            <version>${okhttp.version}</version>
         </dependency>
-
-        <!-- Jakarta EE API -->
         <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <optional>true</optional>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${io.vertx.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <optional>true</optional>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>${io.vertx.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- 数据库依赖 -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
-
-        <!-- 测试依赖 -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -135,12 +142,77 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${mvn.shade.plugin.version}</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <minimizeJar>true</minimizeJar>
+                    <!-- Filter out common overlapping resources to reduce warnings -->
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/LICENSE.txt</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/NOTICE.txt</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                                <exclude>META-INF/maven/**</exclude>
+                                <exclude>META-INF/versions/**</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <relocations>
+                        <relocation>
+                            <pattern>okhttp3</pattern>
+                            <shadedPattern>shade.powerjob.okhttp3</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okio</pattern>
+                            <shadedPattern>shade.powerjob.okio</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org</pattern>
+                            <shadedPattern>shade.powerjob.org</shadedPattern>
+                            <excludes>
+                                <exclude>org.slf4j.*</exclude>
+                                <exclude>org.springframework.**</exclude>
+                                <exclude>org.w3c.**</exclude>
+                            </excludes>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>shade.powerjob.com.google</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.alibaba</pattern>
+                            <shadedPattern>shade.powerjob.com.alibaba</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.5.7</version>
+                <version>4.0.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

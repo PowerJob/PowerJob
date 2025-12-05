@@ -5,13 +5,13 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.2</version>
+        <version>5.1.2-jdk17</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-official-processors</artifactId>
     <name>powerjob-official-processors</name>
-    <version>5.1.2</version>
+    <version>5.1.2-jdk17</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -19,10 +19,10 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <mvn.shade.plugin.version>3.2.4</mvn.shade.plugin.version>
+        <mvn.shade.plugin.version>3.6.1</mvn.shade.plugin.version>
 
         <!-- 不会被打包的部分，scope 只能是 test 或 provide -->
-        <powerjob.worker.version>5.1.2</powerjob.worker.version>
+        <powerjob.worker.version>5.1.2-jdk17</powerjob.worker.version>
 
 
         <!-- 全部 shade 化，避免依赖冲突 -->
@@ -172,7 +172,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.5.7</version>
+                <version>4.0.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
