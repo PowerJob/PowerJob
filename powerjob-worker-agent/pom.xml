@@ -5,13 +5,13 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.2</version>
+        <version>5.1.2-jdk17</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-agent</artifactId>
     <name>powerjob-worker-agent</name>
-    <version>5.1.2</version>
+    <version>5.1.2-jdk17</version>
     <packaging>jar</packaging>
 
 
@@ -19,11 +19,10 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <powerjob.worker.version>5.1.2</powerjob.worker.version>
+        <powerjob.worker.version>5.1.2-jdk17</powerjob.worker.version>
         <picocli.version>4.3.2</picocli.version>
-
-
-        <powerjob.official.processors.version>5.1.2</powerjob.official.processors.version>
+        <springboot.version>4.0.0</springboot.version>
+        <powerjob.official.processors.version>5.1.2-jdk17</powerjob.official.processors.version>
     </properties>
 
     <dependencies>
@@ -100,6 +99,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${springboot.version}</version>
                 <configuration>
                     <mainClass>tech.powerjob.agent.MainApplication</mainClass>
                 </configuration>
@@ -118,7 +118,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.5.7</version>
+                <version>${springboot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

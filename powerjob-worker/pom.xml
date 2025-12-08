@@ -23,18 +23,42 @@
         <powerjob-remote-impl-mu.version>5.1.2</powerjob-remote-impl-mu.version>
         <mvn.shade.plugin.version>3.6.1</mvn.shade.plugin.version>
         <okhttp.version>5.2.1</okhttp.version>
-        <io.vertx.version>5.0.5</io.vertx.version>
+        <io.vertx.version>4.5.22</io.vertx.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
             <version>${powerjob-common.version}</version>
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-framework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
             <version>${powerjob-remote-framework.version}</version>
         </dependency>
         <dependency>
@@ -64,6 +88,10 @@
             <version>${okhttp.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp-urlconnection</artifactId>
             <version>${okhttp.version}</version>
@@ -86,38 +114,29 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <optional>true</optional>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <optional>true</optional>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -181,9 +200,12 @@
                             <pattern>org</pattern>
                             <shadedPattern>shade.powerjob.org</shadedPattern>
                             <excludes>
-                                <exclude>org.slf4j.*</exclude>
+                                <exclude>org.slf4j.**</exclude>
                                 <exclude>org.springframework.**</exclude>
                                 <exclude>org.w3c.**</exclude>
+                                <exclude>org.apache.commons.logging.**</exclude>
+                                <exclude>org.xml.**</exclude>
+                                <exclude>org.junit.**</exclude>
                             </excludes>
                         </relocation>
                         <relocation>

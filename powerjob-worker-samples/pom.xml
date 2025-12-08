@@ -5,22 +5,22 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.2</version>
+        <version>5.1.2-jdk17</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-worker-samples</artifactId>
     <name>powerjob-worker-samples</name>
-    <version>5.1.2</version>
+    <version>5.1.2-jdk17</version>
 
     <properties>
-        <springboot.version>3.5.7</springboot.version>
+        <springboot.version>4.0.0</springboot.version>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <powerjob.worker.starter.version>5.1.2</powerjob.worker.starter.version>
+        <powerjob.worker.starter.version>5.1.2-jdk17</powerjob.worker.starter.version>
         <fastjson.version>2.0.43</fastjson.version>
-        <powerjob.official.processors.version>5.1.2</powerjob.official.processors.version>
+        <powerjob.official.processors.version>5.1.2-jdk17</powerjob.official.processors.version>
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -77,8 +77,6 @@
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
 
-
-
     </dependencies>
 
     <!-- SpringBoot专用的打包插件 -->
@@ -102,6 +100,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -113,7 +112,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.5.7</version>
+                <version>${springboot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
