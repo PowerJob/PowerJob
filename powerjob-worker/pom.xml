@@ -5,57 +5,76 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.2</version>
+        <version>5.1.2-jdk17</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker</artifactId>
     <name>powerjob-worker</name>
-    <version>5.1.2</version>
+    <version>5.1.2-jdk17</version>
     <packaging>jar</packaging>
 
     <properties>
-        <spring.version>5.3.31</spring.version>
-        <h2.db.version>2.3.232</h2.db.version>
-        <hikaricp.version>4.0.3</hikaricp.version>
-        <junit.version>5.9.1</junit.version>
-
-        <logback.version>1.2.13</logback.version>
-
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <powerjob-common.version>5.1.2</powerjob-common.version>
         <powerjob-remote-framework.version>5.1.2</powerjob-remote-framework.version>
-        <powerjob-remote-impl-akka.version>5.1.2</powerjob-remote-impl-akka.version>
         <powerjob-remote-impl-http.version>5.1.2</powerjob-remote-impl-http.version>
         <powerjob-remote-impl-mu.version>5.1.2</powerjob-remote-impl-mu.version>
+        <mvn.shade.plugin.version>3.6.1</mvn.shade.plugin.version>
+        <okhttp.version>5.2.1</okhttp.version>
+        <io.vertx.version>4.5.22</io.vertx.version>
     </properties>
 
     <dependencies>
-
-        <!-- 仍然手动引入 common 依赖并置顶，保证依赖仲裁时占据上风 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
             <version>${powerjob-common.version}</version>
         </dependency>
-
-        <!-- PowerJob 通讯框架 -->
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-framework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
             <version>${powerjob-remote-framework.version}</version>
-        </dependency>
-
-        <!-- PowerJob 通讯层具体实现，按需选择自己需要的通讯器即可。如果包冲突可尝试更换通讯器实现，并排除未使用的通讯器包 -->
-        <!-- 4.3.x 版本前 AKKA 都是 PowerJob 通讯层的唯一实现，考虑到兼容性 4.3.x 默认仍为 AKKA，但由于 AKKA 后续收费，最终会废弃该模块，扶正太子（HTTP）上位 -->
-        <dependency>
-            <groupId>tech.powerjob</groupId>
-            <artifactId>powerjob-remote-impl-akka</artifactId>
-            <version>${powerjob-remote-impl-akka.version}</version>
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
             <artifactId>powerjob-remote-impl-http</artifactId>
             <version>${powerjob-remote-impl-http.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.vertx</groupId>
+                    <artifactId>vertx-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.vertx</groupId>
+                    <artifactId>vertx-web</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>tech.powerjob</groupId>
@@ -63,44 +82,162 @@
             <version>${powerjob-remote-impl-mu.version}</version>
         </dependency>
 
-        <!-- h2 database -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.db.version}</version>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
         </dependency>
-        <!-- HikariCP, Java8 只能用 4.X 版本 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-urlconnection</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${io.vertx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>${io.vertx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>${hikaricp.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- Spring 依赖（非强依赖） -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-            <scope>provided</scope>
         </dependency>
 
-        <!-- Junit 测试 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- log for test stage -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${mvn.shade.plugin.version}</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <minimizeJar>true</minimizeJar>
+                    <!-- Filter out common overlapping resources to reduce warnings -->
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/LICENSE</exclude>
+                                <exclude>META-INF/LICENSE.txt</exclude>
+                                <exclude>META-INF/NOTICE</exclude>
+                                <exclude>META-INF/NOTICE.txt</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                                <exclude>META-INF/maven/**</exclude>
+                                <exclude>META-INF/versions/**</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <relocations>
+                        <relocation>
+                            <pattern>okhttp3</pattern>
+                            <shadedPattern>shade.powerjob.okhttp3</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okio</pattern>
+                            <shadedPattern>shade.powerjob.okio</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org</pattern>
+                            <shadedPattern>shade.powerjob.org</shadedPattern>
+                            <excludes>
+                                <exclude>org.slf4j.**</exclude>
+                                <exclude>org.springframework.**</exclude>
+                                <exclude>org.w3c.**</exclude>
+                                <exclude>org.apache.commons.logging.**</exclude>
+                                <exclude>org.xml.**</exclude>
+                                <exclude>org.junit.**</exclude>
+                            </excludes>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>shade.powerjob.com.google</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.alibaba</pattern>
+                            <shadedPattern>shade.powerjob.com.alibaba</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>4.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

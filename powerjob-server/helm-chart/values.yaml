@@ -1,0 +1,180 @@
+# Default values for PMS.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+agent:
+  enable: true
+  replicaCount: 2
+  image:
+    repository: powerjob/powerjob-agent:latest
+    pullPolicy: IfNotPresent
+    tag: latest
+  ports: [
+    {
+      containerPort: 27777,
+      name: 27777tcp,
+      protocol: TCP
+    }
+  ]
+  podLabels: {
+    app: powerjob-agent-pgsql
+  }
+  #JVM 選項
+  jvmOptions: >-
+    -Dpowerjob.network.external.address=$(POD_IP)
+    -Dpowerjob.network.external.port=$(POWERJOB_AGENT_EXTERNAL_PORT)
+    -server
+    -XX:+UseG1GC
+    -XX:+PrintGCDetails
+    -Xlog:gc*:file=/root/gc-%t.log:time,level:filecount=7,filesize=100M
+  params: >-
+    --app testapp
+    --server $(POWERJOB_SERVER_ADDRESS):$(POWERJOB_SERVER_PORT)
+    --protocol=http
+    --tag=powerjob-agent
+  # 存活探針
+  livenessProbe:
+    enabled: true
+    path: /actuator/health
+    port: $(POWERJOB_AGENT_EXTERNAL_PORT)
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  # 就緒探針
+  readinessProbe:
+    enabled: true
+    path: /actuator/health
+    port: $(POWERJOB_AGENT_EXTERNAL_PORT)
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: powerjob/powerjob-server
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: v5.1.2
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: [
+  { name: "docker-registry" }
+]
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {
+  app: powerjob-server-pgsql
+}
+
+
+containers:
+  ports: [
+    {
+      containerPort: 7700,
+      name: 7700tcp,
+      protocol: TCP
+    },
+    {
+      containerPort: 10077,
+      name: 10077tcp,
+      protocol: TCP
+    },
+    {
+      containerPort: 10010,
+      name: 10010tcp,
+      protocol: TCP
+    }
+  ]
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  ports: [
+    {
+      name: powerjob-svc-80-port,
+      port: 80,
+      protocol: TCP,
+      targetPort: 7700tcp
+    },
+    {
+      name: powerjob-svc-10086-port,
+      port: 10086,
+      protocol: TCP,
+      targetPort: 10086tcp
+    },
+    {
+      name: powerjob-svc-10077-port,
+      port: 10077,
+      protocol: TCP,
+      targetPort: 10077tcp
+    }
+  ]
+
+resources: {
+  limits: {
+    cpu: '1',
+    memory: '1.5Gi'
+  },
+  requests: {
+    cpu: '0.5',
+    memory: '1Gi'
+  }
+}
+
+nodeSelector:
+  node: worker
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: NotIn
+              values:
+                - k3s1
+                - k3s2
+                - k3s3
+
+# 存活探針
+livenessProbe:
+  enabled: true
+  path: /actuator/health/liveness
+  port: 7700
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# 就緒探針
+readinessProbe:
+  enabled: true
+  path: /actuator/health/readiness
+  port: 7700
+  initialDelaySeconds: 30
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# 啟動探針
+startupProbe:
+  enabled: true
+  path: /actuator/health
+  port: 7700
+  initialDelaySeconds: 60
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 30

@@ -5,18 +5,21 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.2</version>
+        <version>5.1.2-jdk17</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-spring-boot-starter</artifactId>
     <name>powerjob-worker-spring-boot-starter</name>
-    <version>5.1.2</version>
+    <version>5.1.2-jdk17</version>
     <packaging>jar</packaging>
 
     <properties>
-        <powerjob.worker.version>5.1.2</powerjob.worker.version>
-        <springboot.version>2.7.18</springboot.version>
+        <powerjob.worker.version>5.1.2-jdk17</powerjob.worker.version>
+        <springboot.version>4.0.0</springboot.version>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -48,6 +51,33 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Add explicit logging dependency to fix SLF4J binding issue in tests -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

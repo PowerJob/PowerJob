@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name | lower }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- .Values.podLabels | toYaml | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- .Values.podLabels | toYaml | nindent 8 }}
+      namespace: {{ .Release.Namespace }}
+    spec:
+      initContainers:
+        - name: init-postgres
+          image: postgres:18
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name | lower }}-common-config
+                optional: false
+          command:
+            - /bin/sh
+            - -c
+            - |
+                until pg_isready -h ${PG_SERVICE_HOST} -p 5432 -U ${PG_SERVICE_USER}; do
+                  echo "等待 PostgreSQL 就緒..."
+                  sleep 10
+                done
+                echo "PostgreSQL 已就緒，開始建立 sequence..."
+                PGPASSWORD=${PG_SERVICE_PASSWORD} psql -h ${PG_SERVICE_HOST} -U ${PG_SERVICE_USER} -d ${PG_SERVICE_DB} -c "CREATE SEQUENCE IF NOT EXISTS ${PG_SERVICE_SCHEMA}.native START WITH 1 INCREMENT BY 1;"
+                echo "Sequence 建立完成"
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name | lower }}-common-config
+                optional: false
+          env:
+            - name: SPRING_CONFIG_LOCATION
+              value: "classpath:/,/config/application.yml"
+            - name: JAVA_OPTS
+              value: "-Xmx2048m -Xms512m -XX:MaxMetaspaceSize=256m"
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Release.Name }}
+          ports:
+            {{- toYaml .Values.containers.ports | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /config/application.yml
+              name: config-volume
+              subPath: application.yml
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.livenessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.readinessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.startupProbe.path }}
+              port: {{ .Values.startupProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+          {{- end }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Chart.Name | lower }}-server-config
+      restartPolicy: Always
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}

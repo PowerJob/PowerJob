@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name | lower }}-server-config
+  namespace: {{ .Release.Namespace }}
+data:
+  application.yml: |
+    spring:
+      profiles:
+        active: daily
+      mail:
+        host: smtp-relay.gmail.ocm
+        port: 587
+        username: ${MAIL_USERNAME}
+        password: ${MAIL_PASSWORD}
+      datasource:
+        core:
+          driver-class-name: org.postgresql.Driver
+          jdbc-url: jdbc:postgresql://${PG_SERVICE_HOST}/${PG_SERVICE_DB}?currentSchema=${PG_SERVICE_SCHEMA},public,pg_catalog
+          username: ${PG_SERVICE_USER}
+          password: ${PG_SERVICE_PASSWORD}
+        remote:
+          hibernate:
+            properties:
+              hibernate:
+                ddl-auto: update
+                format_sql: true
+                dialect: ${PG_DIALECT}
+    logging:
+      level:
+        org.hibernate.SQL: DEBUG
+        org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+        tech.powerjob.server.core.lock.DatabaseLockService: INFO
+        org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator: INFO
+    oms:
+      transporter:
+        active:
+          protocols: http,mu
+        main:
+          protocol: http
+      container:
+        retention:
+          local: 7
+          remote: 14
+      instanceinfo:
+        retention: 7
+      instance:
+        meatadata:
+          cache:
+            size: 512
+      storage:
+        dfs:
+          mongodb: ${MINIO_ENDPOINT}
+          bucketName: powerjob-storage
+          accessKey: minio
+          secretKey: minio123

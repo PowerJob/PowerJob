@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Chart.Name | lower }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: PathPrefix(`/powerjob`)
+      services:
+        - name: {{ .Chart.Name | lower }}
+          {{- with index .Values.service.ports 0}}
+          port: {{ .name }}
+          {{- end}}

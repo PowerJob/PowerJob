@@ -32,7 +32,7 @@ class HttpProcessorTest {
 
     @Test
     void testPost() throws Exception {
-        String url = "https://mock.uutool.cn/4f5qfgcdahj0?test=true";
+        String url = "https://uutool.cn/4f5qfgcdahj0?test=true";
         JSONObject params = new JSONObject();
         params.put("url", url);
         params.put("method", "POST");
@@ -44,7 +44,7 @@ class HttpProcessorTest {
     
     @Test
     void testPostDefaultJson() throws Exception {
-        String url = "https://mock.uutool.cn/4f5qfgcdahj0?test=true";
+        String url = "https://uutool.cn/4f5qfgcdahj0?test=true";
         JSONObject params = new JSONObject();
         params.put("url", url);
         params.put("method", "POST");
@@ -53,7 +53,7 @@ class HttpProcessorTest {
     
     @Test
     void testPostDefaultWithMediaType() throws Exception {
-        String url = "https://mock.uutool.cn/4f5qfgcdahj0?test=true";
+        String url = "https://uutool.cn/4f5qfgcdahj0?test=true";
         JSONObject params = new JSONObject();
         params.put("url", url);
         params.put("method", "POST");

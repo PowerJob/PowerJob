@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name | lower }}-agent
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.agent.replicaCount }}
+  selector:
+    matchLabels:
+      {{- .Values.agent.podLabels | toYaml | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- .Values.agent.podLabels | toYaml | nindent 8 }}
+    spec:
+      initContainers:
+        - name: wait-for-server
+          image: busybox:latest
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name | lower }}-common-config
+                optional: false
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until nc -z $(POWERJOB_SERVER_ADDRESS) $(POWERJOB_SERVER_PORT); do
+                echo "等待 PowerJob Server..."
+                sleep 5
+              done
+      containers:
+        - name: {{ .Release.Name }}-agent
+          image: {{ .Values.agent.image.repository }}:{{ .Values.agent.image.tag }}
+          imagePullPolicy: {{ .Values.agent.image.pullPolicy }}
+          ports:
+            {{- toYaml .Values.agent.ports | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name | lower }}-common-config
+                optional: false
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: JVMOPTIONS
+              value: {{ .Values.agent.jvmOptions | quote }}
+            - name: PARAMS
+              value: {{ .Values.agent.params | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.agent.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.agent.livenessProbe.path }}
+              port: {{ .Values.agent.livenessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.agent.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.agent.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.agent.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.agent.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.agent.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.agent.readinessProbe.path }}
+              port: {{ .Values.agent.readinessProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.agent.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.agent.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.agent.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.agent.readinessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.startupProbe.path }}
+              port: {{ .Values.startupProbe.port }}
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+          {{- end }}
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}

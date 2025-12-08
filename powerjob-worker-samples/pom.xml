@@ -5,19 +5,22 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.2</version>
+        <version>5.1.2-jdk17</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerjob-worker-samples</artifactId>
     <name>powerjob-worker-samples</name>
-    <version>5.1.2</version>
+    <version>5.1.2-jdk17</version>
 
     <properties>
-        <springboot.version>2.7.18</springboot.version>
-        <powerjob.worker.starter.version>5.1.2</powerjob.worker.starter.version>
-        <fastjson.version>1.2.83</fastjson.version>
-        <powerjob.official.processors.version>5.1.2</powerjob.official.processors.version>
+        <springboot.version>4.0.0</springboot.version>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <powerjob.worker.starter.version>5.1.2-jdk17</powerjob.worker.starter.version>
+        <fastjson.version>2.0.43</fastjson.version>
+        <powerjob.official.processors.version>5.1.2-jdk17</powerjob.official.processors.version>
 
         <!-- 部署时跳过该module -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -30,17 +33,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>${springboot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>${springboot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${springboot.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -67,13 +67,15 @@
             <version>${powerjob-client.version}</version>
         </dependency>
 
-        <!-- 高版本 JDK 移除了 JavaEE 的包，需要手动引入 -->
+        <!-- 高版本 JDK 移除了 JavaEE 的包，需要手动引入 Jakarta EE -->
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+        </dependency>
 
     </dependencies>
 
@@ -98,11 +100,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

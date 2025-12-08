@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name | lower }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Chart.Name | lower }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- with .Values.service.ports }}
+  ports:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- .Values.podLabels | toYaml | nindent 4 }}
