@@ -16,6 +16,7 @@ public class ModifyAppInfoRequest {
 
     private Long id;
     private String appName;
+    private Long cloneid;
 
     /**
      * namespace 唯一标识，任选其一传递即可

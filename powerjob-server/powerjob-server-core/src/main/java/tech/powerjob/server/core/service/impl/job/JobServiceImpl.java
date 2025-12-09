@@ -151,7 +151,6 @@ public class JobServiceImpl implements JobService {
 
         copyJob = jobInfoRepository.saveAndFlush(copyJob);
         return copyJob;
-
     }
 
     @Override
