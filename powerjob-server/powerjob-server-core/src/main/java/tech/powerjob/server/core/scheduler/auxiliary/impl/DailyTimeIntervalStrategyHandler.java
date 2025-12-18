@@ -15,6 +15,7 @@ import tech.powerjob.server.core.scheduler.auxiliary.TimeOfDay;
 import tech.powerjob.server.core.scheduler.auxiliary.TimingStrategyHandler;
 
 import java.io.Serializable;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -63,7 +64,8 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
     @SneakyThrows
     public Long calculateNextTriggerTime(Long preTriggerTime, String timeExpression, Long startTime, Long endTime) {
         DailyTimeIntervalExpress ep = JsonUtils.parseObject(timeExpression, DailyTimeIntervalExpress.class);
-
+        startTime = parseTimeStr(ep.startTimeOfDay);
+        endTime = parseTimeStr(ep.endTimeOfDay);
         // 未开始状态下，用起点算调度时间
         if (startTime != null && startTime > System.currentTimeMillis() && preTriggerTime < startTime) {
             return calculateInRangeTime(startTime, ep);
@@ -80,6 +82,11 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
         return null;
     }
 
+    static Long parseTimeStr(String timeStr){
+        LocalTime localTime=LocalTime.parse(timeStr);
+        ZonedDateTime zonedDateTime = localTime.atDate(LocalDate.now()).atZone(ZoneId.systemDefault());
+        return zonedDateTime.toInstant().toEpochMilli();
+    }
     /**
      * 计算最近一次在范围中的时间
      * @param time 当前时间基准，可能直接返回该时间作为结果
