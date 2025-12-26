@@ -27,56 +27,45 @@ public class UserInfoDO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
+    @Column(columnDefinition = "bigint NOT NULL AUTO_INCREMENT COMMENT '用户ID'")
     private Long id;
 
-    /**
-     * 账号类型
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '账号类型'")
     private String accountType;
 
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '用户名'")
     private String username;
-    /**
-     * since 5.0.0
-     * 昵称（第三方登陆的 username 很难识别，方便后续展示引入 nick）
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '昵称'")
     private String nick;
 
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '密码'")
     private String password;
-    /**
-     * 手机号
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '手机号'")
     private String phone;
-    /**
-     * 邮箱地址
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '邮箱地址'")
     private String email;
-    /**
-     * webHook
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT 'webHook'")
     private String webHook;
 
-    /**
-     * JWT 登录的二次校验信息
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT 'JWT 登录的二次校验信息'")
     private String tokenLoginVerifyInfo;
 
-    /**
-     * 扩展字段 for 第三方
-     * PowerJob 内部不允许使用该字段
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '扩展字段 for 第三方'")
     private String extra;
 
-    /**
-     * 原始账号 username
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '原始账号 username'")
     private String originUsername;
 
-    /**
-     * 账号当前状态
-     */
+    @Column(columnDefinition = "int DEFAULT NULL COMMENT '账号当前状态'")
     private Integer status;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '创建时间'")
     private Date gmtCreate;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '更新时间'")
     private Date gmtModified;
 }
