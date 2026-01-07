@@ -69,6 +69,25 @@ public class ServerController implements ServerInfoAware {
     @GetMapping("/checkConnectivity")
     public ResultDTO<Boolean> checkConnectivity(String targetIp, Integer targetPort) {
         try {
+            // 参数校验
+            if (targetIp == null || targetIp.isEmpty() || targetPort == null || targetPort <= 0 || targetPort > 65535) {
+                return ResultDTO.failed("Invalid targetIp or targetPort");
+            }
+
+            // 构建目标地址
+            String targetAddress = targetIp + ":" + targetPort;
+
+            // 校验是否是已注册的Worker地址
+            boolean isRegisteredWorker = workerClusterQueryService.getAppId2ClusterStatus()
+                    .values()
+                    .stream()
+                    .flatMap(holder -> holder.getAllWorkers().keySet().stream())
+                    .anyMatch(workerAddress -> workerAddress.equals(targetAddress));
+
+            if (!isRegisteredWorker) {
+                return ResultDTO.failed("Target address is not a registered worker");
+            }
+
             boolean ret = PingPongUtils.checkConnectivity(targetIp, targetPort);
             return ResultDTO.success(ret);
         } catch (Throwable t) {
