@@ -85,6 +85,7 @@ public class InstanceController {
     }
 
     @PostMapping("/detailPlus")
+    @ApiPermission(name = "Instance-DetailPlus", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<InstanceDetailVO> getInstanceDetailPlus(@RequestBody QueryInstanceDetailRequest req, HttpServletRequest hsr) {
 
         req.setAppId(AuthHeaderUtils.fetchAppIdL(hsr));
@@ -92,7 +93,7 @@ public class InstanceController {
         // 非法请求参数校验
         String customQuery = req.getCustomQuery();
         String nonNullCustomQuery = Optional.ofNullable(customQuery).orElse(OmsConstant.NONE);
-        if (StringUtils.containsAnyIgnoreCase(nonNullCustomQuery, "delete", "update", "insert", "drop", "CREATE", "ALTER", "TRUNCATE", "RENAME", "LOCK", "GRANT", "REVOKE", "PREPARE", "EXECUTE", "COMMIT", "BEGIN")) {
+        if (StringUtils.containsAnyIgnoreCase(nonNullCustomQuery, "delete", "update", "insert", "drop", "CREATE", "ALTER", "TRUNCATE", "RENAME", "LOCK", "GRANT", "REVOKE", "PREPARE", "EXECUTE", "COMMIT", "BEGIN", "RUNSCRIPT", "CALL", "LINK", "SCRIPT")) {
             throw new IllegalArgumentException("Don't get any ideas about the database, illegally query: " + customQuery);
         }
 
