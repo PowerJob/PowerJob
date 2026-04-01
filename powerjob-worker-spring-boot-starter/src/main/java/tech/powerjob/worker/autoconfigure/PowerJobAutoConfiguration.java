@@ -85,6 +85,9 @@ public class PowerJobAutoConfiguration {
         config.setMaxLightweightTaskNum(worker.getMaxLightweightTaskNum());
 
         config.setHealthReportInterval(worker.getHealthReportInterval());
+
+        config.setTaskGroupQuotas(worker.getTaskGroupQuotas());
+
         /*
          * Create PowerJobSpringWorker object and set properties.
          */

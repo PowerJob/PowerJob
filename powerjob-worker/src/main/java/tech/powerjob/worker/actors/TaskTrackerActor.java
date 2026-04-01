@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.TimeExpressionType;
 import tech.powerjob.common.model.InstanceDetail;
+import tech.powerjob.common.model.TaskGroupQuota;
 import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.ServerStopInstanceReq;
@@ -22,6 +23,8 @@ import tech.powerjob.worker.persistence.TaskDO;
 import tech.powerjob.worker.pojo.request.ProcessorMapTaskRequest;
 import tech.powerjob.worker.pojo.request.ProcessorReportTaskStatusReq;
 import tech.powerjob.worker.pojo.request.ProcessorTrackerStatusReportReq;
+
+import java.util.Map;
 
 import java.util.List;
 
@@ -129,17 +132,44 @@ public class TaskTrackerActor {
                 log.warn("[TaskTrackerActor] LightTaskTracker({}) for instance(id={}) already exists.", taskTracker, instanceId);
                 return;
             }
-            // 判断是否已经 overload
-            if (LightTaskTrackerManager.currentTaskTrackerSize() >= workerRuntime.getWorkerConfig().getMaxLightweightTaskNum() * LightTaskTrackerManager.OVERLOAD_FACTOR) {
-                // ignore this request
-                log.warn("[TaskTrackerActor] this worker is overload,ignore this request(instanceId={}),current size = {}!",instanceId,LightTaskTrackerManager.currentTaskTrackerSize());
-                return;
+
+            // Normalize task group
+            final String taskGroup = normalizeTaskGroup(req.getTaskGroup());
+
+            // 判断是否已经 overload — group-aware if configured
+            Map<String, TaskGroupQuota> quotas = workerRuntime.getWorkerConfig().getTaskGroupQuotas();
+            if (quotas != null && !quotas.isEmpty()) {
+                // Per-group capacity check
+                TaskGroupQuota quota = quotas.get(taskGroup);
+                if (quota == null) {
+                    // Unknown group: fall back to "default"
+                    quota = quotas.get(TaskGroupQuota.DEFAULT_GROUP);
+                    log.warn("[TaskTrackerActor] unknown taskGroup '{}', falling back to 'default' group for instanceId={}", taskGroup, instanceId);
+                }
+                int groupMax = quota != null ? quota.getMaxLightweightTaskNum() : workerRuntime.getWorkerConfig().getMaxLightweightTaskNum();
+                int groupSize = LightTaskTrackerManager.currentTaskTrackerSizeByGroup(taskGroup);
+                if (groupSize >= groupMax * LightTaskTrackerManager.OVERLOAD_FACTOR) {
+                    log.warn("[TaskTrackerActor] taskGroup '{}' is overloaded, ignore request(instanceId={}), current group size = {}, group max = {}!",
+                            taskGroup, instanceId, groupSize, groupMax);
+                    return;
+                }
+                if (groupSize >= groupMax) {
+                    log.warn("[TaskTrackerActor] taskGroup '{}' will be overloaded soon, current group size = {}, group max = {}!",
+                            taskGroup, groupSize, groupMax);
+                }
+            } else {
+                // Legacy mode: global capacity check (unchanged behavior)
+                if (LightTaskTrackerManager.currentTaskTrackerSize() >= workerRuntime.getWorkerConfig().getMaxLightweightTaskNum() * LightTaskTrackerManager.OVERLOAD_FACTOR) {
+                    log.warn("[TaskTrackerActor] this worker is overload, ignore this request(instanceId={}), current size = {}!",
+                            instanceId, LightTaskTrackerManager.currentTaskTrackerSize());
+                    return;
+                }
+                if (LightTaskTrackerManager.currentTaskTrackerSize() >= workerRuntime.getWorkerConfig().getMaxLightweightTaskNum()) {
+                    log.warn("[TaskTrackerActor] this worker will be overload soon, current size = {}!", LightTaskTrackerManager.currentTaskTrackerSize());
+                }
             }
-            if (LightTaskTrackerManager.currentTaskTrackerSize() >= workerRuntime.getWorkerConfig().getMaxLightweightTaskNum()) {
-                log.warn("[TaskTrackerActor] this worker will be overload soon,current size = {}!",LightTaskTrackerManager.currentTaskTrackerSize());
-            }
-            // 创建轻量级任务
-            LightTaskTrackerManager.atomicCreateTaskTracker(instanceId, ignore -> LightTaskTracker.create(req, workerRuntime));
+            // 创建轻量级任务 with group tracking
+            LightTaskTrackerManager.atomicCreateTaskTracker(instanceId, taskGroup, ignore -> LightTaskTracker.create(req, workerRuntime));
         } else {
             HeavyTaskTracker taskTracker = HeavyTaskTrackerManager.getTaskTracker(instanceId);
             if (taskTracker != null) {
@@ -208,6 +238,10 @@ public class TaskTrackerActor {
         return askResponse;
     }
 
+
+    private static String normalizeTaskGroup(String raw) {
+        return TaskGroupQuota.normalizeTaskGroup(raw);
+    }
 
     private boolean isLightweightTask(ServerScheduleJobReq serverScheduleJobReq) {
         final ExecuteType executeType = ExecuteType.valueOf(serverScheduleJobReq.getExecuteType());

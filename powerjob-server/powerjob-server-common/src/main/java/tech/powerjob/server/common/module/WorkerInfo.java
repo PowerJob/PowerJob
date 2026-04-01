@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.model.TaskGroupStatus;
 import tech.powerjob.common.request.WorkerHeartbeat;
 
 import java.util.List;
@@ -47,6 +48,14 @@ public class WorkerInfo {
 
     private List<DeployedContainerInfo> containerInfos;
 
+    /**
+     * Per-group task tracker status reported in heartbeat.
+     * Null for legacy workers without group isolation configured.
+     * Marked volatile to ensure visibility across the heartbeat-processing thread
+     * and dispatch threads that call overloadForGroup().
+     */
+    private volatile List<TaskGroupStatus> taskGroupStatuses;
+
     private static final long WORKER_TIMEOUT_MS = 60000;
 
     public void refresh(WorkerHeartbeat workerHeartbeat) {
@@ -61,6 +70,7 @@ public class WorkerInfo {
 
         lightTaskTrackerNum = workerHeartbeat.getLightTaskTrackerNum();
         heavyTaskTrackerNum = workerHeartbeat.getHeavyTaskTrackerNum();
+        taskGroupStatuses = workerHeartbeat.getTaskGroupStatuses();
 
         if (workerHeartbeat.isOverload()) {
             overloading = true;
@@ -77,6 +87,26 @@ public class WorkerInfo {
     }
 
     public boolean overload() {
+        return overloading;
+    }
+
+    /**
+     * Check if this worker is overloaded for a specific task group.
+     * Falls back to the global overload flag for legacy workers or unknown groups.
+     */
+    public boolean overloadForGroup(String groupName) {
+        // Snapshot the volatile reference to avoid races with refresh()
+        List<TaskGroupStatus> snapshot = taskGroupStatuses;
+        if (snapshot == null || snapshot.isEmpty()) {
+            // Legacy worker without group isolation: use global overload flag
+            return overloading;
+        }
+        for (TaskGroupStatus status : snapshot) {
+            if (status.getGroupName() != null && status.getGroupName().equals(groupName)) {
+                return status.isOverloaded();
+            }
+        }
+        // Unknown group on this worker: fall back to global overload flag
         return overloading;
     }
 }

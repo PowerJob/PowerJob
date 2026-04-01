@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import tech.powerjob.common.enhance.SafeRunnable;
 import tech.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.model.TaskGroupQuota;
+import tech.powerjob.common.model.TaskGroupStatus;
 import tech.powerjob.common.request.WorkerHeartbeat;
 import tech.powerjob.worker.common.PowerJobWorkerVersion;
 import tech.powerjob.worker.common.WorkerRuntime;
@@ -12,6 +14,10 @@ import tech.powerjob.worker.common.utils.TransportUtils;
 import tech.powerjob.worker.container.OmsContainerFactory;
 import tech.powerjob.worker.core.tracker.manager.HeavyTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -55,10 +61,24 @@ public class WorkerHealthReporter extends SafeRunnable {
         // 上报 Tracker 数量
         heartbeat.setLightTaskTrackerNum(LightTaskTrackerManager.currentTaskTrackerSize());
         heartbeat.setHeavyTaskTrackerNum(HeavyTaskTrackerManager.currentTaskTrackerSize());
-        // 是否超载
+        // 是否超载 (global check — backward compatible)
         if (workerRuntime.getWorkerConfig().getMaxLightweightTaskNum() <= LightTaskTrackerManager.currentTaskTrackerSize() || workerRuntime.getWorkerConfig().getMaxHeavyweightTaskNum() <= HeavyTaskTrackerManager.currentTaskTrackerSize()){
             heartbeat.setOverload(true);
         }
+
+        // Per-group status reporting for group-aware dispatch
+        Map<String, TaskGroupQuota> quotas = workerRuntime.getWorkerConfig().getTaskGroupQuotas();
+        if (quotas != null && !quotas.isEmpty()) {
+            List<TaskGroupStatus> groupStatuses = new ArrayList<>();
+            for (Map.Entry<String, TaskGroupQuota> entry : quotas.entrySet()) {
+                String groupName = entry.getKey();
+                int maxTasks = entry.getValue().getMaxLightweightTaskNum();
+                int currentTasks = LightTaskTrackerManager.currentTaskTrackerSizeByGroup(groupName);
+                groupStatuses.add(new TaskGroupStatus(groupName, currentTasks, maxTasks, currentTasks >= maxTasks));
+            }
+            heartbeat.setTaskGroupStatuses(groupStatuses);
+        }
+
         // 获取当前加载的容器列表
         heartbeat.setContainerInfos(OmsContainerFactory.getDeployedContainerInfos());
         // 发送请求
