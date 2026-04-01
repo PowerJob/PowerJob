@@ -107,4 +107,10 @@ public class ServerScheduleJobReq implements PowerSerializable {
      * 调度元信息
      */
     private String meta;
+
+    /**
+     * Task group for per-group thread pool isolation on the worker.
+     * Null/empty means "default" group.
+     */
+    private String taskGroup;
 }

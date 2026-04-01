@@ -8,8 +8,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import tech.powerjob.common.SystemInstanceResult;
+import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.TaskGroupQuota;
 import tech.powerjob.common.enums.WorkflowInstanceStatus;
 import tech.powerjob.server.common.Holder;
 import tech.powerjob.common.enums.SwitchableStatus;
@@ -166,25 +168,48 @@ public class InstanceStatusCheckService {
                 // query job info and map
                 Map<Long, JobInfoDO> jobInfoMap = jobInfoRepository.findByIdIn(jobIds).stream().collect(Collectors.toMap(JobInfoDO::getId, e -> e));
                 log.warn("[InstanceStatusChecker] find some instance in app({}) which is not triggered as expected: {}", currentAppId, currentAppWaitingDispatchInstances.stream().map(InstanceInfoDO::getInstanceId).collect(Collectors.toList()));
-                final Holder<Boolean> overloadFlag = new Holder<>(false);
+                // Track overloaded lightweight groups to skip subsequent lightweight tasks in the same group.
+                // Heavyweight tasks use heavyOverloadFlag for early-exit (preserves original behavior).
+                // App-level blacklist only triggers on heavyweight overload (not lightweight group overload),
+                // because a single lightweight group being full should not block other groups or heavyweight tasks.
+                final Set<String> overloadedLightGroups = java.util.concurrent.ConcurrentHashMap.newKeySet();
+                final Holder<Boolean> heavyOverloadFlag = new Holder<>(false);
                 // 先这么简单处理没问题，毕竟只有这一个地方用了 parallelStream
                 currentAppWaitingDispatchInstances.parallelStream().forEach(instance -> {
-                    if (overloadFlag.get()) {
-                        // 直接忽略
-                        return;
-                    }
                     Optional<JobInfoDO> jobInfoOpt = Optional.ofNullable(jobInfoMap.get(instance.getJobId()));
-                    if (jobInfoOpt.isPresent()) {
-                        // 处理等待派发的任务没有必要再重置一次状态，减少 io 次数
-                        dispatchService.dispatch(jobInfoOpt.get(), instance.getInstanceId(), Optional.of(instance), Optional.of(overloadFlag));
-                    } else {
+                    if (!jobInfoOpt.isPresent()) {
                         log.warn("[InstanceStatusChecker] can't find job by jobId[{}], so redispatch failed, failed instance: {}", instance.getJobId(), instance);
                         final Optional<InstanceInfoDO> opt = instanceInfoRepository.findById(instance.getId());
                         opt.ifPresent(instanceInfoDO -> updateFailedInstance(instanceInfoDO, SystemInstanceResult.CAN_NOT_FIND_JOB_INFO));
+                        return;
+                    }
+                    JobInfoDO jobForInstance = jobInfoOpt.get();
+                    boolean lightweight = isLightweightTask(jobForInstance);
+                    if (lightweight) {
+                        String taskGroup = normalizeTaskGroup(jobForInstance.getTaskGroup());
+                        if (overloadedLightGroups.contains(taskGroup)) {
+                            return;
+                        }
+                    } else {
+                        if (heavyOverloadFlag.get()) {
+                            return;
+                        }
+                    }
+                    final Holder<Boolean> instanceOverloadFlag = new Holder<>(false);
+                    // 处理等待派发的任务没有必要再重置一次状态，减少 io 次数
+                    dispatchService.dispatch(jobForInstance, instance.getInstanceId(), Optional.of(instance), Optional.of(instanceOverloadFlag));
+                    if (instanceOverloadFlag.get()) {
+                        if (lightweight) {
+                            overloadedLightGroups.add(normalizeTaskGroup(jobForInstance.getTaskGroup()));
+                        } else {
+                            heavyOverloadFlag.set(true);
+                        }
                     }
                 });
                 threshold = System.currentTimeMillis() - DISPATCH_TIMEOUT_MS;
-                if (overloadFlag.get()) {
+                // Only blacklist the app when heavyweight tasks are overloaded (original behavior).
+                // Lightweight group overload is handled per-group above, not at app level.
+                if (heavyOverloadFlag.get()) {
                     overloadAppIdList.add(currentAppId);
                 }
             }
@@ -282,6 +307,18 @@ public class InstanceStatusCheckService {
                 });
             }
         });
+    }
+
+    private static boolean isLightweightTask(JobInfoDO jobInfo) {
+        ExecuteType executeType = ExecuteType.of(jobInfo.getExecuteType());
+        if (executeType != ExecuteType.STANDALONE) {
+            return false;
+        }
+        return !TimeExpressionType.FREQUENT_TYPES.contains(jobInfo.getTimeExpressionType());
+    }
+
+    private static String normalizeTaskGroup(String raw) {
+        return TaskGroupQuota.normalizeTaskGroup(raw);
     }
 
     /**

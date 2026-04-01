@@ -8,6 +8,7 @@ import tech.powerjob.common.SystemInstanceResult;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.model.InstanceDetail;
 import tech.powerjob.common.model.InstanceMeta;
+import tech.powerjob.common.model.TaskGroupQuota;
 import tech.powerjob.common.request.ServerQueryInstanceStatusReq;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.common.request.TaskTrackerReportInstanceStatusReq;
@@ -77,6 +78,12 @@ public class LightTaskTracker extends TaskTracker {
      */
     private ProcessResult result;
 
+    /**
+     * Task group for per-group thread pool isolation.
+     * Stored here so removeTaskTracker can find which group this instance belongs to.
+     */
+    private final String taskGroup;
+
     private final AtomicBoolean timeoutFlag = new AtomicBoolean(false);
 
     protected final AtomicBoolean stopFlag = new AtomicBoolean(false);
@@ -86,6 +93,9 @@ public class LightTaskTracker extends TaskTracker {
 
     public LightTaskTracker(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
         super(req, workerRuntime);
+        // Store task group for per-group tracking and removal
+        String rawGroup = req.getTaskGroup();
+        this.taskGroup = TaskGroupQuota.normalizeTaskGroup(rawGroup);
         try {
             taskContext = constructTaskContext(req, workerRuntime);
             // 等待处理
@@ -109,8 +119,8 @@ public class LightTaskTracker extends TaskTracker {
             } else {
                 timeoutCheckScheduledFuture = null;
             }
-            // 提交任务到线程池
-            processFuture = workerRuntime.getExecutorManager().getLightweightTaskExecutorService().submit(this::processTask);
+            // 提交任务到 group-specific 线程池 (or global pool if no groups configured)
+            processFuture = workerRuntime.getExecutorManager().getGroupLightweightTaskExecutorService(this.taskGroup).submit(this::processTask);
         } catch (Exception e) {
             log.error("[TaskTracker-{}] fail to create TaskTracker for req:{} ", instanceId, req);
             destroy();
@@ -120,11 +130,19 @@ public class LightTaskTracker extends TaskTracker {
     }
 
     /**
+     * Get the task group this tracker belongs to. Used by LightTaskTrackerManager for cleanup.
+     */
+    public String getTaskGroup() {
+        return taskGroup;
+    }
+
+    /**
      * 静态方法创建 TaskTracker
      *
      * @param req 服务端调度任务请求
      * @return LightTaskTracker
      */
+
     public static LightTaskTracker create(ServerScheduleJobReq req, WorkerRuntime workerRuntime) {
         try {
             return new LightTaskTracker(req, workerRuntime);

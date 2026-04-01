@@ -152,6 +152,13 @@ public class SaveJobInfoRequest {
     private String tag;
 
     /**
+     * Task group for per-group thread pool isolation on workers.
+     * Jobs with the same taskGroup share an isolated thread pool.
+     * Null/empty means "default" group.
+     */
+    private String taskGroup;
+
+    /**
      * 日志配置，包括日志级别、日志方式等配置信息
      */
     private LogConfig logConfig;
@@ -171,6 +178,16 @@ public class SaveJobInfoRequest {
         CommonUtils.requireNonNull(executeType, "executeType can't be empty");
         CommonUtils.requireNonNull(processorType, "processorType can't be empty");
         CommonUtils.requireNonNull(timeExpressionType, "timeExpressionType can't be empty");
+
+        // taskGroup is only supported for lightweight tasks (standalone + non-frequent)
+        if (taskGroup != null && !taskGroup.trim().isEmpty()) {
+            if (executeType != ExecuteType.STANDALONE) {
+                throw new IllegalArgumentException("taskGroup is only supported for STANDALONE execution mode, not " + executeType);
+            }
+            if (timeExpressionType == TimeExpressionType.FIXED_RATE || timeExpressionType == TimeExpressionType.FIXED_DELAY) {
+                throw new IllegalArgumentException("taskGroup is only supported for lightweight tasks, not " + timeExpressionType);
+            }
+        }
     }
 
     public DispatchStrategy getDispatchStrategy() {
