@@ -100,6 +100,13 @@
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
         </dependency>
+        <!-- kingbase -->
+        <dependency>
+            <groupId>cn.com.kingbase</groupId>
+            <artifactId>kingbase8</artifactId>
+            <version>${kingbase.version}</version>
+        </dependency>
+
 
         <!-- worker 移除了 Spring 强依赖，agent 需要使用容器功能必须直接依赖 -->
         <dependency>

@@ -58,10 +58,17 @@
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <kingbase.version>9.0.1</kingbase.version>
         <lombok.version>1.18.38</lombok.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>cn.com.kingbase</groupId>
+            <artifactId>KesDialect-for-hibernate4</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
         <!-- lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
