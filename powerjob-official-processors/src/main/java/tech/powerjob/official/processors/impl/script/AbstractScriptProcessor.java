@@ -18,6 +18,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -49,9 +50,26 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
             omsLogger.warn(message);
             return new ProcessResult(false, message);
         }
+
+        // 如果存在工作流上下文，先做简单替换 ${wfContext.key} -> value
+        if (context.getWorkflowContext() != null) {
+            try {
+                Map<String, String> wfMap = context.getWorkflowContext().fetchWorkflowContext();
+                if (wfMap != null && !wfMap.isEmpty() && scriptParams != null) {
+                    for (Map.Entry<String, String> e : wfMap.entrySet()) {
+                        String placeholder = "${wfContext." + e.getKey() + "}";
+                        scriptParams = scriptParams.replace(placeholder, e.getValue() == null ? "" : e.getValue());
+                    }
+                }
+            } catch (Exception ignore) {
+                // 不应阻塞主流程，记录日志即可
+                omsLogger.warn("[SYSTEM] Replace wfContext placeholders failed.", ignore);
+            }
+        }
+
         String scriptPath = prepareScriptFile(context.getInstanceId(), scriptParams);
         omsLogger.info("[SYSTEM] Generate executable file successfully, path: {}", scriptPath);
-        
+
         if (SystemUtils.IS_OS_WINDOWS) {
             if (StringUtils.equals(getRunCommand(), SH_SHELL)) {
                 String message = String.format("[SYSTEM] Current OS is %s where shell scripts cannot run.", SystemUtils.OS_NAME);
@@ -71,6 +89,20 @@ public abstract class AbstractScriptProcessor extends CommonBasicProcessor {
         ProcessBuilder pb = StringUtils.equals(getRunCommand(), CMD_SHELL) ?
                 new ProcessBuilder(getRunCommand(), "/c", scriptPath)
                 : new ProcessBuilder(getRunCommand(), scriptPath);
+
+        // 将工作流上下文注入到子进程环境，脚本可以通过 $KEY 或 ${KEY} 读取
+        if (context.getWorkflowContext() != null) {
+            try {
+                Map<String, String> wfMap = context.getWorkflowContext().fetchWorkflowContext();
+                if (wfMap != null && !wfMap.isEmpty()) {
+                    pb.environment().putAll(wfMap);
+                    omsLogger.info("[SYSTEM] Inject workflow context into process environment: {}", wfMap.keySet());
+                }
+            } catch (Exception e) {
+                omsLogger.warn("[SYSTEM] Failed to inject workflow context into process environment.", e);
+            }
+        }
+
         Process process = pb.start();
 
         StringBuilder inputBuilder = new StringBuilder();
