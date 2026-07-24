@@ -2,7 +2,6 @@
 # 1. PowerJob 根目录执行：docker-compose up
 # 2. 静静等待服务启动。
 
-version: '3'
 services:
   powerjob-mysql:
     environment:
@@ -16,13 +15,20 @@ services:
     volumes:
       - ./powerjob-data/powerjob-mysql:/var/lib/mysql
     command: --lower_case_table_names=1
+    healthcheck:
+      test: ["CMD-SHELL", "/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
 
   powerjob-server:
     container_name: powerjob-server
     image: powerjob/powerjob-server:latest
     restart: always
     depends_on:
-      - powerjob-mysql
+      powerjob-mysql:
+        condition: service_healthy
     environment:
       JVMOPTIONS: "-Xmx512m"
       PARAMS: "--oms.mongodb.enable=false --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
@@ -39,8 +45,10 @@ services:
     image: powerjob/powerjob-worker-samples:latest
     restart: always
     depends_on:
-      - powerjob-mysql
-      - powerjob-server
+      powerjob-mysql:
+        condition: service_healthy
+      powerjob-server:
+        condition: service_started
 #    environment:
 #      PARAMS: "--powerjob.worker.server-address=powerjob-server:7700"
     ports:
