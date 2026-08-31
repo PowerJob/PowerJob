@@ -17,7 +17,7 @@
     <properties>
         <junit.version>5.9.1</junit.version>
         <logback.version>1.2.13</logback.version>
-        <fastjson.version>1.2.83</fastjson.version>
+        <fastjson.version>1.2.84</fastjson.version>
         <powerjob.common.version>5.1.2</powerjob.common.version>
 
         <mvn.shade.plugin.version>3.2.4</mvn.shade.plugin.version>
