@@ -8,6 +8,7 @@ import tech.powerjob.common.enums.DispatchStrategy;
 import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.common.model.AlarmConfig;
 import tech.powerjob.common.model.JobAdvancedRuntimeConfig;
 import tech.powerjob.common.model.LifeCycle;
@@ -31,6 +32,7 @@ public class JobConverter {
     public static SaveJobInfoRequest convertJobInfoDO2SaveJobInfoRequest(JobInfoDO jobInfoDO) {
         SaveJobInfoRequest saveJobInfoRequest = new SaveJobInfoRequest();
         BeanUtils.copyProperties(jobInfoDO, saveJobInfoRequest);
+        saveJobInfoRequest.setEnable(Integer.valueOf(SwitchableStatus.ENABLE.getV()).equals(jobInfoDO.getStatus()));
         saveJobInfoRequest.setTimeExpressionType(TimeExpressionType.of(jobInfoDO.getTimeExpressionType()));
         saveJobInfoRequest.setExecuteType(ExecuteType.of(jobInfoDO.getExecuteType()));
         saveJobInfoRequest.setProcessorType(ProcessorType.of(jobInfoDO.getProcessorType()));
