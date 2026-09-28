@@ -169,7 +169,7 @@ public class MinioOssService extends AbstractDFsService {
      * @param secretKey  秘密密钥
      */
     public void initOssClient(String endpoint, String bucketName, String accessKey, String secretKey) {
-        log.info("[Minio] init OSS by config: endpoint={}, bucketName={}, accessKey={}, secretKey={}", endpoint, bucketName, accessKey, secretKey);
+        log.info("[Minio] initializing OSS storage");
         if (StringUtils.isEmpty(bucketName)) {
             throw new IllegalArgumentException("'oms.storage.dfs.minio.bucketName' can't be empty, please creat a bucket in minio oss console then config it to powerjob");
         }

@@ -120,7 +120,7 @@ public class AliOssService extends AbstractDFsService {
 
     void initOssClient(String endpoint, String bucket, String mode, String ak, String sk, String token) throws Exception {
 
-        log.info("[AliOssService] init OSS by config: endpoint={},bucket={},credentialType={},ak={},sk={},token={}", endpoint, bucket, mode, ak, sk, token);
+        log.info("[AliOssService] initializing OSS storage, credentialType={}", mode);
 
         if (StringUtils.isEmpty(bucket)) {
             throw new IllegalArgumentException("'oms.storage.dfs.alioss.bucket' can't be empty, please creat a bucket in aliyun oss console then config it to powerjob");

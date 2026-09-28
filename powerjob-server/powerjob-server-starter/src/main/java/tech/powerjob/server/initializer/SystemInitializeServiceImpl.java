@@ -81,10 +81,10 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
 
         // STEP3: 授予全局管理员权限
         powerJobPermissionService.grantRole(RoleScope.GLOBAL, AuthConstants.GLOBAL_ADMIN_TARGET_ID, powerJobUser.getId(), Role.ADMIN, null);
-        log.info("[SystemInitializeService] GRANT ADMIN to user[{}] successfully!", powerJobUser);
+        log.info("[SystemInitializeService] GRANT ADMIN to user id[{}] successfully!", powerJobUser.getId());
 
-        // 循环10遍，强提醒用户，第一次使用必须更改 admin 密码
-        for (int i = 0; i < 10; i++) {
+        // Only reveal a generated bootstrap password; configured credentials must never enter logs.
+        if (StringUtils.isEmpty(defaultAdminPassword)) {
             log.warn("[SystemInitializeService] The system has automatically created a super administrator account[username={},password={}], please log in and change the password immediately!", username, password);
         }
     }
@@ -122,10 +122,10 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
         List<PowerJobUser> testUsers = testAccounts.stream().map(un -> createUser(un, TRIAL_ENV_ACCOUNT_AND_PWD, false)).collect(Collectors.toList());
         List<Long> testUserIds = testUsers.stream().map(PowerJobUser::getId).collect(Collectors.toList());
 
-        log.info("[SystemInitializeService] [TestEnv] test user: {}", testUsers);
+        log.info("[SystemInitializeService] [TestEnv] initialized user IDs: {}", testUserIds);
 
         AppInfoDO testApp = createApp(TEST_APP_NAME, TEST_APP_PWD, SYSTEM_DEFAULT_NAMESPACE, testUserIds);
-        log.info("[SystemInitializeService] [TestEnv] test app: {}", testApp);
+        log.info("[SystemInitializeService] [TestEnv] initialized app ID: {}", testApp.getId());
     }
     private PowerJobUser createUser(String username, String password, boolean allowedChangePwd) {
         // STEP1: 创建 PWJB 用户
@@ -143,12 +143,12 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
                 createUser.setExtra(JsonUtils.toJSONString(extra));
             }
 
-            log.info("[SystemInitializeService] [username:{}] create PWJB user by request: {}", username, createUser);
+            log.info("[SystemInitializeService] [username:{}] creating PWJB user", username);
             PwjbUserInfoDO nPwjbUser = pwjbUserWebService.save(createUser);
-            log.info("[SystemInitializeService] [username:{}]  create PWJB user successfully: {}", username, nPwjbUser);
+            log.info("[SystemInitializeService] [username:{}] created PWJB user id: {}", username, nPwjbUser.getId());
             return nPwjbUser;
         });
-        log.info("[SystemInitializeService] [username:{}] => PwjbUser: {}", username, savedPwjbUser);
+        log.info("[SystemInitializeService] [username:{}] PWJB user id: {}", username, savedPwjbUser.getId());
 
         // STEP2: 创建 USER 对象
         Map<String, Object> params = Maps.newHashMap();
@@ -158,9 +158,9 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
         LoginRequest loginRequest = new LoginRequest()
                 .setLoginType(AuthConstants.ACCOUNT_TYPE_POWER_JOB)
                 .setOriginParams(JsonUtils.toJSONString(params));
-        log.info("[SystemInitializeService] [username:{}] create PowerJobUser by request: {}", username, loginRequest);
+        log.info("[SystemInitializeService] [username:{}] authenticating initialized user", username);
         PowerJobUser powerJobUser = powerJobLoginService.doLogin(loginRequest);
-        log.info("[SystemInitializeService] [username:{}] create PowerJobUser successfully: {}", username, powerJobUser);
+        log.info("[SystemInitializeService] [username:{}] authenticated user id: {}", username, powerJobUser.getId());
         return powerJobUser;
     }
 
@@ -193,9 +193,9 @@ public class SystemInitializeServiceImpl implements SystemInitializeService {
 
         componentUserRoleInfo.setDeveloper(developers);
 
-        log.info("[SystemInitializeService] [app:{}] create App by request: {}", appName, modifyAppInfoRequest);
+        log.info("[SystemInitializeService] [app:{}] creating app", appName);
         AppInfoDO appInfoDO = appWebService.save(modifyAppInfoRequest);
-        log.info("[SystemInitializeService] [app:{}] create App successfully: {}", appName, appInfoDO);
+        log.info("[SystemInitializeService] [app:{}] created app id: {}", appName, appInfoDO.getId());
 
         return appInfoDO;
     }

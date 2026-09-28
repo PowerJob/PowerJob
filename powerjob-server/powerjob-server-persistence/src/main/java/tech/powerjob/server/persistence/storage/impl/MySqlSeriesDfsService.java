@@ -272,7 +272,7 @@ public class MySqlSeriesDfsService extends AbstractDFsService {
 
     void initDatabase(MySQLProperty property) {
 
-        log.info("[MySqlSeriesDfsService] init datasource by config: {}", property);
+        log.info("[MySqlSeriesDfsService] initializing datasource");
 
         HikariConfig config = new HikariConfig();
 

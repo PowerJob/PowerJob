@@ -6,7 +6,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.powerjob.server.auth.jwt.JwtService;
@@ -74,8 +73,8 @@ public class JwtServiceImpl implements JwtService {
         } catch (ExpiredJwtException expiredJwtException) {
             return new ParseResult().setStatus(ParseResult.Status.EXPIRED).setMsg(expiredJwtException.getMessage());
         } catch (Exception e) {
-            log.warn("[JwtService] parse jwt[{}] with extraSk[{}] failed", jwt, extraSk, e);
-            return new ParseResult().setStatus(ParseResult.Status.FAILED).setMsg(ExceptionUtils.getMessage(e));
+            log.warn("[JwtService] JWT validation failed ({})", e.getClass().getSimpleName());
+            return new ParseResult().setStatus(ParseResult.Status.FAILED).setMsg("JWT validation failed");
         }
     }
 

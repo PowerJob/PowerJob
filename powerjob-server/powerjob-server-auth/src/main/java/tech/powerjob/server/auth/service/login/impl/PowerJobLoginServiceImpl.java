@@ -136,7 +136,16 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
 
     @Override
     public Optional<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest) {
-        final Optional<JwtBody> jwtBodyOpt = parseJwt(httpServletRequest);
+        String jwt = HttpServletUtils.fetchFromHeader(AuthConstants.JWT_NAME, httpServletRequest);
+        if (StringUtils.isEmpty(jwt)) {
+            jwt = HttpServletUtils.fetchFromHeader(AuthConstants.OLD_JWT_NAME, httpServletRequest);
+        }
+        return ifLogin(jwt);
+    }
+
+    @Override
+    public Optional<PowerJobUser> ifLogin(String jwt) {
+        final Optional<JwtBody> jwtBodyOpt = parseJwt(jwt);
         if (!jwtBodyOpt.isPresent()) {
             return Optional.empty();
         }
@@ -213,26 +222,7 @@ public class PowerJobLoginServiceImpl implements PowerJobLoginService {
     }
 
     @SneakyThrows
-    private Optional<JwtBody> parseJwt(HttpServletRequest httpServletRequest) {
-        // header、cookie 都能获取
-        String jwtStr = HttpServletUtils.fetchFromHeader(AuthConstants.JWT_NAME, httpServletRequest);
-        if (StringUtils.isEmpty(jwtStr)) {
-            jwtStr = HttpServletUtils.fetchFromHeader(AuthConstants.OLD_JWT_NAME, httpServletRequest);
-        }
-
-        /*
-
-        开发阶段跨域无法简单传输 cookies，暂时采取 header 方案传输 JWT
-
-        if (StringUtils.isEmpty(jwtStr)) {
-            for (Cookie cookie : Optional.ofNullable(httpServletRequest.getCookies()).orElse(new Cookie[]{})) {
-                if (cookie.getName().equals(AuthConstants.JWT_NAME)) {
-                    jwtStr = cookie.getValue();
-                }
-            }
-        }
-         */
-
+    private Optional<JwtBody> parseJwt(String jwtStr) {
         if (StringUtils.isEmpty(jwtStr)) {
             return Optional.empty();
         }

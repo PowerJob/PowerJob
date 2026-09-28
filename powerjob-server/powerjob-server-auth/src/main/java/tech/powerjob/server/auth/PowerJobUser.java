@@ -40,5 +40,6 @@ public class PowerJobUser implements Serializable {
 
     /* ************** 以上为数据库字段 ************** */
 
+    @ToString.Exclude
     private String jwtToken;
 }

@@ -45,4 +45,7 @@ public interface PowerJobLoginService {
      * @return PowerJob 用户
      */
     Optional<PowerJobUser> ifLogin(HttpServletRequest httpServletRequest);
+
+    /** Validate a token from a non-HTTP transport using the same current user checks. */
+    Optional<PowerJobUser> ifLogin(String jwt);
 }

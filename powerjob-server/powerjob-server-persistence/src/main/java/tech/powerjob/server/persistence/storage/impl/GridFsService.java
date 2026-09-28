@@ -38,7 +38,7 @@ import java.util.Optional;
 
 /**
  * 使用 MongoDB GridFS 作为底层存储
- * 配置用法：oms.storage.dfs.mongodb.uri=mongodb+srv://zqq:No1Bug2Please3!@cluster0.wie54.gcp.mongodb.net/powerjob_daily?retryWrites=true&w=majority
+ * 配置用法：oms.storage.dfs.mongodb.uri=mongodb://<USER>:<PASSWORD>@<HOST>:27017/<DATABASE>
  *
  * @author tjq
  * @since 2023/7/28
@@ -131,7 +131,7 @@ public class GridFsService extends AbstractDFsService {
     }
 
     void initMongo(String uri) {
-        log.info("[GridFsService] mongoDB uri: {}", uri);
+        log.info("[GridFsService] initializing MongoDB storage");
         if (StringUtils.isEmpty(uri)) {
             log.warn("[GridFsService] uri is empty, GridFsService is off now!");
             return;
