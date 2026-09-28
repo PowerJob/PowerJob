@@ -46,5 +46,11 @@ public class WorkflowNodeInfoDTO {
      */
     private Date gmtModified;
 
-
+    /**
+     * Accept the Server response name while retaining the existing nodeAlias accessors.
+     * @param nodeName node name returned by the Server
+     */
+    public void setNodeName(String nodeName) {
+        this.nodeAlias = nodeName;
+    }
 }
