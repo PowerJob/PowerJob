@@ -35,7 +35,8 @@ public class CachingRequestBodyFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         if (request instanceof HttpServletRequest) {
-            String uri = ((HttpServletRequest) request).getRequestURI();
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            String uri = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
             // 忽略 jar 上传等处理路径
             if (IGNORE_URIS.contains(uri)) {
                 chain.doFilter(request, response);
