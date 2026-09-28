@@ -111,7 +111,7 @@ public class NamespaceController {
         namespaceVO.setComponentUserRoleInfo(componentUserRoleInfo);
 
         // 有权限用户填充 token
-        boolean hasPermission = webAuthService.hasPermission(RoleScope.NAMESPACE, namespaceId, Permission.READ);
+        boolean hasPermission = webAuthService.hasPermission(RoleScope.NAMESPACE, namespaceId, Permission.SU);
         namespaceVO.setToken(hasPermission ? namespaceDO.getToken() : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
 
         // 用户信息

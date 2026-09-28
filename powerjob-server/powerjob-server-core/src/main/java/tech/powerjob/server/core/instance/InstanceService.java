@@ -131,7 +131,7 @@ public class InstanceService {
         log.info("[Instance-{}] try to stop the instance instance in appId: {}", instanceId,appId);
         try {
 
-            InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
+            InstanceInfoDO instanceInfo = fetchInstanceInfo(appId, instanceId);
             // 判断状态，只有运行中才能停止
             if (!InstanceStatus.GENERALIZED_RUNNING_STATUS.contains(instanceInfo.getStatus())) {
                 throw new IllegalArgumentException("can't stop finished instance!");
@@ -178,7 +178,7 @@ public class InstanceService {
 
         log.info("[Instance-{}] retry instance in appId: {}", instanceId, appId);
 
-        InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
+        InstanceInfoDO instanceInfo = fetchInstanceInfo(appId, instanceId);
         if (!InstanceStatus.FINISHED_STATUS.contains(instanceInfo.getStatus())) {
             throw new PowerJobException("Only stopped instance can be retry!");
         }
@@ -215,7 +215,7 @@ public class InstanceService {
         log.info("[Instance-{}] try to cancel the instance with appId {}.", instanceId, appId);
 
         try {
-            InstanceInfoDO instanceInfo = fetchInstanceInfo(instanceId);
+            InstanceInfoDO instanceInfo = fetchInstanceInfo(appId, instanceId);
             TimerFuture timerFuture = InstanceTimeWheelService.fetchTimerFuture(instanceId);
 
             boolean success;
@@ -294,7 +294,7 @@ public class InstanceService {
     @DesignateServer
     public InstanceDetail getInstanceDetail(Long appId, Long instanceId, String customQuery) {
 
-        InstanceInfoDO instanceInfoDO = fetchInstanceInfo(instanceId);
+        InstanceInfoDO instanceInfoDO = fetchInstanceInfo(appId, instanceId);
 
         InstanceStatus instanceStatus = InstanceStatus.of(instanceInfoDO.getStatus());
 
@@ -332,6 +332,14 @@ public class InstanceService {
         // 失败则返回基础版信息
         BeanUtils.copyProperties(instanceInfoDO, detail);
         return detail;
+    }
+
+    private InstanceInfoDO fetchInstanceInfo(Long appId, Long instanceId) {
+        InstanceInfoDO instance = fetchInstanceInfo(instanceId);
+        if (appId == null || !appId.equals(instance.getAppId())) {
+            throw new PowerJobException("Instance does not belong to the requested application");
+        }
+        return instance;
     }
 
     private InstanceInfoDO fetchInstanceInfo(Long instanceId) {

@@ -13,6 +13,7 @@ import tech.powerjob.common.response.ResultDTO;
 import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
+import tech.powerjob.server.auth.common.utils.AuthHeaderUtils;
 import tech.powerjob.common.enums.SwitchableStatus;
 import tech.powerjob.server.common.module.WorkerInfo;
 import tech.powerjob.server.persistence.remote.model.AppInfoDO;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 系统信息控制器（服务于前端首页）
@@ -54,7 +56,8 @@ public class SystemInfoController {
 
     @GetMapping("/listWorker")
     @ApiPermission(name = "System-ListWorker", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<List<WorkerStatusVO>> listWorker(Long appId) {
+    public ResultDTO<List<WorkerStatusVO>> listWorker(Long appId, HttpServletRequest request) {
+        appId = AuthHeaderUtils.fetchAppIdL(request);
 
         List<WorkerInfo> workerInfos = workerClusterQueryService.getAllWorkers(appId);
         return ResultDTO.success(workerInfos.stream().map(WorkerStatusVO::new).collect(Collectors.toList()));
@@ -62,7 +65,8 @@ public class SystemInfoController {
 
     @GetMapping("/overview")
     @ApiPermission(name = "System-Overview", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
-    public ResultDTO<SystemOverviewVO> getSystemOverview(Long appId) {
+    public ResultDTO<SystemOverviewVO> getSystemOverview(Long appId, HttpServletRequest request) {
+        appId = AuthHeaderUtils.fetchAppIdL(request);
 
         SystemOverviewVO overview = new SystemOverviewVO();
 

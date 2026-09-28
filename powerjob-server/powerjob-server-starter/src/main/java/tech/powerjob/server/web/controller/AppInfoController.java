@@ -150,6 +150,8 @@ public class AppInfoController {
         return data.stream().map(appInfoDO -> {
             AppInfoVO appInfoVO = new AppInfoVO();
             BeanUtils.copyProperties(appInfoDO, appInfoVO);
+            boolean canReadPassword = webAuthService.hasPermission(RoleScope.APP, appInfoDO.getId(), Permission.SU);
+            appInfoVO.setPassword(canReadPassword ? appInfoService.fetchOriginAppPassword(appInfoDO) : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
 
             appInfoVO.setGmtCreateStr(CommonUtils.formatTime(appInfoDO.getGmtCreate()));
             appInfoVO.setGmtModifiedStr(CommonUtils.formatTime(appInfoDO.getGmtModified()));
@@ -158,11 +160,6 @@ public class AppInfoController {
                 // 人员面板
                 ComponentUserRoleInfo componentUserRoleInfo = webAuthService.fetchComponentUserRoleInfo(RoleScope.APP, appInfoDO.getId());
                 appInfoVO.setComponentUserRoleInfo(componentUserRoleInfo);
-
-                // 密码
-                boolean hasPermission = webAuthService.hasPermission(RoleScope.APP, appInfoDO.getId(), Permission.READ);
-                String originPassword = appInfoService.fetchOriginAppPassword(appInfoDO);
-                appInfoVO.setPassword(hasPermission ? originPassword : AuthConstants.TIPS_NO_PERMISSION_TO_SEE);
 
                 // namespace
                 Optional<NamespaceDO> namespaceOpt = namespaceWebService.findById(appInfoDO.getNamespaceId());

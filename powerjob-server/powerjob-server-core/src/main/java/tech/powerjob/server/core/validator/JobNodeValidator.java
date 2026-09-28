@@ -33,6 +33,10 @@ public class JobNodeValidator implements NodeValidator {
         JobInfoDO job = jobInfoRepository.findById(node.getJobId())
                 .orElseThrow(() -> new PowerJobException("Illegal job node,specified job is not exist,node name : " + node.getNodeName()));
 
+        if (!java.util.Objects.equals(node.getAppId(), job.getAppId())) {
+            throw new PowerJobException("Job node does not belong to the requested application");
+        }
+
         if (job.getStatus() == SwitchableStatus.DELETED.getV()) {
             throw new PowerJobException("Illegal job node,specified job has been deleted,node name : " + node.getNodeName());
         }

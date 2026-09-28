@@ -72,6 +72,10 @@ public class JobServiceImpl implements JobService {
         JobInfoDO jobInfoDO;
         if (request.getId() != null) {
             jobInfoDO = jobInfoRepository.findById(request.getId()).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + request.getId()));
+            if (!request.getAppId().equals(jobInfoDO.getAppId())) {
+                throw new PowerJobException("Job does not belong to the requested application");
+            }
+            requireNotDeleted(jobInfoDO);
         } else {
             jobInfoDO = new JobInfoDO();
         }
@@ -181,6 +185,7 @@ public class JobServiceImpl implements JobService {
 
         JobInfoDO jobInfo = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by id:" + jobId));
 
+        requireNotDeleted(jobInfo);
         log.info("[Job-{}] try to run job in app[{}], instanceParams={},delay={} ms,outerKey={}", jobInfo.getId(), appId, instanceParams, delay, outerKey);
 
         final InstanceInfoDO instanceInfo = instanceService.create(jobInfo.getId(), jobInfo.getAppId(), jobInfo.getJobParams(),
@@ -243,6 +248,7 @@ public class JobServiceImpl implements JobService {
     public void enableJob(Long jobId) {
         JobInfoDO jobInfoDO = jobInfoRepository.findById(jobId).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId:" + jobId));
 
+        requireNotDeleted(jobInfoDO);
         jobInfoDO.setStatus(SwitchableStatus.ENABLE.getV());
         calculateNextTriggerTime(jobInfoDO);
 
@@ -261,6 +267,9 @@ public class JobServiceImpl implements JobService {
             throw new IllegalArgumentException("can't find job by jobId:" + jobId);
         }
         JobInfoDO jobInfoDO = jobInfoOPT.get();
+        if (status != SwitchableStatus.DELETED) {
+            requireNotDeleted(jobInfoDO);
+        }
         jobInfoDO.setStatus(status.getV());
         jobInfoDO.setGmtModified(new Date());
         jobInfoRepository.saveAndFlush(jobInfoDO);
@@ -284,6 +293,12 @@ public class JobServiceImpl implements JobService {
                 // ignore exception
             }
         });
+    }
+
+    private void requireNotDeleted(JobInfoDO job) {
+        if (Integer.valueOf(SwitchableStatus.DELETED.getV()).equals(job.getStatus())) {
+            throw new PowerJobException("Cannot modify or run a deleted job");
+        }
     }
 
     private void calculateNextTriggerTime(JobInfoDO jobInfo) {

@@ -44,6 +44,9 @@ public class NestedWorkflowNodeValidator implements NodeValidator {
         // 判断对应工作流是否存在
         WorkflowInfoDO workflowInfo = workflowInfoRepository.findById(node.getJobId())
                 .orElseThrow(() -> new PowerJobException("Illegal nested workflow node,specified workflow is not exist,node name : " + node.getNodeName()));
+        if (!Objects.equals(node.getAppId(), workflowInfo.getAppId())) {
+            throw new PowerJobException("Nested workflow does not belong to the requested application");
+        }
         if (workflowInfo.getStatus() == SwitchableStatus.DELETED.getV()) {
             throw new PowerJobException("Illegal nested workflow node,specified workflow has been deleted,node name : " + node.getNodeName());
         }

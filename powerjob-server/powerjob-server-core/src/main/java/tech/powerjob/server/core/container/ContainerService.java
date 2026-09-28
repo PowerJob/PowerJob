@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.exception.ImpossibleException;
+import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.model.GitRepoInfo;
 import tech.powerjob.common.request.ServerDeployContainerRequest;
@@ -102,7 +103,10 @@ public class ContainerService {
         Long originId = container.getId();
         if (originId != null) {
             // just validate
-            containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
+            ContainerInfoDO existing = containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
+            if (!Objects.equals(existing.getAppId(), container.getAppId())) {
+                throw new PowerJobException("Container does not belong to the requested application");
+            }
         } else {
             container.setGmtCreate(new Date());
         }
@@ -136,7 +140,7 @@ public class ContainerService {
             transportService.tell(workerInfo.getProtocol(), url, destroyRequest);
         });
 
-        log.info("[ContainerService] delete container: {}.", container);
+        log.info("[ContainerService] delete container id={}, sourceType={}.", container.getId(), container.getSourceType());
         // 软删除
         container.setStatus(SwitchableStatus.DELETED.getV());
         container.setGmtModified(new Date());
@@ -367,7 +371,7 @@ public class ContainerService {
 
             try {
                 // git clone
-                remote.sendText("SYSTEM: start to git clone the code repo, using config: " + container.getSourceInfo());
+                remote.sendText("SYSTEM: start to git clone the code repo for container: " + container.getId());
                 GitRepoInfo gitRepoInfo = JsonUtils.parseObject(container.getSourceInfo(), GitRepoInfo.class);
 
                 CloneCommand cloneCommand = Git.cloneRepository()
@@ -441,8 +445,9 @@ public class ContainerService {
 
                 return localFile;
             } catch (Throwable  t) {
-                log.error("[ContainerService] prepareJarFile failed for container: {}", container, t);
-                remote.sendText("SYSTEM: [ERROR] prepare jar file failed: " + ExceptionUtils.getStackTrace(t));
+                // Git transport/parser exceptions can include a credential-bearing URL or sourceInfo.
+                log.error("[ContainerService] prepareJarFile failed for containerId={} ({})", container.getId(), t.getClass().getSimpleName());
+                remote.sendText("SYSTEM: [ERROR] prepare jar file failed (" + t.getClass().getSimpleName() + ")");
             } finally {
                 // 删除工作区数据
                 FileUtils.forceDelete(workerDir);
