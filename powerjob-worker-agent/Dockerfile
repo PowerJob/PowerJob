@@ -14,7 +14,10 @@ RUN apt-get update && \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 # 安装 wait-for-it 脚本
-RUN curl -o wait-for-it.sh https://gitee.com/KFCFans/wait-for-it/raw/master/wait-for-it.sh
+RUN curl -fsSL --retry 3 -o wait-for-it.sh https://gitee.com/KFCFans/wait-for-it/raw/master/wait-for-it.sh \
+    && echo "b7a04f38de1e51e7455ecf63151c8c7e405bd2d45a2d4e16f6419db737a125d6  wait-for-it.sh" | sha256sum --check - \
+    && head -n 1 wait-for-it.sh | grep -Fx "#!/usr/bin/env bash" \
+    && bash -n wait-for-it.sh
 RUN chmod +x wait-for-it.sh
 # 拷贝主文件
 COPY powerjob-agent.jar /powerjob-agent.jar
