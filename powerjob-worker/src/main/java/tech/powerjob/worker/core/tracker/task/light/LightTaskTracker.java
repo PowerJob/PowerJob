@@ -17,6 +17,7 @@ import tech.powerjob.worker.common.WorkerRuntime;
 import tech.powerjob.worker.common.constants.TaskConstant;
 import tech.powerjob.worker.common.constants.TaskStatus;
 import tech.powerjob.worker.common.utils.TransportUtils;
+import tech.powerjob.worker.common.utils.WorkflowContextUtils;
 import tech.powerjob.worker.core.processor.*;
 import tech.powerjob.worker.core.tracker.manager.LightTaskTrackerManager;
 import tech.powerjob.worker.core.tracker.task.TaskTracker;
@@ -24,6 +25,8 @@ import tech.powerjob.worker.extension.processor.ProcessorBean;
 import tech.powerjob.worker.extension.processor.ProcessorDefinition;
 import tech.powerjob.worker.log.OmsLoggerFactory;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -300,7 +303,13 @@ public class LightTaskTracker extends TaskTracker {
             }
             // 处理工作流上下文
             if (taskContext.getWorkflowContext().getWfInstanceId() != null) {
-                reportInstanceStatusReq.setAppendedWfContext(taskContext.getWorkflowContext().getAppendedContextData());
+                Map<String, String> contextData = taskContext.getWorkflowContext().getAppendedContextData();
+                int maxLength = workerRuntime.getWorkerConfig().getMaxAppendedWfContextLength();
+                if (WorkflowContextUtils.isExceededLengthLimit(contextData, maxLength)) {
+                    log.warn("[TaskTracker-{}] current length of appended workflow context data is greater than {}, this appended workflow context data will be ignored!", instanceId, maxLength);
+                    contextData = Collections.emptyMap();
+                }
+                reportInstanceStatusReq.setAppendedWfContext(contextData);
             }
             reportInstanceStatusReq.setResult(suit(result.getMsg()));
             reportInstanceStatusReq.setEndTime(taskEndTime);
