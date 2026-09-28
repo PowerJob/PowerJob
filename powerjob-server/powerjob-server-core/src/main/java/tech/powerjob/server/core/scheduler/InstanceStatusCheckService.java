@@ -242,8 +242,8 @@ public class InstanceStatusCheckService {
                     opt.ifPresent(e -> updateFailedInstance(e, SystemInstanceResult.REPORT_TIMEOUT));
                     return;
                 }
-                // CRON 和 API一样，失败次数 + 1，根据重试配置进行重试
-                if (instance.getRunningTimes() < jobInfoOpt.get().getInstanceRetryNum()) {
+                // runningTimes includes the initial attempt; allow the configured number of retries.
+                if (instance.getRunningTimes() <= jobInfoOpt.get().getInstanceRetryNum()) {
                     dispatchService.redispatchAsync(instance.getInstanceId(), InstanceStatus.RUNNING.getV());
                 } else {
                     final Optional<InstanceInfoDO> opt = instanceInfoRepository.findById(instance.getId());
