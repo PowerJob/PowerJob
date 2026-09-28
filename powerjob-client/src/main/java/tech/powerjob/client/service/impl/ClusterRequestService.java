@@ -11,11 +11,15 @@ import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.utils.CollectionUtils;
 
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
-import java.security.cert.X509Certificate;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * 集群请求服务
@@ -47,6 +51,13 @@ abstract class ClusterRequestService implements RequestService {
 
     protected static final int HTTP_SUCCESS_CODE = 200;
 
+    private static final Set<String> READ_ONLY_PATHS = new HashSet<>(Arrays.asList(
+            OpenAPIConstant.AUTH_APP, OpenAPIConstant.ASSERT, OpenAPIConstant.EXPORT_JOB,
+            OpenAPIConstant.FETCH_JOB, OpenAPIConstant.FETCH_ALL_JOB, OpenAPIConstant.QUERY_JOB,
+            OpenAPIConstant.FETCH_INSTANCE_STATUS, OpenAPIConstant.FETCH_INSTANCE_INFO,
+            OpenAPIConstant.QUERY_INSTANCE, OpenAPIConstant.FETCH_WORKFLOW,
+            OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO));
+
     public ClusterRequestService(ClientConfig config) {
         this.config = config;
         this.currentAddress = config.getAddressList().get(0);
@@ -74,6 +85,7 @@ abstract class ClusterRequestService implements RequestService {
         try {
             return sendHttpRequest(url, powerRequestBody);
         } catch (IOException e) {
+            requireSafeRetry(path, e);
             log.warn("[ClusterRequestService] request url:{} failed, reason is {}.", url, e.toString());
         }
 
@@ -91,6 +103,7 @@ abstract class ClusterRequestService implements RequestService {
                 currentAddress = addr;
                 return res;
             } catch (IOException e) {
+                requireSafeRetry(path, e);
                 log.warn("[ClusterRequestService] request url:{} failed, reason is {}.", url, e.toString());
             }
         }
@@ -112,26 +125,17 @@ abstract class ClusterRequestService implements RequestService {
         return config.getAddressList();
     }
 
-    /**
-     * 不验证证书
-     * X.509 是一个国际标准，定义了公钥证书的格式。这个标准是由国际电信联盟（ITU-T）制定的，用于公钥基础设施（PKI）中数字证书的创建和分发。X.509证书主要用于在公开网络上验证实体的身份，如服务器或客户端的身份验证过程中，确保通信双方是可信的。X.509证书广泛应用于多种安全协议中，包括SSL/TLS，它是实现HTTPS的基础。
-     */
-    protected static class NoVerifyX509TrustManager implements X509TrustManager {
-        @Override
-        public void checkClientTrusted(X509Certificate[] arg0, String arg1) {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] arg0, String arg1) {
-            // 不验证
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
+    protected static boolean isReadOnly(String path) {
+        return READ_ONLY_PATHS.contains(path);
     }
 
+    private static void requireSafeRetry(String path, IOException cause) {
+        // These failures occur before a connection is established. Other I/O failures may follow a commit.
+        if (!isReadOnly(path) && !(cause instanceof ConnectException)
+                && !(cause instanceof UnknownHostException) && !(cause instanceof NoRouteToHostException)) {
+            throw new PowerJobException("request outcome is unknown; " + path + " was not retried", cause);
+        }
+    }
 
     private String getUrl(String path, String address) {
         String protocol = config.getProtocol().getProtocol();
