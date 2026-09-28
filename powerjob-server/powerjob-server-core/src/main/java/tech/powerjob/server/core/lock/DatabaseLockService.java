@@ -49,6 +49,10 @@ public class DatabaseLockService implements LockService {
         }
 
         OmsLockDO omsLockDO = omsLockRepository.findByLockName(name);
+        // The owner can release its lock after our failed insert and before this lookup.
+        if (omsLockDO == null) {
+            return false;
+        }
         long lockedMillions = System.currentTimeMillis() - omsLockDO.getGmtCreate().getTime();
 
         // 锁超时，强制释放锁并重新尝试获取
