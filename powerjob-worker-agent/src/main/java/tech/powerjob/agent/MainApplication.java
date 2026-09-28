@@ -22,7 +22,7 @@ import java.util.List;
  * @since 2020/5/20
  */
 @Slf4j
-@Command(name = "PowerJobAgent", mixinStandardHelpOptions = true, version = "4.3.0", description = "powerjob-worker agent")
+@Command(name = "PowerJobAgent", mixinStandardHelpOptions = true, version = "5.1.3", description = "powerjob-worker agent")
 public class MainApplication implements Runnable {
 
     @Option(names = {"-a", "--app"}, description = "worker-agent's name", required = true)
