@@ -35,6 +35,7 @@ import tech.powerjob.server.remote.server.redirector.DesignateServer;
 
 import javax.annotation.Resource;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,6 +102,8 @@ public class InstanceLogService {
      * 更新中的日志缓存时间
      */
     private static final long LOG_CACHE_TIME = 10000;
+
+    private static final String NO_ONLINE_LOG = "SYSTEM: There is no online log for this job instance.";
 
     /**
      * 提交日志记录，持久化到本地数据库中
@@ -207,7 +210,8 @@ public class InstanceLogService {
             if (instanceId2LastReportTime.containsKey(instanceId)) {
                 return genTemporaryLogFile(instanceId);
             }
-            return genStableLogFile(instanceId);
+            File stableLogFile = genStableLogFile(instanceId);
+            return stableLogFile == null ? genUnavailableLogFile(instanceId) : stableLogFile;
         });
     }
 
@@ -222,6 +226,10 @@ public class InstanceLogService {
         try {
             // 先持久化到本地文件
             File stableLogFile = genStableLogFile(instanceId);
+            if (stableLogFile == null) {
+                // No report/archive yet: never upload a display message or discard a later report.
+                return;
+            }
             // 将文件推送到 MongoDB
 
             FileLocation dfsFL = new FileLocation().setBucket(Constants.LOG_BUCKET).setName(genMongoFileName(instanceId));
@@ -287,11 +295,16 @@ public class InstanceLogService {
             return localTransactionTemplate.execute(status -> {
 
                 File f = new File(path);
-                if (f.exists()) {
-                    return f;
-                }
-
                 try {
+                    if (f.exists()) {
+                        // Older Servers cached the no-log message as a final file. Only invalidate
+                        // that exact placeholder; real stable logs remain immutable and reusable.
+                        if (f.length() != NO_ONLINE_LOG.length()
+                                || !NO_ONLINE_LOG.equals(FileUtils.readFileToString(f, StandardCharsets.UTF_8))) {
+                            return f;
+                        }
+                        FileUtils.forceDelete(f);
+                    }
                     // 创建父文件夹（文件在开流时自动会被创建）
                     FileUtils.forceMkdirParent(f);
 
@@ -305,8 +318,7 @@ public class InstanceLogService {
                         FileLocation dfl = new FileLocation().setBucket(Constants.LOG_BUCKET).setName(genMongoFileName(instanceId));
                         Optional<FileMeta> dflMetaOpt = dFsService.fetchFileMeta(dfl);
                         if (!dflMetaOpt.isPresent()) {
-                            OmsFileUtils.string2File("SYSTEM: There is no online log for this job instance.", f);
-                            return f;
+                            return null;
                         }
 
                         dFsService.download(new DownloadRequest().setTarget(f).setFileLocation(dfl));
@@ -318,6 +330,24 @@ public class InstanceLogService {
                 }
             });
         }finally {
+            segmentLock.unlock(lockId);
+        }
+    }
+
+    /** A display-only message, separate from both live and final log caches. */
+    private File genUnavailableLogFile(long instanceId) {
+        File file = new File(OmsFileUtils.genLogDirPath() + instanceId + "-unavailable.log");
+        int lockId = ("unavailableFileLock-" + instanceId).hashCode();
+        try {
+            segmentLock.lockInterruptibleSafe(lockId);
+            if (!file.exists()) {
+                FileUtils.forceMkdirParent(file);
+                OmsFileUtils.string2File(NO_ONLINE_LOG, file);
+            }
+            return file;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
             segmentLock.unlock(lockId);
         }
     }
