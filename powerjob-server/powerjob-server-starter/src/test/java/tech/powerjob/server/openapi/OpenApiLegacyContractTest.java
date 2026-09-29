@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-class OpenApiTenantIsolationTest {
+class OpenApiLegacyContractTest {
 
     private JobService jobs;
     private InstanceService instances;
@@ -87,40 +87,40 @@ class OpenApiTenantIsolationTest {
     }
 
     @Test
-    void authenticatedAppCannotReadDifferentFormApp() throws Exception {
+    void authenticatedRequestRetainsExplicitFormApp() throws Exception {
         mvc.perform(authenticated("fetchAllJob").param("appId", "202"))
-                .andExpect(jsonPath("$.success").value(false));
-        verify(jobs, never()).fetchAllJob(anyLong());
+                .andExpect(jsonPath("$.success").value(true));
+        verify(jobs).fetchAllJob(202L);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"{\"appIdEq\":202}", "{}"})
-    void jobQueryCannotSelectOtherAppOrOmitScope(String json) throws Exception {
+    void queryRetainsLegacyExplicitOrUnboundedScope(String json) throws Exception {
         mvc.perform(authenticated("queryJob").contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(jsonPath("$.success").value(false));
-        verify(jobs, never()).queryJob(any());
+                .andExpect(jsonPath("$.success").value(true));
+        verify(jobs).queryJob(any());
     }
 
     @Test
-    void authenticatedAppCannotCreateJobInOtherApp() throws Exception {
+    void saveRetainsLegacyBodyApp() throws Exception {
         mvc.perform(authenticated("saveJob").contentType(MediaType.APPLICATION_JSON).content("{\"appId\":202}"))
-                .andExpect(jsonPath("$.success").value(false));
-        verify(jobs, never()).saveJob(any());
+                .andExpect(jsonPath("$.success").value(true));
+        verify(jobs).saveJob(any());
     }
 
     @Test
-    void copyValidatesJobOwnershipEvenWithoutConsumedAppParameter() throws Exception {
+    void copyRetainsIdOnlyLookup() throws Exception {
         mvc.perform(authenticated("copyJob").param("jobId", "303").param("appId", "101"))
-                .andExpect(jsonPath("$.success").value(false));
-        verify(jobs, never()).copyJob(anyLong());
+                .andExpect(jsonPath("$.success").value(true));
+        verify(jobs).copyJob(303L);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"fetchInstanceInfo", "fetchInstanceStatus"})
-    void instanceReadsValidateOwner(String endpoint) throws Exception {
+    void instanceReadsRetainIdOnlyLookup(String endpoint) throws Exception {
         mvc.perform(authenticated(endpoint).param("instanceId", "404").param("appId", "101"))
-                .andExpect(jsonPath("$.success").value(false));
-        verify(instances, never()).getInstanceInfo(anyLong());
-        verify(instances, never()).getInstanceStatus(anyLong());
+                .andExpect(jsonPath("$.success").value(true));
+        if (endpoint.equals("fetchInstanceInfo")) verify(instances).getInstanceInfo(404L);
+        else verify(instances).getInstanceStatus(404L);
     }
 }

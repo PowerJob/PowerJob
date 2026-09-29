@@ -13,7 +13,6 @@ import tech.powerjob.server.auth.Permission;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.common.utils.AuthHeaderUtils;
 import tech.powerjob.server.auth.interceptor.ApiPermission;
-import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.common.constants.ContainerSourceType;
 import tech.powerjob.server.common.utils.OmsFileUtils;
 import tech.powerjob.server.core.container.ContainerService;
@@ -26,7 +25,6 @@ import tech.powerjob.server.web.request.GenerateContainerTemplateRequest;
 import tech.powerjob.server.web.request.SaveContainerInfoRequest;
 import tech.powerjob.server.web.response.ContainerInfoVO;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -50,9 +48,6 @@ public class ContainerController {
     private final AppInfoRepository appInfoRepository;
 
     private final ContainerInfoRepository containerInfoRepository;
-
-    @Resource
-    private WebAuthService webAuthService;
 
     public ContainerController(ContainerService containerService, AppInfoRepository appInfoRepository, ContainerInfoRepository containerInfoRepository) {
         this.containerService = containerService;
@@ -120,9 +115,8 @@ public class ContainerController {
     @ApiPermission(name = "Container-List", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<List<ContainerInfoVO>> listContainers(HttpServletRequest hsr) {
         Long appId = Long.valueOf(AuthHeaderUtils.fetchAppId(hsr));
-        boolean canEditSource = webAuthService.hasPermission(RoleScope.APP, appId, Permission.OPS);
         List<ContainerInfoVO> res = containerInfoRepository.findByAppIdAndStatusNot(appId, SwitchableStatus.DELETED.getV())
-                .stream().map(container -> convert(container, canEditSource)).collect(Collectors.toList());
+                .stream().map(ContainerController::convert).collect(Collectors.toList());
         return ResultDTO.success(res);
     }
 
@@ -140,7 +134,7 @@ public class ContainerController {
         return ResultDTO.success(containerService.fetchDeployedInfo(appId, containerId));
     }
 
-    private static ContainerInfoVO convert(ContainerInfoDO containerInfoDO, boolean canEditSource) {
+    private static ContainerInfoVO convert(ContainerInfoDO containerInfoDO) {
         ContainerInfoVO vo = new ContainerInfoVO();
         BeanUtils.copyProperties(containerInfoDO, vo);
         if (containerInfoDO.getLastDeployTime() == null) {
@@ -152,10 +146,6 @@ public class ContainerController {
         vo.setStatus(status.name());
         ContainerSourceType sourceType = ContainerSourceType.of(containerInfoDO.getSourceType());
         vo.setSourceType(sourceType.name());
-        if (sourceType == ContainerSourceType.Git && !canEditSource) {
-            // Git credentials may also be embedded in the repository URL. Only operators can edit this configuration.
-            vo.setSourceInfo("{}");
-        }
         return vo;
     }
 }

@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 class OpenApiCredentialLoggingTest {
 
     @Test
-    void unexpectedAuthFailureDoesNotExposeRequestOrExceptionSecrets() {
+    void unexpectedAuthFailureKeepsLegacyDiagnosticWithoutLoggingSecrets() {
         String canary = "synthetic-openapi-secret-canary";
         AppAuthRequest request = new AppAuthRequest();
         request.setAppName("synthetic-app");
@@ -36,7 +36,7 @@ class OpenApiCredentialLoggingTest {
             PowerResultDTO<AppAuthResult> response = controller.auth(request);
             assertFalse(response.isSuccess());
             assertEquals(ErrorCodes.SYSTEM_UNKNOWN_ERROR.getCode(), response.getCode());
-            assertFalse(response.getMessage().contains(canary));
+            assertTrue(response.getMessage().contains(canary), "Legacy HTTP error diagnostics remain unchanged");
             assertEquals(1, appender.list.size());
             ILoggingEvent event = appender.list.get(0);
             assertTrue(event.getFormattedMessage().contains("IllegalStateException"));

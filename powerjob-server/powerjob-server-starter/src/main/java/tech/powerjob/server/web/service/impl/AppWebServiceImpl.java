@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -14,13 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import tech.powerjob.common.enums.ErrorCodes;
-import tech.powerjob.common.serialize.JsonUtils;
-import tech.powerjob.server.common.constants.ExtensionKey;
 import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.exception.PowerJobExceptionLauncher;
 import tech.powerjob.server.auth.LoginUserHolder;
-import tech.powerjob.server.auth.Permission;
-import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.server.auth.RoleScope;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.common.module.WorkerInfo;
@@ -65,14 +60,10 @@ public class AppWebServiceImpl implements AppWebService {
         }
 
         req.valid();
-        namespaceWebService.findById(req.getNamespaceId()).orElseThrow(() -> new IllegalArgumentException("namespace does not exist"));
         AppInfoDO appInfoDO;
 
         Long id = req.getId();
         if (id == null) {
-            if (!webAuthService.hasPermission(RoleScope.NAMESPACE, req.getNamespaceId(), Permission.WRITE)) {
-                throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "Namespace write permission is required to create an application");
-            }
 
             // 前置校验，防止部分没加唯一索引的 DB 重复创建记录导致异常
             appInfoRepository.findByAppName(req.getAppName()).ifPresent(x -> new PowerJobExceptionLauncher(ErrorCodes.ILLEGAL_ARGS_ERROR, String.format("App[%s] already exists", req.getAppName())));
@@ -83,23 +74,6 @@ public class AppWebServiceImpl implements AppWebService {
 
         } else {
             appInfoDO = appInfoService.findById(id, false).orElseThrow(() -> new IllegalArgumentException("can't find appInfo by id:" + id));
-            webAuthService.checkPermissionChange(RoleScope.APP, id, req.getComponentUserRoleInfo());
-            boolean administrator = webAuthService.hasPermission(RoleScope.APP, id, Permission.SU);
-            if (!administrator && !Objects.equals(passwordGrantEnabled(appInfoDO.getExtra()), passwordGrantEnabled(req.getExtra()))) {
-                throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "Administrator permission is required to change the password grant policy");
-            }
-            String currentPassword = appInfoService.fetchOriginAppPassword(appInfoDO);
-            if (!administrator && !Objects.equals(currentPassword, req.getPassword())
-                    && !AuthConstants.TIPS_NO_PERMISSION_TO_SEE.equals(req.getPassword())) {
-                throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "Administrator permission is required to change the application password");
-            }
-            if (AuthConstants.TIPS_NO_PERMISSION_TO_SEE.equals(req.getPassword())) {
-                req.setPassword(currentPassword);
-            }
-            if (!Objects.equals(appInfoDO.getNamespaceId(), req.getNamespaceId())
-                    && (!administrator || !webAuthService.hasPermission(RoleScope.NAMESPACE, req.getNamespaceId(), Permission.WRITE))) {
-                throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "Application administrator and target namespace write permissions are required to move an application");
-            }
 
             // 不允许修改 appName
             if (!appInfoDO.getAppName().equalsIgnoreCase(req.getAppName())) {
@@ -122,13 +96,6 @@ public class AppWebServiceImpl implements AppWebService {
         // 重新授权
         webAuthService.processPermissionOnSave(RoleScope.APP, savedAppInfo.getId(), req.getComponentUserRoleInfo());
         return savedAppInfo;
-    }
-
-    private Boolean passwordGrantEnabled(String extra) {
-        if (StringUtils.isBlank(extra)) {
-            return true;
-        }
-        return MapUtils.getBoolean(JsonUtils.parseMap(extra), ExtensionKey.App.allowedBecomeAdminByPassword, true);
     }
 
     @Override

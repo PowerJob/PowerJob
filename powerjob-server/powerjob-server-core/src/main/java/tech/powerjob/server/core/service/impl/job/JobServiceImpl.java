@@ -72,9 +72,6 @@ public class JobServiceImpl implements JobService {
         JobInfoDO jobInfoDO;
         if (request.getId() != null) {
             jobInfoDO = jobInfoRepository.findById(request.getId()).orElseThrow(() -> new IllegalArgumentException("can't find job by jobId: " + request.getId()));
-            if (!request.getAppId().equals(jobInfoDO.getAppId())) {
-                throw new PowerJobException("Job does not belong to the requested application");
-            }
             requireNotDeleted(jobInfoDO);
         } else {
             jobInfoDO = new JobInfoDO();

@@ -26,47 +26,60 @@ class TransportLoginTest {
     void cleanUserContext() { LoginUserHolder.clean(); }
 
     @Test
-    void directTokenAndBothHttpHeaderNamesUseCurrentUserRecord() {
+    void bothHttpHeaderNamesUseCurrentUserRecord() {
         acceptedToken();
         UserInfoDO user = user();
         when(users.findByUsername("synthetic-user")).thenReturn(Optional.of(user));
-        assertEquals(7L, login.ifLogin("synthetic-token").get().getId().longValue());
         for (String header : new String[]{"PowerJwt", "Power_jwt"}) {
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.addHeader(header, "synthetic-token");
             assertEquals(7L, login.ifLogin(request).get().getId().longValue());
         }
-        verify(users, times(3)).findByUsername("synthetic-user");
+        verify(users, times(2)).findByUsername("synthetic-user");
     }
 
     @Test
-    void disabledUserCannotAuthenticateThroughNonHttpTransport() {
+    void disabledUserCannotAuthenticateThroughEitherHttpHeader() {
         acceptedToken();
         UserInfoDO user = user();
         user.setStatus(SwitchableStatus.DISABLE.getV());
         when(users.findByUsername("synthetic-user")).thenReturn(Optional.of(user));
-        assertThrows(PowerJobAuthException.class, () -> login.ifLogin("synthetic-token"));
-        assertNull(LoginUserHolder.get());
+        for (String header : new String[]{"PowerJwt", "Power_jwt"}) {
+            assertThrows(PowerJobAuthException.class, () -> login.ifLogin(request(header, "synthetic-token")));
+            assertNull(LoginUserHolder.get());
+        }
     }
 
     @Test
-    void revocationMarkerCannotBeBypassedByDirectToken() {
+    void revocationMarkerCannotBeBypassedThroughEitherHttpHeader() {
         acceptedToken();
         UserInfoDO user = user();
         user.setTokenLoginVerifyInfo("{\"encryptedToken\":\"new-password-marker\"}");
         when(users.findByUsername("synthetic-user")).thenReturn(Optional.of(user));
-        assertThrows(PowerJobAuthException.class, () -> login.ifLogin("synthetic-token"));
-        assertNull(LoginUserHolder.get());
+        for (String header : new String[]{"PowerJwt", "Power_jwt"}) {
+            assertThrows(PowerJobAuthException.class, () -> login.ifLogin(request(header, "synthetic-token")));
+            assertNull(LoginUserHolder.get());
+        }
     }
 
     @Test
     void absentAndRejectedTokensDoNotReadUserRecords() {
-        assertFalse(login.ifLogin((String) null).isPresent());
-        assertFalse(login.ifLogin("").isPresent());
+        assertFalse(login.ifLogin(new MockHttpServletRequest()).isPresent());
         when(jwt.parse("rejected", null)).thenReturn(new ParseResult().setStatus(ParseResult.Status.FAILED));
-        assertFalse(login.ifLogin("rejected").isPresent());
+        for (String header : new String[]{"PowerJwt", "Power_jwt"}) {
+            assertFalse(login.ifLogin(request(header, "")).isPresent());
+            assertFalse(login.ifLogin(request(header, "rejected")).isPresent());
+        }
+        verify(jwt, times(2)).parse("rejected", null);
+        verifyNoMoreInteractions(jwt);
         verifyNoInteractions(users);
         assertNull(LoginUserHolder.get());
+    }
+
+    private MockHttpServletRequest request(String header, String token) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(header, token);
+        return request;
     }
 
     private void acceptedToken() {

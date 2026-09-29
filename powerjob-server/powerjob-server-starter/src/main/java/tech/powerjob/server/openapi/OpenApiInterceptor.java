@@ -30,8 +30,6 @@ import java.util.Set;
 @Component
 public class OpenApiInterceptor implements HandlerInterceptor {
 
-    static final String AUTHENTICATED_APP_ID = OpenApiInterceptor.class.getName() + ".appId";
-
     @Resource
     private OpenApiSecurityService openApiSecurityService;
 
@@ -62,7 +60,6 @@ public class OpenApiInterceptor implements HandlerInterceptor {
 
         try {
             openApiSecurityService.authAppByToken(request);
-            request.setAttribute(AUTHENTICATED_APP_ID, Long.valueOf(request.getHeader(OpenAPIConstant.REQUEST_HEADER_APP_ID)));
             response.addHeader(OpenAPIConstant.RESPONSE_HEADER_AUTH_STATUS, Boolean.TRUE.toString());
         } catch (PowerJobException pje) {
             response.addHeader(OpenAPIConstant.RESPONSE_HEADER_AUTH_STATUS, Boolean.FALSE.toString());

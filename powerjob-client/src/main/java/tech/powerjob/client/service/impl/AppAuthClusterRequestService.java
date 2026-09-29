@@ -56,13 +56,6 @@ abstract class AppAuthClusterRequestService extends ClusterRequestService {
             return httpResponse.getResponse();
         }
 
-        // Only an explicit authentication rejection proves a write was not executed.
-        // A missing/unrecognized proxy header must not cause a committed request to be replayed.
-        if (!isReadOnly(path) && !Boolean.FALSE.toString().equalsIgnoreCase(authStatus)) {
-            throw new PowerJobException("authentication status is missing or invalid; request outcome is unknown; "
-                    + path + " was not retried");
-        }
-
         // 否则请求无效，刷新鉴权后重新请求
         log.warn("[PowerJobClient] auth failed[authStatus: {}], try to refresh the auth info", authStatus);
         refreshAppAuthResult();

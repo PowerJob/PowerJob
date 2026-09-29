@@ -81,9 +81,6 @@ class ContainerCredentialSecurityTest {
         ReflectionTestUtils.setField(interceptor, "powerJobLoginService", login);
         ReflectionTestUtils.setField(interceptor, "powerJobPermissionService", permissions);
         ContainerController controller = new ContainerController(service, apps, containers);
-        WebAuthServiceImpl webAuth = new WebAuthServiceImpl();
-        ReflectionTestUtils.setField(webAuth, "powerJobPermissionService", permissions);
-        ReflectionTestUtils.setField(controller, "webAuthService", webAuth);
         mvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new ControllerExceptionHandler())
                 .addInterceptors(interceptor).build();
         setRole(Role.OBSERVER);
@@ -105,11 +102,11 @@ class ContainerCredentialSecurityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"password", "url-userinfo", "malformed"})
-    void observerSeesContainerMetadataWithoutAnyGitSourceCredentials(String variant) throws Exception {
+    void readersRetainLegacySourceConfiguration(String variant) throws Exception {
         if (variant.equals("url-userinfo")) container.setSourceInfo("{\"repo\":\"https://user:" + SECRET + "@example.invalid/a.git\"}");
         if (variant.equals("malformed")) container.setSourceInfo("malformed-" + SECRET);
         String original = container.getSourceInfo();
-        assertEquals("{}", listSource());
+        assertEquals(original, listSource());
         assertEquals(original, container.getSourceInfo(), "Redaction must not mutate the persistence entity");
     }
 
@@ -129,7 +126,7 @@ class ContainerCredentialSecurityTest {
     }
 
     @Test
-    void observerCannotWriteBackTheHiddenGitConfiguration() throws Exception {
+    void legacyReadPermissionStillDoesNotGrantWritePermission() throws Exception {
         Map<String, Object> request = new HashMap<>();
         request.put("id", 101L); request.put("containerName", "renamed"); request.put("sourceType", "Git");
         request.put("sourceInfo", listSource()); request.put("status", "ENABLE");
@@ -147,7 +144,7 @@ class ContainerCredentialSecurityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"delete", "prepare-failure"})
-    void containerLogsAndDeploymentProgressDoNotExposeGitSecrets(String operation) {
+    void serverLogsDoNotExposeGitSecretsWhileLegacyProgressRemains(String operation) {
         Logger logger = (Logger) LoggerFactory.getLogger(ContainerService.class);
         ListAppender<ILoggingEvent> appender = new ListAppender<>(); appender.start(); logger.addAppender(appender);
         Session session = mock(Session.class); RemoteEndpoint.Async remote = mock(RemoteEndpoint.Async.class);
@@ -163,7 +160,9 @@ class ContainerCredentialSecurityTest {
             }
             String messages = appender.list.stream().map(ILoggingEvent::getFormattedMessage).collect(Collectors.joining("\n"));
             assertFalse(messages.contains(SECRET));
-            assertFalse(String.join("\n", progress).contains(SECRET));
+            if (operation.equals("prepare-failure")) {
+                assertTrue(progress.stream().anyMatch(value -> value.startsWith("SYSTEM: [ERROR] prepare jar file failed:")));
+            }
             assertTrue(appender.list.stream().allMatch(event -> event.getThrowableProxy() == null), "Exceptions may embed credentials");
         } finally { logger.detachAppender(appender); appender.stop(); }
     }

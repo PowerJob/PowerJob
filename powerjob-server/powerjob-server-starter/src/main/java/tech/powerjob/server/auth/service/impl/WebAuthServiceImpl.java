@@ -9,7 +9,6 @@ import tech.powerjob.common.serialize.JsonUtils;
 import tech.powerjob.server.auth.*;
 import tech.powerjob.server.auth.common.AuthConstants;
 import tech.powerjob.common.enums.ErrorCodes;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.server.auth.common.PowerJobAuthException;
 import tech.powerjob.server.auth.service.WebAuthService;
 import tech.powerjob.server.auth.service.permission.PowerJobPermissionService;
@@ -39,26 +38,6 @@ public class WebAuthServiceImpl implements WebAuthService {
             throw new PowerJobAuthException(ErrorCodes.USER_NOT_LOGIN);
         }
         powerJobPermissionService.grantRole(roleScope, target, userId, role, extra);
-    }
-
-    @Override
-    public void checkPermissionChange(RoleScope scope, Long target, ComponentUserRoleInfo requested) {
-        if (hasPermission(scope, target, Permission.SU)) {
-            return;
-        }
-        ComponentUserRoleInfo roles = Optional.ofNullable(requested).orElse(new ComponentUserRoleInfo());
-        Map<Role, Set<Long>> current = powerJobPermissionService.fetchUserWithPermissions(scope, target);
-        Map<Role, List<Long>> desired = new EnumMap<>(Role.class);
-        desired.put(Role.ADMIN, roles.getAdmin());
-        desired.put(Role.DEVELOPER, roles.getDeveloper());
-        desired.put(Role.QA, roles.getQa());
-        desired.put(Role.OBSERVER, roles.getObserver());
-        desired.forEach((role, users) -> {
-            Set<Long> wanted = new HashSet<>(Optional.ofNullable(users).orElse(Collections.emptyList()));
-            if (!wanted.equals(current.getOrDefault(role, Collections.emptySet()))) {
-                throw new PowerJobException(ErrorCodes.OPERATION_NOT_PERMITTED, "Administrator permission is required to change roles");
-            }
-        });
     }
 
     @Override

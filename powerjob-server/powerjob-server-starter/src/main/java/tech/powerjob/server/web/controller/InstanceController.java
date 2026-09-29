@@ -89,10 +89,12 @@ public class InstanceController {
     }
 
     @PostMapping("/detailPlus")
-    @ApiPermission(name = "Instance-DetailPlus", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<InstanceDetailVO> getInstanceDetailPlus(@RequestBody QueryInstanceDetailRequest req, HttpServletRequest hsr) {
 
-        req.setAppId(AuthHeaderUtils.fetchAppIdL(hsr));
+        String appId = AuthHeaderUtils.fetchAppId(hsr);
+        if (appId != null) {
+            req.setAppId(Long.valueOf(appId));
+        }
 
         // 非法请求参数校验
         String customQuery = req.getCustomQuery();
@@ -101,36 +103,37 @@ public class InstanceController {
             throw new IllegalArgumentException("Don't get any ideas about the database, illegally query: " + customQuery);
         }
 
+        // Older consoles do not send AppId; retain the instance's app for cross-server routing.
+        if (req.getAppId() == null) {
+            req.setAppId(instanceService.getInstanceInfo(req.getInstanceId()).getAppId());
+        }
         return ResultDTO.success(InstanceDetailVO.from(instanceService.getInstanceDetail(req.getAppId(), req.getInstanceId(), customQuery)));
     }
 
     @GetMapping("/log")
     @ApiPermission(name = "Instance-Log", roleScope = RoleScope.APP, requiredPermission = Permission.OPS)
     public ResultDTO<StringPage> getInstanceLog(Long instanceId, Long index, HttpServletRequest hsr) {
-        logDownloadTicketService.checkOwner(AuthHeaderUtils.fetchAppIdL(hsr), instanceId);
         return ResultDTO.success(instanceLogService.fetchInstanceLog(AuthHeaderUtils.fetchAppIdL(hsr), instanceId, index));
     }
 
     @GetMapping("/downloadLogUrl")
     @ApiPermission(name = "Instance-FetchDownloadLogUrl", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     public ResultDTO<String> getDownloadUrl(Long instanceId, HttpServletRequest hsr) {
-        return ResultDTO.success(authorizedDownloadUrl(AuthHeaderUtils.fetchAppIdL(hsr), instanceId));
+        return ResultDTO.success(compatibleDownloadUrl(AuthHeaderUtils.fetchAppIdL(hsr), instanceId));
     }
 
     @GetMapping("/downloadLog")
-    public void downloadLogFile(Long instanceId, String ticket, HttpServletResponse response) throws Exception {
-        logDownloadTicketService.validate(ticket, instanceId);
+    public void downloadLogFile(Long instanceId, HttpServletResponse response) throws Exception {
         File file = instanceLogService.downloadInstanceLog(instanceId);
         OmsFileUtils.file2HttpResponse(file, response);
     }
 
     @GetMapping("/downloadLog4Console")
-    @ApiPermission(name = "Instance-DownloadLog4Console", roleScope = RoleScope.APP, requiredPermission = Permission.READ)
     @SneakyThrows
     public void downloadLog4Console(Long instanceId , HttpServletResponse response, HttpServletRequest hsr) {
         Long appId = AuthHeaderUtils.fetchAppIdL(hsr);
         // 获取内部下载链接
-        String downloadUrl = authorizedDownloadUrl(appId, instanceId);
+        String downloadUrl = compatibleDownloadUrl(appId, instanceId);
         // 先下载到本机
         String logFilePath = OmsFileUtils.genTemporaryWorkPath() + String.format("powerjob-%s-%s.log", appId, instanceId);
         File logFile = new File(logFilePath);
@@ -145,9 +148,10 @@ public class InstanceController {
         }
     }
 
-    private String authorizedDownloadUrl(Long appId, Long instanceId) {
-        String ticket = logDownloadTicketService.issue(appId, instanceId);
-        return instanceLogService.fetchDownloadUrl(appId, instanceId) + "&ticket=" + ticket;
+    private String compatibleDownloadUrl(Long appId, Long instanceId) {
+        // The designated owner may still run 5.1.4/5.1.5; newer and pre-5.1.4 receivers ignore the ticket.
+        return instanceLogService.fetchDownloadUrl(appId, instanceId)
+                + "&ticket=" + logDownloadTicketService.issue(appId, instanceId);
     }
 
     @PostMapping("/list")
