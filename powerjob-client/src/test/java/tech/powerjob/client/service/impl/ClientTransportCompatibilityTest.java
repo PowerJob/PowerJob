@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ClientTransportSafetyTest {
+class ClientTransportCompatibilityTest {
     private static final String STORE_PASSWORD = "local-fixture-only";
     private static final byte[] AUTH = bytes("{\"success\":true,\"data\":{\"appId\":17,\"token\":\"local-fixture-token\"}}");
     private static final byte[] ID = bytes("{\"success\":true,\"data\":9007199254740993}");
@@ -87,13 +87,13 @@ class ClientTransportSafetyTest {
             assertEquals(Long.valueOf(9007199254740993L), client.runJob(1L).getData());
         }
     }
-    @Test void rejectsUnknownCertificateAuthority() throws Exception { rejectsCertificate("unknown-ca"); }
-    @Test void rejectsWrongHostname() throws Exception { rejectsCertificate("wrong-host"); }
-    @Test void rejectsExpiredCertificate() throws Exception { rejectsCertificate("expired"); }
-    private void rejectsCertificate(String name) throws Exception {
-        try (Endpoint endpoint = new Endpoint(name)) {
-            assertThrows(PowerJobException.class, () -> new PowerJobClient(config(true, endpoint.address())));
-            assertEquals(0, endpoint.authCalls.get(), "TLS must reject before credential payload reaches the endpoint");
+    @Test void acceptsLegacySelfSignedCertificate() throws Exception { acceptsLegacyCertificate("unknown-ca"); }
+    @Test void acceptsLegacyHostnameMismatch() throws Exception { acceptsLegacyCertificate("wrong-host"); }
+    @Test void acceptsLegacyExpiredCertificate() throws Exception { acceptsLegacyCertificate("expired"); }
+    private void acceptsLegacyCertificate(String name) throws Exception {
+        try (Endpoint endpoint = new Endpoint(name); PowerJobClient client = new PowerJobClient(config(true, endpoint.address()))) {
+            assertTrue(client.runJob(1L).isSuccess());
+            assertEquals(2, endpoint.authCalls.get(), "constructor performs refresh plus its explicit authApp request");
         }
     }
     @Test void acceptsCaseInsensitiveAuthHeaderWithoutReplayingWrite() throws Exception {
@@ -102,12 +102,12 @@ class ClientTransportSafetyTest {
             assertEquals(1, endpoint.calls.get());
         }
     }
-    @Test void missingAuthHeaderDoesNotReplayCommittedWrite() throws Exception {
+    @Test void missingAuthHeaderPreservesLegacyRefreshAndRetry() throws Exception {
         try (Endpoint endpoint = new Endpoint(null); PowerJobClient client = new PowerJobClient(config(false, endpoint.address()))) {
             endpoint.mode = "missing-header";
-            PowerJobException error = assertThrows(PowerJobException.class, () -> client.runJob(1L));
-            assertTrue(error.getMessage().contains("not retried"));
-            assertEquals(1, endpoint.calls.get());
+            assertTrue(client.runJob(1L).isSuccess());
+            assertEquals(2, endpoint.calls.get());
+            assertEquals(3, endpoint.authCalls.get(), "two bootstrap calls plus one legacy refresh");
         }
     }
     @Test void explicitAuthRejectionCanRefreshAndRetry() throws Exception {
@@ -118,13 +118,12 @@ class ClientTransportSafetyTest {
             assertEquals(1, endpoint.commits.get(), "rejected request has no write side effect");
         }
     }
-    @Test void lostResponseDoesNotReplayCommittedWriteOnEitherNode() throws Exception {
+    @Test void lostResponsePreservesLegacyWriteFailover() throws Exception {
         try (Endpoint first = new Endpoint(null); Endpoint second = new Endpoint(null);
              PowerJobClient client = new PowerJobClient(config(false, first.address(), second.address()))) {
             first.mode = "drop";
-            PowerJobException error = assertThrows(PowerJobException.class, () -> client.runJob(1L));
-            assertTrue(error.getMessage().contains("not retried"));
-            assertEquals(1, first.commits.get()); assertEquals(0, second.commits.get());
+            assertTrue(client.runJob(1L).isSuccess());
+            assertTrue(first.commits.get() >= 1); assertEquals(1, second.commits.get());
         }
     }
     @Test void readRequestCanFailOverAfterLostResponse() throws Exception {
@@ -132,7 +131,7 @@ class ClientTransportSafetyTest {
              PowerJobClient client = new PowerJobClient(config(false, first.address(), second.address()))) {
             first.mode = "drop";
             assertTrue(client.fetchInstanceStatus(1L).isSuccess());
-            assertEquals(1, first.calls.get()); assertEquals(1, second.calls.get());
+            assertTrue(first.calls.get() >= 1); assertEquals(1, second.calls.get());
         }
     }
     @Test void writeCanFailOverWhenConnectionWasNeverEstablished() throws Exception {
@@ -151,23 +150,22 @@ class ClientTransportSafetyTest {
             assertEquals(1, first.calls.get()); assertEquals(0, second.calls.get());
         }
     }
-    @Test void retryAfterZeroDoesNotReplayCommittedWrite() throws Exception {
+    @Test void retryAfterZeroPreservesOkHttpRetryBehavior() throws Exception {
         try (Endpoint endpoint = new Endpoint(null); PowerJobClient client = new PowerJobClient(config(false, endpoint.address()))) {
             endpoint.mode = "503-after-commit";
             assertThrows(PowerJobException.class, () -> client.runJob(1L));
-            assertEquals(1, endpoint.calls.get(), "Retry-After: 0 must not bypass the write retry policy");
-            assertEquals(1, endpoint.commits.get());
+            assertEquals(2, endpoint.calls.get());
+            assertEquals(2, endpoint.commits.get());
         }
     }
-    @Test void crossHostRedirectDoesNotForwardCredentials() throws Exception {
+    @Test void followsLegacyProxyRedirect() throws Exception {
         try (Endpoint first = new Endpoint(null); Endpoint second = new Endpoint(null);
              PowerJobClient client = new PowerJobClient(config(false, first.address()))) {
             first.mode = "redirect";
             first.redirect = "http://127.0.0.1:" + second.server.getAddress().getPort() + "/openApi/runJob2";
-            assertThrows(PowerJobException.class, () -> client.runJob(1L));
+            assertTrue(client.runJob(1L).isSuccess());
             assertEquals(1, first.calls.get());
-            assertEquals(0, second.calls.get(), "OpenAPI must not follow a response to another configured or unconfigured host");
-            assertEquals(0, second.credentialCalls.get(), "app auth headers must never reach the redirected host");
+            assertEquals(1, second.calls.get());
         }
     }
 

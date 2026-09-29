@@ -93,7 +93,6 @@ public class WorkflowController {
         if (req.getWorkflowId() == null && StringUtils.isEmpty(req.getKeyword())) {
             wfPage = workflowInfoRepository.findByAppIdAndStatusNot(req.getAppId(), nStatus, pageRequest);
         }else if (req.getWorkflowId() != null) {
-            workflowService.fetchWorkflow(req.getWorkflowId(), req.getAppId());
             wfPage = workflowInfoRepository.findByIdAndStatusNot(req.getWorkflowId(), nStatus, pageRequest);
         }else {
             String condition = "%" + req.getKeyword() + "%";

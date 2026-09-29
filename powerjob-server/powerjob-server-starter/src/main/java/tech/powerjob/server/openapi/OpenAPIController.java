@@ -2,9 +2,8 @@ package tech.powerjob.server.openapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import tech.powerjob.client.module.AppAuthRequest;
 import tech.powerjob.client.module.AppAuthResult;
 import tech.powerjob.common.OpenAPIConstant;
@@ -80,7 +79,7 @@ public class OpenAPIController {
 
             log.error("[OpenAPIController] authentication failed ({})", t.getClass().getSimpleName());
 
-            PowerResultDTO<AppAuthResult> f = PowerResultDTO.f("Authentication failed");
+            PowerResultDTO<AppAuthResult> f = PowerResultDTO.f(ExceptionUtils.getMessage(t));
             f.setCode(ErrorCodes.SYSTEM_UNKNOWN_ERROR.getCode());
             return f;
         }
@@ -90,7 +89,6 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.SAVE_JOB)
     public ResultDTO<Long> saveJob(@RequestBody SaveJobInfoRequest request) {
-        checkAppIdValid(request.getAppId());
         if (request.getId() != null) {
             checkJobIdValid(request.getId(), request.getAppId());
         }
@@ -99,10 +97,6 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.COPY_JOB)
     public ResultDTO<Long> copyJob(Long jobId) {
-        Long authenticatedAppId = authenticatedAppId();
-        if (authenticatedAppId != null) {
-            checkJobIdValid(jobId, authenticatedAppId);
-        }
         return ResultDTO.success(jobService.copyJob(jobId).getId());
     }
 
@@ -120,13 +114,11 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.FETCH_ALL_JOB)
     public ResultDTO<List<JobInfoDTO>> fetchAllJob(Long appId) {
-        checkAppIdValid(appId);
         return ResultDTO.success(jobService.fetchAllJob(appId));
     }
 
     @PostMapping(OpenAPIConstant.QUERY_JOB)
     public ResultDTO<List<JobInfoDTO>> queryJob(@RequestBody JobInfoQuery powerQuery) {
-        checkAppIdValid(powerQuery.getAppIdEq());
         return ResultDTO.success(jobService.queryJob(powerQuery));
     }
 
@@ -188,20 +180,17 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.FETCH_INSTANCE_STATUS)
     public ResultDTO<Integer> fetchInstanceStatus(Long instanceId) {
-        checkAuthenticatedInstance(instanceId);
         InstanceStatus instanceStatus = instanceService.getInstanceStatus(instanceId);
         return ResultDTO.success(instanceStatus.getV());
     }
 
     @PostMapping(OpenAPIConstant.FETCH_INSTANCE_INFO)
     public ResultDTO<InstanceInfoDTO> fetchInstanceInfo(Long instanceId) {
-        checkAuthenticatedInstance(instanceId);
         return ResultDTO.success(instanceService.getInstanceInfo(instanceId));
     }
 
     @PostMapping(OpenAPIConstant.QUERY_INSTANCE)
     public ResultDTO<PageResult<InstanceInfoDTO>> queryInstance(@RequestBody InstancePageQuery powerQuery) {
-        checkAppIdValid(powerQuery.getAppIdEq());
         return ResultDTO.success(instanceService.queryInstanceInfo(powerQuery));
     }
 
@@ -209,57 +198,46 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.SAVE_WORKFLOW)
     public ResultDTO<Long> saveWorkflow(@RequestBody SaveWorkflowRequest request) {
-        checkAppIdValid(request.getAppId());
-        if (request.getId() != null) {
-            workflowService.fetchWorkflow(request.getId(), request.getAppId());
-        }
         return ResultDTO.success(workflowService.saveWorkflow(request));
     }
 
     @PostMapping(OpenAPIConstant.COPY_WORKFLOW)
     public ResultDTO<Long> copy(Long workflowId, Long appId) {
-        checkAppIdValid(appId);
         return ResultDTO.success(workflowService.copyWorkflow(workflowId, appId));
     }
 
 
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW)
     public ResultDTO<WorkflowInfoVO> fetchWorkflow(Long workflowId, Long appId) {
-        checkAppIdValid(appId);
         WorkflowInfoDO workflowInfoDO = workflowService.fetchWorkflow(workflowId, appId);
         return ResultDTO.success(WorkflowInfoVO.from(workflowInfoDO));
     }
 
     @PostMapping(OpenAPIConstant.DELETE_WORKFLOW)
     public ResultDTO<Void> deleteWorkflow(Long workflowId, Long appId) {
-        checkAppIdValid(appId);
         workflowService.deleteWorkflow(workflowId, appId);
         return ResultDTO.success(null);
     }
 
     @PostMapping(OpenAPIConstant.DISABLE_WORKFLOW)
     public ResultDTO<Void> disableWorkflow(Long workflowId, Long appId) {
-        checkAppIdValid(appId);
         workflowService.disableWorkflow(workflowId, appId);
         return ResultDTO.success(null);
     }
 
     @PostMapping(OpenAPIConstant.ENABLE_WORKFLOW)
     public ResultDTO<Void> enableWorkflow(Long workflowId, Long appId) {
-        checkAppIdValid(appId);
         workflowService.enableWorkflow(workflowId, appId);
         return ResultDTO.success(null);
     }
 
     @PostMapping(OpenAPIConstant.RUN_WORKFLOW)
     public ResultDTO<Long> runWorkflow(Long workflowId, Long appId, @RequestParam(required = false) String initParams, @RequestParam(required = false) Long delay) {
-        checkAppIdValid(appId);
         return ResultDTO.success(workflowService.runWorkflow(workflowId, appId, initParams, delay));
     }
 
     @PostMapping(OpenAPIConstant.SAVE_WORKFLOW_NODE)
     public ResultDTO<List<WorkflowNodeInfoDO>> saveWorkflowNode(@RequestBody List<SaveWorkflowNodeRequest> request) {
-        request.forEach(node -> checkAppIdValid(node.getAppId()));
         return ResultDTO.success(workflowService.saveWorkflowNode(request));
     }
 
@@ -267,33 +245,28 @@ public class OpenAPIController {
 
     @PostMapping(OpenAPIConstant.STOP_WORKFLOW_INSTANCE)
     public ResultDTO<Void> stopWorkflowInstance(Long wfInstanceId, Long appId) {
-        checkAppIdValid(appId);
         workflowInstanceService.stopWorkflowInstanceEntrance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
 
     @PostMapping(OpenAPIConstant.RETRY_WORKFLOW_INSTANCE)
     public ResultDTO<Void> retryWorkflowInstance(Long wfInstanceId, Long appId) {
-        checkAppIdValid(appId);
         workflowInstanceService.retryWorkflowInstance(wfInstanceId, appId);
         return ResultDTO.success(null);
     }
 
     @PostMapping(OpenAPIConstant.MARK_WORKFLOW_NODE_AS_SUCCESS)
     public ResultDTO<Void> markWorkflowNodeAsSuccess(Long wfInstanceId, Long nodeId, Long appId) {
-        checkAppIdValid(appId);
         workflowInstanceService.markNodeAsSuccess(appId, wfInstanceId, nodeId);
         return ResultDTO.success(null);
     }
 
     @PostMapping(OpenAPIConstant.FETCH_WORKFLOW_INSTANCE_INFO)
     public ResultDTO<WorkflowInstanceInfoDTO> fetchWorkflowInstanceInfo(Long wfInstanceId, Long appId) {
-        checkAppIdValid(appId);
         return ResultDTO.success(workflowInstanceService.fetchWorkflowInstanceInfo(wfInstanceId, appId));
     }
 
     private void checkInstanceIdValid(Long instanceId, Long appId) {
-        checkAppIdValid(appId);
         Long realAppId = cacheService.getAppIdByInstanceId(instanceId);
         if (realAppId == null) {
             throw new IllegalArgumentException("can't find instance by instanceId: " + instanceId);
@@ -305,7 +278,6 @@ public class OpenAPIController {
     }
 
     private void checkJobIdValid(Long jobId, Long appId) {
-        checkAppIdValid(appId);
         Long realAppId = cacheService.getAppIdByJobId(jobId);
         // 查不到，说明 jobId 不存在
         if (realAppId == null) {
@@ -315,24 +287,5 @@ public class OpenAPIController {
         if (!appId.equals(realAppId)) {
             throw new IllegalArgumentException("this job is not belong to the app whose appId is " + appId);
         }
-    }
-
-    private void checkAuthenticatedInstance(Long instanceId) {
-        Long appId = authenticatedAppId();
-        if (appId != null) {
-            checkInstanceIdValid(instanceId, appId);
-        }
-    }
-
-    private void checkAppIdValid(Long appId) {
-        Long authenticatedAppId = authenticatedAppId();
-        if (authenticatedAppId != null && !authenticatedAppId.equals(appId)) {
-            throw new PowerJobException(ErrorCodes.INVALID_REQUEST, "AppId does not match the authenticated application");
-        }
-    }
-
-    private Long authenticatedAppId() {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        return attributes == null ? null : (Long) attributes.getRequest().getAttribute(OpenApiInterceptor.AUTHENTICATED_APP_ID);
     }
 }

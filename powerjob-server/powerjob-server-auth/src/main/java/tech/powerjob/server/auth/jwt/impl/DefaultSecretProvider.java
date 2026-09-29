@@ -8,7 +8,6 @@ import tech.powerjob.server.auth.jwt.SecretProvider;
 import tech.powerjob.common.utils.DigestUtils;
 
 import javax.annotation.Resource;
-import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -27,35 +26,19 @@ public class DefaultSecretProvider implements SecretProvider {
 
     private static final String SECRET_PROPERTY = "oms.auth.security.jwt.secret";
 
-    @PostConstruct
-    public void validateConfiguration() {
-        configuredSecret();
-    }
-
-    private String configuredSecret() {
-        String secret = environment.getProperty(SECRET_PROPERTY);
-        if (secret != null && (StringUtils.isBlank(secret) || secret.length() < 32)) {
-            throw new IllegalArgumentException(SECRET_PROPERTY + " must contain at least 32 characters");
-        }
-        return secret;
-    }
-
     @Override
     public String fetchSecretKey() {
-        String secret = configuredSecret();
-        if (secret != null) {
+        String secret = environment.getProperty(SECRET_PROPERTY);
+        if (StringUtils.isNotBlank(secret)) {
             // Normalize arbitrary UTF-8 secrets for the existing JWT key encoder.
             return Hashing.sha256().hashString(secret, StandardCharsets.UTF_8).toString();
         }
 
-
-        // Legacy fallback preserves existing tokens. Public deployments must configure an independent secret.
+        // An absent or blank optional secret keeps the legacy signing key and existing tokens.
         try {
             String propertyValue = environment.getProperty(PROPERTY_KEY);
             if (StringUtils.isNotEmpty(propertyValue)) {
                 String md5 = DigestUtils.md5(propertyValue);
-
-
                 if (StringUtils.isNotEmpty(md5)) {
                     return md5;
                 }

@@ -35,8 +35,6 @@ public interface WebAuthService {
      */
     void processPermissionOnSave(RoleScope roleScope, Long target, ComponentUserRoleInfo componentUserRoleInfo);
 
-    void checkPermissionChange(RoleScope roleScope, Long target, ComponentUserRoleInfo componentUserRoleInfo);
-
     /**
      * 获取目标相关权限人员列表
      * @param roleScope 权限范围

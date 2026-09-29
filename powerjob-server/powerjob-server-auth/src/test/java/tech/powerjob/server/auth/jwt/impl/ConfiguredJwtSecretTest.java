@@ -5,6 +5,10 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -46,18 +50,54 @@ class ConfiguredJwtSecretTest {
         assertEquals(ParseResult.Status.FAILED, service.parse(jwt, "other").getStatus());
     }
 
-    @Test
-    void explicitlyWeakOrEmptySecretsFailClosed() {
-        for (String secret : new String[]{"", " ", "short"}) {
-            assertThrows(IllegalArgumentException.class, () -> provider("jdbc:mysql://db/db", secret).fetchSecretKey());
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "short", SECRET_A})
+    void optionalSecretDoesNotIntroduceAStartupValidationFailure(String secret) {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+            context.setEnvironment(new MockEnvironment().withProperty("spring.datasource.core.jdbc-url", "jdbc:mysql://db/db")
+                    .withProperty("oms.auth.security.jwt.secret", secret));
+            context.register(DefaultSecretProvider.class);
+            assertDoesNotThrow(context::refresh);
+            assertNotNull(context.getBean(DefaultSecretProvider.class).fetchSecretKey());
+        }
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " ", "\t"})
+    void absentOrBlankConfigurationKeepsLegacyTokensInBothDirections(String secret) {
+        String legacyKey = DigestUtils.md5("jdbc:mysql://legacy/db");
+        assertEquals(legacyKey, provider("jdbc:mysql://legacy/db", secret).fetchSecretKey());
+        // innerBuild/innerParse and the legacy key are unchanged from v5.1.2.
+        for (String extra : new String[]{"", "legacyOpenApiScope"}) {
+            String oldToken = JwtServiceImpl.innerBuild(legacyKey + extra, 60, Collections.singletonMap("uid", 42L));
+            assertEquals(ParseResult.Status.SUCCESS, service("jdbc:mysql://legacy/db", secret).parse(oldToken, extra).getStatus());
+            String newToken = service("jdbc:mysql://legacy/db", secret).build(Collections.singletonMap("uid", 42L), extra);
+            assertEquals(42, ((Number) JwtServiceImpl.innerParse(legacyKey + extra, newToken).get("uid")).intValue());
         }
     }
 
     @Test
-    void absentConfigurationPreservesExistingTokenCompatibility() {
-        assertEquals(DigestUtils.md5("jdbc:mysql://legacy/db"), provider("jdbc:mysql://legacy/db", null).fetchSecretKey());
-        String jwt = JwtServiceImpl.innerBuild(DigestUtils.md5("jdbc:mysql://legacy/db"), 60, Collections.singletonMap("uid", 42L));
-        assertEquals(ParseResult.Status.SUCCESS, service("jdbc:mysql://legacy/db", null).parse(jwt, null).getStatus());
+    void missingDatabaseConfigurationStillUsesTheSharedLegacyFallback() {
+        assertEquals("ZQQZJ", provider(null, null).fetchSecretKey());
+        String token = service(null, null).build(Collections.singletonMap("uid", 42L), null);
+        assertEquals(ParseResult.Status.SUCCESS, service(null, null).parse(token, null).getStatus());
+        assertEquals(42, ((Number) JwtServiceImpl.innerParse("ZQQZJ", token).get("uid")).intValue());
+    }
+
+    @Test
+    void publishedExplicitSecretKeyAndTokensRemainUnchanged() {
+        String publishedKey = com.google.common.hash.Hashing.sha256()
+                .hashString(SECRET_A, java.nio.charset.StandardCharsets.UTF_8).toString();
+        assertEquals(publishedKey, provider("jdbc:mysql://different/db", SECRET_A).fetchSecretKey());
+        String publishedToken = JwtServiceImpl.innerBuild(publishedKey, 60, Collections.singletonMap("uid", 42L));
+        assertEquals(ParseResult.Status.SUCCESS, service("jdbc:mysql://different/db", SECRET_A).parse(publishedToken, null).getStatus());
+    }
+
+    @Test
+    void shortNonBlankExplicitSecretRemainsSharedAcrossNodes() {
+        String token = service("jdbc:mysql://a/db", "short").build(Collections.singletonMap("uid", 42L), null);
+        assertEquals(ParseResult.Status.SUCCESS, service("jdbc:mysql://b/db", "short").parse(token, null).getStatus());
     }
 
     @Test
@@ -104,7 +144,8 @@ class ConfiguredJwtSecretTest {
     }
 
     private static DefaultSecretProvider provider(String url, String secret) {
-        MockEnvironment environment = new MockEnvironment().withProperty("spring.datasource.core.jdbc-url", url);
+        MockEnvironment environment = new MockEnvironment();
+        if (url != null) environment.withProperty("spring.datasource.core.jdbc-url", url);
         if (secret != null) environment.withProperty("oms.auth.security.jwt.secret", secret);
         DefaultSecretProvider provider = new DefaultSecretProvider();
         ReflectionTestUtils.setField(provider, "environment", environment);

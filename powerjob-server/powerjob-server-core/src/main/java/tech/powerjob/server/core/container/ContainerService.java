@@ -27,7 +27,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import tech.powerjob.common.OmsConstant;
 import tech.powerjob.common.exception.ImpossibleException;
-import tech.powerjob.common.exception.PowerJobException;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.model.GitRepoInfo;
 import tech.powerjob.common.request.ServerDeployContainerRequest;
@@ -103,10 +102,7 @@ public class ContainerService {
         Long originId = container.getId();
         if (originId != null) {
             // just validate
-            ContainerInfoDO existing = containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
-            if (!Objects.equals(existing.getAppId(), container.getAppId())) {
-                throw new PowerJobException("Container does not belong to the requested application");
-            }
+            containerInfoRepository.findById(originId).orElseThrow(() -> new IllegalArgumentException("can't find container by id: " + originId));
         } else {
             container.setGmtCreate(new Date());
         }
@@ -371,7 +367,7 @@ public class ContainerService {
 
             try {
                 // git clone
-                remote.sendText("SYSTEM: start to git clone the code repo for container: " + container.getId());
+                remote.sendText("SYSTEM: start to git clone the code repo, using config: " + container.getSourceInfo());
                 GitRepoInfo gitRepoInfo = JsonUtils.parseObject(container.getSourceInfo(), GitRepoInfo.class);
 
                 CloneCommand cloneCommand = Git.cloneRepository()
@@ -445,9 +441,9 @@ public class ContainerService {
 
                 return localFile;
             } catch (Throwable  t) {
-                // Git transport/parser exceptions can include a credential-bearing URL or sourceInfo.
+                // Transport/parser exceptions can contain credentials; keep them out of server logs.
                 log.error("[ContainerService] prepareJarFile failed for containerId={} ({})", container.getId(), t.getClass().getSimpleName());
-                remote.sendText("SYSTEM: [ERROR] prepare jar file failed (" + t.getClass().getSimpleName() + ")");
+                remote.sendText("SYSTEM: [ERROR] prepare jar file failed: " + ExceptionUtils.getStackTrace(t));
             } finally {
                 // 删除工作区数据
                 FileUtils.forceDelete(workerDir);

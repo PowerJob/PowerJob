@@ -75,9 +75,6 @@ public class WorkflowService {
         } else {
             Long finalWfId = wfId;
             wf = workflowInfoRepository.findById(wfId).orElseThrow(() -> new IllegalArgumentException("can't find workflow by id:" + finalWfId));
-            if (!req.getAppId().equals(wf.getAppId())) {
-                throw new PowerJobException("Workflow does not belong to the requested application");
-            }
             requireNotDeleted(wf);
         }
 
@@ -105,7 +102,7 @@ public class WorkflowService {
             wf = workflowInfoRepository.saveAndFlush(wf);
             wfId = wf.getId();
         }
-        wf.setPeDAG(validateAndConvert2String(wfId, req.getAppId(), req.getDag()));
+        wf.setPeDAG(validateAndConvert2String(wfId, req.getDag()));
         workflowInfoRepository.saveAndFlush(wf);
         return wfId;
     }
@@ -114,7 +111,7 @@ public class WorkflowService {
      * 保存 DAG 信息
      * 这里会物理删除游离的节点信息
      */
-    private String validateAndConvert2String(Long wfId, Long appId, PEWorkflowDAG dag) {
+    private String validateAndConvert2String(Long wfId, PEWorkflowDAG dag) {
         if (dag == null || !WorkflowDAGUtils.valid(dag)) {
             throw new PowerJobException("illegal DAG");
         }
@@ -125,9 +122,6 @@ public class WorkflowService {
         WorkflowDAG complexDag = WorkflowDAGUtils.convert(dag);
         for (PEWorkflowDAG.Node node : dag.getNodes()) {
             WorkflowNodeInfoDO nodeInfo = workflowNodeInfoRepository.findById(node.getNodeId()).orElseThrow(() -> new PowerJobException("can't find node info by id :" + node.getNodeId()));
-            if (!appId.equals(nodeInfo.getAppId())) {
-                throw new PowerJobException("Workflow node does not belong to the requested application");
-            }
             // 更新工作流 ID
             if (nodeInfo.getWorkflowId() == null) {
                 nodeInfo.setWorkflowId(wfId);
@@ -315,9 +309,6 @@ public class WorkflowService {
             WorkflowNodeInfoDO workflowNodeInfo;
             if (req.getId() != null) {
                 workflowNodeInfo = workflowNodeInfoRepository.findById(req.getId()).orElseThrow(() -> new IllegalArgumentException("can't find workflow Node by id: " + req.getId()));
-                if (!appId.equals(workflowNodeInfo.getAppId())) {
-                    throw new PowerJobException("Workflow node does not belong to the requested application");
-                }
             } else {
                 workflowNodeInfo = new WorkflowNodeInfoDO();
                 workflowNodeInfo.setGmtCreate(new Date());

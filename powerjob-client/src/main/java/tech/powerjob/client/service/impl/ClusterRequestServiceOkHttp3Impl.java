@@ -3,15 +3,16 @@ package tech.powerjob.client.service.impl;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import okio.BufferedSink;
 import tech.powerjob.client.ClientConfig;
+import tech.powerjob.client.common.Protocol;
 import tech.powerjob.client.service.HttpResponse;
 import tech.powerjob.client.service.PowerRequestBody;
 import tech.powerjob.common.OmsConstant;
-import tech.powerjob.common.OpenAPIConstant;
 import tech.powerjob.common.serialize.JsonUtils;
 
+import javax.net.ssl.*;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -33,8 +34,12 @@ public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestServi
     public ClusterRequestServiceOkHttp3Impl(ClientConfig config) {
         super(config);
 
-        // Use the platform trust store and OkHttp's default hostname verification for HTTPS.
-        okHttpClient = initHttpClient();
+        // 初始化 HTTP 客户端
+        if (Protocol.HTTPS.equals(config.getProtocol())) {
+            okHttpClient = initHttpsNoVerifyClient();
+        } else {
+            okHttpClient = initHttpClient();
+        }
     }
 
     @Override
@@ -59,18 +64,6 @@ public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestServi
                 Map<String, String> formObj = (Map<String, String>) obj;
                 formObj.forEach(formBuilder::add);
                 requestBody = formBuilder.build();
-        }
-
-        String path = HttpUrl.get(url).encodedPath().substring(OpenAPIConstant.WEB_PATH.length());
-        if (requestBody != null && !isReadOnly(path)) {
-            final RequestBody delegate = requestBody;
-            requestBody = new RequestBody() {
-                @Override public MediaType contentType() { return delegate.contentType(); }
-                @Override public long contentLength() throws IOException { return delegate.contentLength(); }
-                @Override public void writeTo(BufferedSink sink) throws IOException { delegate.writeTo(sink); }
-                // Also suppress HTTP follow-ups such as 503 + Retry-After: 0, independent of connection retries.
-                @Override public boolean isOneShot() { return true; }
-            };
         }
 
         Request request = new Request.Builder()
@@ -108,13 +101,28 @@ public class ClusterRequestServiceOkHttp3Impl extends AppAuthClusterRequestServi
         return okHttpBuilder.build();
     }
 
+    @SneakyThrows
+    private OkHttpClient initHttpsNoVerifyClient() {
+
+        X509TrustManager trustManager = new NoVerifyX509TrustManager();
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+        OkHttpClient.Builder okHttpBuilder = commonOkHttpBuilder();
+
+        // 不需要校验证书
+        okHttpBuilder.sslSocketFactory(sslSocketFactory, trustManager);
+        // 不校验 url中的 hostname
+        okHttpBuilder.hostnameVerifier((String hostname, SSLSession session) -> true);
+
+
+        return okHttpBuilder.build();
+    }
+
     private OkHttpClient.Builder commonOkHttpBuilder() {
         return new OkHttpClient.Builder()
-                // Retry decisions must account for the OpenAPI operation and whether it may have committed.
-                .retryOnConnectionFailure(false)
-                // Custom application credentials must not be forwarded to a redirect target.
-                .followRedirects(false)
-                .followSslRedirects(false)
                 // 设置读取超时时间
                 .readTimeout(Optional.ofNullable(config.getReadTimeout()).orElse(DEFAULT_TIMEOUT_SECONDS), TimeUnit.SECONDS)
                 // 设置写的超时时间

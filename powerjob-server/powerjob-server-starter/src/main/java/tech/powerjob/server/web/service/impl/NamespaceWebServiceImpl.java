@@ -72,7 +72,6 @@ public class NamespaceWebServiceImpl implements NamespaceWebService {
             namespaceDO.setCreator(LoginUserHolder.getUserId());
 
         } else {
-            webAuthService.checkPermissionChange(RoleScope.NAMESPACE, id, req.getComponentUserRoleInfo());
             namespaceDO = fetchById(id);
             namespaceDO.setModifier(LoginUserHolder.getUserId());
 

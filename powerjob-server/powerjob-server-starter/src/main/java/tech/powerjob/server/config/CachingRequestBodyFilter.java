@@ -7,6 +7,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -43,7 +44,8 @@ public class CachingRequestBodyFilter implements Filter {
                 return;
             }
             String contentType = request.getContentType();
-            if (contentType != null && !IGNORE_CONTENT_TYPES.contains(contentType)) {
+            String mediaType = contentType == null ? null : contentType.split(";", 2)[0].trim().toLowerCase(Locale.ROOT);
+            if (mediaType != null && !IGNORE_CONTENT_TYPES.contains(mediaType)) {
                 CustomHttpServletRequestWrapper wrappedRequest = new CustomHttpServletRequestWrapper((HttpServletRequest) request);
                 chain.doFilter(wrappedRequest, response);
                 return;
