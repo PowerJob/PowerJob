@@ -1,6 +1,5 @@
 # 构建 PowerJob 测试环境
 
-version: '3.7'
 services:
   powerjob-mysql:
     build:
@@ -20,6 +19,12 @@ services:
     volumes:
       - ~/powerjob-data/powerjob-mysql:/var/lib/mysql
     command: --lower_case_table_names=1
+    healthcheck:
+      test: ["CMD-SHELL", "/healthcheck.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
   #  powerjob-mongodb:
   #    image: mongo:latest
   #    container_name: powerjob-mongodb
@@ -44,8 +49,10 @@ services:
     image: powerjob/powerjob-server:test_env
     restart: always
     depends_on:
-      - powerjob-mysql
-    #      - powerjob-mongodb
+      powerjob-mysql:
+        condition: service_healthy
+    #      powerjob-mongodb:
+    #        condition: service_started
     environment:
       PARAMS: "--spring.profiles.active=daily --logging.config=classpath:logback-product.xml --spring.datasource.core.jdbc-url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai --oms.storage.dfs.mysql_series.url=jdbc:mysql://powerjob-mysql:3306/powerjob-daily?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai"
       JVMOPTIONS: "-server -XX:+UseG1GC -Xms768m -Xmx768m -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=7 -XX:GCLogFileSize=100M -Xloggc:/root/powerjob/server/gc.log -Dpowerjob.sp-env=trial -Dpowerjob.server.test.user.accounts=powerjob"
@@ -65,8 +72,10 @@ services:
     image: powerjob/powerjob-worker-agent:test_env
     restart: always
     depends_on:
-      - powerjob-mysql
-      - powerjob-server
+      powerjob-mysql:
+        condition: service_healthy
+      powerjob-server:
+        condition: service_started
     ports:
       - "5002:5005"
       - "10002:10000"
@@ -83,8 +92,10 @@ services:
     image: powerjob/powerjob-worker-agent:test_env
     restart: always
     depends_on:
-      - powerjob-mysql
-      - powerjob-server
+      powerjob-mysql:
+        condition: service_healthy
+      powerjob-server:
+        condition: service_started
     ports:
       - "5003:5005"
       - "10003:10000"
