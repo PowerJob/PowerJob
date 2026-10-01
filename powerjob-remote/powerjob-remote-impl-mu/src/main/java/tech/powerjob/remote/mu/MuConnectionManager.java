@@ -96,7 +96,7 @@ public class MuConnectionManager {
                     
                     // Remove connection when it becomes inactive
                     channel.closeFuture().addListener(closeFuture -> {
-                        serverConnections.remove(key);
+                        serverConnections.remove(key, channel);
                         log.info("[MuConnectionManager] Removed inactive server connection: {}", key);
                     });
                     

@@ -66,7 +66,9 @@ public class PowerJobRemoteEngine implements RemoteEngine {
 
     @Override
     public void close() throws IOException {
-        csInitializer.close();
+        if (csInitializer != null) {
+            csInitializer.close();
+        }
     }
 
     private static void reConfig(EngineConfig engineConfig) {
