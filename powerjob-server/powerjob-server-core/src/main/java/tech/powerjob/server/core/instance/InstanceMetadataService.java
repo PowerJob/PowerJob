@@ -1,6 +1,9 @@
 package tech.powerjob.server.core.instance;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.server.common.constants.InstanceType;
 import tech.powerjob.server.persistence.remote.model.InstanceInfoDO;
 import tech.powerjob.server.persistence.remote.model.JobInfoDO;
 import tech.powerjob.server.persistence.remote.repository.InstanceInfoRepository;
@@ -58,7 +61,14 @@ public class InstanceMetadataService implements InitializingBean {
             InstanceInfoDO instanceInfo = instanceInfoRepository.findByInstanceId(instanceId);
             if (instanceInfo != null) {
                 Optional<JobInfoDO> jobInfoOpt = jobInfoRepository.findById(instanceInfo.getJobId());
-                return jobInfoOpt.orElseThrow(() -> new IllegalArgumentException("can't find JobInfo by jobId: " + instanceInfo.getJobId()));
+                JobInfoDO definition = jobInfoOpt.orElseThrow(() -> new IllegalArgumentException("can't find JobInfo by jobId: " + instanceInfo.getJobId()));
+                if (instanceInfo.getWfInstanceId() != null || Integer.valueOf(InstanceType.WORKFLOW.getV()).equals(instanceInfo.getType())) {
+                    JobInfoDO copy = new JobInfoDO();
+                    BeanUtils.copyProperties(definition, copy);
+                    copy.setTimeExpressionType(TimeExpressionType.WORKFLOW.getV());
+                    return copy;
+                }
+                return definition;
             }
             throw new IllegalArgumentException("can't find Instance by instanceId: " + instanceId);
         });

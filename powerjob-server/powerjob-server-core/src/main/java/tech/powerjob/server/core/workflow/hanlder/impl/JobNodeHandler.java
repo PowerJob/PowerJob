@@ -2,6 +2,7 @@ package tech.powerjob.server.core.workflow.hanlder.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.TimeExpressionType;
@@ -39,7 +40,9 @@ public class JobNodeHandler implements TaskNodeHandler {
 
     @Override
     public void startTaskInstance(PEWorkflowDAG.Node node) {
-        JobInfoDO jobInfo = jobInfoRepository.findById(node.getJobId()).orElseGet(JobInfoDO::new);
+        JobInfoDO jobInfo = new JobInfoDO();
+        // Workflow overrides must not dirty the persisted scheduled definition.
+        jobInfoRepository.findById(node.getJobId()).ifPresent(definition -> BeanUtils.copyProperties(definition, jobInfo));
         // 洗去时间表达式类型
         jobInfo.setTimeExpressionType(TimeExpressionType.WORKFLOW.getV());
         SpringUtils.getBean(DispatchService.class).dispatch(jobInfo, node.getInstanceId(), Optional.empty(), Optional.empty());
