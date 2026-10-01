@@ -176,10 +176,12 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         TaskStatus nTaskStatus = TaskStatus.of(newStatus);
 
         int lockId = taskId.hashCode();
+        boolean acquired = false;
         try {
 
             // 阻塞获取锁
             segmentLock.lockInterruptible(lockId);
+            acquired = true;
             TaskBriefInfo taskBriefInfo = taskId2BriefInfo.getIfPresent(taskId);
 
             // 缓存中不存在，从数据库查
@@ -264,7 +266,9 @@ public abstract class HeavyTaskTracker extends TaskTracker {
         } catch (Exception e) {
             log.warn("[TaskTracker-{}-{}] update task status failed.", instanceId, subInstanceId, e);
         } finally {
-            segmentLock.unlock(lockId);
+            if (acquired) {
+                segmentLock.unlock(lockId);
+            }
         }
     }
 

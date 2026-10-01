@@ -43,6 +43,7 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
     @SneakyThrows
     public void validate(String timeExpression) {
         DailyTimeIntervalExpress ep = JsonUtils.parseObject(timeExpression, DailyTimeIntervalExpress.class);
+        CommonUtils.requireNonNull(ep, "DailyTimeIntervalExpress can't be null");
         CommonUtils.requireNonNull(ep.interval, "interval can't be null or empty in DailyTimeIntervalExpress");
         CommonUtils.requireNonNull(ep.startTimeOfDay, "startTimeOfDay can't be null or empty in DailyTimeIntervalExpress");
         CommonUtils.requireNonNull(ep.endTimeOfDay, "endTimeOfDay can't be null or empty in DailyTimeIntervalExpress");
@@ -54,8 +55,14 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
             throw new IllegalArgumentException("endTime should after startTime!");
         }
 
-        if (StringUtils.isNotEmpty(ep.intervalUnit)) {
-            TimeUnit.valueOf(ep.intervalUnit);
+        TimeUnit unit = StringUtils.isEmpty(ep.intervalUnit) ? TimeUnit.SECONDS : TimeUnit.valueOf(ep.intervalUnit);
+        long factor = unit.toMillis(1);
+        if (ep.interval <= 0 || unit.toMillis(ep.interval) <= 0
+                || (factor > 0 && ep.interval > Long.MAX_VALUE / factor)) {
+            throw new IllegalArgumentException("interval must be positive and representable in milliseconds");
+        }
+        if (ep.daysOfWeek != null && !ALL_DAY.containsAll(ep.daysOfWeek)) {
+            throw new IllegalArgumentException("daysOfWeek must contain Chinese weekdays 1 through 7");
         }
     }
 
@@ -64,16 +71,19 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
     public Long calculateNextTriggerTime(Long preTriggerTime, String timeExpression, Long startTime, Long endTime) {
         DailyTimeIntervalExpress ep = JsonUtils.parseObject(timeExpression, DailyTimeIntervalExpress.class);
 
-        // 未开始状态下，用起点算调度时间
-        if (startTime != null && startTime > System.currentTimeMillis() && preTriggerTime < startTime) {
-            return calculateInRangeTime(startTime, ep);
-        }
-
         // 间隔时间
         TimeUnit timeUnit = Optional.ofNullable(ep.intervalUnit).map(TimeUnit::valueOf).orElse(TimeUnit.SECONDS);
         long interval = timeUnit.toMillis(ep.interval);
 
-        Long ret = calculateInRangeTime(preTriggerTime + interval, ep);
+        long base = startTime != null && preTriggerTime < startTime ? startTime : preTriggerTime;
+        Long ret = calculateInRangeTime(base, ep);
+        // 窗口外从下一窗口起点开始；窗口内保持原间隔。
+        if (ret != null && ret.equals(preTriggerTime)) {
+            if (preTriggerTime > Long.MAX_VALUE - interval) {
+                return null;
+            }
+            ret = calculateInRangeTime(preTriggerTime + interval, ep);
+        }
         if (ret == null || ret <= Optional.ofNullable(endTime).orElse(Long.MAX_VALUE)) {
             return ret;
         }
@@ -99,6 +109,9 @@ public class DailyTimeIntervalStrategyHandler implements TimingStrategyHandler {
         // 判断是否符合"日"的执行条件
         int week = TimeUtils.calculateWeek(year, month, day);
         Set<Integer> targetDays = CollectionUtils.isEmpty(ep.daysOfWeek) ? ALL_DAY : ep.daysOfWeek;
+        if (!ALL_DAY.containsAll(targetDays)) {
+            throw new IllegalArgumentException("daysOfWeek must contain Chinese weekdays 1 through 7");
+        }
         // 未包含情况下，将时间改写为符合条件日的 00:00 分，重新开始递归（这部分应该有性能更优的写法，不过这个调度模式应该很难触发瓶颈，先简单好用的实现）
         if (!targetDays.contains(week)) {
             simpleSetCalendar(calendar, 0, 0, 0);

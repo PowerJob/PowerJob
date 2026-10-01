@@ -5,17 +5,17 @@
     <parent>
         <artifactId>powerjob</artifactId>
         <groupId>tech.powerjob</groupId>
-        <version>5.1.6</version>
+        <version>5.1.7</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powerjob-worker-spring-boot-starter</artifactId>
     <name>powerjob-worker-spring-boot-starter</name>
-    <version>5.1.6</version>
+    <version>5.1.7</version>
     <packaging>jar</packaging>
 
     <properties>
-        <powerjob.worker.version>5.1.6</powerjob.worker.version>
+        <powerjob.worker.version>5.1.7</powerjob.worker.version>
         <springboot.version>2.7.18</springboot.version>
     </properties>
 

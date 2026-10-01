@@ -35,7 +35,7 @@ public class ChannelManager {
         
         // Remove channel when it becomes inactive
         channel.closeFuture().addListener(future -> {
-            workerChannels.remove(key);
+            workerChannels.remove(key, channel);
             log.info("[ChannelManager] Removed inactive worker channel: {}", key);
         });
     }
@@ -71,8 +71,11 @@ public class ChannelManager {
         Class<?> responseType = requestResponseTypes.remove(requestId);
         
         if (future != null) {
-            Object convertedResponse = convertResponse(response, responseType);
-            future.complete(convertedResponse);
+            try {
+                future.complete(convertResponse(response, responseType));
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
         } else {
             log.warn("[ChannelManager] No pending request found for ID: {}", requestId);
         }

@@ -26,4 +26,4 @@ EXPOSE 27777
 # 挂载数据卷，将文件直接输出到宿主机（注意，此处挂载的是匿名卷，即在宿主机位置随机）
 VOLUME /root
 # 启动应用
-ENTRYPOINT ["sh","-c","java $JVMOPTIONS -jar /powerjob-agent.jar $PARAMS"]
+ENTRYPOINT ["sh","-c","exec java $JVMOPTIONS -jar /powerjob-agent.jar $PARAMS"]
