@@ -15,4 +15,4 @@ COPY target/powerjob-worker-samples-*.jar /powerjob-worker-samples.jar
 # 暴露端口（HTTP + AKKA）
 EXPOSE 8081 27777
 # 启动应用
-ENTRYPOINT ["sh","-c","java $JVMOPTIONS -jar /powerjob-worker-samples.jar $PARAMS"]
+ENTRYPOINT ["sh","-c","exec java $JVMOPTIONS -jar /powerjob-worker-samples.jar $PARAMS"]
