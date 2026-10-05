@@ -32,6 +32,7 @@ public interface JobInfoRepository extends JpaRepository<JobInfoDO, Long>, JpaSp
 
     Page<JobInfoDO> findByAppIdAndJobNameLikeAndStatusNot(Long appId, String condition, int status, Pageable pageable);
 
+
     /**
      * 校验工作流包含的任务
      * @param appId APP ID

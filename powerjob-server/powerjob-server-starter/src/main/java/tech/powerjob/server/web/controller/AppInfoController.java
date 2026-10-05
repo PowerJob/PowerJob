@@ -87,6 +87,23 @@ public class AppInfoController {
         return ResultDTO.success(convert(Lists.newArrayList(savedAppInfo), false).get(0));
     }
 
+    @PostMapping("/clone")
+    @ApiPermission(name = "App-clone", roleScope = RoleScope.APP, dynamicPermissionPlugin = ModifyOrCreateDynamicPermission.class, grandPermissionPlugin = SaveAppGrantPermissionPlugin.class)
+    public ResultDTO<AppInfoVO> cloneAppInfo(@RequestBody ModifyAppInfoRequest req, HttpServletRequest hsr) {
+        if (req.getCloneid()== null){
+            throw new PowerJobException(ErrorCodes.ILLEGAL_ARGS_ERROR, "克隆ID 不能为空");
+        }
+
+        // 安全注入攻击的场景，不信任传参
+        if (req.getId() != null) {
+            req.setId(Long.valueOf(AuthHeaderUtils.fetchAppId(hsr)));
+        }
+
+        AppInfoDO savedAppInfo = appWebService.clone(req);
+
+        return ResultDTO.success(convert(Lists.newArrayList(savedAppInfo), false).get(0));
+    }
+
     @PostMapping("/delete")
     @ApiPermission(name = "App-Delete", roleScope = RoleScope.APP, requiredPermission = Permission.SU)
     public ResultDTO<Void> deleteApp(HttpServletRequest hsr) {

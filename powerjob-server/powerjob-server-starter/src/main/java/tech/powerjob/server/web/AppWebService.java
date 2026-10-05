@@ -17,6 +17,8 @@ public interface AppWebService {
 
     AppInfoDO save(ModifyAppInfoRequest request);
 
+    AppInfoDO clone(ModifyAppInfoRequest req);
+
     void delete(Long id);
 
     Optional<AppInfoDO> findByAppName(String appName);
