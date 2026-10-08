@@ -325,16 +325,55 @@ public class WorkflowDAGUtils {
         if (ids.contains(root.getNodeId())) {
             return true;
         }
-        nodeIdContainer.add(root.getNodeId());
-        if (root.getSuccessors().isEmpty()) {
+
+        // 如果该节点已经被全局遍历过（只有无环才会执行到后续 root），直接返回
+        if (nodeIdContainer.contains(root.getNodeId())) {
             return false;
         }
-        ids.add(root.getNodeId());
-        for (WorkflowDAG.Node node : root.getSuccessors()) {
-            if (invalidPath(node, Sets.newHashSet(ids), nodeIdContainer)) {
-                return true;
+
+        Deque<WorkflowDAG.Node> stack = new ArrayDeque<>();
+        Deque<Iterator<WorkflowDAG.Node>> iteratorStack = new ArrayDeque<>();
+        // 当前 DFS 路径上的节点，用于环检测
+        Set<Long> pathSet = new HashSet<>(ids);
+        // 在当前遍历中已确认无环的节点，用于剪枝避免重复遍历
+        Set<Long> finished = new HashSet<>();
+
+        stack.push(root);
+        iteratorStack.push(root.getSuccessors().iterator());
+        pathSet.add(root.getNodeId());
+        nodeIdContainer.add(root.getNodeId());
+
+        while (!stack.isEmpty()) {
+            WorkflowDAG.Node current = stack.peek();
+            Iterator<WorkflowDAG.Node> iterator = iteratorStack.peek();
+
+            if (iterator.hasNext()) {
+                WorkflowDAG.Node next = iterator.next();
+                long nextId = next.getNodeId();
+
+                // 出现之前的节点则代表有环，失败
+                if (pathSet.contains(nextId)) {
+                    return true;
+                }
+
+                // 跳过已确认无环的节点（当前遍历内或之前 root 遍历过）
+                if (finished.contains(nextId) || nodeIdContainer.contains(nextId)) {
+                    continue;
+                }
+
+                stack.push(next);
+                iteratorStack.push(next.getSuccessors().iterator());
+                pathSet.add(nextId);
+                nodeIdContainer.add(nextId);
+            } else {
+                // 当前节点的所有后继者节点均已处理完毕，说明该路径成功
+                stack.pop();
+                iteratorStack.pop();
+                pathSet.remove(current.getNodeId());
+                finished.add(current.getNodeId());
             }
         }
+
         return false;
     }
 }
