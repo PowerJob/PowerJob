@@ -12,6 +12,9 @@ import tech.powerjob.remote.framework.transporter.Transporter;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,11 +33,24 @@ public class MuTransporter implements Transporter {
     private final ChannelManager channelManager;
     private final ServerType serverType;
     private final MuConnectionManager connectionManager; // For worker-side lazy connection
+    private final ScheduledThreadPoolExecutor timeoutScheduler;
 
     public MuTransporter(ChannelManager channelManager, ServerType serverType, MuConnectionManager connectionManager) {
         this.channelManager = channelManager;
         this.serverType = serverType;
         this.connectionManager = connectionManager;
+        this.timeoutScheduler = createTimeoutScheduler();
+    }
+
+    private static ScheduledThreadPoolExecutor createTimeoutScheduler() {
+        ThreadFactory threadFactory = runnable -> {
+            Thread thread = new Thread(runnable, "powerjob-mu-request-timeout");
+            thread.setDaemon(true);
+            return thread;
+        };
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1, threadFactory);
+        scheduler.setRemoveOnCancelPolicy(true);
+        return scheduler;
     }
 
     @Override
@@ -113,20 +129,26 @@ public class MuTransporter implements Transporter {
             // Register the future for response handling
             channelManager.registerPendingRequest(requestId, (CompletableFuture<Object>) future, clz);
 
-            // Set timeout for the request (JDK8 compatible)
+            // Schedule timeout manually for JDK8 compatibility
+            ScheduledFuture<?> timeoutFuture;
+            try {
+                timeoutFuture = timeoutScheduler.schedule(() -> {
+                    if (!future.isDone()) {
+                        channelManager.removePendingRequest(requestId);
+                        future.completeExceptionally(new java.util.concurrent.TimeoutException("Request timeout after " + ASK_TIMEOUT_SECONDS + " seconds"));
+                    }
+                }, ASK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            } catch (RuntimeException e) {
+                channelManager.removePendingRequest(requestId);
+                throw e;
+            }
+
             future.whenComplete((result, throwable) -> {
+                timeoutFuture.cancel(false);
                 if (throwable != null) {
                     channelManager.removePendingRequest(requestId);
                 }
             });
-
-            // Schedule timeout manually for JDK8 compatibility
-            java.util.concurrent.Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-                if (!future.isDone()) {
-                    channelManager.removePendingRequest(requestId);
-                    future.completeExceptionally(new java.util.concurrent.TimeoutException("Request timeout after " + ASK_TIMEOUT_SECONDS + " seconds"));
-                }
-            }, ASK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
             MuMessage message = new MuMessage(
                 MuMessage.MessageType.ASK,
@@ -192,4 +214,5 @@ public class MuTransporter implements Transporter {
             throw new RemotingException("Failed to send ASK message", e);
         }
     }
+
 }
