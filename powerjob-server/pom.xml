@@ -210,6 +210,13 @@
             <artifactId>h2</artifactId>
             <version>${h2.db.version}</version>
         </dependency>
+        <!-- kingbase -->
+        <dependency>
+            <groupId>cn.com.kingbase</groupId>
+            <artifactId>kingbase8</artifactId>
+            <version>${kingbase.version}</version>
+        </dependency>
+
 
         <!-- SpringBoot -->
         <dependency>

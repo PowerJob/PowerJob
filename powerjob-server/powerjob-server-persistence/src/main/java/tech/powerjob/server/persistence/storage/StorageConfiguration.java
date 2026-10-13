@@ -34,6 +34,12 @@ public class StorageConfiguration {
     }
 
     @Bean
+    @Conditional(Kingbase8SeriesDfsService.KingbaseCondition.class)
+    public DFsService initKingbaseFs() {
+        return new Kingbase8SeriesDfsService();
+    }
+
+    @Bean
     @Conditional(AliOssService.AliOssCondition.class)
     public DFsService initAliOssFs() {
         return new AliOssService();
