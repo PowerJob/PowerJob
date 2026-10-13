@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.model.TaskGroupQuota;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.WorkflowContext;
@@ -12,6 +13,7 @@ import tech.powerjob.worker.extension.SystemMetricsCollector;
 import tech.powerjob.worker.extension.processor.ProcessorFactory;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The powerjob-worker's configuration
@@ -80,6 +82,14 @@ public class PowerJobWorkerConfig {
      * Max numbers of LightTaskTacker
      */
     private Integer maxLightweightTaskNum = 1024;
+
+    /**
+     * Per-group task quotas for lightweight thread pool isolation.
+     * When null or empty, the worker operates in legacy mode (single flat pool).
+     * When configured, each group gets its own isolated ThreadPoolExecutor.
+     * A "default" group MUST be present. Sum of all group quotas must be <= maxLightweightTaskNum.
+     */
+    private Map<String, TaskGroupQuota> taskGroupQuotas;
     /**
      * Max numbers of HeavyTaskTacker
      */

@@ -3,6 +3,7 @@ package tech.powerjob.common.request;
 import tech.powerjob.common.PowerSerializable;
 import tech.powerjob.common.model.DeployedContainerInfo;
 import tech.powerjob.common.model.SystemMetrics;
+import tech.powerjob.common.model.TaskGroupStatus;
 import lombok.Data;
 
 import java.util.List;
@@ -68,4 +69,10 @@ public class WorkerHeartbeat implements PowerSerializable {
 
 
     private SystemMetrics systemMetrics;
+
+    /**
+     * Per-group task tracker status for group-aware dispatch.
+     * Null for legacy workers without group isolation configured.
+     */
+    private List<TaskGroupStatus> taskGroupStatuses;
 }

@@ -2,6 +2,7 @@ package tech.powerjob.worker.autoconfigure;
 
 import tech.powerjob.common.RemoteConstant;
 import tech.powerjob.common.enums.Protocol;
+import tech.powerjob.common.model.TaskGroupQuota;
 import tech.powerjob.worker.common.constants.StoreStrategy;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.WorkflowContext;
@@ -9,6 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
+
+import java.util.Map;
 
 /**
  * PowerJob properties configuration class.
@@ -169,6 +172,25 @@ public class PowerJobProperties {
          * Interval(s) of worker health report
          */
         private Integer healthReportInterval = 10;
+
+        /**
+         * Per-group task quotas for lightweight thread pool isolation.
+         * When null or empty, the worker operates in legacy mode (single flat pool).
+         * A "default" group MUST be present. Sum of all group quotas must be <= maxLightweightTaskNum.
+         * Example YAML:
+         * <pre>
+         * powerjob:
+         *   worker:
+         *     task-group-quotas:
+         *       payments:
+         *         max-lightweight-task-num: 200
+         *       reports:
+         *         max-lightweight-task-num: 300
+         *       default:
+         *         max-lightweight-task-num: 524
+         * </pre>
+         */
+        private Map<String, TaskGroupQuota> taskGroupQuotas;
 
     }
 }

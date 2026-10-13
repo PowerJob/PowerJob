@@ -141,6 +141,11 @@ public class JobInfoDTO {
     private String tag;
 
     /**
+     * Task group for per-group thread pool isolation on workers.
+     */
+    private String taskGroup;
+
+    /**
      * 日志配置，包括日志级别、日志方式等配置信息
      */
     private LogConfig logConfig;

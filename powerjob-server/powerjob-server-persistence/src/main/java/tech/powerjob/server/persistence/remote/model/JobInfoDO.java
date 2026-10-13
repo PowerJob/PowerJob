@@ -160,6 +160,13 @@ public class JobInfoDO {
     private String tag;
 
     /**
+     * Task group for per-group thread pool isolation on workers.
+     * Jobs with the same taskGroup share an isolated lightweight thread pool.
+     * Null/empty means "default" group.
+     */
+    private String taskGroup;
+
+    /**
      * 日志配置，包括日志级别、日志方式等配置信息
      */
     private String logConfig;

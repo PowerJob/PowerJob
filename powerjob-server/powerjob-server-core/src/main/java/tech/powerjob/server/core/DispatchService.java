@@ -13,6 +13,7 @@ import tech.powerjob.common.enums.ExecuteType;
 import tech.powerjob.common.enums.InstanceStatus;
 import tech.powerjob.common.enums.ProcessorType;
 import tech.powerjob.common.enums.TimeExpressionType;
+import tech.powerjob.common.model.TaskGroupQuota;
 import tech.powerjob.common.request.ServerScheduleJobReq;
 import tech.powerjob.remote.framework.base.URL;
 import tech.powerjob.server.common.Holder;
@@ -157,8 +158,13 @@ public class DispatchService {
             instanceManager.processFinishedInstance(instanceId, instanceInfo.getWfInstanceId(), FAILED, SystemInstanceResult.NO_WORKER_AVAILABLE);
             return;
         }
-        // 判断是否超载，在所有可用 worker 超载的情况下直接跳过当前任务
-        suitableWorkers = filterOverloadWorker(suitableWorkers);
+        // 判断是否超载 — group-aware only for lightweight tasks, global for heavyweight
+        if (isLightweightTask(jobInfo)) {
+            String taskGroup = normalizeTaskGroup(jobInfo.getTaskGroup());
+            suitableWorkers = filterOverloadWorker(suitableWorkers, taskGroup);
+        } else {
+            suitableWorkers = filterOverloadWorker(suitableWorkers);
+        }
         if (suitableWorkers.isEmpty()) {
             // 直接取消派发，减少一次数据库 io
             overloadOptional.ifPresent(booleanHolder -> booleanHolder.set(true));
@@ -183,16 +189,51 @@ public class DispatchService {
         instanceMetadataService.loadJobInfo(instanceId, jobInfo);
     }
 
+    /**
+     * Filter overloaded workers using global overload flag (original behavior).
+     * Used for heavyweight tasks (Broadcast/Map/MapReduce/FixedRate/FixedDelay).
+     */
     private List<WorkerInfo> filterOverloadWorker(List<WorkerInfo> suitableWorkers) {
-
         List<WorkerInfo> res = new ArrayList<>(suitableWorkers.size());
         for (WorkerInfo suitableWorker : suitableWorkers) {
-            if (suitableWorker.overload()){
+            if (suitableWorker.overload()) {
                 continue;
             }
             res.add(suitableWorker);
         }
         return res;
+    }
+
+    /**
+     * Filter overloaded workers using per-group overload status.
+     * Used for lightweight tasks (standalone CRON/API/DailyInterval/Workflow).
+     * Falls back to global overload for legacy workers without group reporting.
+     */
+    private List<WorkerInfo> filterOverloadWorker(List<WorkerInfo> suitableWorkers, String taskGroup) {
+        List<WorkerInfo> res = new ArrayList<>(suitableWorkers.size());
+        for (WorkerInfo suitableWorker : suitableWorkers) {
+            if (suitableWorker.overloadForGroup(taskGroup)) {
+                continue;
+            }
+            res.add(suitableWorker);
+        }
+        return res;
+    }
+
+    /**
+     * Determine if a job is a lightweight task (same logic as worker-side TaskTrackerActor.isLightweightTask).
+     * Lightweight = standalone execution AND not fixed-rate/fixed-delay.
+     */
+    private static boolean isLightweightTask(JobInfoDO jobInfo) {
+        ExecuteType executeType = ExecuteType.of(jobInfo.getExecuteType());
+        if (executeType != ExecuteType.STANDALONE) {
+            return false;
+        }
+        return !TimeExpressionType.FREQUENT_TYPES.contains(jobInfo.getTimeExpressionType());
+    }
+
+    private static String normalizeTaskGroup(String raw) {
+        return TaskGroupQuota.normalizeTaskGroup(raw);
     }
 
     /**
@@ -230,6 +271,15 @@ public class DispatchService {
         }
         req.setThreadConcurrency(jobInfo.getConcurrency());
         req.setMeta(instanceInfo.getMeta());
+
+        // Set task group only for lightweight tasks (heavyweight tasks don't support group isolation).
+        // BeanUtils.copyProperties may have copied taskGroup from jobInfo — override explicitly.
+        if (isLightweightTask(jobInfo)) {
+            req.setTaskGroup(normalizeTaskGroup(jobInfo.getTaskGroup()));
+        } else {
+            req.setTaskGroup(null);
+        }
+
         return req;
     }
 }
