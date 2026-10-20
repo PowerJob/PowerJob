@@ -57,6 +57,11 @@ public class WorkflowInfoVO {
     private Integer maxWfInstanceNum;
 
     /**
+     * 工作流状态：1 正常运行，2 停止（不再调度）
+     */
+    private Integer status;
+
+    /**
      * ENABLE / DISABLE
      */
     private Boolean enable;
