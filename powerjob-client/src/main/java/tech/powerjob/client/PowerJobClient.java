@@ -336,6 +336,23 @@ public class PowerJobClient implements IPowerJobClient, Closeable {
         return JSON.parseObject(post, INSTANCE_RESULT_TYPE);
     }
 
+    /**
+     * 查询任务实例日志
+     *
+     * @param instanceId 任务实例ID
+     * @param index      页码，从0开始
+     * @return 任务实例日志
+     */
+    @Override
+    public ResultDTO<InstanceLogDTO> fetchInstanceLog(Long instanceId, Long index) {
+        Map<String, String> param = Maps.newHashMap();
+        param.put("appId", appId.toString());
+        param.put("instanceId", instanceId.toString());
+        param.put("index", index.toString());
+        String post = requestService.request(OpenAPIConstant.FETCH_INSTANCE_LOG, PowerRequestBody.newFormRequestBody(param));
+        return JSON.parseObject(post, INSTANCE_LOG_TYPE);
+    }
+
     @Override
     public ResultDTO<PageResult<InstanceInfoDTO>> queryInstanceInfo(InstancePageQuery instancePageQuery) {
         instancePageQuery.setAppIdEq(appId);
