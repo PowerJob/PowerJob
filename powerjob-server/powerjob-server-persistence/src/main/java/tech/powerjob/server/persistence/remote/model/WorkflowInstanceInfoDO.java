@@ -22,7 +22,7 @@ import java.util.Date;
         uniqueConstraints = {@UniqueConstraint(name = "uidx01_wf_instance", columnNames = {"wfInstanceId"})},
         indexes = {
                 @Index(name = "idx01_wf_instance", columnList = "workflowId,status"),
-                @Index(name = "idx01_wf_instance", columnList = "appId,status,expectedTriggerTime")
+                @Index(name = "idx02_wf_instance", columnList = "appId,status,expectedTriggerTime")
         }
 )
 public class WorkflowInstanceInfoDO {
@@ -30,59 +30,52 @@ public class WorkflowInstanceInfoDO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
+    @Column(columnDefinition = "bigint NOT NULL AUTO_INCREMENT COMMENT '工作流实例ID'")
     private Long id;
-    /**
-     * 任务所属应用的ID，冗余提高查询效率
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '任务所属应用的ID，冗余提高查询效率'")
     private Long appId;
-    /**
-     * workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT 'workflowInstanceId（任务实例表都使用单独的ID作为主键以支持潜在的分表需求）'")
     private Long wfInstanceId;
-    /**
-     * 上层工作流实例 ID （用于支持工作流嵌套）
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '上层工作流实例 ID （用于支持工作流嵌套）'")
     private Long parentWfInstanceId;
 
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '工作流ID'")
     private Long workflowId;
-    /**
-     * workflow 状态（WorkflowInstanceStatus）
-     */
+
+    @Column(columnDefinition = "int DEFAULT NULL COMMENT 'workflow 状态（WorkflowInstanceStatus）'")
     private Integer status;
-    /**
-     * 工作流启动参数
-     */
+
     @Lob
-    @Column
+    @Column(columnDefinition = "longtext COMMENT '工作流启动参数'")
     private String wfInitParams;
-    /**
-     * 工作流上下文
-     */
+
     @Lob
-    @Column
+    @Column(columnDefinition = "longtext COMMENT '工作流上下文'")
     private String wfContext;
 
     @Lob
-    @Column
+    @Column(columnDefinition = "longtext COMMENT 'DAG信息'")
     private String dag;
 
     @Lob
-    @Column
+    @Column(columnDefinition = "longtext COMMENT '执行结果'")
     private String result;
-    /**
-     * 预计触发时间
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '预计触发时间'")
     private Long expectedTriggerTime;
-    /**
-     * 实际触发时间
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '实际触发时间'")
     private Long actualTriggerTime;
-    /**
-     * 结束时间
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '结束时间'")
     private Long finishedTime;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '创建时间'")
     private Date gmtCreate;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '更新时间'")
     private Date gmtModified;
 }

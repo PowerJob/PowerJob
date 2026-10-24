@@ -30,92 +30,70 @@ public class InstanceInfoDO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
+    @Column(columnDefinition = "bigint NOT NULL AUTO_INCREMENT COMMENT '任务实例ID'")
     private Long id;
-    /**
-     * 任务ID
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '任务ID'")
     private Long jobId;
-    /**
-     * 任务所属应用的ID，冗余提高查询效率
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '任务所属应用的ID，冗余提高查询效率'")
     private Long appId;
-    /**
-     * 任务所属应用的ID，冗余提高查询效率
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '任务所属应用的ID，冗余提高查询效率'")
     private Long instanceId;
-    /**
-     * 任务参数（静态）
-     *
-     * @since 2021/2/01
-     */
+
     @Lob
-    @Column
+    @Column(columnDefinition = "longtext COMMENT '任务参数（静态）'")
     private String jobParams;
-    /**
-     * 任务实例参数（动态）
-     */
+
     @Lob
-    @Column
+    @Column(columnDefinition = "longtext COMMENT '任务实例参数（动态）'")
     private String instanceParams;
-    /**
-     * 该任务实例的类型，普通/工作流（InstanceType）
-     */
+
+    @Column(columnDefinition = "int DEFAULT NULL COMMENT '该任务实例的类型，普通/工作流（InstanceType）'")
     private Integer type;
-    /**
-     * 该任务实例所属的 workflow ID，仅 workflow 任务存在
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '该任务实例所属的 workflow ID，仅 workflow 任务存在'")
     private Long wfInstanceId;
-    /**
-     * 任务状态 {@link InstanceStatus}
-     */
+
+    @Column(columnDefinition = "int DEFAULT NULL COMMENT '任务状态'")
     private Integer status;
-    /**
-     * 执行结果（允许存储稍大的结果）
-     */
+
     @Lob
-    @Column
+    @Column(columnDefinition = "longtext COMMENT '执行结果（允许存储稍大的结果）'")
     private String result;
-    /**
-     * 预计触发时间
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '预计触发时间'")
     private Long expectedTriggerTime;
-    /**
-     * 实际触发时间
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '实际触发时间'")
     private Long actualTriggerTime;
-    /**
-     * 结束时间
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '结束时间'")
     private Long finishedTime;
-    /**
-     * 最后上报时间
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '最后上报时间'")
     private Long lastReportTime;
-    /**
-     * TaskTracker 地址
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT 'TaskTracker 地址'")
     private String taskTrackerAddress;
-    /**
-     * 总共执行的次数（用于重试判断）
-     */
+
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '总共执行的次数（用于重试判断）'")
     private Long runningTimes;
 
-    /**
-     * “外键”，用于 OPENAPI 场景业务场景与 PowerJob 实例的绑定
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '“外键”，用于 OPENAPI 场景业务场景与 PowerJob 实例的绑定'")
     private String outerKey;
-    /**
-     * 扩展属性，用于 OPENAPI 场景上下文参数的透传
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '扩展属性，用于 OPENAPI 场景上下文参数的透传'")
     private String extendValue;
 
-    /**
-     * 调度元信息
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '调度元信息'")
     private String meta;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '创建时间'")
     private Date gmtCreate;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '更新时间'")
     private Date gmtModified;
 
 }

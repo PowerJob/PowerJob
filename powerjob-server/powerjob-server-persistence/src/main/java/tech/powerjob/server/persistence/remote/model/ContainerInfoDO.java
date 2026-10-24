@@ -20,40 +20,33 @@ public class ContainerInfoDO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
+    @Column(columnDefinition = "bigint NOT NULL AUTO_INCREMENT COMMENT '容器ID'")
     private Long id;
 
-    /**
-     * 所属的应用ID
-     */
+    @Column(columnDefinition = "bigint DEFAULT NULL COMMENT '所属的应用ID'")
     private Long appId;
 
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '容器名称'")
     private String containerName;
 
-    /**
-     * 容器类型，枚举值为 ContainerSourceType
-     */
+    @Column(columnDefinition = "int DEFAULT NULL COMMENT '容器类型，枚举值为 ContainerSourceType'")
     private Integer sourceType;
-    /**
-     * 由 sourceType 决定，JarFile -> String，存储文件名称；Git -> JSON，包括 URL，branch，username，password
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '由 sourceType 决定，JarFile -> String，存储文件名称；Git -> JSON，包括 URL，branch，username，password'")
     private String sourceInfo;
 
-    /**
-     * 版本 （Jar包使用md5，Git使用commitId，前者32位，后者40位，不会产生碰撞）
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '版本 （Jar包使用md5，Git使用commitId，前者32位，后者40位，不会产生碰撞）'")
     private String version;
 
-    /**
-     * 状态，枚举值为 ContainerStatus
-     */
+    @Column(columnDefinition = "int DEFAULT NULL COMMENT '状态，枚举值为 ContainerStatus'")
     private Integer status;
 
-    /**
-     * 上一次部署时间
-     */
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '上一次部署时间'")
     private Date lastDeployTime;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '创建时间'")
     private Date gmtCreate;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '更新时间'")
     private Date gmtModified;
 }

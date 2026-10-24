@@ -23,27 +23,24 @@ public class SundryDO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
+    @Column(columnDefinition = "bigint NOT NULL AUTO_INCREMENT COMMENT '杂项ID'")
     private Long id;
 
-    /**
-     * PKEY
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT 'PKEY'")
     private String pkey;
-    /**
-     * SKEY
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT 'SKEY'")
     private String skey;
-    /**
-     * 内容
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '内容'")
     private String content;
 
-    /**
-     * 其他参数
-     */
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '其他参数'")
     private String extra;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '创建时间'")
     private Date gmtCreate;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '更新时间'")
     private Date gmtModified;
 }

@@ -25,14 +25,16 @@ public class ServerInfoDO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
+    @Column(columnDefinition = "bigint NOT NULL AUTO_INCREMENT COMMENT '服务器ID'")
     private Long id;
-    /**
-     * 服务器IP地址
-     */
+
+    @Column(columnDefinition = "varchar(255) DEFAULT NULL COMMENT '服务器IP地址'")
     private String ip;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '创建时间'")
     private Date gmtCreate;
 
+    @Column(columnDefinition = "datetime(6) DEFAULT NULL COMMENT '更新时间'")
     private Date gmtModified;
 
     public ServerInfoDO(String ip) {
