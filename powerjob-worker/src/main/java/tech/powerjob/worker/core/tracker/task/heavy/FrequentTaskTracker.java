@@ -117,7 +117,7 @@ public class FrequentTaskTracker extends HeavyTaskTracker {
         }
 
         // 3. 启动任务分发器（事实上，秒级任务应该都是单机任务，且感觉不需要失败重试机制，那么 Dispatcher 的存在就有点浪费系统资源了...）
-        scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 1, 2, TimeUnit.SECONDS);
+        scheduledPool.scheduleWithFixedDelay(new Dispatcher(), 1000, workerRuntime.getWorkerConfig().getFrequentTaskDispatchInterval(), TimeUnit.MILLISECONDS);
         // 4. 启动状态检查器
         scheduledPool.scheduleWithFixedDelay(new Checker(), 5000, Math.min(Math.max(timeParams, 5000), 15000), TimeUnit.MILLISECONDS);
         // 5. 启动执行器动态检测装置
