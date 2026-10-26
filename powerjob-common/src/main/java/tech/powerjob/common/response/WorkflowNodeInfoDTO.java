@@ -6,6 +6,7 @@ import java.util.Date;
 
 /**
  * WorkflowNodeInfo 对外输出对象
+ *
  * @author Echo009
  * @since 2021/2/20
  */
@@ -24,7 +25,7 @@ public class WorkflowNodeInfoDTO {
     /**
      * 节点别名，默认为对应的任务名称
      */
-    private String nodeAlias;
+    private String nodeName;
     /**
      * 节点参数
      */
