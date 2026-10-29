@@ -55,7 +55,7 @@ public class InstanceTimeWheelService {
             CARGO.remove(uniqueId);
             realSchedule(uniqueId, expectTriggerTime - System.currentTimeMillis(), timerTask);
         }, delayMS - LONG_DELAY_THRESHOLD_MS, TimeUnit.MILLISECONDS);
-        CARGO.put(uniqueId, longDelayTask);
+        CARGO.put(uniqueId, new CargoTimerFuture(uniqueId, longDelayTask));
     }
 
     /**
@@ -74,7 +74,46 @@ public class InstanceTimeWheelService {
             timerTask.run();
         }, delayMS, TimeUnit.MILLISECONDS);
         if (delayMS > MIN_INTERVAL_MS) {
-            CARGO.put(uniqueId, timerFuture);
+            CARGO.put(uniqueId, new CargoTimerFuture(uniqueId, timerFuture));
+        }
+    }
+
+
+    /**
+     * 包装 TimerFuture，取消成功后移除 CARGO 中的引用
+     */
+    private static final class CargoTimerFuture implements TimerFuture {
+
+        private final Long uniqueId;
+        private final TimerFuture delegate;
+
+        private CargoTimerFuture(Long uniqueId, TimerFuture delegate) {
+            this.uniqueId = uniqueId;
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean cancel() {
+            if (!delegate.cancel()) {
+                return false;
+            }
+            CARGO.remove(uniqueId, this);
+            return true;
+        }
+
+        @Override
+        public TimerTask getTask() {
+            return delegate.getTask();
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return delegate.isCancelled();
+        }
+
+        @Override
+        public boolean isDone() {
+            return delegate.isDone();
         }
     }
 
